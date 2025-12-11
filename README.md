@@ -1,0 +1,1 @@
+# Eestikeelne nutikodu assistent "Kratt"
