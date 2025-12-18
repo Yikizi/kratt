@@ -6,3 +6,4 @@ experiments/whisper/models/Xenova/all-MiniLM-L6-v2
 experiments/whisper/whisper-medium-et-ct2/
 experiments/whisper/.venv/
 experiments/whisper/__pycache__/
+/.gtm/
