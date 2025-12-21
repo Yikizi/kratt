@@ -16,19 +16,22 @@ Privaatsuse tagamiseks kasutatakse telefoni liidest (analoog/VoIP) - süsteem ku
 
 Kriitiline küsimus: Kas lõputöö on uus tarkvara loomine või olemasoleva konfigureerimine?
 
-## Tehnoloogiad (uurimise all)
+## Tehnoloogiad
 
-- **STT**: OpenAI Whisper, TalTech tekstiks.ee
+- **STT**: kiirkirjutaja (Tanel Alumäe, töötab, ~1s latentsus, 3GB RAM)
 - **LLM**: OpenAI GPT, Anthropic Claude, Ollama (lokaalsed mudelid)
-- **TTS**: Eestikeelsed kõnesünteesi lahendused
+- **TTS**: Eestikeelsed kõnesünteesi lahendused (uurimata)
 - **Nutikodu**: Home Assistant, Wyoming protokoll, REST API
 - **Telefon**: SIP/VoIP, Asterisk, FreeSWITCH
 
 ## Kasulikud käsud
 
 ```bash
-# Whisper testimine (kui installitud)
-whisper audio.wav --language Estonian --model medium
+# Kiirkirjutaja streaming (lokaalne mikrofon)
+parec --format=s16le --rate=16000 --channels=1 --raw | docker exec -i kiirkirjutaja python main.py -
+
+# Kiirkirjutaja Docker (4GB shm)
+docker run -d --name kiirkirjutaja --shm-size 4G -v /home/mattias/data:/data alumae/kiirkirjutaja:latest tail -f /dev/null
 
 # Home Assistant API test (asenda URL ja token)
 curl -H "Authorization: Bearer TOKEN" http://homeassistant.local:8123/api/states
@@ -40,6 +43,12 @@ curl -H "Authorization: Bearer TOKEN" http://homeassistant.local:8123/api/states
 - Issue'd 1-3h suurused
 - Aja jälgimine: `/spend Xh` käsk issue'del
 - Labels: `taust`, `prototüüp`, `home-assistant`, `dokumentatsioon`
+- Aja statistika: `./scripts/gitlab-time-stats.sh`
+
+## Clockify
+
+- Workspace ID: `654b80c1c7d5882517e4f0f1`
+- Project ID (Kratt): `693b3fbbb903c31b0e4cb932`
 
 ## Edukriteeriumid (30h lõpuks)
 
