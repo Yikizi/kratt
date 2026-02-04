@@ -3,12 +3,12 @@
 > Bakalaureusetöö projekt - TalTech Informaatika 2025
 
 **Autor**: Mattias
-**Juhendaja**: [TBD]
+**Juhendaja**: Tanel Alumäe
 **Kaitsmise aeg**: Suvi 2025
 
 ## 🎯 Projekti Eesmärk
 
-Luua **esimene eestikeelne wake word mudel** "Kratt" ja integreerida see **Home Assistant**'iga kui täielik, privaatsust väärtusuv voice satellite süsteem.
+Luua **esimene eestikeelne wake word mudel** "Kratt" ja integreerida see **Home Assistant**'iga kui täielik, privaatsust väärtustav helisatelliit süsteem.
 
 ### Miks See On Oluline?
 
@@ -256,7 +256,7 @@ python record_samples.py --phrase "kratt" --count 20
 
 ## 📞 Kontakt
 
-- **Email**: [your-email]
+- **Email**: mattiaslinholm@gmail.com
 - **GitHub**: [your-github]
 - **Discord**: [if relevant]
 
