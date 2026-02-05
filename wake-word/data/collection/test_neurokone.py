@@ -7,14 +7,17 @@ import requests
 import json
 from pathlib import Path
 
-def test_neurokone_api(base_url="https://api.neurokone.ee"):
+def test_neurokone_api(base_url="https://api.tartunlp.ai/text-to-speech"):
     """
     Test Neurokõne API with different endpoints and configurations.
 
-    API Documentation from TartuNLP:
+    Official API Documentation:
+    - Base URL: https://api.tartunlp.ai/text-to-speech
     - Endpoint: POST /v2
     - Body: {"text": "...", "speaker": "...", "speed": 1.0}
     - Response: WAV audio
+    - Documentation: https://api.tartunlp.ai/text-to-speech/docs
+    - Status: Public and FREE (courtesy notification recommended to ping@tartunlp.ai)
     """
 
     print("🧪 Testing Neurokõne API...")
@@ -70,13 +73,12 @@ def test_neurokone_api(base_url="https://api.neurokone.ee"):
     return False
 
 def try_alternative_endpoints():
-    """Try alternative API endpoints."""
+    """Try alternative API endpoints (fallback only)."""
     print("\n🔍 Trying alternative endpoints...")
 
     alternatives = [
         "https://neurokone.ee/api",
         "https://api.neurokone.ee",
-        "https://neurokone.tartunlp.ai",
     ]
 
     for url in alternatives:
@@ -114,6 +116,10 @@ def main():
     print("\n" + "="*60)
     print("✅ SUCCESS! Neurokõne API is working")
     print("="*60)
+    print("\n📝 API Details:")
+    print("   Endpoint: https://api.tartunlp.ai/text-to-speech/v2")
+    print("   Docs: https://api.tartunlp.ai/text-to-speech/docs")
+    print("   Status: Public and FREE")
     print("\nNext: Run generate_neurokone_samples.py to create training data")
 
 if __name__ == "__main__":
