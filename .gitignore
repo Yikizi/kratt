@@ -45,6 +45,7 @@ external-repos/openWakeWord/
 # IDE
 .vscode/
 .idea/
+.serena/
 *.swp
 *.swo
 *~
