@@ -1,12 +1,98 @@
-# MCP configuration with API keys
-.mcp.json
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+*.egg-info/
+dist/
+build/
 
-# Whisper models
-experiments/whisper/models/Xenova/all-MiniLM-L6-v2
-experiments/whisper/whisper-medium-et-ct2/
-experiments/whisper/.venv/
-experiments/whisper/__pycache__/
-/.gtm/
-experiments/faster-whisper/models/Xenova/all-MiniLM-L6-v2
-experiments/faster-whisper/whisper-medium-et-ct2
-models/Xenova/all-MiniLM-L6-v2
+# Data files (too large for git)
+wake-word/data/raw/
+wake-word/data/augmented/
+stt-integration/kiirkirjutaja-source/models/
+*.wav
+*.mp3
+*.flac
+*.ogg
+
+# Models (large files)
+wake-word/models/checkpoints/
+wake-word/models/production/*.tflite
+wake-word/models/production/*.onnx
+wake-word/models/production/*.h5
+*.pb
+*.pkl
+
+# External repos (clone separately)
+external-repos/microWakeWord/
+external-repos/openWakeWord/
+
+# Keep archived work
+!external-repos/iaib-proto/
+
+# Secrets
+**/secrets.yaml
+*.key
+*.pem
+*.env
+
+# IDE
+.vscode/
+.idea/
+.serena/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# ESPHome
+.esphome/
+**/.esphome/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# LaTeX
+docs/thesis/*.aux
+docs/thesis/*.bbl
+docs/thesis/*.blg
+docs/thesis/*.bcf
+docs/thesis/*.log
+docs/thesis/*.out
+docs/thesis/*.pdf
+docs/thesis/*.run.xml
+docs/thesis/*.synctex.gz
+docs/thesis/*.toc
+docs/thesis/*.lof
+docs/thesis/*.lot
+
+# Jupyter
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Analysis outputs
+*.png
+*.pdf
+*.html
+*.csv
+
+# Keep example/template files
+!*example*
+!*template*
+!README*.md
+!*/README*.md

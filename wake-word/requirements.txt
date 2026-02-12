@@ -1,0 +1,37 @@
+# Wake Word Training Dependencies
+
+# Audio recording and processing
+sounddevice>=0.4.6
+soundfile>=0.12.1
+librosa>=0.10.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Machine Learning
+tensorflow>=2.15.0
+tensorflow-io>=0.36.0  # Audio dataset utils
+scikit-learn>=1.3.0
+
+# Wake Word Engines
+openwakeword>=0.5.1
+
+# Data augmentation
+audiomentations>=0.32.0
+pyroomacoustics>=0.7.3  # Room simulation
+
+# Visualization
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# Utilities
+tqdm>=4.66.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Model optimization
+onnx>=1.15.0
+onnxruntime>=1.16.0
+
+# Model conversion (ESP32)
+tflite-runtime>=2.14.0  # TFLite inference
+tensorflow-model-optimization>=0.7.5  # Quantization
