@@ -5,7 +5,3 @@
 [submodule "stt-integration/kiirkirjutaja-source"]
 	path = stt-integration/kiirkirjutaja-source
 	url = https://github.com/Yikizi/kiirkirjutaja.git
-
-[submodule "external-repos/iaib-proto"]
-	path = external-repos/iaib-proto
-	url = https://gitlab.cs.taltech.ee/malinh/iaib.git
