@@ -1,7 +1,3 @@
-[submodule "docs/thesis/thesis-tex-estonian"]
-	path = docs/thesis/thesis-tex-estonian
-	url = https://gitlab.cs.taltech.ee/malinh/thesis-tex-estonian.git
-
 [submodule "stt-integration/kiirkirjutaja-source"]
 	path = stt-integration/kiirkirjutaja-source
 	url = https://github.com/Yikizi/kiirkirjutaja.git

@@ -1,0 +1,319 @@
+%
+% Tallinn University of Technology - Ülesandepüstitus
+%
+
+\documentclass[12pt]{report}
+
+\usepackage{thesis}
+
+\input{config/config.tex}
+
+\hypersetup{
+    pdfauthor={Mattias Linholm},
+    pdfsubject={Bakalaureusetöö ülesandepüstitus},
+    pdfkeywords={nutikodu, eesti keel, TI, AI, tehisintellekt}
+}
+
+\begin{document}
+\selectlanguage{estonian}
+
+\begin{titlepage}
+\headheight = 57pt
+\footskip = 5pt
+\headsep = 0pt
+
+\centering
+\universityEst\\
+\schoolEst
+
+\vspace*{4.5 cm}
+
+\begin{center}
+
+Mattias Linholm 233408IAIB\\
+
+\vspace*{1.5 cm}
+
+\begin{Large}
+    \fontsize{20}{16}{\textbf{Privaatne tehisintellektist assistent Kratt}}\\
+\end{Large}
+
+\vspace*{1.5 cm}
+Bakalaureusetöö ülesandepüstitus\\
+\end{center}
+
+\vspace*{0.6 cm}
+
+\begin{flushright}
+  Juhendaja: Silver Slinko\\
+\end{flushright}
+\vfill
+
+Tallinn \Year
+\end{titlepage}
+
+\chapter*{Probleemi kirjeldus}
+\addcontentsline{toc}{chapter}{Probleemi kirjeldus}
+
+Nutikodu lahendused on viimase kümnendi jooksul muutunud üha populaarsemaks nii eraisikute kui ka äriklientide seas. Turg pakub erinevaid nutikodu platvorme nagu Home Assistant, Apple HomeKit, Google Home ja Amazon Alexa, kuid need on peamiselt mõeldud rahvusvahelisele turule ning kasutajaliides on inglise keeles või muudes laialdaselt levinud keeltes.
+
+Üsna levinud on oma nutikodu juhtimine kasutades häälkäsklusi - enamus platvorme toetavad neid inglise keeles. Hääl-assistendid on hetkel murdelises punktis, üritatakse siduda tehisintellekti, et muuta neid laiatarbelisemaks ja intelligentsemaks, kuid see protsess on aeglane ja valuline \cite{gemini-assistant}. Teine suur probleem, mis inimestele sääraste assistentide juures ei meeldi, on pidev kuulamine ja heli salvestamine. See on eriti problemaatiline, kuna tihti kasutatakse seda ära personaliseeritud reklaamideks - puudub privaatsus oma kodus \cite{smart-speaker-ads}.
+
+Käesoleva töö eesmärk on lahendada see probleem, luues töötlusjada, mis protsessib inimkõne tekstiks, saadab selle tehisintellektile ja muudab saadud vastuse tagasi eestikeelseks kõneks. Vestlus Kratiga peaks olema kiire ja loomulik, võimaldama kasutajatel mugavalt juhtida oma kodu nutiseadmeid eesti keeles kasutades loomulikke häälkäsklusi, kusjuures kasutaja ei ole piiratud kindlate fraasidega, nagu näiteks "Hei Google". Kratil oleks samuti võimalus kasutada otsingumootoreid, et pääseda ligi kõige värskemale informatsioonile internetis - tavapäraste keelemudelite suurima miinuse vältimiseks. Privaatsuse koha pealt on olemas innovatiivne lahendus, mis samuti aitab anda uue elu kaduma hakkavale retro tehnoloogiale - analoog telefon. Kratt kuuleb vaid seda, mida kõnetorusse räägitakse, kaotades oma kodus pealtkuulamise täielikult.
+
+\chapter*{Eesmärgid ja oodatav tulemus}
+\addcontentsline{toc}{chapter}{Eesmärgid ja oodatav tulemus}
+
+Töö peamised eesmärgid on järgmised:
+
+\begin{enumerate}
+    \item \textbf{Analüüsida olemasolevaid nutikodu platvorme ja häälassistente} -- uurida levinumaid nutikodu standardeid (\textit{Matter}, \textit{Zigbee}, \textit{Z-Wave}, \textit{Wi-Fi} põhised lahendused) ning hinnata nende sobivust Krati alusplatvormina. Samuti analüüsida olemasolevaid häälassistente (Google Home, Amazon Alexa) ja nende integratsioonivõimalusi tehisintellektiga.
+
+    \item \textbf{Valida ja integreerida eestikeelne kõnetuvastus} -- leida ja implementeerida sobivaim kõnetuvastuse (\textit{speech-to-text}) tehnoloogia, mis suudab täpselt tuvastada eesti keelt erinevate aktsendite ja hääldusvariantidega. Hinnata erinevaid lahendusi nagu \textit{Whisper}, Google Speech API või kohalikud mudelid.
+
+    \item \textbf{Implementeerida tehisintellekti vestlusagent} -- integreerida suuri keelemudeleid (LLM), mis võimaldavad loomulikku vestlust eesti keeles, mõistavad konteksti ning suudavad juhtida nutikodu seadmeid kasutaja kavatsuste põhjal ilma etteprogrammeeritud fraasideta.
+
+    \item \textbf{Valida ja integreerida eestikeelne kõnesüntees} -- leida ja implementeerida kvaliteetne eestikeelne kõnesünteesi (\textit{text-to-speech}) tehnoloogia, mis võimaldab Kratil vastata loomuliku ja selge kõnega.
+
+    \item \textbf{Arendada telefoni liides ja töötlusjada} -- luua süsteem, mis võimaldab Kratiga suhelda tavalise (analoog või VoIP) telefoni kaudu. Implementeerida täielik töötlusjada: sissetulev kõne $\rightarrow$ kõnetuvastus $\rightarrow$ AI töötlus $\rightarrow$ kõnesüntees $\rightarrow$ vastus kasutajale.
+
+    \item \textbf{Tagada ühilduvus nutikodu platvormiga} -- integreerida Kratt vähemalt ühe laialt kasutatava nutikodu platvormiga (nt Home Assistant või \textit{MQTT broker}), võimaldades kasutajatel juhtida erinevaid seadmeid häälkäsklusega.
+
+    \item \textbf{Testimine ja jõudluse hindamine} -- viia läbi kasutajatestid päris telefoni kasutajatega ja mõõta süsteemi jõudlust (reageerimisaeg, kõnetuvastuse täpsus, vestluse loomulikus). Koguda tagasisidet Krati kasutatavuse kohta.
+\end{enumerate}
+
+Oodatav tulemus on toimiv eestikeelne häälassistendi töötlusjada, mis on integreeritud telefoni süsteemiga ja vähemalt ühe nutikodu platvormiga. Kasutajad saavad helistada Kratile tavalisest telefonist ja suhelda temaga loomulikult eesti keeles, juhtides oma kodu nutiseadmeid ilma pidevat kuulamist tekitava seadmeta. Süsteem peab olema testitud päris kasutajatega ja valmis pilootprojekti käivitamiseks.
+
+\chapter*{Metoodika}
+\addcontentsline{toc}{chapter}{Metoodika}
+
+Töö viiakse läbi järgmistes etappides:
+
+\section*{Uurimisetapp (nädal 1--3)}
+
+\begin{itemize}
+    \item Kirjanduse ja olemasolevate lahenduste analüüs
+    \item Nutikodu standardite ja protokollide võrdlus (\textit{Matter}, \textit{Zigbee}, \textit{Z-Wave}, \textit{MQTT})
+    \item Võimalike alusplatvormide hindamine (Home Assistant, openHAB, Domoticz)
+    \item Olemasolevate häälassistentide (Google Home, Amazon Alexa) analüüs ja nende tehisintellekti integratsioonide uurimine
+    \item Eestikeelsete kõnetuvastus- ja kõnesünteesi tehnoloogiate hindamine (\textit{Whisper}, Google Speech API, kohalikud mudelid)
+    \item Telefoni süsteemide ja protokollide uurimine (\textit{SIP}, \textit{VoIP}, analoogtelefoni adapterid)
+    \item Sihtgrupi vajaduste kaardistamine intervjuude ja küsitluste abil
+\end{itemize}
+
+\section*{Disainietapp (nädal 4--5)}
+
+\begin{itemize}
+    \item Vestlusvoogude ja dialoogi struktuuri disainimine (kuidas Kratt peaks vastama erinevatele päringutele)
+    \item Eestikeelse terminoloogia väljatöötamine nutikodu kontekstis (kuidas eestlased loomulikult nutikodu seadmeid kirjeldavad)
+    \item Töötlusjada arhitektuuri väljatöötamine (kõne $\rightarrow$ tekst $\rightarrow$ AI $\rightarrow$ tekst $\rightarrow$ kõne)
+    \item Telefoni süsteemi integratsioonilahenduse planeerimine
+    \item Privaatsuse ja turvalisuse nõuete defineerimine
+\end{itemize}
+
+\section*{Arendusetapp (nädal 6--11)}
+
+\begin{itemize}
+    \item Eestikeelse kõnetuvastuse süsteemi integreerimine ja kohandamine
+    \item Tehisintellekti (LLM) integreerimine ja \textit{prompt engineering} eesti keeles
+    \item Eestikeelse kõnesünteesi süsteemi integreerimine ja kvaliteedi optimeerimine
+    \item Telefoni liidese arendamine (sissetulevate kõnede vastuvõtmine ja töötlemine)
+    \item Integratsioon valitud nutikodu platvormiga (Home Assistant või MQTT)
+    \item Nutikodu seadmete juhtimise funktsionaalsuse loomine läbi hääle
+    \item Täieliku töötlusjada implementeerimine ja testimine
+\end{itemize}
+
+\section*{Testimine ja täiustamine (nädal 12--14)}
+
+\begin{itemize}
+    \item Funktsionaalne testimine (komponenditestid, integratsioonitestid)
+    \item Kõnetuvastuse täpsuse testimine erinevate aktsendite ja hääldusvariantidega
+    \item Vestluse loomulikkuse ja konteksti mõistmise testimine
+    \item Kasutajatestid päris telefoni kasutajatega (vähemalt 10--15 testikasutajat)
+    \item Reageerimisaja ja latentsuse mõõtmine ning optimeerimine
+    \item Tagasiside kogumine ja analüüs
+    \item Vigade parandamine ja vestluskvaliteedi täiustamine
+\end{itemize}
+
+\section*{Dokumenteerimine ja lõpetamine (nädal 15--16)}
+
+\begin{itemize}
+    \item Kasutusjuhendi koostamine eesti keeles
+    \item Lõputöö kirjutamine ja vormistamine
+    \item Lõplike järelduste tegemine ja soovituste esitamine
+\end{itemize}
+
+\chapter*{Tulemuste valideerimine}
+\addcontentsline{toc}{chapter}{Tulemuste valideerimine}
+
+Töö tulemuste adekvaatsuse kontrollimiseks kasutatakse järgmisi meetodeid:
+
+\begin{enumerate}
+    \item \textbf{Funktsionaalne testimine} -- süsteemi kõigi põhikomponentide testimine (kõnetuvastus, AI töötlus, kõnesüntees, telefoni liides, nutikodu integratsioon), et veenduda nende korrektsuses ja stabiilsuses.
+
+    \item \textbf{Kõnetuvastuse täpsuse testimine} -- eestikeelse kõnetuvastuse täpsuse mõõtmine erinevate kasutajate, aktsendite ja hääldusvariantidega. Testimine hõlmab nii standardset kui ka kiiremat kõnet, samuti taustamüra mõju hindamist.
+
+    \item \textbf{Ühilduvuse testimine} -- süsteemi ühilduvuse kontrollimine erinevate nutikodu seadmete, platvormide ja telefoni süsteemidega (nii analoogtelefon kui ka VoIP lahendused).
+
+    \item \textbf{Kasutajatestid} -- testimine päris kasutajate poolt, sealhulgas:
+    \begin{itemize}
+        \item Vestluse loomulikkuse hindamine -- kuidas kasutajad tunnevad Kratiga suhtlemist
+        \item Ülesannete edukuse mõõtmine -- kas kasutajad suudavad edukalt juhtida nutikodu seadmeid hääle kaudu
+        \item Eakate kasutajate testimine -- eraldi rühm eakate testijaid, hindamaks kui mugav on tuttava tehnoloogia (telefon) kaudu tehisintellektiga suhtlemine võrreldes nutitelefonide või nutikodudustega
+        \item \textit{System Usability Scale} (SUS) küsimustiku kasutamine
+        \item Kvalitatiivne tagasiside intervjuude vormis
+    \end{itemize}
+
+    \item \textbf{Jõudluse ja latentsuse testimine} -- süsteemi reageerimisaja mõõtmine alates kasutaja küsimusest kuni vastuse saamiseni. Latentsuse minimeerimine on kriitiline loomuliku vestluse jaoks.
+
+    \item \textbf{Võrdlusanalüüs} -- väljatöötatud lahenduse võrdlemine olemasolevate rahvusvaheliste häälassistentidega (Google Home, Amazon Alexa) võtmeparameetrite alusel (reageerimisaeg, kõnetuvastuse täpsus, privaatsus, eesti keele tugi).
+\end{enumerate}
+
+Edukriteeriumid:
+\begin{itemize}
+    \item Süsteem toetab vähemalt 10 erinevat nutikodu seadmetüüpi
+    \item Eestikeelse kõnetuvastuse täpsus on vähemalt 85\% erinevate kasutajate puhul
+    \item Vestluse edukuse määr (kasutaja saab soovitud tulemuse) on vähemalt 80\%
+    \item Süsteemi kogureaktsiooniaeg (küsimusest vastuseni) on alla 3 sekundi
+    \item \textit{System Usability Scale} (SUS) skoor on vähemalt 70 (hea kasutatavus)
+    \item Eakate kasutajate rahulolu hinnang on vähemalt 4/5, eriti rõhutades tuttava tehnoloogia (telefon) kasutamise mugavust
+    \item Kasutajad tunnevad end privaatsuse osas turvalisemalt võrreldes pidevalt kuulavate seadmetega
+\end{itemize}
+
+\chapter*{Tehnoloogilised valikud}
+\addcontentsline{toc}{chapter}{Tehnoloogilised valikud}
+
+Töö käigus tehakse põhjendatud tehnoloogilised valikud järgmistes valdkondades:
+
+\begin{itemize}
+    \item \textbf{Kõnetuvastuse tehnoloogia (Speech-to-Text)} -- hinnatakse erinevaid eestikeelseid kõnetuvastuse lahendusi:
+    \begin{itemize}
+        \item \textit{OpenAI Whisper} -- laialt levinud, toetab eesti keelt, avatud lähtekoodiga mudel
+        \item \textit{tekstiks.ee} -- Tallinna Tehnikaülikooli avatud lähtekoodiga eestikeelse kõnetuvastuse süsteem (Java põhine). GitHub repositoorium vajab põhjalikku uurimist ja võrdlust Whisper'iga täpsuse ja jõudluse osas
+        \item \textit{Google Speech API} -- kommerts lahendus, hea täpsus, kuid kulude ja privaatsuse kaalutlused
+    \end{itemize}
+    Valik tehakse lähtuvalt täpsusest, latentsusest, privaatsusest ja kuludest.
+
+    \item \textbf{Tehisintellekti mudel (LLM)} -- suurkeele mudeli valik loomulikuks vestluseks eesti keeles:
+    \begin{itemize}
+        \item \textit{OpenAI GPT mudelid} -- hea eesti keele tugi, lai funktsionaalsus, API integratsioon
+        \item \textit{Anthropic Claude} -- kvaliteetne eesti keele mõistmine, hea konteksti haldus
+        \item Kohalikud mudelid (\textit{Ollama}, avatud mudelid) -- privaatsus, madalamad kulud, kuid võib vajada võimsamat riistvaralist
+    \end{itemize}
+    Valik tehakse lähtuvalt eesti keele kvaliteedist, reageerimiskiirusest, kuludest ja privaatsuse nõuetest.
+
+    \item \textbf{Kõnesüntees (Text-to-Speech)} -- eestikeelse kõnesünteesi lahenduse valik:
+    \begin{itemize}
+        \item Erinevate eestikeelsete TTS teenuste hindamine (kvaliteet, loomulikkus, latentsus)
+        \item Võimalusel kohalike või avatud lahenduste eelistamine privaatsuse tagamiseks
+    \end{itemize}
+
+    \item \textbf{Programmeerimiskeeled ja arendusraamistikud} -- hübriidne lähenemine kiiruse ja arenduse efektiivsuse tasakaalustamiseks:
+    \begin{itemize}
+        \item \textit{Python} -- kasutatakse esmase prototüübi ja põhi töövoo arendamiseks. Põhjused: kiire arendus, suurepärane AI/ML raamatukogude tugi (Whisper SDK, OpenAI/Anthropic API-d), hea testimise võimalused
+        \item \textit{C++} -- kaalutakse jõudluskriitiliste komponentide jaoks (nt VoIP telefoni liides, reaalajas audio töötlemine), kui Python latentsus osutub kitsaskohaks. Tagab madala taseme mäluhalduse ja maksimaalse jõudluse
+    \end{itemize}
+    Lähenemine võimaldab kiiret prototüüpimist säilitades võimaluse optimeerimiseks vajadusel.
+
+    \item \textbf{Telefoni süsteem ja protokollid} -- valitakse sobiv tehnoloogia telefoni liidese loomiseks:
+    \begin{itemize}
+        \item \textit{SIP} (Session Initiation Protocol) -- standard VoIP protokoll
+        \item \textit{Asterisk} või \textit{FreeSWITCH} -- avatud lähtekoodiga VoIP platvormid
+        \item Analoogtelefoni adapterid (ATA) -- võimaldavad kasutada tavalisi telefone
+    \end{itemize}
+
+    \item \textbf{Nutikodu platvorm} -- valitakse sobivaim platvorm lähtuvalt seadmete toest, API kvaliteedist ja kogukonna toest:
+    \begin{itemize}
+        \item \textit{Home Assistant} -- avatud lähtekoodiga, lai seadmete tugi, aktiivne kogukond
+        \item \textit{MQTT broker} -- kerge, reaalajas sõnumivahetuse protokoll
+        \item Integratsioon REST API või WebSocket kaudu
+    \end{itemize}
+
+    \item \textbf{Andmebaas ja salvestus} -- valitakse sobiv andmebaasilahendus vestluste ajaloo, kasutajate eelistuste ja seadistuste säilitamiseks:
+    \begin{itemize}
+        \item \textit{SQLite} -- lihtne, faili-põhine, piisav prototüübile
+        \item \textit{PostgreSQL} -- võimsam, kui vaja skaleeritavust
+    \end{itemize}
+
+    \item \textbf{Turvalisus ja privaatsus} -- kriitiline aspekt süsteemi disainis:
+    \begin{itemize}
+        \item Kõnede krüpteerimine (TLS/SRTP)
+        \item API võtmete turvaline hoidmine
+        \item Kasutajaandmete minimaalne kogumine
+        \item Võimalusel kohalike mudelite kasutamine (ei saada andmeid väljapoole)
+    \end{itemize}
+\end{itemize}
+
+Kõik tehnoloogilised valikud dokumenteeritakse ja põhjendatakse, võrreldes erinevate alternatiivide tugevusi ja nõrkusi.
+
+\chapter*{Töö aktuaalsus ja uudsus}
+\addcontentsline{toc}{chapter}{Töö aktuaalsus ja uudsus}
+
+Käesolev töö on aktuaalne mitmel põhjusel:
+
+\begin{itemize}
+    \item \textbf{Kasvav nõudlus} -- nutikodu lahenduste turg kasvab kiiresti Eestis ja on olemas reaalne klientide vajadus eestikeelse lahenduse järele
+
+    \item \textbf{Ligipääsetavus} -- eestikeelne liides teeb nutikodu lahendused kättesaadavaks laiemale sihtgrupile, eriti eakatele
+
+    \item \textbf{Häälliides alternatiivina klaviatuuripõhisele suhtlusele} -- häälassistendid võimaldavad juurdepääsu tehnoloogiale inimestele, kes ei saa füüsiliselt kasutada klaviatuure või väikseid nuppe. Uuringud näitavad, et 63.7\% puudega inimestest kasutavad häälassistente iseseisvuse säilitamiseks \cite{voice-disability}. See on eriti oluline eakate ja motoorikanäsmetustega inimeste jaoks, kellele telefon on tuttav tehnoloogia, mitte nutitelefon või arvuti
+
+    \item \textbf{Kohalik turg} -- võimalus toetada kohalikku nutikodu turul tegutsevaid ettevõtteid
+
+    \item \textbf{Keeletehnoloogia} -- eestikeelse tehnilise terminoloogia arendamine nutikodu valdkonnas
+
+    \item \textbf{Privaatsus ja turvalisus} -- telefoni-põhine lähenemine tagab, et süsteem ei kuula kasutajat pidevalt, vaid ainult siis, kui kasutaja aktiivselt helistab. See järgib maailma kõige privaatsema häälassistendi põhimõtteid, kus kasutaja andmed jäävad kasutaja kontrolli alla \cite{home-assistant-privacy}
+\end{itemize}
+
+Töö uudsus seisneb selles, et hetkel ei eksisteeri täismahus eestikeelset telefoni-põhist häälassistenti, mis kombineeriks nutikodu juhtimist, tehisintellekti ja privaatset arhitektuuri. Olemasolevad lahendused nõuavad tavaliselt pidevalt kuulavaid nutikõlareid või nutitelefone. Käesolev töö pakub alternatiivi, kasutades tuttavat ja juurdepääsetavat tehnoloogiat (analoog telefon), mis ei ohusta kasutaja privaatsust. Lisaks uuritakse töös eestikeelse häälliidese mõju kasutatavusele erinevate sihtgruppide (eakad, puudega inimesed) seas.
+
+\chapter*{Töö keerukus ja sobivus bakalaureusetöö raamistikku}
+\addcontentsline{toc}{chapter}{Töö keerukus ja sobivus bakalaureusetöö raamistikku}
+
+Töö on keskmise kuni keeruka raskusastmega bakalaureusetöö, mis hõlmab järgmisi valdkondi:
+
+\begin{itemize}
+    \item Kõnetuvastuse ja kõnesünteesi tehnoloogiate integreerimine ja kohandamine eesti keele jaoks
+    \item Suurte keelemudelite (LLM) integreerimine ja \textit{prompt engineering} loomulikuks vestluseks
+    \item VoIP ja telefoni süsteemide (SIP, Asterisk) implementeerimine ja konfiguratsioon
+    \item Reaalajas audio töötlemine ja latentsuse optimeerimine
+    \item Võrguprotokollide ja \textit{API}-de integreerimine (nutikodu platvormid, AI teenused)
+    \item Asünkroonne programmeerimine ja töötlusjada arhitektuuri disain
+    \item Turvalisuse ja privaatsuse tagamine (krüpteerimine, andmekaitse)
+    \item Kasutatavuse testimine erinevate sihtgruppidega (eakad, puudega inimesed)
+    \item Mitmekeelne programmeerimine (Python ja C++) ja jõudluse optimeerimine
+    \item Tarkvaraprojekti planeerimine ja haldamine
+\end{itemize}
+
+Töö maht ja keerukus on sobiv bakalaureusetöö jaoks, kuna see nõuab nii teoreetiliste teadmiste rakendamist (kõnetehnoloogia, tehisintellekt, võrguprotokollid) kui ka praktilisi arendusoskusi mitmes programmeerimiskeeles. Projekt käsitleb reaalseid tehnilisi väljakutseid nagu latentsuse minimeerimine, kõnekvaliteedi tagamine ja privaatsuse säilitamine. Töö on piisavalt mahukas, et näidata autori võimet integreerida erinevaid tehnoloogiaid terviklikuks lahenduseks, kuid samas piiritletud ja reaalselt teostatav 16-nädalase perioodi jooksul.
+
+\renewcommand{\bibname}{Kasutatud kirjandus}
+\begin{thebibliography}{9}
+\addcontentsline{toc}{chapter}{\bibname}
+
+\bibitem{gemini-assistant}
+Wiggers, K. (2024).
+\textit{Google Assistant is now powered by Gemini -- sort of}.
+TechCrunch. \url{https://techcrunch.com/2024/02/08/google-assistant-is-now-powered-by-gemini-sort-of/} (08.02.2024)
+
+\bibitem{smart-speaker-ads}
+Iqbal, U., Malloy, P., Sur, S., Shuba, A., Choffnes, D., \& Levchenko, K. (2023).
+\textit{Khaleesi: Breaker of Advertising and Tracking Request Chains}.
+Proceedings of the 2023 ACM Internet Measurement Conference, 41-57.
+
+\bibitem{voice-disability}
+Esquivel, P., Gill, K., Goldberg, M., Sundaram, S. A., Morris, L., \& Ding, D. (2024).
+\textit{Voice Assistant Utilization among the Disability Community for Independent Living: A Rapid Review of Recent Evidence}.
+Human Behavior and Emerging Technologies, 2024(1), Article 6494944.
+\url{https://doi.org/10.1155/2024/6494944}
+
+\bibitem{home-assistant-privacy}
+Home Assistant (2024).
+\textit{Building the world's most private voice assistant}.
+\url{https://www.home-assistant.io/voice_control/worlds-most-private-voice-assistant/} (20.11.2025)
+
+\end{thebibliography}
+
+\vspace{2cm}
+
+\end{document}

@@ -67,7 +67,7 @@ tmp/
 temp/
 *.tmp
 
-# LaTeX
+# LaTeX (legacy flat thesis path)
 docs/thesis/*.aux
 docs/thesis/*.bbl
 docs/thesis/*.blg
@@ -80,6 +80,9 @@ docs/thesis/*.synctex.gz
 docs/thesis/*.toc
 docs/thesis/*.lof
 docs/thesis/*.lot
+
+# Keep thesis template assets even with global output ignores
+!docs/thesis/thesis-tex-estonian/figures/**
 
 # Jupyter
 .ipynb_checkpoints/
