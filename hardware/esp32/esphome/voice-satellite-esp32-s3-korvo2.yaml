@@ -1,0 +1,178 @@
+substitutions:
+  name: "kratt-korvo2"
+  friendly_name: "Kratt Voice Satellite (Korvo-2)"
+
+  # Korvo-2 uses ESP32-S3-WROOM-1. ESPHome does not ship a dedicated korvo-2
+  # board definition, so we use a generic ESP32-S3 devkit and set pins explicitly.
+  board: "esp32-s3-devkitc-1"
+
+  # ESP32-S3-Korvo-2 (ES7210) audio pins (from Espressif user guide):
+  # MCLK: GPIO16, SCLK(BCLK): GPIO9, LRCK: GPIO45, SDOUT (to ESP I2S DIN): GPIO10
+  mic_mclk_pin: "GPIO16"
+  mic_bclk_pin: "GPIO9"
+  mic_lrclk_pin: "GPIO45"
+  mic_din_pin: "GPIO10"
+
+  # ES7210 control bus:
+  i2c_sda_pin: "GPIO17"
+  i2c_scl_pin: "GPIO18"
+
+  # ES8311 audio codec output (speaker) pins (Korvo-2 user guide):
+  # DSDIN (ESP I2S DOUT) is GPIO8.
+  spk_dout_pin: "GPIO8"
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  on_boot:
+    # Ensure wake word detection is actually running after boot.
+    priority: -100
+    then:
+      - delay: 1s
+      - micro_wake_word.start:
+
+esp32:
+  board: "${board}"
+  variant: esp32s3
+  framework:
+    type: esp-idf
+
+logger:
+  # Korvo-2 programs over CP2102N USB-to-UART. Use UART0 for logs so we see output
+  # on the same /dev/cu.* device.
+  hardware_uart: UART0
+  logs:
+    micro_wake_word: DEBUG
+    voice_assistant: DEBUG
+
+api:
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+captive_portal:
+
+i2c:
+  sda: ${i2c_sda_pin}
+  scl: ${i2c_scl_pin}
+  scan: true
+
+i2s_audio:
+  i2s_bclk_pin: ${mic_bclk_pin}
+  i2s_lrclk_pin: ${mic_lrclk_pin}
+  # Not all ESPHome versions expose this; if config fails, comment it out.
+  i2s_mclk_pin: ${mic_mclk_pin}
+
+# Initialize/configure the ES7210 audio ADC over I2C.
+audio_adc:
+  - platform: es7210
+    id: es7210_adc
+    bits_per_sample: 16bit
+    sample_rate: 16000
+
+# Speaker output: ES8311 + I2S (shared BCLK/LRCLK/MCLK with microphone).
+audio_dac:
+  - platform: es8311
+    id: es8311_dac
+    bits_per_sample: 16bit
+    sample_rate: 16000
+
+speaker:
+  - platform: i2s_audio
+    id: spk
+    dac_type: external
+    i2s_dout_pin: ${spk_dout_pin}
+    audio_dac: es8311_dac
+    sample_rate: 16000
+    bits_per_sample: 16bit
+    channel: mono
+
+microphone:
+  - platform: i2s_audio
+    id: mic
+    adc_type: external
+    i2s_din_pin: ${mic_din_pin}
+    sample_rate: 16000
+    bits_per_sample: 16bit
+    channel: left
+
+binary_sensor:
+  - platform: template
+    name: "${friendly_name} Listening"
+    id: va_listening
+
+text_sensor:
+  - platform: template
+    name: "${friendly_name} Last Wake Word"
+    id: last_wake_word
+    update_interval: never
+
+button:
+  - platform: template
+    name: "${friendly_name} Start Assist (PTT)"
+    on_press:
+      then:
+        - micro_wake_word.stop:
+        - voice_assistant.start:
+            silence_detection: true
+
+  - platform: template
+    name: "${friendly_name} Restart Wake Word"
+    on_press:
+      then:
+        - micro_wake_word.start:
+
+micro_wake_word:
+  id: microww
+  microphone:
+    microphone: mic
+    channels: 0
+    gain_factor: 4
+  stop_after_detection: true
+  vad:
+  models:
+    - model: okay_nabu
+      id: okay_nabu_model
+    - model: "/Users/mattias/kratt/hardware/esp32/esphome/models/kratt.json"
+      id: kratt_model
+  on_wake_word_detected:
+    then:
+      - text_sensor.template.publish:
+          id: last_wake_word
+          state: !lambda return wake_word;
+      - logger.log:
+          format: "Wake word detected: %s"
+          args: ["wake_word.c_str()"]
+      - voice_assistant.start:
+          wake_word: !lambda return wake_word;
+          silence_detection: true
+
+voice_assistant:
+  microphone: mic
+  speaker: spk
+  micro_wake_word: microww
+  use_wake_word: false
+  on_listening:
+    then:
+      - binary_sensor.template.publish:
+          id: va_listening
+          state: ON
+      # Ensure micro_wake_word releases the microphone/I2S while Assist is active,
+      # otherwise the speaker can fail to start for TTS playback.
+      - micro_wake_word.stop:
+  on_end:
+    then:
+      - binary_sensor.template.publish:
+          id: va_listening
+          state: OFF
+      - micro_wake_word.start:
+  on_error:
+    then:
+      - binary_sensor.template.publish:
+          id: va_listening
+          state: OFF
+      - micro_wake_word.start:

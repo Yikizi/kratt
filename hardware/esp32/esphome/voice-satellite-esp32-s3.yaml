@@ -1,0 +1,110 @@
+substitutions:
+  name: "kratt-satellite-s3"
+  friendly_name: "Kratt Voice Satellite (ESP32-S3)"
+
+  # IMPORTANT: set this to your exact board.
+  # Common examples:
+  # - esp32-s3-devkitc-1
+  # - esp32-s3-box-3
+  board: "esp32-s3-devkitc-1"
+
+  # I2S microphone pins (set for your hardware).
+  mic_bclk_pin: "GPIO17"
+  mic_lrclk_pin: "GPIO18"
+  mic_din_pin: "GPIO16"
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+
+esp32:
+  board: "${board}"
+  variant: esp32s3
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+
+ota:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Uncomment if you want a static IP.
+  # manual_ip:
+  #   static_ip: !secret static_ip
+  #   gateway: !secret gateway
+  #   subnet: !secret subnet
+
+captive_portal:
+
+# Core I2S bus.
+i2s_audio:
+  i2s_bclk_pin: ${mic_bclk_pin}
+  i2s_lrclk_pin: ${mic_lrclk_pin}
+
+# If your board uses a dedicated audio ADC (common on "box" devices), you may need to
+# enable/configure one of these + I2C.
+# See ESPHome docs for ES7210/ES7243E and your board schematic.
+#
+# i2c:
+#   sda: GPIOxx
+#   scl: GPIOxx
+#   scan: true
+#
+# audio_adc:
+#   - platform: es7210
+#     id: es7210_adc
+#     bits_per_sample: 16bit
+#     sample_rate: 16000
+#
+# Or:
+# audio_adc:
+#   - platform: es7243e
+#     id: es7243e_adc
+
+microphone:
+  - platform: i2s_audio
+    id: mic
+    adc_type: external
+    i2s_din_pin: ${mic_din_pin}
+    sample_rate: 16000
+    bits_per_sample: 16bit
+    channel: left
+    # For PDM microphones (supported on ESP32/ESP32-S3):
+    # pdm: true
+
+# On-device wake word detection (microWakeWord).
+# Start with a known-good model ("okay_nabu") to validate audio path.
+# Then switch to your custom "Kratt" JSON manifest.
+micro_wake_word:
+  id: microww
+  microphone:
+    microphone: mic
+    channels: 0
+    gain_factor: 4
+  stop_after_detection: true
+  vad:
+  models:
+    - model: okay_nabu
+      id: okay_nabu_model
+
+    # Custom Kratt model (local file URL):
+    - model: "/Users/mattias/kratt/hardware/esp32/esphome/models/kratt.json"
+      id: kratt_model
+  on_wake_word_detected:
+    then:
+      - voice_assistant.start:
+          # Use the detected wake word string (provided by the trigger context).
+          wake_word: !lambda return wake_word;
+
+voice_assistant:
+  microphone: mic
+  micro_wake_word: microww
+  on_end:
+    then:
+      # Return to wake word detection after Assist finishes.
+      - micro_wake_word.start:

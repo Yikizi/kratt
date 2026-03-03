@@ -14,9 +14,15 @@ import random
 
 def download_file(url, destination):
     """Laadi fail alla progress bar'iga."""
+    last_percent = {"value": -1}
     def reporthook(count, block_size, total_size):
+        if total_size <= 0:
+            return
         percent = int(count * block_size * 100 / total_size)
-        print(f"\r📥 Laadimine: {percent}%", end='', flush=True)
+        # Avoid extremely spammy output; only print when the integer percent changes.
+        if percent != last_percent["value"]:
+            last_percent["value"] = percent
+            print(f"\r📥 Laadimine: {percent}%", end='', flush=True)
 
     print(f"📡 Laadimine: {url}")
     urllib.request.urlretrieve(url, destination, reporthook=reporthook)
@@ -32,17 +38,28 @@ def download_speech_commands(output_dir):
     extract_dir = output_dir / "speech_commands"
 
     # Laadi alla
-    if not archive_path.exists():
-        download_file(url, archive_path)
+    if archive_path.exists():
+        print(f"⏭️  Juba olemas: {archive_path}")
     else:
-        print(f"⏭️  Juba alla laaditud: {archive_path}")
+        download_file(url, archive_path)
 
     # Ekstrakti
     if not extract_dir.exists():
         print("📦 Ekstraktimine...")
         extract_dir.mkdir(parents=True, exist_ok=True)
-        with tarfile.open(archive_path, 'r:gz') as tar:
-            tar.extractall(extract_dir)
+        try:
+            with tarfile.open(archive_path, 'r:gz') as tar:
+                tar.extractall(extract_dir)
+        except Exception as e:
+            # If the archive is partial/corrupt, keep it for debugging and force re-download.
+            print(f"\n❌ Ekstraktimine ebaõnnestus: {e}")
+            corrupt_path = archive_path.with_suffix(archive_path.suffix + ".corrupt")
+            print(f"↪️  Nimetan arhive ümber: {archive_path.name} -> {corrupt_path.name}")
+            archive_path.rename(corrupt_path)
+            print("🔁 Proovin uuesti alla laadida...")
+            download_file(url, archive_path)
+            with tarfile.open(archive_path, 'r:gz') as tar:
+                tar.extractall(extract_dir)
         print("✅ Ekstraktitud!")
     else:
         print(f"⏭️  Juba ekstraktitud: {extract_dir}")

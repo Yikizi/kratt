@@ -29,6 +29,14 @@ python download_negatives.py
 
 ### 4. Treeni Mudel
 
+#### Dataset prep (processed/)
+Neurokõne raw faile ja negative dataset'e ei commiti git'i. Lokaalselt valmista treeningu sisendkaustad nii:
+
+```bash
+cd /Users/mattias/kratt
+/Users/mattias/kratt/wake-word/.venv/bin/python wake-word/data/collection/prepare_processed_dataset.py --download-negatives
+```
+
 #### Raspberry Pi (openWakeWord)
 ```bash
 cd ../../external-repos/openWakeWord/training
@@ -41,18 +49,11 @@ python train_wake_word.py \
 ```
 
 #### ESP32 (microWakeWord)
-```bash
-cd ../../external-repos/microWakeWord
-python generate_features.py \
-    --positive_dir ../wake-word/data/processed/positive \
-    --negative_dir ../wake-word/data/processed/negative \
-    --output_dir ../wake-word/training/features/
+microWakeWord treenimine on “full pipeline” (mmaps + TF training + TFLite export). Repo’s on selleks skript:
 
-python train.py \
-    --feature_dir ../wake-word/training/features/ \
-    --output_dir ../wake-word/models/production/ \
-    --model_name kratt \
-    --epochs 50
+```bash
+cd /Users/mattias/kratt
+./wake-word/training/scripts/train_microwakeword.sh
 ```
 
 ### 5. Testi Mudelit
