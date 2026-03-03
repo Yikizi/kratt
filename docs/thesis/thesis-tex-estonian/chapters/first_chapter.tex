@@ -1,10 +1,58 @@
-This is the first real chapter of this thesis. Other chapters can be easily referenced, for example the introduction can be found as Chapter \ref{chapter:introduction}. Sections and/or subsections need to be labeled before one can reference them. See Section \ref{sec:second-section} for an example.
+Metoodika eesmärk on kirjeldada sellist tööprotsessi, mille abil on võimalik wake word mudeli arenduses eristada toru tehnilisi vigu andmestikust või mudeli üldistusvõimest tulenevatest probleemidest. See on oluline, sest vastasel juhul võib ebaõnnestunud tulemus jääda valesti kas andmete, deploy või treeningukoodi arvele.
 
-\section{First Section of the First Chapter} % This creates a new section with the title "First Section of the First Chapter."
-Some text in the first section. %  This is regular text content inside the section.
-\subsection{First Subsection} %This creates a new subsection titled "First Subsection."
-As well as some text in this subsection. 
-\subsubsection{First Subsubsection} % This creates a subsubsection titled "First Subsubsection."
-The Table of Contents only goes 3 layers deep (Chapter - Section - Subsection) so this subsubsection is not seen there.
+\section{Kasutatud tehnoloogiad}
+Töö praktiline baas koosneb neljast peamisest komponendist. Esmaseks mikrokontrolleri-suunaliseks treeninguraamistikuks kasutatakse \texttt{microWakeWord} projekti \cite{microwakeword2026}, mille all töötab TensorFlow \cite{tensorflow2015}. Võrdlusraamistikuna kaasatakse \texttt{openWakeWord} \cite{openwakeword2026}, mis on suunatud kiiremale wake word prototüüpimisele ja mille ümber on aktiivne kasutuspraktika Home Assistanti ökosüsteemis. Mudeli sihtformaadiks on TensorFlow Lite ning sihtseadmeks ESP32-S3 põhine arendusplaat. Seadmel käitamiseks ja Home Assistantiga sidumiseks kasutatakse ESPHome'i \cite{esphome2026}. Nutikodu automaatikakihi ja sündmuste orkestreerimise eest vastutab Home Assistant \cite{homeassistant2026}.
 
-\section{Second Section of the First Chapter}\label{sec:second-section} % This creates a new section titled "Second Section of the First Chapter" and assigns the label sec:second-section.The label allows for internal referencing to this section elsewhere in the document. 
+Selline tehnoloogiline valik võimaldab hoida kogu toru lokaalsena. See tähendab, et treening toimub arendusmasinas, mudeli eksport tehakse TFLite vormingusse ning inference jookseb päris mikrokontrolleril ilma välise pilveteenuseta. Samal ajal võimaldab kahe erineva wake word raamistiku kasutamine hinnata mitte ainult lõplikku mudelikvaliteeti, vaid ka seda, kui suur on arenduskulu ja milliseid kompromisse nõuab tehnoloogiavalik väikese keeleruumi tingimustes.
+
+\section{Võrdlusraamistik}
+Töö ei piirdu ühe tehnoloogia kasutamisega, vaid võrdleb kahte praktiliselt relevantset lähenemist: \texttt{microWakeWord} ja \texttt{openWakeWord}. Selline võrdlus on metoodiliselt oluline, sest vastasel juhul jääks tehnoloogiavalik osaliselt põhjendamata ning oleks raske eristada, kas probleem tuleneb konkreetsest raamistikust, andmestikust või sihtplatvormi piirangutest.
+
+Võrdlus viiakse läbi neljal teljel:
+\begin{itemize}
+    \item treenimise praktiline keerukus, sealhulgas andmete ettevalmistuse maht, hüperparameetrite tundlikkus ja tööriistade kasutusmugavus;
+    \item mudeli kvaliteet, sealhulgas äratussõna tabamine ja valevallandumiste käitumine positiivsete, negatiivsete ja ambient-andmete peal;
+    \item deploy sobivus, sealhulgas mudeli suurus, inference'i praktiline teostatavus ja sobivus ESP32-S3 klassi seadmele;
+    \item laiendatavus eesti keelele, sealhulgas sõltuvus ingliskeelsetest eeldustest ja sünteetilise andmestiku roll.
+\end{itemize}
+
+Sellise võrdlusraami eesmärk ei ole leida abstraktselt \enquote{parimat} wake word raamistikku, vaid hinnata, milline lähenemine on sobivam eestikeelse ja piiratud ressursiga nutikodu kasutusjuhtumi jaoks. See võimaldab hiljem põhjendada nii lõpliku tehnoloogiavaliku kui ka selle käigus tehtud kompromisside loogikat.
+
+\section{Andmeliikide eristamine}
+Wake word mudeli arenduses ei piisa ainult tavalisest treeningu- ja testandmete jaotusest. Käesolevas töös eristatakse kolme andmeliiki:
+\begin{itemize}
+    \item positiivsed klipid, kus äratussõna on olemas;
+    \item negatiivsed klipid, kus äratussõna puudub, kuid heli võib sisaldada kõnet või muid segavaid mustreid;
+    \item ambient-salvestused, mis sisaldavad pikka pidevat taustaheli ilma äratussõnata.
+\end{itemize}
+
+Positiivsed klipid õpetavad mudelile sihtsõna akustilist kuju. Negatiivsed klipid aitavad mudelil õppida, mida mitte pidada äratussõnaks. Ambient-andmed täidavad teistsugust rolli: nende pealt hinnatakse, kui tihti mudel valehäireid tekitab siis, kui seade kuulab päris kasutusolukorras pidevat helivoogu.
+
+\section{Avalikud andmekorpused}
+Enne eestikeelse \enquote{Kratt} andmestiku juurde liikumist otsustati kohalik treeningu- ja hindamistoru valideerida avaliku andmestiku peal. Selleks valiti \texttt{Speech Commands} korpus ja sihtsõna \texttt{marvin} \cite{speechcommands2018}. Tegemist on kontrollitava baasülesandega, mille peal on võimalik hinnata, kas treening, eksport ja evaluatsioon töötavad otsast lõpuni.
+
+Ambient- ja speech-negative allikatena lisatakse torusse \texttt{MUSAN}, \texttt{VOiCES} ja \texttt{Common Voice} korpused \cite{musan2015,voices2018,commonvoice2020}. Nende rollid on erinevad. \texttt{MUSAN} pakub palju müra, muusikat ja kõnet. \texttt{VOiCES} toob sisse kaugkõne, ruumiakustika ja realistlikumad kuulamistingimused. \texttt{Common Voice} on vajalik eelkõige kõnepõhiste negatiivsete näidete jaoks ning hiljem ka eestikeelse mudeli taustamaterjalina.
+
+\section{Tunnused ja andmevorming}
+Andmed teisendatakse spektraalseteks tunnusteks ja salvestatakse \texttt{mmap} vormingus. Memory-mapped file lähenemine võimaldab töödelda suuri andmehulkasid nii, et kogu korpust ei pea korraga muutmällu laadima. See on oluline nii treeningukiiruse kui ka stabiilsuse jaoks.
+
+Praktilises torus moodustatakse eraldi järgmised andmekogumid:
+\begin{itemize}
+    \item \texttt{training};
+    \item \texttt{validation};
+    \item \texttt{testing};
+    \item \texttt{validation\_ambient};
+    \item \texttt{testing\_ambient}.
+\end{itemize}
+
+Selline jaotus on vajalik, sest streaming-eval ei saa toetuda ainult lühikestele negatiivsetele klippidele. Kui ambient-kogum puudub või on vigaselt moodustatud, muutub osa hindamistulemustest sisuliselt kasutuks.
+
+\section{Hindamismõõdikud}
+Wake word mudeli puhul on oluline mitte ainult äratussõna tabamine, vaid ka valevallandumiste kontroll. Seetõttu kasutatakse lisaks tavalistele täpsusmõõdikutele ka streaming-hindamise mõõdikuid:
+\begin{itemize}
+    \item \texttt{FRR} ehk false rejection rate, mis näitab kui suur osa tegelikest äratussõna juhtudest jääb tabamata;
+    \item \texttt{FAPH} ehk false accepts per hour, mis näitab valevallandumiste arvu tunni kohta;
+    \item ROC-laadne kõver, kus hinnatakse erinevate threshold'ide mõju \texttt{FRR} ja \texttt{FAPH} suhtele.
+\end{itemize}
+
+Varasemate katsete põhjal selgus, et just \texttt{testing\_ambient} puudumine võib anda petlikke tulemusi. Kui ambient-andmed on tühjad, ei kirjelda saadud AUC enam mudeli tegelikku kvaliteeti, vaid katkist hindamisprotsessi. Seetõttu on andmeliikide korrektne eristamine käesoleva töö metoodikas keskse tähtsusega.

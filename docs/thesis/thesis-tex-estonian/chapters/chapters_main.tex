@@ -12,19 +12,19 @@
 % How to use: Add a \label{chapter:<part_name>} for each chapter to indicate its part. 
 % These labels ensure consistency and allow automated tests to validate the thesis structure.
 
-\chapter{Introduction}\label{chapter:introduction} % This command creates a numbered chapter titled "Sissejuhatus" (Estonian for "Introduction"). The \label{chapter:introduction} assigns a label to the chapter, allowing you to reference it later (e.g., \ref{chapter:introduction}).
-\input{chapters/introduction} %  This command inserts the content from the file introduction.tex located in the chapters folder.
+\chapter{Sissejuhatus}\label{chapter:introduction}
+\input{chapters/introduction}
 
-\chapter{First Chapter}\label{chapter:method}
+\chapter{Metoodika}\label{chapter:method}
 \input{chapters/first_chapter.tex}
 
-\chapter{Second Chapter}\label{chapter:results}
+\chapter{Tulemused}\label{chapter:results}
 \input{chapters/second_chapter.tex}
 
-\chapter{Third Chapter}\label{chapter:discussion}
+\chapter{Arutelu ja järeldused}\label{chapter:discussion}
 \input{chapters/third_chapter.tex}
 
-\chapter{Summary}\label{chapter:summary} 
+\chapter{Kokkuvõte}\label{chapter:summary}
 \input{chapters/summary.tex}
 
 \zlabel{lastpagetocount}        % DO NOT REMOVE! Used for counting number of pages of main text
