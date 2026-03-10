@@ -52,8 +52,33 @@ python train_wake_word.py \
 microWakeWord treenimine on “full pipeline” (mmaps + TF training + TFLite export). Repo’s on selleks skript:
 
 ```bash
-cd /Users/mattias/kratt
+cd /path/to/kratt
 ./wake-word/training/scripts/train_microwakeword.sh
+```
+
+### HPC / large-data layout
+
+Kui treenid TalTech HPC peal, ekspordi enne:
+
+```bash
+export KRATT_DATA=/gpfs/mariana/smbhome/$USER/kratt-data
+```
+
+Oodatud layout:
+
+- `"$KRATT_DATA/datasets/speech-commands"`: Speech Commands extract
+- `"$KRATT_DATA/datasets/common-voice"`: Common Voice mirror / extract
+- `"$KRATT_DATA/datasets/musan"`: MUSAN extract
+- `"$KRATT_DATA/datasets/voices"`: VOiCES extract
+- `"$KRATT_DATA/processed"`: materialized experiment datasets
+- `"$KRATT_DATA/training/features"` ja `"$KRATT_DATA/training/runs"`: mmap-id ja treeningu artefaktid
+
+Minimaalne Slurm smoke-run avaliku `marvin` sihtsõnaga:
+
+```bash
+export KRATT_DATA=/gpfs/mariana/smbhome/$USER/kratt-data
+./wake-word/training/scripts/submit_hpc_smoke_run.sh \
+  --ambient-dir /path/to/flat_ambient_wavs
 ```
 
 ### 5. Testi Mudelit

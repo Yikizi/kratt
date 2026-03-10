@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="/Users/mattias/kratt"
+SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/kratt_paths.sh
+source "${SCRIPT_DIR}/lib/kratt_paths.sh"
+
+ROOT_DIR="$(kratt_project_root)"
+FEATURES_BASE_DIR="$(kratt_training_features_dir)"
+RUNS_BASE_DIR="$(kratt_training_runs_dir)"
+CONFIGS_DIR="$(kratt_training_configs_dir)"
 
 usage() {
   cat <<'EOF'
@@ -69,15 +76,15 @@ if [[ -z "${EXPERIMENT_NAME}" || -z "${POS_DIR}" || -z "${NEG_DIR}" ]]; then
   exit 2
 fi
 
-FEATURES_DIR="${ROOT_DIR}/wake-word/training/features/${EXPERIMENT_NAME}"
-TRAIN_DIR_BASE="${ROOT_DIR}/wake-word/training/runs/${EXPERIMENT_NAME}"
-CFG_PATH="${ROOT_DIR}/wake-word/training/configs/${EXPERIMENT_NAME}.yaml"
+FEATURES_DIR="${FEATURES_BASE_DIR}/${EXPERIMENT_NAME}"
+TRAIN_DIR_BASE="${RUNS_BASE_DIR}/${EXPERIMENT_NAME}"
+CFG_PATH="${CONFIGS_DIR}/${EXPERIMENT_NAME}.yaml"
 TRAIN_DIR="${TRAIN_DIR_BASE}-$(date +%Y%m%d-%H%M%S)"
 MMAP_STAMP_PATH="${FEATURES_DIR}/.dataset_stamp.txt"
 
-mkdir -p "${ROOT_DIR}/wake-word/training/configs"
-mkdir -p "${ROOT_DIR}/wake-word/training/features"
-mkdir -p "${ROOT_DIR}/wake-word/training/runs"
+mkdir -p "${CONFIGS_DIR}"
+mkdir -p "${FEATURES_BASE_DIR}"
+mkdir -p "${RUNS_BASE_DIR}"
 
 if [[ ! -d "${POS_DIR}" ]]; then
   echo "Missing positive samples: ${POS_DIR}" >&2
@@ -92,7 +99,7 @@ if [[ -n "${AMBIENT_DIR}" && ! -d "${AMBIENT_DIR}" ]]; then
   exit 2
 fi
 
-./wake-word/training/scripts/setup_microwakeword_env.sh
+"${SCRIPT_DIR}/setup_microwakeword_env.sh"
 # shellcheck disable=SC1091
 source "${ROOT_DIR}/wake-word/.venv-microwakeword/bin/activate"
 

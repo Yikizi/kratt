@@ -48,11 +48,15 @@ kratt/
 │   ├── research/                      # Uurimismaterjalid
 │   │   ├── literature-review.md
 │   │   ├── related-work.md
-│   │   └── experiments/
+│   │   └── datasets.md
 │   └── user-guide/                    # Kasutajajuhendid
 │       ├── installation.md
 │       ├── configuration.md
 │       └── troubleshooting.md
+│
+├── notes/                             # Tööpäevik ja eksperimendimärkmed
+│   ├── experiments/
+│   └── demos/
 │
 ├── wake-word/                         # Wake word mudel ja treening
 │   ├── README.md
@@ -81,7 +85,7 @@ kratt/
 ├── hardware/                          # Hardware implementatsioonid
 │   ├── esp32/                         # ESP32C3 Supermini
 │   │   ├── esphome/                   # ESPHome configs
-│   │   │   ├── voice-satellite.yaml
+│   │   │   ├── voice-satellite-esp32-s3.yaml
 │   │   │   └── secrets.yaml.example
 │   │   ├── firmware/                  # Custom firmware (if needed)
 │   │   └── schematics/                # Wiring diagrams
@@ -162,6 +166,9 @@ python record_samples.py --phrase "kratt" --count 20
 - 📖 [Arhitektuur](docs/architecture/system-overview.md)
 - 📖 [Uurimistöö](docs/research/literature-review.md)
 - 📖 [Kasutajajuhend](docs/user-guide/installation.md)
+
+`docs/` hoiab lühikest ja hooldatud projektidokumentatsiooni. `notes/` hoiab
+tööpäevikut, eksperimendimärkmeid ja iteratiivseid visandeid.
 
 ## 🎓 Lõputöö Timeline
 

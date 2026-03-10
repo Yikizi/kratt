@@ -8,6 +8,7 @@ venv/
 env/
 ENV/
 .venv/
+.venv-esphome/
 *.egg-info/
 dist/
 build/
@@ -15,6 +16,8 @@ build/
 # Data files (too large for git)
 wake-word/data/raw/
 wake-word/data/augmented/
+wake-word/data/processed/
+wake-word/data/external/
 stt-integration/kiirkirjutaja-source/models/
 *.wav
 *.mp3
@@ -28,6 +31,13 @@ wake-word/models/production/*.onnx
 wake-word/models/production/*.h5
 *.pb
 *.pkl
+
+# Local ML/firmware tool venvs
+wake-word/.venv-microwakeword/
+
+# Training artifacts (feature mmaps, logs, intermediate outputs)
+wake-word/training/features/
+wake-word/training/runs/
 
 # External repos (clone separately)
 external-repos/microWakeWord/
@@ -46,6 +56,7 @@ external-repos/openWakeWord/
 .vscode/
 .idea/
 .serena/
+.claude/
 *.swp
 *.swo
 *~
@@ -61,6 +72,15 @@ logs/
 # ESPHome
 .esphome/
 **/.esphome/
+
+# ESPHome voice satellite artifacts
+hardware/esp32/esphome/*.tflite
+hardware/esp32/esphome/**/*.tflite
+hardware/esp32/esphome/*.onnx
+hardware/esp32/esphome/**/*.onnx
+
+# microWakeWord model manifests are text and can be committed if desired.
+# Keep actual trained model binaries out of git.
 
 # Temporary files
 tmp/

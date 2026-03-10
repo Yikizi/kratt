@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="/Users/mattias/kratt"
+SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/kratt_paths.sh
+source "${SCRIPT_DIR}/lib/kratt_paths.sh"
+
+ROOT_DIR="$(kratt_project_root)"
 VENV_DIR="${ROOT_DIR}/wake-word/.venv-microwakeword"
 
 PYTHON_BIN=""

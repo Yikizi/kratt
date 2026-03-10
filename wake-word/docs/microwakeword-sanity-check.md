@@ -42,9 +42,11 @@ still false-trigger on long background audio.
 Command:
 
 ```bash
-python3 /Users/mattias/kratt/wake-word/training/scripts/prepare_speech_commands_experiment.py \
+python3 wake-word/training/scripts/prepare_speech_commands_experiment.py \
+  --source-root "$KRATT_DATA/datasets/speech-commands" \
   --target-word marvin \
-  --output-dir /Users/mattias/kratt/wake-word/data/processed/experiments/speech_commands_marvin \
+  --ambient-dir /path/to/flat_ambient_wavs \
+  --output-dir "$KRATT_DATA/processed/experiments/speech_commands_marvin" \
   --force
 ```
 
@@ -52,7 +54,7 @@ What this does:
 
 - Creates `positive_samples/` from `marvin`
 - Creates `negative_samples/` from the other Speech Commands labels
-- Creates `ambient_samples/` from `_background_noise_`
+- Creates `ambient_samples/` from a separate flat ambient wav directory
 - Writes `manifest.json` so the exact experiment is documented
 
 Expected result:
@@ -60,6 +62,10 @@ Expected result:
 - About 2100 positive files
 - A deterministic negative subset
 - 6 ambient background tracks
+
+On HPC the current workflow expects the nested Speech Commands layout under
+`"$KRATT_DATA/datasets/speech-commands"` plus a separate flat ambient directory
+(for example a flattened MUSAN subset).
 
 What failure would mean:
 
@@ -91,7 +97,8 @@ Why it exists:
 
 Expected result:
 
-- A feature tree under `/Users/mattias/kratt/wake-word/training/features/<experiment>`
+- A feature tree under `"$KRATT_DATA/training/features/<experiment>"` on HPC
+- Or under `wake-word/training/features/<experiment>` locally
 - Non-empty `negative/validation_ambient/` and `negative/testing_ambient/`
 
 ## Step 3: Train and Export the Model
@@ -99,11 +106,19 @@ Expected result:
 Command:
 
 ```bash
-/Users/mattias/kratt/wake-word/training/scripts/train_microwakeword_experiment.sh \
+./wake-word/training/scripts/train_microwakeword_experiment.sh \
   --experiment-name microwakeword-sanity-marvin \
-  --positive-dir /Users/mattias/kratt/wake-word/data/processed/experiments/speech_commands_marvin/positive_samples \
-  --negative-dir /Users/mattias/kratt/wake-word/data/processed/experiments/speech_commands_marvin/negative_samples \
-  --ambient-dir /Users/mattias/kratt/wake-word/data/processed/experiments/speech_commands_marvin/ambient_samples
+  --positive-dir "$KRATT_DATA/processed/experiments/speech_commands_marvin/positive_samples" \
+  --negative-dir "$KRATT_DATA/processed/experiments/speech_commands_marvin/negative_samples" \
+  --ambient-dir "$KRATT_DATA/processed/experiments/speech_commands_marvin/ambient_samples"
+```
+
+Or submit the same flow to Slurm with the pinned TalTech account:
+
+```bash
+export KRATT_DATA=/gpfs/mariana/smbhome/$USER/kratt-data
+./wake-word/training/scripts/submit_hpc_smoke_run.sh \
+  --ambient-dir /path/to/flat_ambient_wavs
 ```
 
 What this does:
@@ -117,7 +132,8 @@ What this does:
 
 Expected result:
 
-- A new run directory under `/Users/mattias/kratt/wake-word/training/runs/`
+- A new run directory under `"$KRATT_DATA/training/runs/"` on HPC
+- Or under `wake-word/training/runs/` locally
 - A quantized model under `tflite_stream_state_internal_quant/`
 - A `tflite_streaming_roc.txt` file with several cutoffs and non-trivial FAPH
   values
@@ -135,9 +151,9 @@ What failure would mean:
 Files to inspect:
 
 - Training config:
-  `/Users/mattias/kratt/wake-word/training/configs/microwakeword-sanity-marvin.yaml`
+  `wake-word/training/configs/microwakeword-sanity-marvin.yaml`
 - Run directory:
-  `/Users/mattias/kratt/wake-word/training/runs/microwakeword-sanity-marvin-<timestamp>/`
+  `"$KRATT_DATA/training/runs/microwakeword-sanity-marvin-<timestamp>/"` on HPC
 - ROC summary:
   `.../tflite_stream_state_internal_quant/tflite_streaming_roc.txt`
 - Analysis outputs:

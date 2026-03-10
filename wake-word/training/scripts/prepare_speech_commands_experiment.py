@@ -17,16 +17,45 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 import shutil
 from pathlib import Path
+
+
+def default_source_root() -> str:
+    candidates: list[Path] = []
+    kratt_data = os.environ.get("KRATT_DATA")
+    if kratt_data:
+        data_root = Path(kratt_data).expanduser()
+        candidates.extend(
+            [
+                data_root / "datasets" / "speech-commands",
+                data_root / "datasets" / "speech_commands",
+            ]
+        )
+
+    root = project_root()
+    candidates.extend(
+        [
+            root / "wake-word" / "data" / "external" / "speech-commands",
+            root / "wake-word" / "data" / "external" / "speech_commands",
+            root / "wake-word" / "data" / "processed" / "speech_commands",
+        ]
+    )
+
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate)
+
+    return str(candidates[0])
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--source-root",
-        default="/Users/mattias/kratt/wake-word/data/processed/speech_commands",
+        default=default_source_root(),
         help="Root directory of the Speech Commands dataset.",
     )
     parser.add_argument(
@@ -38,6 +67,10 @@ def parse_args() -> argparse.Namespace:
         "--output-dir",
         required=True,
         help="Directory where the experiment dataset will be created.",
+    )
+    parser.add_argument(
+        "--ambient-dir",
+        help="Optional directory of ambient wav files. Overrides dataset-native ambient clips.",
     )
     parser.add_argument(
         "--negative-limit",
@@ -85,20 +118,48 @@ def materialize_files(files: list[Path], output_dir: Path, prefix: str, link_mod
         write_link(src.resolve(), dst, link_mode)
 
 
+def collect_split_layout(source_root: Path, target_word: str) -> tuple[list[Path], dict[str, list[Path]], dict[str, int]]:
+    split_counts: dict[str, int] = {}
+    positive_files: list[Path] = []
+    negative_by_label: dict[str, list[Path]] = {}
+
+    for split in ("train", "eval", "test"):
+        split_root = source_root / split
+        if not split_root.exists():
+            continue
+
+        target_dir = split_root / target_word
+        if target_dir.exists():
+            split_positive = list_wavs(target_dir)
+            positive_files.extend(split_positive)
+            split_counts[f"{split}_positive"] = len(split_positive)
+
+        for child in sorted(split_root.iterdir()):
+            if not child.is_dir():
+                continue
+            if child.name == target_word:
+                continue
+            negative_by_label.setdefault(child.name, []).extend(list_wavs(child))
+
+    if not positive_files:
+        raise SystemExit(f"Target word '{target_word}' not found under split layout: {source_root}")
+
+    return positive_files, negative_by_label, split_counts
+
+
 def main() -> None:
     args = parse_args()
 
     source_root = Path(args.source_root).expanduser().resolve()
     output_dir = Path(args.output_dir).expanduser().resolve()
-    target_dir = source_root / args.target_word
-    ambient_dir = source_root / "_background_noise_"
+    external_ambient_dir = (
+        Path(args.ambient_dir).expanduser().resolve() if args.ambient_dir else None
+    )
 
     if not source_root.exists():
         raise SystemExit(f"Speech Commands root not found: {source_root}")
-    if not target_dir.exists():
-        raise SystemExit(f"Target word folder not found: {target_dir}")
-    if not ambient_dir.exists():
-        raise SystemExit(f"Ambient folder not found: {ambient_dir}")
+    if external_ambient_dir is not None and not external_ambient_dir.exists():
+        raise SystemExit(f"Ambient dir not found: {external_ambient_dir}")
 
     if output_dir.exists():
         if not args.force:
@@ -107,16 +168,13 @@ def main() -> None:
             )
         shutil.rmtree(output_dir)
 
-    positive_files = list_wavs(target_dir)
-    ambient_files = list_wavs(ambient_dir)
+    if external_ambient_dir is None:
+        raise SystemExit("Ambient dir is required for the current Speech Commands workflow.")
 
-    negative_by_label: dict[str, list[Path]] = {}
-    for child in sorted(source_root.iterdir()):
-        if not child.is_dir():
-            continue
-        if child.name in {args.target_word, "_background_noise_"}:
-            continue
-        negative_by_label[child.name] = list_wavs(child)
+    positive_files, negative_by_label, split_counts = collect_split_layout(source_root, args.target_word)
+    ambient_files = list_wavs(external_ambient_dir)
+    if not ambient_files:
+        raise SystemExit(f"No ambient clips found in {external_ambient_dir}")
 
     negative_files: list[Path] = []
     for label in sorted(negative_by_label):
@@ -148,6 +206,7 @@ def main() -> None:
 
     manifest = {
         "source_root": str(source_root),
+        "dataset_layout": "split",
         "target_word": args.target_word,
         "positive_count": len(positive_files),
         "negative_count": len(negative_files),
@@ -156,6 +215,8 @@ def main() -> None:
         "negative_limit": args.negative_limit,
         "seed": args.seed,
         "link_mode": args.link_mode,
+        "ambient_source": str(external_ambient_dir),
+        "source_split_counts": split_counts,
     }
     (output_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n"

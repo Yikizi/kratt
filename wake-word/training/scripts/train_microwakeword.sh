@@ -1,34 +1,42 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="/Users/mattias/kratt"
+SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/kratt_paths.sh
+source "${SCRIPT_DIR}/lib/kratt_paths.sh"
 
-POS_DIR="${ROOT_DIR}/wake-word/data/processed/positive_samples"
-NEG_DIR="${ROOT_DIR}/wake-word/data/processed/negative_samples"
+ROOT_DIR="$(kratt_project_root)"
+PROCESSED_DIR="$(kratt_processed_dir)"
+FEATURES_BASE_DIR="$(kratt_training_features_dir)"
+RUNS_BASE_DIR="$(kratt_training_runs_dir)"
+CONFIGS_DIR="$(kratt_training_configs_dir)"
 
-FEATURES_DIR="${ROOT_DIR}/wake-word/training/features/microwakeword"
-TRAIN_DIR_BASE="${ROOT_DIR}/wake-word/training/runs/microwakeword-kratt"
-CFG_PATH="${ROOT_DIR}/wake-word/training/configs/microwakeword-kratt.yaml"
+POS_DIR="${PROCESSED_DIR}/positive_samples"
+NEG_DIR="${PROCESSED_DIR}/negative_samples"
 
-mkdir -p "${ROOT_DIR}/wake-word/training/configs"
-mkdir -p "${ROOT_DIR}/wake-word/training/features"
-mkdir -p "${ROOT_DIR}/wake-word/training/runs"
+FEATURES_DIR="${FEATURES_BASE_DIR}/microwakeword"
+TRAIN_DIR_BASE="${RUNS_BASE_DIR}/microwakeword-kratt"
+CFG_PATH="${CONFIGS_DIR}/microwakeword-kratt.yaml"
+
+mkdir -p "${CONFIGS_DIR}"
+mkdir -p "${FEATURES_BASE_DIR}"
+mkdir -p "${RUNS_BASE_DIR}"
 
 TRAIN_DIR="${TRAIN_DIR_BASE}-$(date +%Y%m%d-%H%M%S)"
 MMAP_STAMP_PATH="${FEATURES_DIR}/.dataset_stamp.txt"
 
 if [[ ! -d "${POS_DIR}" ]]; then
   echo "Missing positive samples: ${POS_DIR}" >&2
-  echo "Run: /Users/mattias/kratt/wake-word/.venv/bin/python /Users/mattias/kratt/wake-word/data/collection/prepare_processed_dataset.py" >&2
+  echo "Run: ${ROOT_DIR}/wake-word/.venv/bin/python ${ROOT_DIR}/wake-word/data/collection/prepare_processed_dataset.py" >&2
   exit 2
 fi
 if [[ ! -d "${NEG_DIR}" ]]; then
   echo "Missing negative samples: ${NEG_DIR}" >&2
-  echo "Run: /Users/mattias/kratt/wake-word/.venv/bin/python /Users/mattias/kratt/wake-word/data/collection/download_negatives.py --output-dir /Users/mattias/kratt/wake-word/data/processed" >&2
+  echo "Run: ${ROOT_DIR}/wake-word/.venv/bin/python ${ROOT_DIR}/wake-word/data/collection/download_negatives.py --output-dir ${PROCESSED_DIR}" >&2
   exit 2
 fi
 
-./wake-word/training/scripts/setup_microwakeword_env.sh
+"${SCRIPT_DIR}/setup_microwakeword_env.sh"
 # shellcheck disable=SC1091
 source "${ROOT_DIR}/wake-word/.venv-microwakeword/bin/activate"
 

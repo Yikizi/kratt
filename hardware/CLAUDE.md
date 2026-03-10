@@ -14,12 +14,12 @@ Siin on kood ja konfiguratsioonid wake word'i jooksutamiseks:
 hardware/
 ├── esp32/
 │   ├── esphome/
-│   │   ├── voice-satellite.yaml      # ESPHome config
+│   │   ├── voice-satellite-esp32-s3.yaml  # ESPHome config (ESP32-S3)
 │   │   ├── secrets.yaml.example      # Template
-│   │   └── kratt-microww.tflite      # Wake word mudel
+│   │   └── models/kratt.example.json # Example microWakeWord model manifest (points to a local .tflite)
 │   ├── firmware/                      # Custom firmware (if needed)
 │   └── schematics/
-│       └── wiring-diagram.md          # INMP441 connections
+│       └── wiring-diagram.md          # Audio wiring notes (board-specific)
 │
 └── raspberry-pi/
     ├── wyoming/
@@ -53,40 +53,26 @@ Latency:    200-500ms
 Accuracy:   ~95% (with good training data)
 ```
 
-### Wiring (INMP441 I2S Microphone)
-```
-INMP441          ESP32C3
--------          -------
-SCK      →       GPIO5 (I2S BCLK)
-WS       →       GPIO4 (I2S LRCLK)
-SD       →       GPIO6 (I2S DIN)
-L/R      →       GND (mono)
-VDD      →       3.3V
-GND      →       GND
-```
+### Wiring
+Vaata `esp32/schematics/wiring-diagram.md` ja kasuta enda ESP32-S3 mic board'i skeemi/pinouti.
 
 ### ESPHome Configuration
 ```yaml
-# esphome/voice-satellite.yaml
+# esphome/voice-satellite-esp32-s3.yaml
 micro_wake_word:
   models:
-    - model: /config/esphome/kratt-microww.tflite
-      probability_cutoff: 0.5  # Tune based on testing
-      sliding_window_average_size: 10
-
-  on_wake_word_detected:
-    - voice_assistant.start:
-        wake_word: "Kratt"
+    - model: okay_nabu
 ```
 
 ### Deployment
 ```bash
 # Flash from Mac
 cd ~/kratt/hardware/esp32/esphome
-esphome run voice-satellite.yaml
+./../../scripts/setup/install_esphome.sh
+./../../scripts/deployment/esphome_run.sh ./voice-satellite-esp32-s3.yaml
 
 # Monitor
-esphome logs voice-satellite.yaml
+./../../scripts/deployment/esphome_run.sh ./voice-satellite-esp32-s3.yaml
 ```
 
 ## 🍓 Raspberry Pi
@@ -198,7 +184,7 @@ Cost: ~€135-155
 ### ESP32
 ```bash
 # Check logs
-esphome logs voice-satellite.yaml
+./../../scripts/deployment/esphome_run.sh ./voice-satellite-esp32-s3.yaml
 
 # Common issues:
 # - WiFi not connecting: Check secrets.yaml
