@@ -69,6 +69,12 @@ Thumbs.db
 *.log
 logs/
 
+# ESP-IDF
+sdkconfig
+managed_components/
+dependencies.lock
+.cache/
+
 # ESPHome
 .esphome/
 **/.esphome/
