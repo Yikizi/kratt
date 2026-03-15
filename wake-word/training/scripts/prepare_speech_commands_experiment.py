@@ -23,6 +23,11 @@ import shutil
 from pathlib import Path
 
 
+def project_root() -> Path:
+    """Return the repository root (four levels up from this script)."""
+    return Path(__file__).resolve().parent.parent.parent.parent
+
+
 def default_source_root() -> str:
     candidates: list[Path] = []
     kratt_data = os.environ.get("KRATT_DATA")
