@@ -24,8 +24,18 @@ from pathlib import Path
 
 
 def project_root() -> Path:
-    """Return the repository root (four levels up from this script)."""
-    return Path(__file__).resolve().parent.parent.parent.parent
+    """Return the repository root via KRATT_ROOT or by walking up to .git."""
+    env = os.environ.get("KRATT_ROOT")
+    if env:
+        return Path(env).expanduser().resolve()
+    cur = Path(__file__).resolve().parent
+    for _ in range(10):
+        if (cur / ".git").exists():
+            return cur
+        if cur == cur.parent:
+            break
+        cur = cur.parent
+    raise SystemExit("Cannot find project root. Set KRATT_ROOT or run from inside the repo.")
 
 
 def default_source_root() -> str:
@@ -177,7 +187,7 @@ def main() -> None:
         raise SystemExit("Ambient dir is required for the current Speech Commands workflow.")
 
     positive_files, negative_by_label, split_counts = collect_split_layout(source_root, args.target_word)
-    ambient_files = list_wavs(external_ambient_dir)
+    ambient_files = sorted(external_ambient_dir.rglob("*.wav"))
     if not ambient_files:
         raise SystemExit(f"No ambient clips found in {external_ambient_dir}")
 
