@@ -35,7 +35,7 @@ CONVERTED=0
 SKIPPED=0
 ERRORS=0
 
-find "${CV_CLIPS}" -maxdepth 1 -name '*.mp3' -print0 | while IFS= read -r -d '' mp3; do
+find "${CV_CLIPS}" -maxdepth 1 -name '*.mp3' -print0 | while IFS= read -r -d '' mp3 || true; do
 
   base="$(basename "${mp3}" .mp3)"
   wav="${OUTPUT_DIR}/${base}.wav"
@@ -62,7 +62,7 @@ find "${CV_CLIPS}" -maxdepth 1 -name '*.mp3' -print0 | while IFS= read -r -d '' 
   if (( CONVERTED % 1000 == 0 )); then
     echo "  Converted: ${CONVERTED} (skipped: ${SKIPPED}, errors: ${ERRORS})"
   fi
-done
+done || true
 
 TOTAL=$(find "${OUTPUT_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')
 echo "Done. Total WAVs: ${TOTAL} (new: $((CONVERTED - SKIPPED)), skipped: ${SKIPPED}, errors: ${ERRORS})"
