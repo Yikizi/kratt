@@ -35,8 +35,7 @@ CONVERTED=0
 SKIPPED=0
 ERRORS=0
 
-for mp3 in "${CV_CLIPS}"/*.mp3; do
-  [[ -f "${mp3}" ]] || continue
+find "${CV_CLIPS}" -maxdepth 1 -name '*.mp3' -print0 | while IFS= read -r -d '' mp3; do
 
   base="$(basename "${mp3}" .mp3)"
   wav="${OUTPUT_DIR}/${base}.wav"
