@@ -3,25 +3,19 @@ name = "kratt-wake-word"
 version = "0.1.0"
 description = "Wake word training and evaluation tooling for Kratt."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.13"
 dependencies = [
   "sounddevice>=0.4.6",
   "soundfile>=0.12.1",
   "librosa>=0.10.0",
   "numpy>=1.24.0",
   "scipy>=1.11.0",
-  "tensorflow>=2.15.0",
-  "tensorflow-io>=0.36.0",
   "scikit-learn>=1.3.0",
   "matplotlib>=3.8.0",
   "seaborn>=0.13.0",
   "tqdm>=4.66.0",
   "pyyaml>=6.0",
   "python-dotenv>=1.0.0",
-  "onnx>=1.15.0",
-  "onnxruntime>=1.16.0",
-  "tflite-runtime>=2.14.0",
-  "tensorflow-model-optimization>=0.7.5",
 ]
 
 [project.optional-dependencies]
@@ -40,6 +34,18 @@ openwakeword = [
 augmentation = [
   "audiomentations>=0.32.0",
   "pyroomacoustics>=0.7.3",
+]
+live-test = [
+  "sounddevice>=0.4.6",
+  "numpy>=1.24.0",
+  "tensorflow>=2.15.0",
+]
+training = [
+  "tensorflow>=2.15.0",
+  "tensorflow-io>=0.36.0",
+  "tensorflow-model-optimization>=0.7.5",
+  "onnx>=1.15.0",
+  "onnxruntime>=1.16.0",
 ]
 
 [tool.uv]
