@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# DESC: Compare models on identical test sets with colored output
+# USAGE: kratt compare [v1 v6 v7...] [-t threshold]
+# ARGS: v1,v6,v7...   Model versions to compare. Empty = all models.
+# ARGS: -t N           Primary threshold (default: 0.9)
+# ARGS: --csv PATH     Save detailed CSV
+# EXAMPLES: kratt compare v6 v7
+# EXAMPLES: kratt compare v1 v6 v7 -t 0.95
+# EXAMPLES: kratt compare                   # all models
+set -euo pipefail
+
+cd "${KRATT_WW}"
+exec .venv-microwakeword/bin/python evaluation/compare_models.py "$@"

@@ -1,0 +1,24 @@
+Mootmise illusioon: Klipp vs. Pidev voog
+
+Sf Af A Sf VA Aratuss6na hindamine ainult
+Klipp-hindamine lWhikeste, valjaldigatud
+(Illusioon) audioklippide peal naitas
+esialgu haid tulemusi.
+
+False Accept
+
+Praktikas kuulab mikrofon
+tunde vaikust ja taustamura
+(streaming ambient). Kui
+mudelit ei hinnata pideva voo
+peal, on tulemuseks massiline
+ulevallandumine.
+
+Pidev voog
+(Reaalsus)
+
+| Insight: Wake word'i usaldusvaarsus sdltub sama palju hindamismetoodikast
+
+kui mudelist endast. Sal
+
+A\ NotebookLM

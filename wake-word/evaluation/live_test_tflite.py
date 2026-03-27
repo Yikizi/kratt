@@ -9,6 +9,7 @@ Press Ctrl+C to stop.
 
 import argparse
 import sys
+from pathlib import Path
 import numpy as np
 
 try:
@@ -30,7 +31,11 @@ def main():
     parser.add_argument("--sample-rate", type=int, default=16000)
     parser.add_argument("--frame-ms", type=int, default=10, help="Frame size in ms (match model step_ms)")
     parser.add_argument("--cooldown", type=float, default=2.0, help="Seconds to suppress after a detection")
+    parser.add_argument("--name", default=None, help="Wake word name for display (auto-detected from model path)")
     args = parser.parse_args()
+
+    if args.name is None:
+        args.name = Path(args.model).stem.replace("_", " ")
 
     try:
         import sounddevice as sd
@@ -75,7 +80,7 @@ def main():
     for i, detail in enumerate(input_details):
         interpreter.set_tensor(detail['index'], np.zeros(detail['shape'], dtype=detail['dtype']))
 
-    print(f"Listening... say 'marvin'! (threshold={args.threshold})")
+    print(f"Listening... say {args.name}! (threshold={args.threshold})")
     print("=" * 50)
 
     import time
@@ -83,6 +88,8 @@ def main():
     audio_buffer = bytearray()
     detection_count = 0
     last_detection_time = 0.0
+    frame_count = 0
+    warmup_frames = 50  # ignore first ~0.5s while model state stabilizes
 
     def audio_callback(indata, frames, time_info, status):
         nonlocal audio_buffer
@@ -118,13 +125,18 @@ def main():
 
                     interpreter.set_tensor(input_details[audio_input_idx]['index'], features)
                     interpreter.invoke()
+                    frame_count += 1
+
+                    # Skip warmup period (model internal state needs to stabilize)
+                    if frame_count <= warmup_frames:
+                        continue
 
                     # Get probability output and dequantize
                     output = interpreter.get_tensor(output_details[0]['index'])
                     out_dtype = output_details[0]['dtype']
                     if out_dtype in (np.int8, np.uint8):
                         scale, zero_point = output_details[0]['quantization']
-                        prob_val = float((output.astype(np.float32) - zero_point) * scale)
+                        prob_val = float(((output.astype(np.float32) - zero_point) * scale).flat[0])
                     else:
                         prob_val = float(output.flatten()[0])
 
@@ -134,10 +146,7 @@ def main():
                     if prob_val > args.threshold and not in_cooldown:
                         detection_count += 1
                         last_detection_time = now
-                        print(f"  >>> DETECTED 'marvin'! (prob={prob_val:.3f}, count={detection_count}) <<<")
-                        # Reset model state to avoid retriggering
-                        for i, detail in enumerate(input_details):
-                            interpreter.set_tensor(detail['index'], np.zeros(detail['shape'], dtype=detail['dtype']))
+                        print(f"  >>> DETECTED {args.name}! (prob={prob_val:.3f}, count={detection_count}) <<<")
                     elif prob_val > 0.1 and not in_cooldown:
                         bar = "█" * int(prob_val * 30)
                         print(f"  {prob_val:.3f} {bar}", end="\r")

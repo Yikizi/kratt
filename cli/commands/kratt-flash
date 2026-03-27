@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# DESC: Compile ESPHome + flash wake word model to KORVO-2
+# USAGE: kratt flash [version] [--cutoff N] [--port PATH]
+# ARGS: version      Model version. Default: latest.
+# ARGS: --cutoff N   Probability cutoff 0.0-1.0. Updates kratt.json.
+# ARGS: --port PATH  Serial port. Default: auto-detect.
+# EXAMPLES: kratt flash v7
+# EXAMPLES: kratt flash v7 --cutoff 0.9
+# EXAMPLES: kratt flash v6 --port /dev/cu.usbserial-140
+set -euo pipefail
+
+VERSION="${1:-}"
+CUTOFF=""
+PORT=""
+
+shift || true
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --cutoff) CUTOFF="$2"; shift 2 ;;
+    --port)   PORT="$2";   shift 2 ;;
+    *)        echo "Unknown: $1"; exit 1 ;;
+  esac
+done
+
+if [[ -z "$VERSION" ]]; then
+  VERSION=$(ls -d "${KRATT_WW}/models/kuule-kratt-v"* 2>/dev/null | sort -V | tail -1 | grep -o 'v[0-9]*')
+  echo "Using latest: $VERSION"
+fi
+
+MODEL="${KRATT_WW}/models/kuule-kratt-${VERSION}/kuule_kratt_${VERSION}.tflite"
+if [[ ! -f "$MODEL" ]]; then
+  echo "Model not found: $MODEL"
+  exit 1
+fi
+
+ESPHOME_DIR="${KRATT_ROOT}/hardware/esp32/esphome"
+cp "$MODEL" "${ESPHOME_DIR}/models/kratt.tflite"
+echo "Copied ${VERSION} model to ESPHome"
+
+if [[ -n "$CUTOFF" ]]; then
+  python3 -c "
+import json
+p = '${ESPHOME_DIR}/models/kratt.json'
+d = json.loads(open(p).read())
+d['micro']['probability_cutoff'] = $CUTOFF
+open(p, 'w').write(json.dumps(d, indent=2) + '\n')
+print(f'Cutoff set to $CUTOFF')
+"
+fi
+
+if [[ -z "$PORT" ]]; then
+  PORT=$(ls /dev/cu.usbserial-* 2>/dev/null | head -1)
+  if [[ -z "$PORT" ]]; then
+    echo "No USB serial device found. Connect KORVO-2 and retry."
+    exit 1
+  fi
+fi
+echo "Port: $PORT"
+
+echo "Compiling..."
+(cd "$ESPHOME_DIR" && esphome compile voice-satellite-esp32-s3-korvo2.yaml) || exit 1
+
+FIRMWARE="${ESPHOME_DIR}/.esphome/build/kratt-korvo2/.pioenvs/kratt-korvo2/firmware.factory.bin"
+echo "Flashing..."
+if command -v idf.py &>/dev/null; then
+  idf.py -p "$PORT" -b 460800 flash --flash_files "$FIRMWARE" 2>/dev/null \
+    || python3.12 -m esptool --port "$PORT" --chip esp32s3 --baud 460800 write_flash 0x0 "$FIRMWARE"
+else
+  python3.12 -m esptool --port "$PORT" --chip esp32s3 --baud 460800 write_flash 0x0 "$FIRMWARE"
+fi
+
+echo ""
+echo "Flashed ${VERSION} to KORVO-2 via ${PORT}"

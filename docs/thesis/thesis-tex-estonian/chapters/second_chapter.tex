@@ -42,3 +42,124 @@ Kirjutamise hetkeks on olemas:
 \end{itemize}
 
 Lõplikku tulemuste peatükki lisatakse hiljem koondtabelid valitud threshold'ide, \texttt{FRR}, \texttt{FAPH} ja seadmetestide kohta. Praeguses etapis on põhjendatud väita, et toru tehniline valideerimine avaliku andmestiku peal on õnnestunud.
+
+\section{Eestikeelse äratussõna eksperimendid}
+
+Pärast toru valideerimist liiguti eestikeelse äratussõna \enquote{Kuule Kratt} treenimise juurde. Positiivsed näited pärinesid ühelt kõnelejalt, kes salvestas 1076 klippi (661~mic1 + 415~mic2) ESP32-S3-Korvo-2 arendusplaadil. Negatiivsed näited pärinesid Common~Voice eestikeelsest korpusest ja ambient-andmed MUSAN mürakorpusest. Kõik mudelid treeniti \texttt{microWakeWord} raamistikuga, kasutades 10\,000 treeningusammu.
+
+\subsection{Mudeliversioonid}
+
+Treeniti kuus järjestikust mudeliversiooni, mille andmestikud erinesid (tabel~\ref{tab:model-versions}).
+
+\begin{table}[H]
+\centering
+\caption{Mudeliversioonide andmestiku koosseis. K-2 = Korvo-2 sama-seadme andmed, TTS = Neurokõne sünteetiline kõne.}
+\label{tab:model-versions}
+\begin{tabular}{l r r r r r r}
+\hline
+\textbf{Ver.} & \textbf{Pos.} & \textbf{Pos. TTS} & \textbf{Neg CV} & \textbf{Neg K-2} & \textbf{Neg TTS} & \textbf{Neg kokku} \\
+\hline
+v1 & 915 & --- & 3928 & 0 & 0 & 3928 \\
+v3 & 915 & --- & 3928 & 109 & 0 & 4037 \\
+v4 & 915 & --- & 3928 & 1311 & 0 & 5239 \\
+v5 & 915 & 1560 & 3928 & 1311 & 1644 & 6883 \\
+v6 & 915 & 1560 & 3928 & 4656 & 1644 & 10228 \\
+\hline
+\end{tabular}
+\end{table}
+
+Versiooni v1 ja v2 andmestik oli identne; v2 erines ainult heli eeltöötluse poolest (vaikuse trimmimine klippide algusest ja lõpust). Kõik versioonid kasutasid sama treeningukonfiguratsiooni: \texttt{negative\_class\_weight\,=\,20}, \texttt{negative\_sampling\_weight\,=\,10}, \texttt{positive\_sampling\_weight\,=\,2}. Versioonidest v3 alates kasutati lisaks MUSAN-ile ka 6,0 tundi Korvo-2 ambient-salvestust.
+
+Korvo-2 negatiivsed pärinesid kahest salvestussessioonist. Esimene sessioon sisaldas 14 minutit tahtlikku kõnet ja 6,2 tundi taustahelisid, millest Silero VAD tuvastas kokku 1311 kõnesegmenti. Teine sessioon oli 2,8-tunnine pidev kõnesalvestus, mis lõigati 3-sekundilisteks tükkideks (3345 klippi).
+
+Versioonidest v5 alates lisati kaks täiendavat andmeallikat. Positiivsete hulka lisati 1560 Neurokõne TTS-iga sünteesitud \enquote{Kuule Kratt} klippi 12 eesti kõnelejaga. Negatiivsete hulka lisati 1644 TTS-iga sünteesitud \emph{hard negative} klippi --- fraase, mis sisaldavad sõna \enquote{Kratt}, kuid ei ole äratussõna: \enquote{Hei Kratt}, \enquote{Tere Kratt}, \enquote{Kratt} üksikult, \enquote{Kratt kuule} jm. Nende eesmärk oli sundida mudelit eristama täpset fraasi \enquote{Kuule Kratt} lähisugulastest.
+
+\subsection{Esialgne eksitav tulemus}
+
+Esialgne v3 tulemus näis katastroofiline: klipi-taseme valepositiivsete määr (FPR) tõusis v1 66,4\%-lt 94,0\%-le. Kuid selle võrdluse aluseks olnud hindamiskomplektid erinesid. V1 negatiivne testikomplekt sisaldas ainult Common~Voice klippe, v3 oma aga ka Korvo-2 negatiivseid. Ambient-hindamine toimus v1 puhul 6,2 tunni ja v3 puhul 12,2 tunni heli peal.
+
+See kogemus viis olulise metoodilise järelduseni: \textbf{mudeliversioone tohib võrrelda ainult identsete hindamiskomplektide peal}. Vastasel juhul võib andmestiku koosseisu muutus maskeerida tegelikku mudeli käitumise muutust.
+
+\subsection{Õiglane võrdlus identsete hindamiskomplektidega}
+
+Mõõtmise korrektsuse tagamiseks skooriti v1 ja v3 mudelid samade positiivsete (250~mic1, 250~mic2), Common~Voice negatiivsete (250 klippi) ja Korvo-2 negatiivsete (109 klippi) peal. Tulemused on esitatud tabelis~\ref{tab:fair-comparison}.
+
+\begin{table}[H]
+\centering
+\caption{V1 ja v3 mudelite õiglane võrdlus identsete hindamiskomplektidega (cutoff\,=\,0,99).}
+\label{tab:fair-comparison}
+\begin{tabular}{l r r l}
+\hline
+\textbf{Testikomplekt} & \textbf{v1} & \textbf{v3} & \textbf{Mõõdik} \\
+\hline
+Positiivsed (mic1) & 92,8\% & 98,8\% & Recall \\
+Positiivsed (mic2) & 94,8\% & 98,0\% & Recall \\
+Negatiivsed (CV) & 8,0\% & 98,0\% & FPR \\
+Negatiivsed (Korvo-2) & 13,8\% & 24,8\% & FPR \\
+\hline
+\end{tabular}
+\end{table}
+
+Tabelist ilmneb, et v3 recall paranes (+6\%), kuid Common~Voice negatiivsete FPR tõusis 8\%-lt 98\%-le. See tähendab, et v3 mudel annab peaaegu igale sisendile kõrge aktivatsiooniskoori. Mudel ei ole mitte täpsem, vaid ülevallandunud: ta aktiveerub liiga kergesti.
+
+\subsection{Degradatsiooni org}
+
+See tulemus on kooskõlas Park~et~al. \cite{park2024adversarial} leiuga, mille kohaselt tekib KWS mudelites \emph{degradatsiooni org} (\emph{valley of degradation}): kui domeeni\-siseste andmete osakaal jääb vahemikku 2--10\% koguandmestikust, halveneb mudeli kvaliteet võrreldes nii puhta domeenivälise kui ka piisavalt suure domeenisisese andmehulgaga.
+
+Versiooni v3 Korvo-2 negatiivsete osakaal oli 2,7\%{} --- täpselt degradatsiooni orgu langev vahemik. Mudel nägi negatiivses klassis kahte akustiliselt erinevat klastrit (Common~Voice ja Korvo-2), kuid 109 sama-seadme näitest ei piisanud stabiilse otsustuspiiri õppimiseks. Versiooni v4 jaoks suurendati Korvo-2 negatiivsete hulka 1311~klipile (25\% osakaal), mis Park~et~al. tulemuste põhjal peaks jääma juba degradatsiooni orust välja.
+
+\subsection{Iteratiivne paranemine: v4 kuni v6}
+
+Tabel~\ref{tab:full-comparison} esitab kõigi mudeliversioonide õiglase võrdluse identsete hindamiskomplektide peal (cutoff\,=\,0,99).
+
+\begin{table}[H]
+\centering
+\caption{Mudeliversioonide õiglane võrdlus identsete hindamiskomplektidega (cutoff\,=\,0,99). Parim tulemus igas reas on \textbf{paksus kirjas}.}
+\label{tab:full-comparison}
+\begin{tabular}{l l r r r r r}
+\hline
+\textbf{Testikomplekt} & \textbf{Mõõdik} & \textbf{v1} & \textbf{v3} & \textbf{v4} & \textbf{v5} & \textbf{v6} \\
+\hline
+Pos. (mic1) & Recall & 92,8 & 98,8 & 100,0 & 99,6 & \textbf{99,6} \\
+Pos. (mic2) & Recall & 94,8 & 98,0 & 100,0 & 100,0 & \textbf{100,0} \\
+Neg. (CV) & FPR $\downarrow$ & 8,0 & 98,0 & 36,8 & 41,6 & \textbf{0,4} \\
+Neg. (Korvo-2) & FPR $\downarrow$ & 13,8 & 24,8 & 7,3 & 1,8 & \textbf{0,9} \\
+\hline
+\end{tabular}
+\end{table}
+
+Tabelist ilmneb selge iteratiivne paranemine:
+
+\begin{itemize}
+    \item \textbf{v3} (109 sama-seadme negatiivset, 2,7\% osakaal) --- degradatsiooni org. CV FPR tõusis 8\%-lt 98\%-le, mudel ülevallandus.
+    \item \textbf{v4} (1311 sama-seadme negatiivset, 25\%) --- osaline paranemine. Korvo-2 FPR langes 7,3\%-le, kuid CV FPR jäi kõrgeks (36,8\%).
+    \item \textbf{v5} (lisatud TTS positiivsed ja hard negatiivsed) --- Korvo-2 FPR langes 1,8\%-le. Hard negatiivsed (\enquote{Hei Kratt}, \enquote{Tere Kratt} jm) sundisid mudelit eristama täpset fraasi.
+    \item \textbf{v6} (lisatud 3345 teise sessiooni sama-seadme negatiivset) --- läbimurre. Kõik mõõdikud on paremad kui baastasemel v1: recall 99,6--100\%, CV FPR 0,4\%, Korvo-2 FPR 0,9\%.
+\end{itemize}
+
+\subsection{Ristmikrofoni testimine (H2)}
+
+Hüpotees H2 väitis, et kui mudel õpib foneetilise sisu tunnuseid, peaks ta generaliseeruma erinevatele mikrofonidele. Selle kontrollimiseks testiti v6 mudelit reaalajas MacBook~Pro sülearvuti sisemikrofoniga, mis on treeningandmetest täiesti erinev seade nii mikrofoni tüübi, sageduskarakteristiku kui ka ruumiakustika poolest.
+
+Testimise käigus ilmnes, et mudel:
+\begin{itemize}
+    \item tuvastas \enquote{Kuule Kratt} usaldusväärselt erinevate hääldusvariatsioonidega;
+    \item ei vallandunud vaikuse, taustamüra ega üksiku sõna \enquote{kuule} või \enquote{kratt} peale;
+    \item ei vallandunud sarnaste fraaside peale nagu \enquote{Hei Kratt} või \enquote{Tere Kratt}.
+\end{itemize}
+
+See tulemus andis esialgse kinnituse hüpoteesile H2: mudel on õppinud äratussõna foneetilist struktuuri ja suudab seda tuvastada treeningandmetest erineval seadmel.
+
+\subsection{Ristmikrofoni generaliseerumise asümmeetria}
+
+Pikema reaalajas testimise käigus ilmnes aga oluline nüanss. Kui v6 mudelit jooksutati MacBook~Pro mikrofoni peal 40-minutilise tavakõne ajal (kus äratussõna kordagi ei öeldud), registreeriti umbes 50 valevallandumist tunnis (FAPH~$\approx$~50). Samas tuvastas mudel päris äratussõna ütlusi usaldusväärselt.
+
+See tulemus viitab \textbf{generaliseerumise asümmeetriale}:
+\begin{itemize}
+    \item \textbf{Recall generaliseerub}: mudel tunneb \enquote{Kuule Kratt} foneetilise struktuuri ära sõltumata mikrofonist. Positiivne tuvastus toimib ristseadmel.
+    \item \textbf{FPR ei generaliseeru}: mudel ei oska tõrjuda MacBooki mikrofoni kaudu kuuldavat tavakõnet, sest negatiivne treeningmaterjal pärineb teisest akustilisest domeenist (Korvo-2 ja Common~Voice).
+\end{itemize}
+
+See leid on kooskõlas H1 tulemustega: sama-seadme negatiivsed parandasid KORVO-2 FPR-i dramaatiliselt (13,8\%~$\rightarrow$~0,9\%), sest mudel õppis tõrjuma spetsiifiliselt selle mikrofoni tavakõnet. MacBooki mikrofon on aga kolmas domeen, mille negatiivseid mudel pole näinud.
+
+Praktilisest seisukohast ei ole see kriitiline puudus, sest lõppseade on ESP32-S3-Korvo-2, mitte sülearvuti. Kuid teaduslikult on tegemist olulise tähelepanekuga: \textbf{sisutunnuste õppimine on piisav positiivseks tuvastuseks ristseadmel, kuid valepositiivsete tõrjumine nõuab domeenispetsiifilist negatiivset treeningmaterjali}. See täpsustab hüpoteesi H2 ja annab selge suunise tulevasteks arendusteks: iga uue sihtseadme puhul tuleb lisada vastav negatiivne treeningmaterjal.

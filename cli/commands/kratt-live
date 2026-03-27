@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# DESC: Live wake word test with MacBook microphone
+# USAGE: kratt live [version] [threshold]
+# ARGS: version     Model version (v1, v6, v7...). Default: latest.
+# ARGS: threshold   Detection threshold 0.0-1.0. Default: 0.9.
+# EXAMPLES: kratt live v7
+# EXAMPLES: kratt live v7 0.85
+# EXAMPLES: kratt live           # uses latest model
+set -euo pipefail
+
+VERSION="${1:-}"
+THRESHOLD="${2:-0.9}"
+
+if [[ -z "$VERSION" ]]; then
+  VERSION=$(ls -d "${KRATT_WW}/models/kuule-kratt-v"* 2>/dev/null | sort -V | tail -1 | grep -o 'v[0-9]*')
+  echo "Using latest: $VERSION"
+fi
+
+MODEL="${KRATT_WW}/models/kuule-kratt-${VERSION}/kuule_kratt_${VERSION}.tflite"
+
+if [[ ! -f "$MODEL" ]]; then
+  echo "Model not found: $MODEL"
+  echo "Available:" && kratt models
+  exit 1
+fi
+
+echo "Model: $VERSION ($(du -h "$MODEL" | cut -f1)), threshold: $THRESHOLD"
+exec "${KRATT_WW}/.venv-microwakeword/bin/python" \
+  "${KRATT_WW}/evaluation/live_test_tflite.py" \
+  --model "$MODEL" --threshold "$THRESHOLD" --name "kuule kratt $VERSION"

@@ -1,0 +1,26 @@
+% research-questions.tex
+% Uurimisküsimused ja hüpoteesid -- Chapter 1 (Sissejuhatus) või Chapter 3 (Metoodika)
+
+\subsection{Uurimisküsimused}
+\label{sec:research-questions}
+
+Käesolev töö keskendub äratussõna mudelite treenimisele piiratud andmestikuga, kus positiivsed näited pärinevad ühelt kõnelejalt.
+Varasemad uurimused on näidanud, et treeningandmete domeeninihe --- näiteks erinevused salvestusseadmete, mürakeskkondade ja kõnelejate vahel --- halvendab oluliselt märksõnatuvastuse (KWS) täpsust~\cite{park2024adversarial, xiao2025adakws, liu2025noisekws}.
+Samas puuduvad empiirilised tulemused konkreetselt ühe kõneleja äratussõna stsenaariumi kohta, kus seadmedomeeni mõju on potentsiaalselt veelgi suurem.
+Selle lünga täitmiseks püstitame kaks hüpoteesi, mida eksperimentaalselt kontrollime.
+
+\begin{enumerate}
+
+  \item \textbf{H1: Sama seadme negatiivsed treeningandmed parandavad ühe-kõneleja äratussõna mudeli eristusvõimet.}
+
+  Kui positiivsed ja negatiivsed treeningandmed pärinevad samalt salvestusseadmelt, ei saa mudel kasutada seadme- ega kanalipõhiseid tunnuseid otseteena ning peab õppima kõne sisulisi tunnuseid.
+  Seda kontrollime, treenides mudeli v3 samast seadmest pärinevate negatiivsetega ning võrreldes klipi\-taseme valepositiivsete määra (FPR) ja valepositiivsete arvu tunnis (FAPH) varasemate mudelitega v1/v2, mis kasutasid Common Voice'i negatiivseid näiteid teistest seadmetest.
+  Hüpotees tugineb domeeniadaptatsiooni kirjandusele~\cite{park2024adversarial, xiao2025adakws, liu2025noisekws}, kuid seda pole varem konkreetselt ühe kõneleja KWS kontekstis tõestatud.
+
+  \item \textbf{H2: Kõne sisul põhinevaid tunnuseid õppinud mudel generaliseerub erinevatele mikrofonidele.}
+
+  Kui mudel on õppinud foneetilise sisu tunnuseid (mitte seadmepõhiseid karakteristikuid), peaks see töötama suvalisel mikrofoni\-l.
+  Seda kontrollime, testides sama-seadme-negatiividega treenitud mudelit täiesti erinevalt mikrofonilt (nt sülearvuti mikrofon, telefoni mikrofon) pärinevate salvestustega.
+  Hüpotees tugineb domeeniinvariantsete tunnuste õppimise teooriale~\cite{liu2025noisekws, kim2024ttskws, zhang2025graphemeaug}, kuid seda pole spetsiifiliselt KWS ühe kõneleja stsenaariumis testitud.
+
+\end{enumerate}

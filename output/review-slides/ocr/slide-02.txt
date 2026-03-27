@@ -1,0 +1,23 @@
+Lunk lokaalses haaljuh' haaljuhtimises
+
+Pilvep6hised lahendused ei sobi privaatsusnéudega kasutusjuhtudesse. Lokaalse
+haaljuhtimise arhitektuur on Home Assistantis olemas, kuid eestikeelne aratussona
+
+(wake word) puudub.
+
+Pilvepohine arhitektuur ———| Lokaalne Home Assistant jo
+
+Puuduv lili: Eestikeelne padastik
+
+Haaltu }) [ kasu- }) | tege. LL
+
+vastus W t6oo-- =>
+
+(STT) | ie } | vused
+
+Privaatsusrisk
+
+Vaide: Lokaalne aratussona “Kuule Kratt” on teostatav ressursipiiratud
+ESP32-klassi seadmel, kasutades avatud lahtekoodiga tarkvara.
+
+A) NotebookLM

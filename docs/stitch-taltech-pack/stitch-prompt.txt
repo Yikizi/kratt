@@ -1,0 +1,3 @@
+Design in TalTech visual style.
+Use the provided TalTech logo, the supplied brand gradient, TalTech-inspired photo backgrounds, and a color system based on deep navy, vivid magenta, muted lavender, and light gray.
+Keep layouts clean, modern, bold, and presentation-like rather than playful.

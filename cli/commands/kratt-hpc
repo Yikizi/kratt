@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# DESC: HPC job status, logs and model download
+# USAGE: kratt hpc <subcommand> [args...]
+# ARGS: status              Show recent jobs (last 7 days)
+# ARGS: log <job-id|tag>    View training log (tail)
+# ARGS: download <tag>      Download model + analysis from HPC
+# EXAMPLES: kratt hpc status
+# EXAMPLES: kratt hpc log 916309
+# EXAMPLES: kratt hpc log v7
+# EXAMPLES: kratt hpc download v7
+set -euo pipefail
+
+SUB="${1:-status}"
+shift || true
+
+case "$SUB" in
+  status)
+    ssh malinh@base.hpc.taltech.ee "sacct -u malinh --format=JobID%12,JobName%30,State%12,Elapsed,MaxRSS --starttime=$(date -v-7d +%Y-%m-%d 2>/dev/null || date -d '7 days ago' +%Y-%m-%d) 2>/dev/null" | grep -v "^$"
+    ;;
+  log)
+    TARGET="${1:?Usage: kratt hpc log <job-id or tag>}"
+    if [[ "$TARGET" =~ ^[0-9]+$ ]]; then
+      ssh malinh@base.hpc.taltech.ee "cat /gpfs/mariana/smbhome/malinh/kratt-data/training/runs/logs/kratt-kuule-kratt-*-${TARGET}.out 2>/dev/null || echo 'Log not found for job ${TARGET}'"
+    else
+      ssh malinh@base.hpc.taltech.ee "cat /gpfs/mariana/smbhome/malinh/kratt-data/training/runs/logs/kratt-kuule-kratt-${TARGET}-*.out 2>/dev/null | tail -40 || echo 'Log not found for tag ${TARGET}'"
+    fi
+    ;;
+  download)
+    TAG="${1:?Usage: kratt hpc download <tag>}"
+    RUN=$(ssh malinh@base.hpc.taltech.ee "ls -d /gpfs/mariana/smbhome/malinh/kratt-data/training/runs/microwakeword-kuule-kratt-${TAG}-* 2>/dev/null | tail -1")
+    if [[ -z "$RUN" ]]; then echo "Run not found for tag ${TAG}"; exit 1; fi
+    LOCAL="${KRATT_WW}/models/kuule-kratt-${TAG}"
+    mkdir -p "${LOCAL}/analysis"
+    scp "malinh@base.hpc.taltech.ee:${RUN}/analysis/*" "${LOCAL}/analysis/"
+    scp "malinh@base.hpc.taltech.ee:${RUN}/tflite_stream_state_internal_quant/stream_state_internal_quant.tflite" "${LOCAL}/kuule_kratt_${TAG}.tflite"
+    echo "Downloaded to ${LOCAL}"
+    ;;
+  *)
+    echo "Unknown subcommand: $SUB"
+    echo "Usage: kratt hpc status|log|download"
+    exit 1
+    ;;
+esac

@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+# kratt - CLI gateway for the Kratt wake word project
+# Usage: kratt <command> [args...]
+# Run 'kratt help' or 'kratt -h' for available commands.
+
+set -euo pipefail
+
+KRATT_ROOT="$(cd "$(dirname "$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")")/.." && pwd)"
+KRATT_CLI_DIR="${KRATT_ROOT}/cli/commands"
+KRATT_WW="${KRATT_ROOT}/wake-word"
+
+export KRATT_ROOT KRATT_WW
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+_header() { echo -e "${BOLD}${CYAN}kratt${NC} $*"; }
+_ok()     { echo -e "${GREEN}✓${NC} $*"; }
+_warn()   { echo -e "${YELLOW}!${NC} $*"; }
+_err()    { echo -e "${RED}✗${NC} $*" >&2; }
+
+# Discover all available commands from cli/commands/
+_list_commands() {
+  local cmds=()
+  if [[ -d "${KRATT_CLI_DIR}" ]]; then
+    for f in "${KRATT_CLI_DIR}"/kratt-*; do
+      [[ -x "$f" ]] || continue
+      local name="${f##*/kratt-}"
+      local desc=""
+      desc=$(grep -m1 '^# DESC:' "$f" 2>/dev/null | sed 's/^# DESC: *//' || echo "")
+      cmds+=("$(printf "  ${BOLD}%-14s${NC} %s" "$name" "$desc")")
+    done
+  fi
+  printf '%s\n' "${cmds[@]}"
+}
+
+_help() {
+  echo -e "${BOLD}${CYAN}kratt${NC} - Estonian wake word development CLI"
+  echo ""
+  echo -e "${BOLD}USAGE${NC}"
+  echo "  kratt <command> [args...]"
+  echo ""
+  echo -e "${BOLD}COMMANDS${NC}"
+  _list_commands
+  echo ""
+  echo -e "${BOLD}EXAMPLES${NC}"
+  echo "  kratt live v7              # Live test v7 model on MacBook mic"
+  echo "  kratt live v7 0.85         # Custom threshold"
+  echo "  kratt compare v1 v6 v7    # Fair comparison on identical test sets"
+  echo "  kratt train v8             # Submit training to HPC"
+  echo "  kratt flash v7             # Compile + flash ESP32"
+  echo "  kratt hpc status           # Check running HPC jobs"
+  echo "  kratt tts list             # Show available TTS data"
+  echo "  kratt models               # List all trained models"
+  echo ""
+  echo -e "${BOLD}ADDING COMMANDS${NC}"
+  echo "  Drop an executable 'kratt-<name>' into cli/commands/"
+  echo "  Add '# DESC: one line description' as first comment."
+  echo "  It will appear in this help automatically."
+}
+
+# Extract and display help from a command script.
+_show_command_help() {
+  local script="$1"
+  local name="${script##*/kratt-}"
+
+  echo -e "${BOLD}${CYAN}kratt ${name}${NC} - $(grep -m1 '^# DESC:' "$script" 2>/dev/null | sed 's/^# DESC: *//')"
+  echo ""
+
+  local has_usage="" has_args="" has_examples=""
+
+  # USAGE
+  local usage_line
+  usage_line=$(grep -m1 '^# USAGE:' "$script" 2>/dev/null | sed 's/^# USAGE: *//')
+  if [[ -n "$usage_line" ]]; then
+    echo -e "${BOLD}USAGE${NC}"
+    echo "  $usage_line"
+    echo ""
+  fi
+
+  # ARGS
+  local args_lines
+  args_lines=$(grep '^# ARGS:' "$script" 2>/dev/null | sed 's/^# ARGS: *//')
+  if [[ -n "$args_lines" ]]; then
+    echo -e "${BOLD}ARGUMENTS${NC}"
+    while IFS= read -r line; do
+      local argname="${line%% *}"
+      local argdesc="${line#* }"
+      printf "  ${BOLD}%-16s${NC} %s\n" "$argname" "$argdesc"
+    done <<< "$args_lines"
+    echo ""
+  fi
+
+  # EXAMPLES
+  local example_lines
+  example_lines=$(grep '^# EXAMPLES:' "$script" 2>/dev/null | sed 's/^# EXAMPLES: *//')
+  if [[ -n "$example_lines" ]]; then
+    echo -e "${BOLD}EXAMPLES${NC}"
+    while IFS= read -r line; do
+      echo "  $line"
+    done <<< "$example_lines"
+  fi
+}
+
+# Main dispatch
+CMD="${1:-help}"
+shift || true
+
+case "$CMD" in
+  -h|--help|help)
+    # 'kratt help <cmd>' shows command-specific help
+    if [[ $# -gt 0 ]]; then
+      SCRIPT="${KRATT_CLI_DIR}/kratt-${1}"
+      if [[ -x "$SCRIPT" ]]; then
+        _show_command_help "$SCRIPT"
+        exit 0
+      fi
+    fi
+    _help
+    ;;
+  *)
+    SCRIPT="${KRATT_CLI_DIR}/kratt-${CMD}"
+    if [[ ! -x "$SCRIPT" ]]; then
+      _err "Unknown command: $CMD"
+      echo ""
+      _help
+      exit 1
+    fi
+    # Intercept -h/--help for any subcommand
+    for arg in "$@"; do
+      if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+        _show_command_help "$SCRIPT"
+        exit 0
+      fi
+    done
+    exec "$SCRIPT" "$@"
+    ;;
+esac

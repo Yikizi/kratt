@@ -1,0 +1,32 @@
+Susteemi arhitektuur ja andmevoog
+
+Pt OR te | |
+
+3. Edastus 4. Taitmine
+(Protokoll) (Keskus)
+¢ ESP32-S3 * microWakeWord Wyoming
+Korvo-2 plaat. raamistik. protokoll.
+¢ ES7210 ADC « ESPHome
+
+(2G + 12S): integratsioon.
+
+* 16 kHz, 16-bit
+far-field
+
+mikrofoni
+massiiv. |
+
+1. Helisisend
+(Riistvara)
+
+|
+
+Home Assistant
+lokaalne
+juhtimine ja STT
+(Kiirkirjutaja).
+
+¢ TFLite INT8
+kvantiseeritud
+
+A\ NotebookLM

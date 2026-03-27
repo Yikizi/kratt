@@ -1,0 +1,95 @@
+substitutions:
+  name: "kratt-korvo2-demo"
+  friendly_name: "Kratt Wake Demo (Korvo-2)"
+
+  # Korvo-2 uses ESP32-S3-WROOM-1. ESPHome does not ship a dedicated korvo-2
+  # board definition, so we use a generic ESP32-S3 devkit and set pins explicitly.
+  board: "esp32-s3-devkitc-1"
+
+  # ESP32-S3-Korvo-2 (ES7210) audio pins (from Espressif user guide):
+  # MCLK: GPIO16, SCLK(BCLK): GPIO9, LRCK: GPIO45, SDOUT (to ESP I2S DIN): GPIO10
+  mic_mclk_pin: "GPIO16"
+  mic_bclk_pin: "GPIO9"
+  mic_lrclk_pin: "GPIO45"
+  mic_din_pin: "GPIO10"
+
+  # ES7210 control bus:
+  i2c_sda_pin: "GPIO17"
+  i2c_scl_pin: "GPIO18"
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  on_boot:
+    priority: -100
+    then:
+      - delay: 1s
+      - logger.log:
+          format: "DEMO_READY: wake word listener starting"
+          level: INFO
+      - micro_wake_word.start:
+
+esp32:
+  board: "${board}"
+  variant: esp32s3
+  framework:
+    type: esp-idf
+
+logger:
+  hardware_uart: UART0
+  logs:
+    micro_wake_word: DEBUG
+
+i2c:
+  sda: ${i2c_sda_pin}
+  scl: ${i2c_scl_pin}
+  scan: true
+
+i2s_audio:
+  i2s_bclk_pin: ${mic_bclk_pin}
+  i2s_lrclk_pin: ${mic_lrclk_pin}
+  i2s_mclk_pin: ${mic_mclk_pin}
+
+audio_adc:
+  - platform: es7210
+    id: es7210_adc
+    bits_per_sample: 16bit
+    sample_rate: 16000
+
+microphone:
+  - platform: i2s_audio
+    id: mic
+    adc_type: external
+    i2s_din_pin: ${mic_din_pin}
+    sample_rate: 16000
+    bits_per_sample: 16bit
+    channel: left
+
+text_sensor:
+  - platform: template
+    name: "${friendly_name} Last Wake Word"
+    id: last_wake_word
+    update_interval: never
+
+micro_wake_word:
+  id: microww
+  microphone:
+    microphone: mic
+    channels: 0
+    gain_factor: 4
+  stop_after_detection: true
+  vad:
+  models:
+    - model: "/Users/mattias/kratt/hardware/esp32/esphome/models/kratt.json"
+      id: kuule_kratt_model
+  on_wake_word_detected:
+    then:
+      - text_sensor.template.publish:
+          id: last_wake_word
+          state: !lambda return wake_word;
+      - logger.log:
+          format: "DEMO_WAKE_WORD:%s"
+          args: ["wake_word.c_str()"]
+          level: INFO
+      - delay: 1500ms
+      - micro_wake_word.start:

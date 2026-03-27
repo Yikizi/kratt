@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# DESC: List all trained wake word models
+set -euo pipefail
+
+echo "Trained models:"
+for d in "${KRATT_WW}"/models/kuule-kratt-v*/; do
+  [[ -d "$d" ]] || continue
+  version=$(basename "$d")
+  tflite="${d}kuule_kratt_${version#kuule-kratt-}.tflite"
+  if [[ -f "$tflite" ]]; then
+    size=$(du -h "$tflite" | cut -f1)
+    echo "  ${version#kuule-kratt-}  ${size}  $tflite"
+  else
+    echo "  ${version#kuule-kratt-}  (no tflite)"
+  fi
+done

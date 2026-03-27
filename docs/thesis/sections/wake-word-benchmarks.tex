@@ -1,0 +1,86 @@
+% =============================================================================
+% wake-word-benchmarks.tex
+% Kirjanduseülevaade: wake word tuvastuse mõõdikud ja võrdlusalused
+%
+% Osa peatükist 2 "Taust ja eeltööd"
+% Kompileerimiseks lisa BibTeX kirjed failist wake-word-benchmarks.bib
+% põhilisse references.bib faili.
+% =============================================================================
+
+\section{Äratussõna tuvastuse mõõdikud ja võrdlusalused}\label{sec:ww-benchmarks}
+
+Äratussõna (\emph{wake word}) tuvastuse kvaliteeti ei ole võimalik hinnata ühe arvuga. Süsteemi käitumine sõltub vähemalt kahest omavahel vastuolulisest kriteeriumist: kui hästi tabatakse tegelikke äratussõna ütlusi ja kui sageli vallandatakse ilma äratussõnata. Selles alapeatükis kirjeldatakse vastavaid mõõdikuid, esitatakse olulisemate süsteemide mõõtmistulemused ja tuuakse välja, milliseid tööpunkte kirjandus peab aktsepteeritavaks.
+
+\subsection{Põhimõõdikud}\label{subsec:metrics}
+
+Wake word süsteeme hinnatakse kahe peamise mõõdiku kaudu \cite{lopezespejo2021deepkws,garai2025sfkws}:
+
+\begin{itemize}
+    \item \textbf{FRR} (\emph{false rejection rate}) -- osakaal tegelikest äratussõna ütlustest, mida süsteem ei tuvasta. Näiteks kui 100-st tegelikust \enquote{Kratt} ütlusest jääb 5 tabamata, on FRR~=~5\%.
+    \item \textbf{FA/h} ehk \textbf{FAPH} (\emph{false accepts per hour}) -- valevallandumiste keskmine arv tunni kohta mittesihtheli peal. See mõõdik on informatiivsem kui absoluutne vale\-positiivsete arv, sest see on normeeritud aja suhtes ja võimaldab süsteemide vahel võrrelda sõltumata testkorpuse pikkusest.
+\end{itemize}
+
+Need kaks mõõdikut on omavahel vastuolulises sõltuvuses. Otsustuslävi (\emph{threshold}) reguleerib nende suhet: kõrgem lävi vähendab valevallandumisi, kuid suurendab valetõrjumisi, ja vastupidi. Seda sõltuvust kujutatakse tavaliselt DET-kõveraga (\emph{Detection Error Tradeoff}), mis esitab FRR-i funktsionaalse sõltuvuse FA/h-st erinevate lävede korral \cite{lopezespejo2021deepkws}. DET-kõver on wake word süsteemide hindamisel analoogiline ROC-kõveraga klassifikatsiooniülesannetes, kuid paremini sobiv olukorras, kus negatiivse klassi andmed on olemuselt pidevad ja ajaliselt struktureeritud.
+
+Oluline on rõhutada, et FRR ja FA/h väärtused ei ole absoluutsed suurused -- need sõltuvad nii testkorpuse koostisest (taustamüra tase, kõnelejate arv, salvestustingimused) kui ka konkreetsest tööpunktist DET-kõveral. Seetõttu tuleb tulemuste võrdlemisel alati kontrollida, millistel tingimustel mõõtmine toimus.
+
+\subsection{Kommertsiaalsete süsteemide tulemused}\label{subsec:commercial-benchmarks}
+
+Tabel~\ref{tab:commercial-benchmarks} võtab kokku peamiste kommertsiaalsete ja tuntud avatud lähtekoodiga süsteemide avaldatud mõõtmistulemused. Siinkohal on oluline märkida, et ükski suur tootja ei avalda oma toodangusüsteemide absoluutseid FA/h numbreid. Google ja Amazon avaldavad vaid suhtelisi parandusi eelmiste mudeliversioonidega võrreldes. Apple \enquote{Hey Siri} süsteemi kohta avaldatud tööpunkt \mbox{$\sim$0,006~FA/h} (umbes üks valevallandmine nädalas) on ainus konkreetne toodangutasemel number, mis on avalikult kättesaadav \cite{apple-heysiri2017}.
+
+\begin{table}[H]
+\centering
+\caption{Kommertsiaalsete ja avatud lähtekoodiga süsteemide avaldatud wake word tulemused.}
+\label{tab:commercial-benchmarks}
+\begin{tabular}{l r r l}
+\hline
+\textbf{Süsteem} & \textbf{FA/h} & \textbf{FRR} & \textbf{Allikas} \\
+\hline
+Apple \enquote{Hey Siri} (toodang) & $\sim$0,006 & -- & \cite{apple-heysiri2017} \\
+Apple HEiMDaL (sisetest, tihe kõne) & 12,0 & 0,45\% & \cite{kundu2023heimdal} \\
+Google (akadeemiline baastase) & 1,0 & -- & \cite{sainath2015cnn} \\
+Google (mürakas kohvik) & 1,0 & 5,5--14\% & \cite{sindhwani2015structured} \\
+Picovoice Porcupine & 0,1 & $<$5\% & \cite{picovoice-benchmark2026} \\
+openWakeWord (sihttase) & $<$0,5 & $<$5\% & \cite{openwakeword2026} \\
+Howl (avatud lähtekood) & 5,0 & 16\% & \cite{tang2020howl} \\
+\hline
+\end{tabular}
+\end{table}
+
+Tabelist ilmneb mitu olulist mustrit. Esiteks erinevad avaldatud FA/h väärtused kahe suurusjärgu võrra -- Apple toodangusüsteemi 0,006~FA/h ja Apple sisemise tihedakõnelise testkorpuse 12,0~FA/h vahel on 2000-kordne erinevus. See näitab, et testkorpuse valik mõjutab tulemust kardinaalselt. Teiseks on avatud lähtekoodiga süsteemide (openWakeWord, Howl) FRR oluliselt kõrgem kui kaubandustasemel süsteemidel, mis on ootuspärane arvestades ressursside ja andmehulkade erinevust.
+
+\subsection{Tööpunktid kirjanduses}\label{subsec:operating-points}
+
+Kirjanduse analüüsist eristuvad viis tüüpilist tööpunkti, millel FA/h väärtust fikseeritakse ja FRR-i raporteeritakse:
+
+\begin{enumerate}
+    \item \textbf{0,006~FA/h} ($\sim$1 valevallandumine nädalas) -- Apple toodangusüsteemi sihttase. Saavutatud mitmeastmelise kaskaadsüsteemiga, mis sisaldab nii seadmepoolset kui ka pilvekinnitust \cite{apple-heysiri2017}. Akadeemilise ühe-mudeli süsteemina ebarealistlik.
+    \item \textbf{0,1~FA/h} (1 valevallandumine 10 tunni kohta) -- Picovoice kommertsvõrdlusaluse standard \cite{picovoice-benchmark2026}. See tööpunkt eeldab väga head mudelit ja puhtaid andmeid.
+    \item \textbf{0,5~FA/h} -- kõige levinum akadeemiline standard wake word süsteemide hindamisel. Nii openWakeWord \cite{openwakeword2026} kui ka microWakeWord \cite{microwakeword2026} kasutavad seda oma peamise tööpunktina.
+    \item \textbf{1,0~FA/h} -- Google'i varajaste põhjapanevate tööde standard \cite{sainath2015cnn,chen2014smallfootprint}. Selle tööpunkti juures raporteeriti varajaste CNN-mudelite FRR-i.
+    \item \textbf{12,0~FA/h} -- Apple sisemise hindamise tööpunkt tihedakõnelisel testkorpusel \cite{kundu2023heimdal}. Illustreerib, kui keeruliseks muutub tuvastus, kui testmaterjal sisaldab pidevat kõnet.
+\end{enumerate}
+
+Käesoleva töö kontekstis on asjakohane kasutada 0,5~FA/h tööpunkti, mis on valdkonna de facto akadeemiline standard ja ühtlasi microWakeWord raamistiku vaikimisi sihttase. Arendaja enda sõnastatud eesmärk on saavutada FRR~$\leq$~5\% tasemel 0,5~FA/h mürarikkas ruumis, ideaalis liikuda 0,1~FA/h tööpunkti suunas \cite{microwakeword2026}.
+
+\subsection{Mõjutegurid ja metoodilised hoiatused}\label{subsec:caveats}
+
+Tulemuste tõlgendamisel on vaja arvestada mitmete teguritega, mis muudavad otsese süsteemidevahelise võrdluse keeruliseks \cite{ahmed2022robustkws,lopezespejo2021deepkws}.
+
+\textbf{Äratussõna foneetiline eristuvus.} Pikemad ja foneetiliselt keerukamad äratussõnad on olemuselt lihtsamini tuvastatavad. Kahesilbiline \enquote{Hey Siri} või kolmesilbiline \enquote{Hey Google} on tuvastamise seisukohast soodsamas olukorras kui ühesilbiline sõna. See on otseselt oluline käesoleva töö kontekstis: \enquote{Kratt} on ühesilbiline sõna, mille konsonantklasterid (/kr/ ja /tt/) on küll akustiliselt eristuvad, kuid foneetilise informatsiooni hulk on väiksem kui mitmesõnalistel äratussõnadel. Seetõttu on kaheosaline \enquote{Kuule Kratt} foneetiliselt tugevam valik, mis pakub rohkem ajalist ja spektraalset informatsiooni tuvastamiseks.
+
+\textbf{Sünteetiliste andmetega treenitud mudelite üldistusvõime.} Sünteetilise kõne (\emph{text-to-speech}, TTS) põhjal treenitud mudelid võivad valideerimise ajal näidata häid tulemusi, kuid reaalkasutuses ebaõnnestuda. Kaks mudelit, millel on samad valideerimismõõdikud, võivad reaalses kasutuses saavutada FRR-i vastavalt 5\% ja 20\% \cite{microwakeword2026}. See on kriitiline hoiatus projektidele, mis sõltuvad peamiselt sünteetilistest andmetest -- nagu eestikeelse äratussõna puhul paratamatult on, kuna suures mahus reaalseid positiivseid näiteid on raske koguda.
+
+\textbf{Testkorpuse koostis.} Nagu tabel~\ref{tab:commercial-benchmarks} näitab, võib sama süsteem erinevatel testkorpustel anda drastiliselt erinevaid tulemusi. Apple HEiMDaL süsteemi 0,45\% FRR tihedakõnelisel testkorpusel tasemel 12,0~FA/h \cite{kundu2023heimdal} versus toodangusüsteemi $\sim$0,006~FA/h \cite{apple-heysiri2017} illustreerib seda selgelt. Seetõttu on käesoleva töö hindamises oluline kasutada ambient-andmeid, mis peegeldavad tegelikku kasutusolukorda (taustamüra, vestlused, muusika), mitte ainult lühikesi testkleppe.
+
+\subsection{Järeldused käesoleva töö jaoks}\label{subsec:benchmark-implications}
+
+Eelnevast kirjanduse ülevaatest tulenevad mitu konkreetset suunist käesoleva töö äratussõna arendusele.
+
+Esiteks, realistlik sihttase on FRR~$\leq$~5\% tööpunktis 0,5~FA/h. See vastab microWakeWord raamistiku sihttasemele ja on akadeemilises kirjanduses laialdaselt aktsepteeritud. Ambitsioonikam eesmärk sama FRR-i saavutamine 0,1~FA/h juures on võrdlusalusena kasulik, kuid ei pruugi olla saavutatav piiratud andmemahuga eestikeelse projekti puhul.
+
+Teiseks, ühesilbiline \enquote{Kratt} on tuvastamise seisukohast raskem sihtmärk kui tüüpilised ingliskeelsed äratussõnad. See tähendab, et mudeli kvaliteet võib mõõdikute osas jääda alla kirjanduses toodud ingliskeelsetele tulemustele, ilma et see viitaks metoodilisele veale. Kaheosalise \enquote{Kuule Kratt} variandi treenimine annaks parema võrdlusaluse.
+
+Kolmandaks, kuna eestikeelseid positiivseid näiteid on vähe ja oluline osa treeningandmetest pärineb TTS-sünteetilisest kõnest, tuleb reaalkasutuse hindamisele pöörata erilist tähelepanu. Valideerimismõõdikud ei pruugi korreleeruda tegeliku kasutajakogemusega \cite{microwakeword2026}. Seadmepõhine \emph{in-situ} testimine on käesoleva töö hindamises möödapääsmatu.
+
+Neljandaks, hindamine peab hõlmama piisavalt pikki ambient-salvestusi. Ilma nendeta pole FA/h mõõdik sisuline ning mudeli kvaliteedist saadav pilt on moonutatud. See leid on kooskõlas metoodika peatükis kirjeldatud kogemusega, kus tühja \texttt{testing\_ambient} kogumiga saadud AUC väärtused osutusid petlikuks.

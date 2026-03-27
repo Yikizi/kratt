@@ -32,6 +32,10 @@ NEG_DIR=""
 AMBIENT_DIR=""
 TRAINING_STEPS=3000
 CLIP_DURATION_MS=1500
+TIME_MASK_SIZE=0
+TIME_MASK_COUNT=0
+FREQ_MASK_SIZE=0
+FREQ_MASK_COUNT=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -58,6 +62,13 @@ while [[ $# -gt 0 ]]; do
     --clip-duration-ms)
       CLIP_DURATION_MS="$2"
       shift 2
+      ;;
+    --spec-augment)
+      TIME_MASK_SIZE=10
+      TIME_MASK_COUNT=2
+      FREQ_MASK_SIZE=3
+      FREQ_MASK_COUNT=2
+      shift 1
       ;;
     -h|--help)
       usage
@@ -163,10 +174,10 @@ positive_class_weight: [1]
 negative_class_weight: [20]
 learning_rates: [0.001]
 batch_size: 128
-time_mask_max_size: [0]
-time_mask_count: [0]
-freq_mask_max_size: [0]
-freq_mask_count: [0]
+time_mask_max_size: [${TIME_MASK_SIZE}]
+time_mask_count: [${TIME_MASK_COUNT}]
+freq_mask_max_size: [${FREQ_MASK_SIZE}]
+freq_mask_count: [${FREQ_MASK_COUNT}]
 eval_step_interval: 250
 clip_duration_ms: ${CLIP_DURATION_MS}
 target_minimization: 0.0

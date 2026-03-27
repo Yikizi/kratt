@@ -1,0 +1,14 @@
+Degradatsiooni org: In-Domain andmete paradoks
+
+Mudel Lisatud andmed Recall Rate | FPR (Common Voice) | FPR (Korvo-2)
+v1 (Baseline) | Ainult CV negatiivid 92.8-94.8% 8.0% 13.8%
+v3 | +109 in-domain neg | 98.0-98.8%
+v4 +1311 in-domain neg | 100% 36.8% 7.3%
+v6 +3345 neg+hardneg | 99.6-100%
+
+Vaike kogus sama-seadme negatiivseid andmeid ajab mudeli segadusse (degradatsiooni org).
+Tohusus taastub ja tiletab baastaseme alles siis, kui spetsiifilisi andmeid lisatakse kriitilises
+
+mahus.
+
+A\ NotebookLM

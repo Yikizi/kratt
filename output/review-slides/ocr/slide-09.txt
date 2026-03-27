@@ -1,0 +1,33 @@
+Domeeninihke lahendus: Riistvaraline tagasisideahel
+
+Ta
+20
+1. Eraldiseisev salvesti-
+salvesti-pusivara (recorder
+firmware) paigaldatakse
+
+ESP32-S3-Korvo-2
+arendusplaadile.
+
+2. Kahe mikrofoni (12S)
+toorsalvestus kirjutatakse
+
+otse SD-kaardile fulusiliste
+nuppude abil.
+
+Susteem toodab
+iseenda
+treeningandmeid.
+
+{OF omy Ae et Sh
+
+mm 3. microWakeWord toru
+tootleb andmeid, oppides
+
+4. Uus treenitud mudel
+(TFLite) paigaldatakse ara tapse mikrofoni
+
+tagasi samale ESP32 sagedusvastuse ja reaalsete
+riistvarale. ruumide akustika.
+
+A) NotebookLM

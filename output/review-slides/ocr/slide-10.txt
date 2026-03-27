@@ -1,0 +1,33 @@
+Tulemus: Tootav prototuup (v6)
+
+Status Dashboard
+
+Joudlus
+
+99.6-100% Recall (Tundlikkus)
+
+<1% False Positive Rate
+seadme-spetsiifilises testis.
+
+Uldistusvéime
+
+Esialgsed testid kinnitavad, et v6 mudel ei
+ole Uledppinud ja funktsioneerib edukalt
+ka ristseadme testides (nt MacBook Pro
+sisemikrofoniga).
+
+Paigaldus
+
+_Kompileeritud edukalt TFLite
+_INT8 formaati ja jookseb
+
+lokaalselt ESP32-S3-Korvo-2
+riistvaral.
+
+Susteemi Staatus
+
+- Taielikult integreeritud Home
+
+Assistanti 6kosUsteemi.
+
+A\ NotebookLM

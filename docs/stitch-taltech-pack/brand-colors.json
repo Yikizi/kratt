@@ -1,0 +1,12 @@
+{
+  "brand": "TalTech",
+  "colors": {
+    "navy": "#332B60",
+    "magenta": "#E4067E",
+    "muted_lavender": "#9396B0",
+    "dark_magenta": "#AB1352",
+    "light_gray": "#DADAE4",
+    "white": "#FFFFFF",
+    "black": "#000000"
+  }
+}

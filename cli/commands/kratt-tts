@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# DESC: TTS data generation and management
+# Usage: kratt tts list | kratt tts generate <script.py> [args...]
+set -euo pipefail
+
+SUB="${1:-list}"
+shift || true
+
+case "$SUB" in
+  list)
+    echo "TTS datasets:"
+    for d in "${KRATT_WW}"/data/raw/neurokone_*/; do
+      [[ -d "$d" ]] || continue
+      name=$(basename "$d")
+      count=$(find "$d" -name "*.wav" | wc -l | tr -d ' ')
+      size=$(du -sh "$d" | cut -f1)
+      stats=""
+      [[ -f "$d/generation_stats.json" ]] && stats=$(python3 -c "import json; d=json.load(open('$d/generation_stats.json')); print(f'ok={d.get(\"success\",\"?\")}, fail={d.get(\"failed\",\"?\")}')" 2>/dev/null || echo "")
+      echo "  ${name}:  ${count} wavs, ${size}  ${stats}"
+    done
+    ;;
+  generate)
+    SCRIPT="${1:?Usage: kratt tts generate <script.py> [args...]}"
+    shift
+    (cd "${KRATT_WW}/data/collection" && "${KRATT_WW}/.venv/bin/python" "$SCRIPT" "$@")
+    ;;
+  *)
+    echo "Usage: kratt tts list|generate"
+    exit 1
+    ;;
+esac
