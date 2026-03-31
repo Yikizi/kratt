@@ -1,0 +1,40 @@
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: kratt-ha
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ha-config:/config
+    environment:
+      - TZ=Europe/Tallinn
+
+  kiirkirjutaja:
+    build:
+      context: ../stt-integration/kiirkirjutaja-source
+      dockerfile: Dockerfile
+    container_name: kratt-stt
+    restart: unless-stopped
+    ports:
+      - "10300:10300"
+    command: >
+      python main.py
+      --wyoming-uri tcp://0.0.0.0:10300
+
+  piper:
+    image: rhasspy/wyoming-piper:latest
+    container_name: kratt-tts
+    restart: unless-stopped
+    ports:
+      - "10200:10200"
+    volumes:
+      - piper-data:/data
+    command: >
+      --voice et_EE-lhv-medium
+      --uri tcp://0.0.0.0:10200
+      --data-dir /data
+      --download-dir /data
+
+volumes:
+  ha-config:
+  piper-data:
