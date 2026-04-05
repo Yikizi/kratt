@@ -148,7 +148,7 @@ class SpeechRecognizer:
         while self.recognizer.is_ready(stream):
             self.recognizer.decode_stream(stream)
 
-        return self.recognizer.get_result(stream).text.strip()
+        return self.recognizer.get_result(stream).strip()
 
 
 # ============================================================
