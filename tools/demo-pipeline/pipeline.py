@@ -75,7 +75,10 @@ class WakeWordDetector:
         self.process_fn = getattr(self.frontend, "process_samples", None) or \
                           getattr(self.frontend, "ProcessSamples", None)
 
-        # Reset state
+        self.reset()
+
+    def reset(self):
+        """Reset all model state tensors and warmup counter."""
         for detail in self.input_details:
             self.interpreter.set_tensor(
                 detail['index'],
@@ -83,6 +86,9 @@ class WakeWordDetector:
             )
         self._frame_count = 0
         self._warmup = 50
+        self.frontend = type(self.frontend)()
+        self.process_fn = getattr(self.frontend, "process_samples", None) or \
+                          getattr(self.frontend, "ProcessSamples", None)
 
     def process_audio(self, audio_int16: bytes) -> float | None:
         """Process raw int16 audio bytes, return probability if past warmup."""
@@ -326,6 +332,7 @@ def run_pipeline(args):
                             if prob > args.threshold and (now - last_detection) > 2.0:
                                 detected = True
                                 last_detection = now
+                                wakeword.reset()
                                 print(f"\n>>> KUULE KRATT detected! (prob={prob:.3f})")
                                 break
                             elif prob > 0.1:
