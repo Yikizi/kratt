@@ -134,16 +134,15 @@ def process_utterance(text: str):
         tool_results.append(result)
         print(f"[MCP] ({t_action*1000:.0f}ms) {action.get('action')}: {result}")
 
-    # Step 3: For get_state, we need a 2nd LLM call — real HA tools return
-    # raw data (e.g. {"state": "21.5"}), not human-readable strings.
-    # LLM must formulate a natural language response from the raw values.
-    needs_data = any(a.get("action") == "get_state" for a in actions)
-    if needs_data and tool_results:
+    # Step 3: Always do a 2nd LLM call with tool results.
+    # Even for actions (turn_on etc), the LLM should confirm what happened
+    # in natural language based on actual results, not its pre-generated guess.
+    if tool_results:
         t2 = time.monotonic()
         final = query_llm(text, "\n".join(tool_results))
         t_llm2 = time.monotonic() - t2
         response = final.get("response", response)
-        print(f"[LLM] ({t_llm2:.1f}s) Final response with tool data")
+        print(f"[LLM] ({t_llm2:.1f}s) Response from tool results")
 
     # Step 4: Output
     print(f"\n🔊 KRATT: {response}")
