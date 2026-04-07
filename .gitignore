@@ -82,9 +82,14 @@ logs/
 
 # ESP-IDF
 sdkconfig
+sdkconfig.old
 managed_components/
 dependencies.lock
 .cache/
+
+# Vendored git subtrees (cloned separately, not submodules)
+tools/tartunlp-tts/
+tools/text-to-speech-worker/
 
 # ESPHome
 .esphome/
