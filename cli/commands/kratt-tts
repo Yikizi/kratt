@@ -1,31 +1,85 @@
 #!/usr/bin/env bash
 # DESC: TTS data generation and management
-# Usage: kratt tts list | kratt tts generate <script.py> [args...]
+# USAGE: kratt tts <list|clone|generate> [args...]
+# ARGS: list          Show available TTS datasets
+# ARGS: clone         Clone a voice with XTTS v2 (pos + neg)
+# ARGS: generate      Run a TTS generation script
+# EXAMPLES: kratt tts list
+# EXAMPLES: kratt tts clone marta
+# EXAMPLES: kratt tts clone marta --skip-negatives
+# EXAMPLES: kratt tts generate generate_neurokone_samples.py --count 50
 set -euo pipefail
 
-SUB="${1:-list}"
+VENV="${KRATT_WW}/.venv/bin/python"
+COLLECTION="${KRATT_WW}/data/collection"
+
+SUB="${1:-}"
 shift || true
 
 case "$SUB" in
   list)
     echo "TTS datasets:"
+    echo ""
+    echo "  Neurokõne:"
     for d in "${KRATT_WW}"/data/raw/neurokone_*/; do
       [[ -d "$d" ]] || continue
       name=$(basename "$d")
       count=$(find "$d" -name "*.wav" | wc -l | tr -d ' ')
       size=$(du -sh "$d" | cut -f1)
-      stats=""
-      [[ -f "$d/generation_stats.json" ]] && stats=$(python3 -c "import json; d=json.load(open('$d/generation_stats.json')); print(f'ok={d.get(\"success\",\"?\")}, fail={d.get(\"failed\",\"?\")}')" 2>/dev/null || echo "")
-      echo "  ${name}:  ${count} wavs, ${size}  ${stats}"
+      echo "    ${name}:  ${count} wavs, ${size}"
     done
+    echo ""
+    echo "  XTTS kloonid:"
+    if [[ -d "${KRATT_WW}/data/raw/xtts_clones" ]]; then
+      for d in "${KRATT_WW}"/data/raw/xtts_clones/*/; do
+        [[ -d "$d" ]] || continue
+        name=$(basename "$d")
+        pos=$(find "$d/positive_16k" -name "*.wav" 2>/dev/null | wc -l | tr -d ' ')
+        neg=$(find "$d/negative_16k" -name "*.wav" 2>/dev/null | wc -l | tr -d ' ')
+        echo "    ${name}:  ${pos} pos, ${neg} neg"
+      done
+    else
+      echo "    (pole veel)"
+    fi
+    echo ""
+    echo "  Referentsaudiod:"
+    if [[ -d "${KRATT_WW}/data/raw/voice_references" ]]; then
+      for d in "${KRATT_WW}"/data/raw/voice_references/*/; do
+        [[ -d "$d" ]] || continue
+        name=$(basename "$d")
+        count=$(find "$d" -name "*.wav" | wc -l | tr -d ' ')
+        echo "    ${name}:  ${count} take(s)"
+      done
+    else
+      echo "    (pole veel — salvesta: kratt rec -n <nimi> -t clone)"
+    fi
+    ;;
+  clone)
+    NAME="${1:?Usage: kratt tts clone <name> [--skip-negatives]}"
+    shift
+    REF_DIR="${KRATT_WW}/data/raw/voice_references/${NAME}"
+    if [[ ! -d "$REF_DIR" ]]; then
+      echo "Referentsaudio puudub: ${REF_DIR}"
+      echo "Salvesta kõigepealt: kratt rec -n ${NAME} -t clone"
+      exit 1
+    fi
+    exec "$VENV" "$COLLECTION/generate_xtts_clones.py" \
+      --name "$NAME" \
+      --ref-dir "$REF_DIR" \
+      --output "${KRATT_WW}/data/raw/xtts_clones/${NAME}" \
+      "$@"
     ;;
   generate)
     SCRIPT="${1:?Usage: kratt tts generate <script.py> [args...]}"
     shift
-    (cd "${KRATT_WW}/data/collection" && "${KRATT_WW}/.venv/bin/python" "$SCRIPT" "$@")
+    (cd "${KRATT_WW}/data/collection" && "$VENV" "$SCRIPT" "$@")
     ;;
   *)
-    echo "Usage: kratt tts list|generate"
+    echo "Usage: kratt tts <list|clone|generate>"
+    echo ""
+    echo "  list       Show available TTS datasets and voice references"
+    echo "  clone      Clone a voice with XTTS v2 (pos + neg)"
+    echo "  generate   Run a TTS generation script"
     exit 1
     ;;
 esac

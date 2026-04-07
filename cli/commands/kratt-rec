@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# DESC: Record audio samples (clone reference, training, test, negatives)
+# USAGE: kratt rec -n <name> -t <type> [options]  OR  kratt rec quick
+# ARGS: -n,--name    Speaker name (e.g., pereema, isa, mattias)
+# ARGS: -t,--type    Recording type: clone, train, test, neg, hneg
+# ARGS: -d,--device  Microphone device ID (optional)
+# ARGS: ls           List available microphones
+# ARGS: quick        Start recording immediately, tag after
+# EXAMPLES: kratt rec quick
+# EXAMPLES: kratt rec -n pereema -t clone
+# EXAMPLES: kratt rec -n mattias -t train
+# EXAMPLES: kratt rec -n mattias -t neg
+# EXAMPLES: kratt rec -n mattias -t hneg
+# EXAMPLES: kratt rec --list
+set -euo pipefail
+
+VENV="${KRATT_WW}/.venv/bin/python"
+COLLECTION="${KRATT_WW}/data/collection"
+SESSION="$COLLECTION/record_session.py"
+
+# Parse args
+NAME=""
+TYPE=""
+DEVICE_ARG=""
+DEVICE_SESSION=""
+EXTRA_ARGS=()
+
+# Handle subcommands as first arg
+case "${1:-}" in
+  quick)
+    shift
+    exec "$VENV" "$COLLECTION/record_quick.py" "$@"
+    ;;
+  ls)
+    "$VENV" "$COLLECTION/record_reference.py" --list-devices
+    exit 0
+    ;;
+esac
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -n|--name)  NAME="$2"; shift 2 ;;
+    -t|--type)  TYPE="$2"; shift 2 ;;
+    -d|--device) DEVICE_ARG="--device $2"; DEVICE_SESSION="--device $2"; shift 2 ;;
+    *) EXTRA_ARGS+=("$1"); shift ;;
+  esac
+done
+
+[[ -z "$TYPE" ]] && {
+  echo "Usage: kratt rec -n <name> -t <type>"
+  echo ""
+  echo "Types:"
+  echo "  clone   30-45s reference audio for voice cloning (XTTS v2)"
+  echo "  train   'Kuule Kratt' positive samples (short clips, ENTER between)"
+  echo "  test    'Kuule Kratt' held-out test samples"
+  echo "  neg     Continuous negative speech (Ctrl+C to stop)"
+  echo "  hneg    Hard negatives (phonetically similar prompted phrases)"
+  echo ""
+  echo "Examples:"
+  echo "  kratt rec -n pereema -t clone"
+  echo "  kratt rec -n mattias -t train"
+  echo "  kratt rec -n mattias -t neg"
+  echo "  kratt rec -n mattias -t hneg"
+  echo "  kratt rec --list"
+  exit 1
+}
+
+[[ -z "$NAME" ]] && { echo "Error: -n <name> is required"; exit 1; }
+
+case "$TYPE" in
+  clone)
+    exec "$VENV" "$COLLECTION/record_reference.py" \
+      --name "$NAME" \
+      --output "${KRATT_WW}/data/raw/voice_references" \
+      $DEVICE_ARG \
+      "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
+    ;;
+  train)
+    exec "$VENV" "$SESSION" pos \
+      --name "$NAME" \
+      --output "${KRATT_WW}/data/raw/${NAME}/positive" \
+      $DEVICE_SESSION \
+      "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
+    ;;
+  test)
+    exec "$VENV" "$SESSION" pos \
+      --name "$NAME" \
+      --output "${KRATT_WW}/data/test/${NAME}/positive" \
+      $DEVICE_SESSION \
+      "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
+    ;;
+  neg)
+    exec "$VENV" "$SESSION" neg \
+      --name "$NAME" \
+      --output "${KRATT_WW}/data/raw/${NAME}/negative" \
+      $DEVICE_SESSION \
+      "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
+    ;;
+  hneg)
+    exec "$VENV" "$SESSION" hneg \
+      --name "$NAME" \
+      --output "${KRATT_WW}/data/raw/${NAME}/hard_negative" \
+      $DEVICE_SESSION \
+      "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
+    ;;
+  *)
+    echo "Unknown type: $TYPE (use: clone, train, test, neg, hneg)"
+    exit 1
+    ;;
+esac
