@@ -18,6 +18,7 @@ wake-word/data/raw/
 wake-word/data/augmented/
 wake-word/data/processed/
 wake-word/data/external/
+wake-word/data/_quarantine_duplicates/
 stt-integration/kiirkirjutaja-source/models/
 *.wav
 *.mp3
@@ -29,6 +30,16 @@ wake-word/models/checkpoints/
 wake-word/models/production/*.tflite
 wake-word/models/production/*.onnx
 wake-word/models/production/*.h5
+wake-word/models/kiirkirjutaja-int8/
+# Per-version training artifacts (keep only .tflite + analysis/*.json)
+wake-word/models/kuule-kratt-*/logs/
+wake-word/models/kuule-kratt-*/restore/
+wake-word/models/kuule-kratt-*/stream_state_internal/
+wake-word/models/kuule-kratt-*/tflite_stream_state_internal_quant/
+wake-word/models/kuule-kratt-*/train/
+wake-word/models/kuule-kratt-*/*.h5
+wake-word/models/kuule-kratt-*/model_summary.txt
+wake-word/models/kuule-kratt-*/training_config.yaml
 *.pb
 *.pkl
 
