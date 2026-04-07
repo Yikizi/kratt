@@ -1,189 +1,333 @@
+#include "bsp/esp-bsp.h"
 #include "driver/gpio.h"
-#include "driver/i2c_master.h"
-#include "driver/i2s_std.h"
-#include "esp_codec_dev.h"
-#include "esp_codec_dev_defaults.h"
 #include "esp_check.h"
+#include "esp_codec_dev.h"
 #include "esp_log.h"
+#include "esp_timer.h"
+#include "kratt_korvo2_board.h"
+#include "kratt_korvo2_buttons.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 #include "freertos/task.h"
+#include <inttypes.h>
 #include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-// I2C (shared bus for ES8311 + ES7210)
-#define I2C_SDA_PIN GPIO_NUM_17
-#define I2C_SCL_PIN GPIO_NUM_18
+#define SAMPLE_RATE_HZ 16000
+#define BITS_PER_SAMPLE I2S_DATA_BIT_WIDTH_16BIT
+#define PLAYBACK_CHANNELS 2
+#define DEFAULT_VOLUME 15
+#define VOLUME_STEP 5
+#define BUTTON_POLL_MS 50
+#define STARTUP_DELAY_MS 750
+#define BUTTON_QUEUE_LEN 8
+#define PI_F 3.14159265358979323846f
+#define BUTTON_NONE (-1)
 
-// I2S (shared between ES8311 speaker and ES7210 mic)
-#define I2S_MCLK_PIN GPIO_NUM_16
-#define I2S_BCLK_PIN GPIO_NUM_9
-#define I2S_LRCLK_PIN GPIO_NUM_45
-#define I2S_DOUT_PIN GPIO_NUM_8
-#define I2S_DIN_PIN GPIO_NUM_10
+typedef struct {
+  const char *label;
+  int frequency_hz;
+  int duration_ms;
+  float amplitude;
+} tone_step_t;
 
-// Speaker power amplifier enable
-#define PA_ENABLE_PIN GPIO_NUM_48
+static const tone_step_t kStartupPattern[] = {
+    {.label = "tone-a4", .frequency_hz = 440, .duration_ms = 180, .amplitude = 0.35f},
+    {.label = "tone-a5", .frequency_hz = 880, .duration_ms = 180, .amplitude = 0.30f},
+    {.label = "tone-e6", .frequency_hz = 1320, .duration_ms = 220, .amplitude = 0.25f},
+};
 
-#define SAMPLE_RATE 16000
-#define MCLK_MULTIPLE 256
-#define BEEP_FREQ 1000 // 1kHz beep
-#define BEEP_DURATION_MS 200
-#define BEEP_VOLUME 60 // 0-100
+static const char *TAG = "korvo2-spk";
+static esp_codec_dev_handle_t g_speaker = NULL;
+static QueueHandle_t g_button_queue = NULL;
+static bool g_muted = false;
+static int g_last_nonzero_volume = DEFAULT_VOLUME;
+static kratt_korvo2_button_id_t g_last_button_id = BUTTON_NONE;
 
-static const char *TAG = "speaker-test";
-static i2s_chan_handle_t tx_handle = NULL;
-static i2s_chan_handle_t rx_handle = NULL;
-static esp_codec_dev_handle_t codec_handle = NULL;
+static esp_err_t open_playback_stream(void) {
+  esp_codec_dev_sample_info_t sample_info = {
+      .sample_rate = SAMPLE_RATE_HZ,
+      .channel = PLAYBACK_CHANNELS,
+      .channel_mask = 0x03,
+      .bits_per_sample = BITS_PER_SAMPLE,
+  };
 
-static esp_err_t init_i2s(void) {
-  i2s_chan_config_t chan_cfg =
-      I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
-  chan_cfg.auto_clear = true;
-  ESP_RETURN_ON_ERROR(i2s_new_channel(&chan_cfg, &tx_handle, &rx_handle), TAG,
-                      "new channel failed");
+  ESP_LOGI(TAG, "Opening speaker stream: sample_rate=%d channel=%d bits=%d", sample_info.sample_rate,
+           sample_info.channel, sample_info.bits_per_sample);
+  return esp_codec_dev_open(g_speaker, &sample_info);
+}
 
-  i2s_std_config_t std_cfg = {
-      .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(SAMPLE_RATE),
-      .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT,
-                                                      I2S_SLOT_MODE_STEREO),
+static esp_err_t play_pcm_blocking(int16_t *samples, size_t sample_count,
+                                   const char *label) {
+  const size_t bytes = sample_count * PLAYBACK_CHANNELS * sizeof(int16_t);
+  const uint32_t nominal_duration_ms =
+      (uint32_t)((1000ULL * sample_count) / SAMPLE_RATE_HZ);
+  const int64_t started_us = esp_timer_get_time();
+
+  ESP_LOGI(TAG, "Playback start: label=%s frames=%u bytes=%u nominal_ms=%" PRIu32, label,
+           (unsigned)sample_count, (unsigned)bytes, nominal_duration_ms);
+  ESP_RETURN_ON_ERROR(open_playback_stream(), TAG, "speaker open failed");
+
+  const esp_err_t write_ret = esp_codec_dev_write(g_speaker, samples, bytes);
+  const esp_err_t close_ret = esp_codec_dev_close(g_speaker);
+  const int64_t elapsed_ms = (esp_timer_get_time() - started_us) / 1000;
+
+  if (write_ret != ESP_OK) {
+    ESP_LOGE(TAG, "Playback write failed for %s: %s", label, esp_err_to_name(write_ret));
+    return write_ret;
+  }
+  if (close_ret != ESP_OK) {
+    ESP_LOGE(TAG, "Speaker close failed for %s: %s", label, esp_err_to_name(close_ret));
+    return close_ret;
+  }
+
+  ESP_LOGI(TAG, "Playback done: label=%s elapsed_ms=%" PRIi64, label, elapsed_ms);
+  return ESP_OK;
+}
+
+static size_t duration_to_samples(int duration_ms) {
+  return (size_t)(((uint64_t)SAMPLE_RATE_HZ * (uint64_t)duration_ms) / 1000ULL);
+}
+
+static void render_tone(int16_t *samples, size_t sample_count, const tone_step_t *step) {
+  const float phase_increment =
+      (2.0f * PI_F * (float)step->frequency_hz) / (float)SAMPLE_RATE_HZ;
+  const float peak = 32767.0f * step->amplitude;
+  float phase = 0.0f;
+  for (size_t i = 0; i < sample_count; ++i) {
+    const int16_t sample = (int16_t)(sinf(phase) * peak);
+    samples[i * PLAYBACK_CHANNELS] = sample;
+    samples[i * PLAYBACK_CHANNELS + 1] = sample;
+    phase += phase_increment;
+    if (phase >= (2.0f * PI_F)) {
+      phase -= 2.0f * PI_F;
+    }
+  }
+}
+
+static esp_err_t play_sweep(void) {
+  const int duration_ms = 1800;
+  const int start_hz = 250;
+  const int stop_hz = 3000;
+  const size_t sample_count =
+      (size_t)(((uint64_t)SAMPLE_RATE_HZ * (uint64_t)duration_ms) / 1000ULL);
+  int16_t *samples = calloc(sample_count * PLAYBACK_CHANNELS, sizeof(int16_t));
+  if (samples == NULL) {
+    ESP_LOGE(TAG, "Out of memory while preparing sweep");
+    return ESP_ERR_NO_MEM;
+  }
+
+  float phase = 0.0f;
+  for (size_t i = 0; i < sample_count; ++i) {
+    const float progress = (float)i / (float)(sample_count - 1);
+    const float frequency_hz =
+        (float)start_hz + ((float)(stop_hz - start_hz) * progress);
+    phase += (2.0f * PI_F * frequency_hz) / (float)SAMPLE_RATE_HZ;
+    if (phase >= (2.0f * PI_F)) {
+      phase -= 2.0f * PI_F;
+    }
+    const int16_t sample = (int16_t)(sinf(phase) * 6000.0f);
+    samples[i * PLAYBACK_CHANNELS] = sample;
+    samples[i * PLAYBACK_CHANNELS + 1] = sample;
+  }
+
+  ESP_LOGI(TAG, "Generated diagnostic sweep: %dHz -> %dHz in %dms", start_hz, stop_hz,
+           duration_ms);
+  const esp_err_t ret = play_pcm_blocking(samples, sample_count, "diag-sweep");
+  free(samples);
+  return ret;
+}
+
+static esp_err_t play_startup_pattern(void) {
+  const int gap_ms = 70;
+  size_t total_samples = 0;
+  for (size_t i = 0; i < (sizeof(kStartupPattern) / sizeof(kStartupPattern[0])); ++i) {
+    total_samples += duration_to_samples(kStartupPattern[i].duration_ms);
+    if (i + 1 < (sizeof(kStartupPattern) / sizeof(kStartupPattern[0]))) {
+      total_samples += duration_to_samples(gap_ms);
+    }
+  }
+
+  int16_t *samples = calloc(total_samples * PLAYBACK_CHANNELS, sizeof(int16_t));
+  if (samples == NULL) {
+    ESP_LOGE(TAG, "Out of memory while preparing startup pattern");
+    return ESP_ERR_NO_MEM;
+  }
+
+  size_t offset = 0;
+  for (size_t i = 0; i < (sizeof(kStartupPattern) / sizeof(kStartupPattern[0])); ++i) {
+    const size_t tone_samples = duration_to_samples(kStartupPattern[i].duration_ms);
+    ESP_LOGI(TAG, "Pattern segment: label=%s freq=%dHz duration=%dms amplitude=%.2f",
+             kStartupPattern[i].label, kStartupPattern[i].frequency_hz,
+             kStartupPattern[i].duration_ms, (double)kStartupPattern[i].amplitude);
+    render_tone(samples + offset, tone_samples, &kStartupPattern[i]);
+    offset += tone_samples;
+
+    if (i + 1 < (sizeof(kStartupPattern) / sizeof(kStartupPattern[0]))) {
+      offset += duration_to_samples(gap_ms);
+    }
+  }
+
+  ESP_LOGI(TAG, "Composed startup pattern: segments=%u total_samples=%u total_ms=%u",
+           (unsigned)(sizeof(kStartupPattern) / sizeof(kStartupPattern[0])),
+           (unsigned)total_samples,
+           (unsigned)((1000ULL * total_samples) / SAMPLE_RATE_HZ));
+  const esp_err_t ret = play_pcm_blocking(samples, total_samples, "startup-pattern");
+  free(samples);
+  return ret;
+}
+
+static void dump_runtime_status(void) {
+  int volume = -1;
+  const esp_err_t vol_ret = esp_codec_dev_get_out_vol(g_speaker, &volume);
+  if (vol_ret != ESP_OK) {
+    ESP_LOGW(TAG, "Could not read speaker volume: %s", esp_err_to_name(vol_ret));
+  }
+
+  ESP_LOGI(TAG, "Runtime status: volume=%d muted=%s sample_rate=%d bits=%d last_button=%s",
+           volume, g_muted ? "true" : "false", SAMPLE_RATE_HZ, BITS_PER_SAMPLE,
+           kratt_korvo2_button_name(g_last_button_id));
+  ESP_LOGI(TAG, "Button actions via Espressif ADC-button path: PLAY/SET=startup pattern, REC=sweep, MUTE=toggle mute");
+}
+
+static esp_err_t set_volume(int new_volume, const char *reason) {
+  if (new_volume < 0) {
+    new_volume = 0;
+  } else if (new_volume > 100) {
+    new_volume = 100;
+  }
+
+  ESP_RETURN_ON_ERROR(esp_codec_dev_set_out_vol(g_speaker, new_volume), TAG,
+                      "set volume failed");
+  if (new_volume > 0) {
+    g_last_nonzero_volume = new_volume;
+    g_muted = false;
+  } else {
+    g_muted = true;
+  }
+
+  ESP_LOGI(TAG, "Volume updated: reason=%s value=%d", reason, new_volume);
+  return ESP_OK;
+}
+
+static esp_err_t change_volume(int delta, const char *reason) {
+  int current_volume = DEFAULT_VOLUME;
+  ESP_RETURN_ON_ERROR(esp_codec_dev_get_out_vol(g_speaker, &current_volume), TAG,
+                      "get volume failed");
+  return set_volume(current_volume + delta, reason);
+}
+
+static esp_err_t toggle_mute(void) {
+  int current_volume = DEFAULT_VOLUME;
+  ESP_RETURN_ON_ERROR(esp_codec_dev_get_out_vol(g_speaker, &current_volume), TAG,
+                      "get volume failed");
+
+  if (!g_muted && current_volume > 0) {
+    g_last_nonzero_volume = current_volume;
+    return set_volume(0, "mute");
+  }
+
+  const int restore_volume = (g_last_nonzero_volume > 0) ? g_last_nonzero_volume : DEFAULT_VOLUME;
+  return set_volume(restore_volume, "unmute");
+}
+
+static esp_err_t init_buttons(void) {
+  g_button_queue = xQueueCreate(BUTTON_QUEUE_LEN, sizeof(kratt_korvo2_button_id_t));
+  if (g_button_queue == NULL) {
+    return ESP_ERR_NO_MEM;
+  }
+  return kratt_korvo2_buttons_init(g_button_queue);
+}
+
+static esp_err_t init_audio(void) {
+  const kratt_korvo2_audio_pins_t *pins = kratt_korvo2_audio_pins();
+  const i2s_std_config_t i2s_cfg = {
+      .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(SAMPLE_RATE_HZ),
+      .slot_cfg = I2S_STD_PHILIP_SLOT_DEFAULT_CONFIG(BITS_PER_SAMPLE, I2S_SLOT_MODE_MONO),
       .gpio_cfg =
           {
-              .mclk = I2S_MCLK_PIN,
-              .bclk = I2S_BCLK_PIN,
-              .ws = I2S_LRCLK_PIN,
-              .dout = I2S_DOUT_PIN,
-              .din = I2S_DIN_PIN,
+              .mclk = pins->i2s_mclk,
+              .bclk = pins->i2s_bclk,
+              .ws = pins->i2s_lrck,
+              .dout = pins->i2s_dout,
+              .din = pins->i2s_din,
+              .invert_flags =
+                  {
+                      .mclk_inv = false,
+                      .bclk_inv = false,
+                      .ws_inv = false,
+                  },
           },
   };
-  std_cfg.clk_cfg.mclk_multiple = MCLK_MULTIPLE;
 
-  ESP_RETURN_ON_ERROR(i2s_channel_init_std_mode(tx_handle, &std_cfg), TAG,
-                      "init tx failed");
-  ESP_RETURN_ON_ERROR(i2s_channel_init_std_mode(rx_handle, &std_cfg), TAG,
-                      "init rx failed");
-  ESP_RETURN_ON_ERROR(i2s_channel_enable(tx_handle), TAG, "enable tx failed");
-  ESP_RETURN_ON_ERROR(i2s_channel_enable(rx_handle), TAG, "enable rx failed");
+  ESP_LOGI(TAG, "Initializing I2C explicitly before BSP audio init");
+  gpio_reset_pin(pins->speaker_pa_enable);
+  ESP_RETURN_ON_ERROR(gpio_set_direction(pins->speaker_pa_enable, GPIO_MODE_OUTPUT), TAG,
+                      "pa gpio direction failed");
+  ESP_RETURN_ON_ERROR(gpio_set_level(pins->speaker_pa_enable, 1), TAG, "pa gpio set failed");
+  ESP_RETURN_ON_ERROR(bsp_i2c_init(), TAG, "i2c init failed");
+  ESP_RETURN_ON_ERROR(bsp_audio_init(&i2s_cfg), TAG, "bsp audio init failed");
 
-  ESP_LOGI(TAG, "I2S initialized");
+  g_speaker = bsp_audio_codec_speaker_init();
+  if (g_speaker == NULL) {
+    return ESP_FAIL;
+  }
+
+  ESP_RETURN_ON_ERROR(gpio_set_level(pins->speaker_pa_enable, 1), TAG,
+                      "pa gpio set after codec failed");
+  ESP_LOGI(TAG, "PA forced on via GPIO%d for speaker diagnostics", pins->speaker_pa_enable);
+  ESP_RETURN_ON_ERROR(set_volume(DEFAULT_VOLUME, "boot"), TAG, "initial volume failed");
   return ESP_OK;
 }
 
-static esp_err_t init_codec(void) {
-  // I2C bus
-  i2c_master_bus_handle_t i2c_bus = NULL;
-  i2c_master_bus_config_t i2c_cfg = {
-      .i2c_port = I2C_NUM_0,
-      .sda_io_num = I2C_SDA_PIN,
-      .scl_io_num = I2C_SCL_PIN,
-      .clk_source = I2C_CLK_SRC_DEFAULT,
-      .glitch_ignore_cnt = 7,
-      .flags.enable_internal_pullup = true,
-  };
-  ESP_RETURN_ON_ERROR(i2c_new_master_bus(&i2c_cfg, &i2c_bus), TAG,
-                      "i2c bus failed");
-
-  // ES8311 control interface (I2C)
-  audio_codec_i2c_cfg_t codec_i2c_cfg = {
-      .port = I2C_NUM_0,
-      .addr = ES8311_CODEC_DEFAULT_ADDR,
-      .bus_handle = i2c_bus,
-  };
-  const audio_codec_ctrl_if_t *ctrl_if =
-      audio_codec_new_i2c_ctrl(&codec_i2c_cfg);
-
-  // ES8311 data interface (I2S)
-  audio_codec_i2s_cfg_t codec_i2s_cfg = {
-      .port = I2S_NUM_0,
-      .rx_handle = rx_handle,
-      .tx_handle = tx_handle,
-  };
-  const audio_codec_data_if_t *data_if =
-      audio_codec_new_i2s_data(&codec_i2s_cfg);
-
-  // ES8311 codec
-  const audio_codec_gpio_if_t *gpio_if = audio_codec_new_gpio();
-  es8311_codec_cfg_t es8311_cfg = {
-      .ctrl_if = ctrl_if,
-      .gpio_if = gpio_if,
-      .codec_mode = ESP_CODEC_DEV_WORK_MODE_DAC, // speaker only
-      .master_mode = false,
-      .use_mclk = true,
-      .pa_pin = PA_ENABLE_PIN,
-      .pa_reverted = false,
-      .hw_gain =
-          {
-              .pa_voltage = 5.0,
-              .codec_dac_voltage = 3.3,
-          },
-      .mclk_div = MCLK_MULTIPLE,
-  };
-  const audio_codec_if_t *es8311_if = es8311_codec_new(&es8311_cfg);
-
-  // Top-level codec device
-  esp_codec_dev_cfg_t dev_cfg = {
-      .dev_type = ESP_CODEC_DEV_TYPE_OUT,
-      .codec_if = es8311_if,
-      .data_if = data_if,
-  };
-  codec_handle = esp_codec_dev_new(&dev_cfg);
-
-  // Open with sample config
-  esp_codec_dev_sample_info_t sample_cfg = {
-      .bits_per_sample = 16,
-      .channel = 2,
-      .channel_mask = 0x03,
-      .sample_rate = SAMPLE_RATE,
-  };
-  ESP_RETURN_ON_ERROR(esp_codec_dev_open(codec_handle, &sample_cfg), TAG,
-                      "codec open failed");
-  ESP_RETURN_ON_ERROR(esp_codec_dev_set_out_vol(codec_handle, BEEP_VOLUME), TAG,
-                      "set volume failed");
-
-  ESP_LOGI(TAG, "ES8311 codec initialized");
-  return ESP_OK;
-}
-
-// Generate and play a sine wave beep
-static void play_beep(int freq_hz, int duration_ms) {
-  int total_samples = SAMPLE_RATE * duration_ms / 1000;
-  // Stereo: 2 channels, 16-bit per sample
-  int buf_size = total_samples * 2 * sizeof(int16_t);
-  int16_t *buf = malloc(buf_size);
-  if (!buf) {
-    ESP_LOGE(TAG, "No memory for beep buffer");
-    return;
+static void handle_button_event(kratt_korvo2_button_id_t button_index) {
+  g_last_button_id = button_index;
+  ESP_LOGI(TAG, "Button pressed: %s (%d)", kratt_korvo2_button_name(button_index),
+           button_index);
+  switch (button_index) {
+  case KRATT_KORVO2_BUTTON_PLAY:
+  case KRATT_KORVO2_BUTTON_SET:
+    dump_runtime_status();
+    ESP_ERROR_CHECK(play_startup_pattern());
+    break;
+  case KRATT_KORVO2_BUTTON_REC:
+    ESP_ERROR_CHECK(play_sweep());
+    break;
+  case KRATT_KORVO2_BUTTON_MUTE:
+    ESP_ERROR_CHECK(toggle_mute());
+    break;
+  case KRATT_KORVO2_BUTTON_VOLDOWN:
+    ESP_ERROR_CHECK(change_volume(-VOLUME_STEP, "vol-down"));
+    break;
+  case KRATT_KORVO2_BUTTON_VOLUP:
+    ESP_ERROR_CHECK(change_volume(VOLUME_STEP, "vol-up"));
+    break;
+  default:
+    ESP_LOGI(TAG, "No speaker action mapped for %s",
+             kratt_korvo2_button_name(button_index));
+    break;
   }
-
-  for (int i = 0; i < total_samples; i++) {
-    int16_t sample =
-        (int16_t)(16000.0 * sin(2.0 * M_PI * freq_hz * i / SAMPLE_RATE));
-    buf[i * 2] = sample;     // left
-    buf[i * 2 + 1] = sample; // right
-  }
-
-  size_t bytes_written = 0;
-  i2s_channel_write(tx_handle, buf, buf_size, &bytes_written, portMAX_DELAY);
-
-  free(buf);
 }
 
 void app_main(void) {
-  // Force PA enable
-  gpio_set_direction(PA_ENABLE_PIN, GPIO_MODE_OUTPUT);
-  gpio_set_level(PA_ENABLE_PIN, 1);
+  kratt_korvo2_log_board_overview(TAG);
 
-  ESP_ERROR_CHECK(init_i2s());
-  ESP_ERROR_CHECK(init_codec());
+  ESP_ERROR_CHECK(init_audio());
+  ESP_ERROR_CHECK(init_buttons());
+  dump_runtime_status();
 
-  ESP_LOGI(TAG, "Playing single beep...");
-  play_beep(BEEP_FREQ, BEEP_DURATION_MS);
-  vTaskDelay(pdMS_TO_TICKS(500));
+  ESP_LOGI(TAG, "Startup delay: %dms before entering low-volume standby", STARTUP_DELAY_MS);
+  vTaskDelay(pdMS_TO_TICKS(STARTUP_DELAY_MS));
+  ESP_LOGI(TAG, "Standby: no automatic playback. Press PLAY for low-volume test pattern.");
 
-  ESP_LOGI(TAG, "Playing double beep...");
-  play_beep(BEEP_FREQ, BEEP_DURATION_MS);
-  vTaskDelay(pdMS_TO_TICKS(100));
-  play_beep(BEEP_FREQ, BEEP_DURATION_MS);
-
-  ESP_LOGI(TAG, "Done!");
+  while (true) {
+    kratt_korvo2_button_id_t button_index = BUTTON_NONE;
+    if (xQueueReceive(g_button_queue, &button_index, pdMS_TO_TICKS(BUTTON_POLL_MS)) == pdTRUE) {
+      handle_button_event(button_index);
+    }
+  }
 }
