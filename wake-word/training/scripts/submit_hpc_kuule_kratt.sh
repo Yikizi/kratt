@@ -15,8 +15,10 @@ TRAINING_STEPS="10000"
 NEGATIVE_LIMIT="5000"
 TIME_LIMIT="02:30:00"
 CPUS="4"
-MEM="16G"
+MEM="48G"
 EXPERIMENT_TAG="v1"
+USE_SPEC_AUGMENT=0
+USE_TTS_HARD_NEG_IN_HARD_SET=0
 
 CV_ROOT="${DATASETS_DIR}/common-voice-et/cv-corpus-24.0-2025-12-05/et"
 CV_WAV_DIR="${DATASETS_DIR}/common-voice-et-wav"
@@ -27,10 +29,30 @@ KORVO2_NEG_DIR="${PROCESSED_DIR}/negative_korvo2"
 KORVO2_NEG_EXTRA_DIR="${PROCESSED_DIR}/negative_korvo2_extra"
 KORVO2_NEG_S2_DIR="${PROCESSED_DIR}/negative_korvo2_session2"
 KORVO2_AMB_DIR="${PROCESSED_DIR}/ambient_korvo2"
+MACBOOK_NEG_DIR="${PROCESSED_DIR}/negative_macbook_segmented"
 TTS_POS_DIR="${PROCESSED_DIR}/positive_tts"
 TTS_SSML_POS_DIR="${PROCESSED_DIR}/positive_tts_ssml"
 TTS_HARD_NEG_DIR="${PROCESSED_DIR}/negative_tts_hard"
 TTS_HARD_NEG_V2_DIR="${PROCESSED_DIR}/negative_tts_hard_v2"
+
+# v8: real positives + voice-cloned positives
+MAC_POS_DIR="${DATA_ROOT}/raw/mattias/positive"
+MAC_POS_AUG_DIR="${DATA_ROOT}/augmented/positive_mattias_mac"
+XTTS_POS_MARTA="${DATA_ROOT}/raw/xtts_clones/marta/positive"
+XTTS_POS_ANNAM="${DATA_ROOT}/raw/xtts_clones/annam/positive"
+XTTS_POS_EMA="${DATA_ROOT}/raw/xtts_clones/ema/positive"
+# Isa pos held out for unseen-speaker test (NOT included)
+
+# v8: hard negatives (real + voice-cloned)
+MAC_HARD_NEG_DIR="${DATA_ROOT}/augmented/hard_neg_mattias_mac_train"
+XTTS_HARD_NEG_MARTA="${DATA_ROOT}/raw/xtts_clones/marta/negative"
+XTTS_HARD_NEG_ANNAM="${DATA_ROOT}/raw/xtts_clones/annam/negative"
+XTTS_HARD_NEG_EMA="${DATA_ROOT}/raw/xtts_clones/ema/negative"
+# Isa neg held out for unseen-speaker test (NOT included)
+
+# v8: opt-in flags - only use TTS hard negs in legacy "negative" set if explicitly requested
+USE_LEGACY_TTS_HARD_NEG=0
+USE_HARD_NEG_FEATURE_SET=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -40,6 +62,10 @@ while [[ $# -gt 0 ]]; do
     --cpus) CPUS="$2"; shift 2 ;;
     --mem) MEM="$2"; shift 2 ;;
     --tag) EXPERIMENT_TAG="$2"; shift 2 ;;
+    --use-legacy-tts-hard-neg) USE_LEGACY_TTS_HARD_NEG=1; shift 1 ;;
+    --no-hard-neg-feature-set) USE_HARD_NEG_FEATURE_SET=0; shift 1 ;;
+    --spec-augment) USE_SPEC_AUGMENT=1; shift 1 ;;
+    --tts-hard-neg-in-hard-set) USE_TTS_HARD_NEG_IN_HARD_SET=1; shift 1 ;;
     *) echo "Unknown: $1" >&2; exit 2 ;;
   esac
 done
@@ -58,26 +84,66 @@ for d in "${CV_ROOT}" "${POSITIVE_MIC1}" "${POSITIVE_MIC2}" "${AMBIENT_DIR}"; do
   fi
 done
 
-# Build extra positive dirs (TTS + SSML)
+# Build extra positive dirs (TTS + SSML + Mac + XTTS clones)
 EXTRA_POS=""
-for pos_d in "${TTS_POS_DIR}" "${TTS_SSML_POS_DIR}"; do
+EXTRA_POS_LIST=(
+  "${TTS_POS_DIR}"
+  "${TTS_SSML_POS_DIR}"
+  "${MAC_POS_DIR}"
+  "${MAC_POS_AUG_DIR}"
+  "${XTTS_POS_MARTA}"
+  "${XTTS_POS_ANNAM}"
+  "${XTTS_POS_EMA}"
+)
+for pos_d in "${EXTRA_POS_LIST[@]}"; do
   if [[ -d "${pos_d}" ]]; then
     EXTRA_POS="${EXTRA_POS} ${pos_d}"
     echo "Including extra positives: ${pos_d}"
   fi
 done
 
-# Build extra negative dirs (same-device + TTS hard negatives)
+# Build extra negative dirs (same-device KORVO-2 + MacBook segmented; legacy TTS hard neg opt-in)
 EXTRA_NEG_LIST=""
-for neg_d in "${KORVO2_NEG_DIR}" "${KORVO2_NEG_EXTRA_DIR}" "${KORVO2_NEG_S2_DIR}" "${TTS_HARD_NEG_DIR}" "${TTS_HARD_NEG_V2_DIR}"; do
+for neg_d in "${KORVO2_NEG_DIR}" "${KORVO2_NEG_EXTRA_DIR}" "${KORVO2_NEG_S2_DIR}" "${MACBOOK_NEG_DIR}"; do
   if [[ -d "${neg_d}" ]]; then
     EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${neg_d}"
     echo "Including extra negatives: ${neg_d}"
   fi
 done
+if [[ "${USE_LEGACY_TTS_HARD_NEG}" == "1" ]]; then
+  for neg_d in "${TTS_HARD_NEG_DIR}" "${TTS_HARD_NEG_V2_DIR}"; do
+    if [[ -d "${neg_d}" ]]; then
+      EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${neg_d}"
+      echo "Including legacy TTS hard negatives in general neg pool: ${neg_d}"
+    fi
+  done
+fi
 EXTRA_NEG_ARGS=""
 if [[ -n "${EXTRA_NEG_LIST}" ]]; then
   EXTRA_NEG_ARGS="--extra-negative-dirs ${EXTRA_NEG_LIST}"
+fi
+
+# Build hard negative dirs (separate feature set with higher penalty weight)
+HARD_NEG_LIST=""
+HARD_NEG_ARGS=""
+if [[ "${USE_HARD_NEG_FEATURE_SET}" == "1" ]]; then
+  for hn_d in "${MAC_HARD_NEG_DIR}" "${XTTS_HARD_NEG_MARTA}" "${XTTS_HARD_NEG_ANNAM}" "${XTTS_HARD_NEG_EMA}"; do
+    if [[ -d "${hn_d}" ]]; then
+      HARD_NEG_LIST="${HARD_NEG_LIST:+${HARD_NEG_LIST},}${hn_d}"
+      echo "Including hard negatives: ${hn_d}"
+    fi
+  done
+  if [[ "${USE_TTS_HARD_NEG_IN_HARD_SET}" == "1" ]]; then
+    for hn_d in "${TTS_HARD_NEG_DIR}" "${TTS_HARD_NEG_V2_DIR}"; do
+      if [[ -d "${hn_d}" ]]; then
+        HARD_NEG_LIST="${HARD_NEG_LIST:+${HARD_NEG_LIST},}${hn_d}"
+        echo "Including TTS hard negatives in HARD SET: ${hn_d}"
+      fi
+    done
+  fi
+  if [[ -n "${HARD_NEG_LIST}" ]]; then
+    HARD_NEG_ARGS="--hard-negative-dirs ${HARD_NEG_LIST}"
+  fi
 fi
 
 EXTRA_AMB_ARGS=""
@@ -129,17 +195,29 @@ echo "=== Step 2: Prepare experiment directory ==="
   --negative-limit ${NEGATIVE_LIMIT} \
   --force \
   ${EXTRA_NEG_ARGS} \
-  ${EXTRA_AMB_ARGS}
+  ${EXTRA_AMB_ARGS} \
+  ${HARD_NEG_ARGS}
 
 # Step 3: Train (same script as marvin)
 echo "=== Step 3: Train ==="
+TRAIN_HARD_NEG_ARG=""
+if [[ -d "${OUTPUT_DIR}/hard_negative_samples" ]]; then
+  TRAIN_HARD_NEG_ARG="--hard-negative-dir ${OUTPUT_DIR}/hard_negative_samples"
+fi
+
+TRAIN_SPEC_AUGMENT_ARG=""
+if [[ "${USE_SPEC_AUGMENT}" == "1" ]]; then
+  TRAIN_SPEC_AUGMENT_ARG="--spec-augment"
+fi
+
 "${ROOT_DIR}/wake-word/training/scripts/train_microwakeword_experiment.sh" \
   --experiment-name "microwakeword-kuule-kratt-${EXPERIMENT_TAG}" \
   --positive-dir "${OUTPUT_DIR}/positive_samples" \
   --negative-dir "${OUTPUT_DIR}/negative_samples" \
   --ambient-dir "${OUTPUT_DIR}/ambient_samples" \
-  --training-steps "${TRAINING_STEPS}" \
-  --spec-augment
+  \${TRAIN_HARD_NEG_ARG} \
+  \${TRAIN_SPEC_AUGMENT_ARG} \
+  --training-steps "${TRAINING_STEPS}"
 EOF
 )"
 

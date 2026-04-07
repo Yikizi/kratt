@@ -49,6 +49,10 @@ def parse_args():
                    help="Comma-separated list of additional negative WAV directories")
     p.add_argument("--extra-ambient-dirs", default="",
                    help="Comma-separated list of additional ambient WAV directories")
+    p.add_argument("--hard-negative-dirs", default="",
+                   help="Comma-separated list of HARD negative WAV directories "
+                        "(phonetically similar phrases). Symlinked into a separate "
+                        "hard_negative_samples/ directory.")
     p.add_argument("--output-dir", required=True)
     p.add_argument("--negative-limit", type=int, default=5000)
     p.add_argument("--test-split", type=float, default=0.15)
@@ -159,6 +163,23 @@ def main():
             neg_idx += 1
             extra_neg_count += 1
 
+    # --- Hard negative samples (phonetically similar phrases) ---
+    hard_neg_count = 0
+    hard_neg_dirs = [d.strip() for d in args.hard_negative_dirs.split(",") if d.strip()]
+    if hard_neg_dirs:
+        hard_neg_out = output_dir / "hard_negative_samples"
+        hard_neg_out.mkdir(parents=True)
+        for extra_dir in hard_neg_dirs:
+            extra_dir = Path(extra_dir)
+            if not extra_dir.exists():
+                raise SystemExit(f"Hard negative dir not found: {extra_dir}")
+            extra_wavs = sorted(extra_dir.rglob("*.wav"))
+            print(f"  Hard negatives from {extra_dir.name}: {len(extra_wavs)}")
+            for src in extra_wavs:
+                dst = hard_neg_out / f"hard_negative_{hard_neg_count:05d}.wav"
+                dst.symlink_to(src.resolve())
+                hard_neg_count += 1
+
     # --- Ambient samples (MUSAN) ---
     ambient_src = Path(args.ambient_dir)
     ambient_files = sorted(ambient_src.rglob("*.wav"))
@@ -199,6 +220,8 @@ def main():
         "negative_source": "common_voice_et_24.0",
         "negative_extra_sources": extra_neg_dirs,
         "negative_limit": args.negative_limit,
+        "hard_negative_count": hard_neg_count,
+        "hard_negative_sources": hard_neg_dirs,
         "ambient_musan_count": len(ambient_files),
         "ambient_extra_count": extra_amb_count,
         "ambient_total": len(ambient_files) + extra_amb_count,
@@ -219,6 +242,7 @@ def main():
     print(f"  Negative (CV):    {len(filtered)}")
     print(f"  Negative (extra): {extra_neg_count}")
     print(f"  Negative (total): {len(filtered) + extra_neg_count}")
+    print(f"  Hard negatives:   {hard_neg_count}")
     print(f"  Ambient (MUSAN):  {len(ambient_files)}")
     print(f"  Ambient (extra):  {extra_amb_count}")
     print(f"  Ambient (total):  {len(ambient_files) + extra_amb_count}")

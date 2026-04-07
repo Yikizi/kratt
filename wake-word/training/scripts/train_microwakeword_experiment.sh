@@ -29,6 +29,7 @@ EOF
 EXPERIMENT_NAME=""
 POS_DIR=""
 NEG_DIR=""
+HARD_NEG_DIR=""
 AMBIENT_DIR=""
 TRAINING_STEPS=3000
 CLIP_DURATION_MS=1500
@@ -49,6 +50,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --negative-dir)
       NEG_DIR="$2"
+      shift 2
+      ;;
+    --hard-negative-dir)
+      HARD_NEG_DIR="$2"
       shift 2
       ;;
     --ambient-dir)
@@ -105,6 +110,10 @@ if [[ ! -d "${NEG_DIR}" ]]; then
   echo "Missing negative samples: ${NEG_DIR}" >&2
   exit 2
 fi
+if [[ -n "${HARD_NEG_DIR}" && ! -d "${HARD_NEG_DIR}" ]]; then
+  echo "Missing hard negative samples: ${HARD_NEG_DIR}" >&2
+  exit 2
+fi
 if [[ -n "${AMBIENT_DIR}" && ! -d "${AMBIENT_DIR}" ]]; then
   echo "Missing ambient samples: ${AMBIENT_DIR}" >&2
   exit 2
@@ -116,19 +125,29 @@ source "${ROOT_DIR}/wake-word/.venv-microwakeword/bin/activate"
 
 POS_COUNT="$(find "${POS_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
 NEG_COUNT="$(find "${NEG_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
+HARD_NEG_COUNT="0"
+if [[ -n "${HARD_NEG_DIR}" ]]; then
+  HARD_NEG_COUNT="$(find "${HARD_NEG_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
+fi
 AMBIENT_COUNT="0"
 if [[ -n "${AMBIENT_DIR}" ]]; then
   AMBIENT_COUNT="$(find "${AMBIENT_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
 fi
 
-STAMP="pos_wavs=${POS_COUNT} neg_wavs=${NEG_COUNT} ambient_wavs=${AMBIENT_COUNT} clip_ms=${CLIP_DURATION_MS}"
+STAMP="pos_wavs=${POS_COUNT} neg_wavs=${NEG_COUNT} hard_neg_wavs=${HARD_NEG_COUNT} ambient_wavs=${AMBIENT_COUNT} clip_ms=${CLIP_DURATION_MS}"
 
 NEED_MMAPS=1
 if [[ "${REGEN_MMAPS:-0}" != "1" ]]; then
   if [[ -f "${MMAP_STAMP_PATH}" ]] && [[ "$(cat "${MMAP_STAMP_PATH}")" == "${STAMP}" ]]; then
     if [[ -d "${FEATURES_DIR}/positive/training/wakeword_mmap" && -d "${FEATURES_DIR}/negative/training/negative_mmap" ]]; then
-      if [[ -z "${AMBIENT_DIR}" || ( -d "${FEATURES_DIR}/negative/validation_ambient/ambient_mmap" && -d "${FEATURES_DIR}/negative/testing_ambient/ambient_mmap" ) ]]; then
-        NEED_MMAPS=0
+      HARD_NEG_OK=1
+      if [[ -n "${HARD_NEG_DIR}" && ! -d "${FEATURES_DIR}/hard_negative/training/hard_negative_mmap" ]]; then
+        HARD_NEG_OK=0
+      fi
+      if [[ "${HARD_NEG_OK}" == "1" ]]; then
+        if [[ -z "${AMBIENT_DIR}" || ( -d "${FEATURES_DIR}/negative/validation_ambient/ambient_mmap" && -d "${FEATURES_DIR}/negative/testing_ambient/ambient_mmap" ) ]]; then
+          NEED_MMAPS=0
+        fi
       fi
     fi
   fi
@@ -138,7 +157,7 @@ if [[ "${NEED_MMAPS}" == "0" ]]; then
   echo "Found existing mmaps under ${FEATURES_DIR} (stamp match); skipping generation."
 else
   echo "Generating mmaps (stamp: ${STAMP})"
-  rm -rf "${FEATURES_DIR}/positive" "${FEATURES_DIR}/negative"
+  rm -rf "${FEATURES_DIR}/positive" "${FEATURES_DIR}/negative" "${FEATURES_DIR}/hard_negative"
   MMAP_CMD=(
     python "${ROOT_DIR}/wake-word/training/scripts/generate_microwakeword_mmaps.py"
     --positive-dir "${POS_DIR}"
@@ -146,11 +165,27 @@ else
     --out-dir "${FEATURES_DIR}"
     --clip-duration-ms "${CLIP_DURATION_MS}"
   )
+  if [[ -n "${HARD_NEG_DIR}" ]]; then
+    MMAP_CMD+=(--hard-negative-dir "${HARD_NEG_DIR}")
+  fi
   if [[ -n "${AMBIENT_DIR}" ]]; then
     MMAP_CMD+=(--ambient-dir "${AMBIENT_DIR}")
   fi
   "${MMAP_CMD[@]}"
   echo "${STAMP}" > "${MMAP_STAMP_PATH}"
+fi
+
+HARD_NEG_BLOCK=""
+if [[ -n "${HARD_NEG_DIR}" ]]; then
+  HARD_NEG_BLOCK=$(cat <<EOB
+  - features_dir: "${FEATURES_DIR}/hard_negative"
+    sampling_weight: 4.0
+    penalty_weight: 3.0
+    truth: false
+    truncation_strategy: truncate_start
+    type: mmap
+EOB
+)
 fi
 
 cat > "${CFG_PATH}" <<EOF
@@ -169,6 +204,7 @@ features:
     truth: false
     truncation_strategy: random
     type: mmap
+${HARD_NEG_BLOCK}
 training_steps: [${TRAINING_STEPS}]
 positive_class_weight: [1]
 negative_class_weight: [20]
@@ -206,6 +242,9 @@ REPORT_CMD=(
   --positive-dir "${POS_DIR}"
   --negative-dir "${NEG_DIR}"
 )
+if [[ -n "${HARD_NEG_DIR}" ]]; then
+  REPORT_CMD+=(--hard-negative-dir "${HARD_NEG_DIR}")
+fi
 if [[ -n "${AMBIENT_DIR}" ]]; then
   REPORT_CMD+=(--ambient-dir "${AMBIENT_DIR}")
 fi

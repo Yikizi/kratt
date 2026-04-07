@@ -235,6 +235,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--positive-dir", required=True)
     parser.add_argument("--negative-dir", required=True)
+    parser.add_argument("--hard-negative-dir",
+                        help="Optional dir of hard (phonetically similar) negatives. "
+                             "Generates a separate hard_negative/ feature set.")
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--ambient-dir")
     parser.add_argument("--seed", type=int, default=10)
@@ -246,6 +249,11 @@ def main() -> None:
 
     positive_dir = Path(args.positive_dir).expanduser().resolve()
     negative_dir = Path(args.negative_dir).expanduser().resolve()
+    hard_negative_dir = (
+        Path(args.hard_negative_dir).expanduser().resolve()
+        if args.hard_negative_dir
+        else None
+    )
     out_dir = Path(args.out_dir).expanduser().resolve()
     ambient_dir = (
         Path(args.ambient_dir).expanduser().resolve() if args.ambient_dir else None
@@ -255,14 +263,20 @@ def main() -> None:
         raise SystemExit(f"Positive dir not found: {positive_dir}")
     if not negative_dir.exists():
         raise SystemExit(f"Negative dir not found: {negative_dir}")
+    if hard_negative_dir is not None and not hard_negative_dir.exists():
+        raise SystemExit(f"Hard negative dir not found: {hard_negative_dir}")
     if ambient_dir is not None and not ambient_dir.exists():
         raise SystemExit(f"Ambient dir not found: {ambient_dir}")
 
     (out_dir / "positive").mkdir(parents=True, exist_ok=True)
     (out_dir / "negative").mkdir(parents=True, exist_ok=True)
+    if hard_negative_dir is not None:
+        (out_dir / "hard_negative").mkdir(parents=True, exist_ok=True)
 
     print(f"Positive clips: {positive_dir}")
     print(f"Negative clips: {negative_dir}")
+    if hard_negative_dir is not None:
+        print(f"Hard negative clips: {hard_negative_dir}")
     if ambient_dir is not None:
         print(f"Ambient clips: {ambient_dir}")
     print(f"Output: {out_dir}")
@@ -283,6 +297,15 @@ def main() -> None:
         split_count=args.split_count,
         clip_duration_ms=args.clip_duration_ms,
     )
+    if hard_negative_dir is not None:
+        generate_one(
+            input_dir=hard_negative_dir,
+            out_dir=out_dir / "hard_negative",
+            mmap_name="hard_negative_mmap",
+            seed=args.seed,
+            split_count=args.split_count,
+            clip_duration_ms=args.clip_duration_ms,
+        )
     if ambient_dir is not None:
         generate_ambient(
             input_dir=ambient_dir,
