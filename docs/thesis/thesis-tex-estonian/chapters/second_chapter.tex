@@ -128,14 +128,74 @@ Neg. (Korvo-2) & FPR $\downarrow$ & 13,8 & 24,8 & 7,3 & 1,8 & \textbf{0,9} \\
 \end{tabular}
 \end{table}
 
-Tabelist ilmneb selge iteratiivne paranemine:
+Tabelist näis ilmnevat selge iteratiivne paranemine:
 
 \begin{itemize}
-    \item \textbf{v3} (109 sama-seadme negatiivset, 2,7\% osakaal) --- degradatsiooni org. CV FPR tõusis 8\%-lt 98\%-le, mudel ülevallandus.
+    \item \textbf{v3} (109 sama-seadme negatiivset, 2,7\% osakaal) --- näis langevat degradatsiooni orgu. CV FPR tõusis 8\%-lt 98\%-le, mudel paistis ülevallandununa.
     \item \textbf{v4} (1311 sama-seadme negatiivset, 25\%) --- osaline paranemine. Korvo-2 FPR langes 7,3\%-le, kuid CV FPR jäi kõrgeks (36,8\%).
-    \item \textbf{v5} (lisatud TTS positiivsed ja hard negatiivsed) --- Korvo-2 FPR langes 1,8\%-le. Hard negatiivsed (\enquote{Hei Kratt}, \enquote{Tere Kratt} jm) sundisid mudelit eristama täpset fraasi.
-    \item \textbf{v6} (lisatud 3345 teise sessiooni sama-seadme negatiivset) --- läbimurre. Kõik mõõdikud on paremad kui baastasemel v1: recall 99,6--100\%, CV FPR 0,4\%, Korvo-2 FPR 0,9\%.
+    \item \textbf{v5} (lisatud TTS positiivsed ja hard negatiivsed) --- Korvo-2 FPR langes 1,8\%-le. Hard negatiivsed (\enquote{Hei Kratt}, \enquote{Tere Kratt} jm) sundisid mudelit näiliselt eristama täpset fraasi.
+    \item \textbf{v6} (lisatud 3345 teise sessiooni sama-seadme negatiivset) --- esialgne \enquote{läbimurre}: recall 99,6--100\%, CV FPR 0,4\%, Korvo-2 FPR 0,9\%.
 \end{itemize}
+
+Need esialgsed tulemused olid aga \emph{eksitavad}. Edasine reaalajas testimine ja metoodika audit paljastasid süstemaatilise hindamisvea, mille tulemusena olid kõik tabelis~\ref{tab:full-comparison} esitatud negatiivsete FPR numbrid tegelikest tulemustest oluliselt paremad. Selle leiu kirjeldus ja korrigeeritud tulemused on järgmises alapeatükis.
+
+\subsection{Andmelekke avastamine ja korrigeeritud hindamine}
+\label{sec:data-leakage}
+
+Pärast vahekaitsmist alustati v6 mudeli reaalajas testimist MacBook~Pro sisemikrofoniga (vt §2.X). Test näitas, et mudel registreeris umbes 50 valevallandumist tunnis (FAPH~$\approx$~50) tavakõne ajal. See tulemus oli teravas vastuolus tabelis~\ref{tab:full-comparison} esitatud CV FPR\,=\,0,4\% väärtusega, mis ennustanuks kordades vähem valeaktiveerimisi.
+
+Anomaalia uurimisel selgus, et lokaalne hindamisskript \texttt{compare\_models.py} kasutas negatiivse testikomplektina kataloogi \texttt{data/processed/negative\_samples}, mis sisaldas \emph{täpselt samu} 5000 Common~Voice eestikeelset klippi, mida kasutati mudeli treenimiseks. Klipi-taseme FPR mõõtis seega seda, kui hästi mudel oli oma treeningkomplekti pähe õppinud, mitte seda, kui hästi ta üldistub uutele kõnenäidetele. Sama probleem kehtis ka KORVO-2 negatiivsete kohta: kõik kogutud klipid olid treeningusse võetud ning sõltumatut hold-out komplekti polnud kunagi loodud.
+
+\subsubsection{Hold-out hindamiskomplektide ehitamine}
+
+Korrektse hindamise tagamiseks koostati neli truly hold-out testikomplekti, mis on garanteeritult disjoint kõigi mudeliversioonide treeningandmetega:
+
+\begin{itemize}
+    \item \textbf{\texttt{faph\_cv\_et}} --- 2000 Common~Voice ET klippi (~3,82 tundi). Kasutati sama RNG seemet (\texttt{seed=42}) kui treeningus, kuid valiti indeksid 5000--7000, st jätkata sealt kus treeningu komplekt lõppes. Kasutatakse pikkvormi FAPH-i mõõtmiseks streaming inference'iga.
+    \item \textbf{\texttt{pos\_isa\_xtts}} --- 48 \enquote{Kuule Kratt} ütlust, mis on genereeritud XTTS~v2 mudeliga, klooniti Isa hääl. Pole \emph{ühegi} mudeli treeningus kasutatud. Mõõdab unseen-speaker recalli.
+    \item \textbf{\texttt{hard\_neg\_mac\_holdout}} --- 15 reaalset Mac mikrofoniga salvestatud foneetiliselt sarnast fraasi (\enquote{Kuule kraam}, \enquote{Kuule rott} jt), mis hoiti v8 treeningust eraldi. Mõõdab foneetilise eristusvõime tegelikku taset reaalse heli peal.
+    \item \textbf{\texttt{hard\_neg\_isa\_xtts}} --- 60 hard negative fraasi Isa kloonitud häälega.
+\end{itemize}
+
+Hindamispipeline'i kesksesse moodulisse \texttt{evaluation/test\_sets.py} kirjutati \texttt{assert\_disjoint\_from\_training()} kontroll, mis tagab et iga test set mida konkreetse mudeliga skooritakse on selle mudeli treeningandmetest disjoint. See tripwire takistab samalaadse vea kordumist.
+
+\subsubsection{Korrigeeritud tulemused}
+
+Tabel~\ref{tab:fair-comparison-holdout} esitab kõigi kaheksa mudeliversiooni täielikud tulemused hold-out komplektidel cutoff'iga 0,97. Streaming FAPH on arvutatud pideva moving-average'iga (5 freimi) ja 2-sekundilise refraktoorperioodiga.
+
+\begin{table}[H]
+\centering
+\caption{Mudeliversioonide korrigeeritud võrdlus tõeselt hold-out hindamiskomplektidel (cutoff\,=\,0,97). Parim tulemus igas reas on \textbf{paksus kirjas}. v8 puhul on \texttt{pos\_mac\_mattias} treeningusse võetud, mistõttu mõõtmine puudub.}
+\label{tab:fair-comparison-holdout}
+\small
+\begin{tabular}{l r r r r r r r r}
+\hline
+\textbf{Hindamiskomplekt} & \textbf{v1} & \textbf{v2} & \textbf{v3} & \textbf{v4} & \textbf{v5} & \textbf{v6} & \textbf{v7} & \textbf{v8} \\
+\hline
+Recall (Isa XTTS, unseen) & 77,1 & \textbf{100,0} & 97,9 & 75,0 & \textbf{100,0} & \textbf{100,0} & 43,8 & 68,8 \\
+Recall (Mac mic, unseen seade) & 86,7 & \textbf{100,0} & \textbf{100,0} & 86,7 & \textbf{100,0} & \textbf{100,0} & \textbf{100,0} & --- \\
+FPR hard neg (Mac, real) $\downarrow$ & \textbf{33,3} & 93,3 & 73,3 & 73,3 & 100,0 & 100,0 & 80,0 & \textbf{33,3} \\
+FPR hard neg (Isa XTTS) $\downarrow$ & 80,0 & 100,0 & 100,0 & 71,7 & 86,7 & 63,3 & 25,0 & \textbf{21,7} \\
+\textbf{FAPH} (CV ET, 3,82\,h) $\downarrow$ & 367 & 472 & 542 & 373 & 228 & 154 & \textbf{96} & 141 \\
+\hline
+\end{tabular}
+\end{table}
+
+Korrigeeritud tulemused muudavad varasemate alapeatükkide järeldusi mitmes olulises punktis:
+
+\begin{enumerate}
+    \item \textbf{v6 ei ole parim mudel.} Selle FAPH on 154, mis on v7 (96) tulemusest 60\% halvem. v6 on parim ainult kahel positiivsete recall'i mõõdikul, kus mitu varasemat versiooni saavutavad sama 100\%.
+    \item \textbf{Degradatsiooni org \emph{on} olemas, kuid teises mõõdikus.} Esialgne CV FPR-i tabel näitas v3-l 98\%, mis oli treeningandmete pähe õppimise artefakt. Tegelikkuses näitab FAPH selget V-kuju: v1\,=\,367, v2\,=\,472, v3\,=\,542 (madalpunkt), v4\,=\,373. Park~et~al. \cite{park2024adversarial} hüpotees kehtib endiselt, lihtsalt mõõdetuna teise mõõdikuga.
+    \item \textbf{v7 on objektiivselt parim FAPH-il.} TTS hard negatiivide v2 lisamine ja SpecAugment koos andsid suurima ühe sammu paranemise: v6\,154 $\rightarrow$ v7\,96. Seda saavutust lokaalne hindamine ei näidanud, sest klipi-tasemel olid mõlema mudeli skoorid treeningandmetel võrdsed.
+    \item \textbf{v7-l on tõsine recall puudus uue kõneleja peal.} Isa hääle peal (XTTS unseen) on v7 recall vaid 43,8\%, samas kui v6 ja v5 saavutavad 100\%. v7 konservatiivsus tuli recall'i hinnaga.
+    \item \textbf{v8 reaalsed hard negatiivid on parim foneetilise eristuse jaoks.} Mac hard neg FPR langes 100\%-lt 33,3\%-le ja Isa XTTS hard neg FPR 63,3\%-lt 21,7\%-le. v8 ei suuda aga v7 FAPH taset hoida (141 vs 96), mis viitab et kaks parandust (real hard neg ja SpecAugment) tasub kombineerida tuleviku versioonis.
+\end{enumerate}
+
+\subsubsection{Metoodikaline järeldus}
+
+Töö üks olulisemaid leide on, et \textbf{klipi-taseme FPR mõõtmine treeningandmete osahulgal ei ole usaldusväärne wake word mudeli kvaliteedi mõõdik}. Iga väide mudeli generaliseerumise kohta peab põhinema andmetel, mille mudel ei ole kunagi treeningus näinud. Kuni hold-out komplekti puudumiseni ei õnnestunud seda viga avastada, sest klipi-tasemel saadud numbrid (CV FPR 0,4\%) tundusid kõlblikud. Alles reaalajas testimine pikemate ambient-segmentidega tõi anomaalia esile.
+
+Praktiline järeldus tulevasteks töödeks: wake word süsteemi hindamispipeline peab vaikimisi sisaldama (a) kohustuslikku disjointness checki test setide vs treeningandmete vahel, (b) pikkade ambient-segmentide peal arvutatud FAPH metrikat, ja (c) vähemalt ühte truly held-out positiivset komplekti, mille mudel ei ole \emph{ühelgi} koolitusringil näinud.
 
 \subsection{Ristmikrofoni testimine (H2)}
 
@@ -160,6 +220,6 @@ See tulemus viitab \textbf{generaliseerumise asümmeetriale}:
     \item \textbf{FPR ei generaliseeru}: mudel ei oska tõrjuda MacBooki mikrofoni kaudu kuuldavat tavakõnet, sest negatiivne treeningmaterjal pärineb teisest akustilisest domeenist (Korvo-2 ja Common~Voice).
 \end{itemize}
 
-See leid on kooskõlas H1 tulemustega: sama-seadme negatiivsed parandasid KORVO-2 FPR-i dramaatiliselt (13,8\%~$\rightarrow$~0,9\%), sest mudel õppis tõrjuma spetsiifiliselt selle mikrofoni tavakõnet. MacBooki mikrofon on aga kolmas domeen, mille negatiivseid mudel pole näinud.
+See leid on kooskõlas H1 tulemustega: sama-seadme negatiivsed parandasid KORVO-2 FPR-i, sest mudel õppis tõrjuma spetsiifiliselt selle mikrofoni tavakõnet. Korrigeeritud hindamise (vt §\ref{sec:data-leakage}) järgi langes FAPH Common~Voice ET hold-out komplektil v1 367-lt v6 154-le ja v7 96-ni, mis ka kvantitatiivselt kinnitab paranemist. MacBooki mikrofon on aga kolmas domeen, mille negatiivseid mudel pole näinud --- ja see pole ainus puudujääk: sama probleem kehtib ka uute kõnelejate suhtes (vt allpool).
 
 Praktilisest seisukohast ei ole see kriitiline puudus, sest lõppseade on ESP32-S3-Korvo-2, mitte sülearvuti. Kuid teaduslikult on tegemist olulise tähelepanekuga: \textbf{sisutunnuste õppimine on piisav positiivseks tuvastuseks ristseadmel, kuid valepositiivsete tõrjumine nõuab domeenispetsiifilist negatiivset treeningmaterjali}. See täpsustab hüpoteesi H2 ja annab selge suunise tulevasteks arendusteks: iga uue sihtseadme puhul tuleb lisada vastav negatiivne treeningmaterjal.

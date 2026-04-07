@@ -5,6 +5,16 @@
 
 24. märts 2026
 
+> **MÄRKUS (post-vahekaitsmine, aprill 2026):** Vahekaitsmise ajal esitatud
+> v3-v6 võrdlustabel slaidil 7 sisaldab numbreid (CV FPR 0,4%, KORVO-2 FPR 0,9%),
+> mis arvutati treeningandmete osahulgalt – st mudel oli neid klippe juba näinud.
+> Hilisem audit avastas selle andmelekke ja kogu hindamismetoodika kirjutati
+> ümber. Korrigeeritud tulemused on lõputöö §2 (vt `chapters/second_chapter.tex`,
+> alapeatükk "Andmelekke avastamine ja korrigeeritud hindamine") ja näitavad,
+> et v6 \emph{ei ole} parim mudel – v7 saavutab parima FAPH (96 vs 154 tunni
+> kohta) ja v8 parima foneetilise eristuse hard negatiivide peal (33% vs 100%).
+> See metoodikaline õppetund on lõputöö üks tugevamaid leide.
+
 Siinne versioon on timmitud umbes **10 minuti** jaoks. Eesmärk ei ole näidata kõiki detaile, vaid rääkida selge lugu:
 
 1. miks probleem on päris;
