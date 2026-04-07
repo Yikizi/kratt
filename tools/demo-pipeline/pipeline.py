@@ -5,16 +5,20 @@ Runs entirely on Mac: TFLite wake word, sherpa-onnx STT, Ollama LLM, mock HA.
 
 Usage:
     python pipeline.py
-    python pipeline.py --threshold 0.7 --no-wakeword  # skip wake word, just STT→LLM
+    python pipeline.py --threshold 0.7 --no-wakeword  # manual trigger mode
+    python pipeline.py --log --participant P01        # enable telemetry logging
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
 import threading
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -26,6 +30,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 WAKEWORD_MODEL = PROJECT_ROOT / "wake-word/models/kuule-kratt-v7/kuule_kratt_v7.tflite"
 STT_MODEL_DIR = PROJECT_ROOT / "wake-word/models/kiirkirjutaja-int8"
 MCP_SERVER = PROJECT_ROOT / "tools/mock-ha-server/server.py"
+LOG_DIR = PROJECT_ROOT / "wake-word/evaluation/logs"
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
 LLM_MODEL = "gemma3:12b"
@@ -51,6 +56,95 @@ Seadmed:
 Vasta: {"actions":[...],"response":"lühike eestikeelne vastus"}
 Kui tuba pole täpsustatud, kasuta elutuba. Vastus olgu lühike (TTS).
 """
+
+
+# ============================================================
+# Interaction logger (opt-in via --log flag)
+# ============================================================
+
+class InteractionLogger:
+    """Append-only JSONL logger for one user testing session.
+
+    One file per session. Each line is a complete interaction record.
+    Disabled by default — only writes when explicitly enabled via --log.
+    """
+
+    def __init__(
+        self,
+        enabled: bool,
+        participant_id: str,
+        log_dir: Path,
+        llm_model: str,
+        wake_threshold: float,
+    ):
+        self.enabled = enabled
+        self.participant_id = participant_id
+        self.session_id = uuid.uuid4().hex[:8]
+        self.session_start = datetime.now(timezone.utc).isoformat()
+        self.llm_model = llm_model
+        self.wake_threshold = wake_threshold
+        self._interaction_seq = 0
+        self._current_task: str | None = None
+
+        if not enabled:
+            self.path = None
+            return
+
+        log_dir.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+        self.path = log_dir / f"{participant_id}_{ts}_{self.session_id}.jsonl"
+
+        # Session header
+        self._write({
+            "type": "session_start",
+            "session_id": self.session_id,
+            "participant_id": participant_id,
+            "timestamp": self.session_start,
+            "llm_model": llm_model,
+            "wake_threshold": wake_threshold,
+            "wakeword_model": WAKEWORD_MODEL.name,
+            "stt_model": STT_MODEL_DIR.name,
+            "host": os.uname().nodename,
+        })
+        print(f"📊 Logging to {self.path.name}")
+
+    def set_task(self, task_id: str | None):
+        self._current_task = task_id
+        if self.enabled and task_id:
+            self._write({
+                "type": "task_change",
+                "task_id": task_id,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            })
+
+    def log_interaction(self, record: dict):
+        if not self.enabled:
+            return
+        self._interaction_seq += 1
+        record = {
+            "type": "interaction",
+            "session_id": self.session_id,
+            "participant_id": self.participant_id,
+            "task_id": self._current_task,
+            "seq": self._interaction_seq,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            **record,
+        }
+        self._write(record)
+
+    def _write(self, record: dict):
+        with self.path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    def close(self):
+        if not self.enabled:
+            return
+        self._write({
+            "type": "session_end",
+            "session_id": self.session_id,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "interaction_count": self._interaction_seq,
+        })
 
 
 # ============================================================
@@ -271,6 +365,16 @@ def run_pipeline(args):
     print("Kratt voice pipeline")
     print("=" * 50)
 
+    logger = InteractionLogger(
+        enabled=args.log,
+        participant_id=args.participant,
+        log_dir=LOG_DIR,
+        llm_model=LLM_MODEL,
+        wake_threshold=args.threshold,
+    )
+    if args.task:
+        logger.set_task(args.task)
+
     # Init components
     wakeword = None
     if not args.no_wakeword:
@@ -312,6 +416,8 @@ def run_pipeline(args):
 
     try:
         while True:
+            wake_prob = None
+            wake_detected_at = None
             if wakeword:
                 # Wake word listening loop
                 audio_buffer = bytearray()
@@ -332,6 +438,8 @@ def run_pipeline(args):
                             if prob > args.threshold and (now - last_detection) > 2.0:
                                 detected = True
                                 last_detection = now
+                                wake_prob = prob
+                                wake_detected_at = now
                                 wakeword.reset()
                                 print(f"\n>>> KUULE KRATT detected! (prob={prob:.3f})")
                                 break
@@ -352,6 +460,11 @@ def run_pipeline(args):
 
             if len(audio) < SAMPLE_RATE * 0.3:  # Less than 0.3s
                 print("   Too short, skipping")
+                logger.log_interaction({
+                    "outcome": "skipped_too_short",
+                    "wake_word_prob": wake_prob,
+                    "audio_duration_s": round(float(len(audio)) / SAMPLE_RATE, 3),
+                })
                 continue
 
             # STT
@@ -363,33 +476,70 @@ def run_pipeline(args):
 
             if not transcript:
                 print("   Empty transcript, skipping")
+                logger.log_interaction({
+                    "outcome": "empty_transcript",
+                    "wake_word_prob": wake_prob,
+                    "audio_duration_s": round(float(len(audio)) / SAMPLE_RATE, 3),
+                    "stt_latency_ms": int(t_stt * 1000),
+                })
                 continue
 
             # LLM: parse intent
             print("🧠 Parsing intent...")
             t2 = time.monotonic()
-            parsed = llm_parse_intent(transcript)
+            llm1_error = None
+            try:
+                parsed = llm_parse_intent(transcript)
+                actions = parsed.get("actions", [])
+            except Exception as e:
+                parsed = {}
+                actions = []
+                llm1_error = str(e)
             t_llm1 = time.monotonic() - t2
-            actions = parsed.get("actions", [])
             print(f"   LLM ({t_llm1:.1f}s): {json.dumps(actions, ensure_ascii=False)}")
 
             # Execute actions
             tool_results = []
+            executed_actions = []
             for action in actions:
+                action_copy = dict(action)  # preserve for logging
                 action_name = action.pop("action", "")
                 result = ha.execute(action_name, action)
                 tool_results.append(result)
+                executed_actions.append({"action": action_name, "args": action, "result": result})
                 print(f"   ⚡ {action_name}: {result}")
 
             # LLM: generate response
             print("💬 Generating response...")
             t3 = time.monotonic()
-            response = llm_respond(transcript, "\n".join(tool_results))
+            llm2_error = None
+            try:
+                response = llm_respond(transcript, "\n".join(tool_results))
+            except Exception as e:
+                response = ""
+                llm2_error = str(e)
             t_llm2 = time.monotonic() - t3
 
             t_total = time.monotonic() - t0
             print(f"\n🔊 KRATT: {response}")
             print(f"   ⏱️  rec={t_rec:.1f}s stt={t_stt:.1f}s llm1={t_llm1:.1f}s llm2={t_llm2:.1f}s total={t_total:.1f}s")
+
+            logger.log_interaction({
+                "outcome": "completed" if not (llm1_error or llm2_error) else "llm_error",
+                "wake_word_prob": wake_prob,
+                "audio_duration_s": round(float(len(audio)) / SAMPLE_RATE, 3),
+                "rec_duration_s": round(t_rec, 3),
+                "stt_latency_ms": int(t_stt * 1000),
+                "stt_transcript": transcript,
+                "llm1_latency_ms": int(t_llm1 * 1000),
+                "llm1_error": llm1_error,
+                "intent_actions": executed_actions,
+                "llm2_latency_ms": int(t_llm2 * 1000),
+                "llm2_error": llm2_error,
+                "response": response,
+                "e2e_latency_ms": int(t_total * 1000),
+            })
+
             print()
             if wakeword:
                 print(f'Listening for "Kuule Kratt"...')
@@ -397,6 +547,7 @@ def run_pipeline(args):
     except KeyboardInterrupt:
         print("\n\nStopped.")
     finally:
+        logger.close()
         ha.close()
 
 
@@ -404,6 +555,21 @@ def main():
     parser = argparse.ArgumentParser(description="Kratt full voice pipeline")
     parser.add_argument("--threshold", type=float, default=0.5, help="Wake word threshold")
     parser.add_argument("--no-wakeword", action="store_true", help="Skip wake word, manual trigger")
+    parser.add_argument(
+        "--log",
+        action="store_true",
+        help="Enable per-interaction JSONL telemetry (off by default to keep dev runs clean)",
+    )
+    parser.add_argument(
+        "--participant",
+        default="dev",
+        help="Participant ID for log file naming (default: dev)",
+    )
+    parser.add_argument(
+        "--task",
+        default=None,
+        help="Initial task ID tag for logged interactions (e.g. T1_turn_on)",
+    )
     args = parser.parse_args()
     run_pipeline(args)
 
