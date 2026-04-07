@@ -487,6 +487,22 @@ wheels = [
 ]
 
 [[package]]
+name = "gradio-client"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fsspec" },
+    { name = "httpx" },
+    { name = "huggingface-hub" },
+    { name = "packaging" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4e/4a/ddfaa8b3fef0238768a42301a3361981af1afd90f92c27adfe6cd031eca7/gradio_client-2.4.0.tar.gz", hash = "sha256:781885374f86759b8db5195e13e716c301d14e48e0442aef63362f1eeea4cce2", size = 58203, upload-time = "2026-03-24T21:20:25.276Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f0/b3/10cb03cf684aab2bec97cb0b9bbba4f93e7a20c6e0f3b4100c235a55ad93/gradio_client-2.4.0-py3-none-any.whl", hash = "sha256:7c170807b924ed6056b2a1fa9d659d349dd20567c00ee0b4dc249dc1e2def620", size = 59156, upload-time = "2026-03-24T21:20:24.018Z" },
+]
+
+[[package]]
 name = "grpcio"
 version = "1.78.0"
 source = { registry = "https://pypi.org/simple" }
@@ -771,6 +787,7 @@ name = "kratt-wake-word"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "gradio-client" },
     { name = "librosa" },
     { name = "matplotlib" },
     { name = "numpy" },
@@ -820,6 +837,7 @@ training = [
 [package.metadata]
 requires-dist = [
     { name = "audiomentations", marker = "extra == 'augmentation'", specifier = ">=0.32.0" },
+    { name = "gradio-client", specifier = ">=2.4.0" },
     { name = "huggingface-hub", marker = "extra == 'datasets'", specifier = ">=0.20.0" },
     { name = "librosa", specifier = ">=0.10.0" },
     { name = "matplotlib", specifier = ">=3.8.0" },
