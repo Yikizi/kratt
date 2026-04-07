@@ -32,6 +32,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--positive-dir", help="Directory of positive wav files for score analysis.")
     parser.add_argument("--negative-dir", help="Directory of negative wav files for score analysis.")
     parser.add_argument(
+        "--hard-negative-dir",
+        help="Directory of HARD negative wav files (phonetically similar phrases).",
+    )
+    parser.add_argument(
         "--ambient-dir",
         help="Directory of ambient wav files for dataset summary.",
     )
@@ -304,6 +308,9 @@ def main() -> None:
 
     positive_dir = Path(args.positive_dir).expanduser().resolve() if args.positive_dir else None
     negative_dir = Path(args.negative_dir).expanduser().resolve() if args.negative_dir else None
+    hard_negative_dir = (
+        Path(args.hard_negative_dir).expanduser().resolve() if args.hard_negative_dir else None
+    )
     ambient_dir = Path(args.ambient_dir).expanduser().resolve() if args.ambient_dir else None
 
     auc_value, roc_df = parse_roc_file(roc_path)
@@ -316,6 +323,7 @@ def main() -> None:
     dataset_summary = {
         "positive_count": count_wavs(positive_dir),
         "negative_count": count_wavs(negative_dir),
+        "hard_negative_count": count_wavs(hard_negative_dir),
         "ambient_count": count_wavs(ambient_dir),
         "ambient_duration_s": sum_duration_s(ambient_dir),
     }
@@ -334,6 +342,10 @@ def main() -> None:
         score_rows.extend(
             score_dataset(model, negative_dir, "negative", args.limit, args.step_ms, args.ma_window)
         )
+        if hard_negative_dir is not None:
+            score_rows.extend(
+                score_dataset(model, hard_negative_dir, "hard_negative", args.limit, args.step_ms, args.ma_window)
+            )
         score_df = pd.DataFrame(score_rows)
         score_df.to_csv(analysis_dir / "clip_scores.csv", index=False, quoting=csv.QUOTE_MINIMAL)
         if not score_df.empty:
