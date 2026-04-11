@@ -14,6 +14,10 @@ class AudioRingBuffer(capacitySamples: Int) {
 
     val capacity: Int get() = buffer.size
 
+    /** True once the ring buffer has been written to its full capacity at least once. */
+    val isFull: Boolean
+        get() = synchronized(lock) { filled >= buffer.size }
+
     fun write(samples: ShortArray, length: Int = samples.size) {
         if (length <= 0) return
         synchronized(lock) {

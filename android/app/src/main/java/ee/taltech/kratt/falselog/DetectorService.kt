@@ -56,7 +56,7 @@ class DetectorService : Service() {
     @Volatile private var cooldownSec: Float = 2f
     @Volatile private var preRollSec: Float = 4f
     @Volatile private var postRollSec: Float = 1f
-    private val modelAsset: String = "kuule_kratt_v9.tflite"
+    private val modelAsset: String = "kuule_kratt_v11.tflite"
     private val appVersion: String = "0.1.0"
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -189,6 +189,12 @@ class DetectorService : Service() {
 
     private fun maybeTriggerDetection(score: Float) {
         ServiceState.lastScore.postValue(score)
+
+        // Suppress detections until the pre-roll buffer has been filled at
+        // least once. Otherwise the very first detection after service start
+        // produces a partial-length snippet with only the audio captured
+        // since boot, which is useless for false-trigger analysis.
+        if (!ringBuffer.isFull) return
 
         val now = SystemClock.elapsedRealtime()
         val inCooldown = (now - lastDetectionTimeMs) < (cooldownSec * 1000).toLong()

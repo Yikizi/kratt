@@ -8,7 +8,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
+import android.provider.DocumentsContract
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -210,20 +212,57 @@ fun KrattScreen() {
             }
 
             OutlinedButton(
+                onClick = { openCapturesFolder(ctx) },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Open captures folder (Downloads/Kratt/captures)") }
+
+            OutlinedButton(
                 onClick = { openBatterySettings(ctx) },
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Open battery settings (set to Unrestricted)") }
 
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "Events log at Android/data/ee.taltech.kratt.falselog/files/logs/events.jsonl",
+                text = "WAV snippets: Downloads/Kratt/captures/",
                 style = MaterialTheme.typography.bodySmall,
             )
             Text(
-                text = "WAV snippets at Android/data/ee.taltech.kratt.falselog/files/captures/",
+                text = "Events log: Android/data/ee.taltech.kratt.falselog/files/logs/events.jsonl",
                 style = MaterialTheme.typography.bodySmall,
             )
         }
+    }
+}
+
+private fun openCapturesFolder(ctx: Context) {
+    // 1) Try the system Files-app downloads view first; on Pixels this opens
+    //    Files by Google scoped to the public Downloads dir, from which the
+    //    user can navigate one tap into Kratt/captures/.
+    val downloadsIntent = Intent(android.app.DownloadManager.ACTION_VIEW_DOWNLOADS).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    try {
+        ctx.startActivity(downloadsIntent)
+        return
+    } catch (_: Throwable) {
+        // fall through
+    }
+
+    // 2) Fall back to a SAF tree picker rooted at Downloads/Kratt/captures.
+    //    Picks the same physical location for the user.
+    try {
+        val safIntent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            putExtra(
+                "android.provider.extra.INITIAL_URI",
+                Uri.parse(
+                    "content://com.android.externalstorage.documents/document/" +
+                        "primary%3ADownload%2FKratt%2Fcaptures"
+                )
+            )
+        }
+        ctx.startActivity(safIntent)
+    } catch (_: Throwable) {
     }
 }
 
