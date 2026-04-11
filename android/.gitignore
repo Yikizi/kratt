@@ -1,0 +1,20 @@
+# Gradle
+.gradle/
+build/
+**/build/
+**/.gradle/
+
+# IDE
+.idea/
+*.iml
+.cxx/
+.kotlin/
+
+# Local config / signing
+local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# Captures (any local pulls)
+captures/

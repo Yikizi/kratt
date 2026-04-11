@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Kratt False Logger</string>
+    <string name="service_channel_name">Wake-Word Detector</string>
+    <string name="service_channel_desc">Persistent microphone capture for false-trigger logging</string>
+    <string name="service_notification_title">Kratt Detector Running</string>
+    <string name="service_notification_text">Listening for \"Kuule Kratt\"</string>
+</resources>
