@@ -1,0 +1,263 @@
+{
+  "results": {
+    "grammar_et_instr": {
+      "alias": "grammar_et_instr",
+      "lev,nimi": 0.22164368582769103,
+      "lev_stderr,nimi": "N/A",
+      "precise,nimi": 0.12,
+      "precise_stderr,nimi": "N/A",
+      "raw_lev,nimi": 13.5,
+      "raw_lev_stderr,nimi": "N/A"
+    },
+    "inflection_et_instr": {
+      "alias": "inflection_et_instr",
+      "exact_match,nimi": 0.36,
+      "exact_match_stderr,nimi": 0.048241815132442176
+    },
+    "word_meanings_et_instr": {
+      "alias": "word_meanings_et_instr",
+      "exact_match,nimi": 0.28,
+      "exact_match_stderr,nimi": 0.04512608598542128
+    }
+  },
+  "group_subtasks": {
+    "grammar_et_instr": [],
+    "inflection_et_instr": [],
+    "word_meanings_et_instr": []
+  },
+  "configs": {
+    "grammar_et_instr": {
+      "task": "grammar_et_instr",
+      "tag": [
+        "base_tag_est",
+        "lrec2026_instr_tag"
+      ],
+      "dataset_path": "TalTechNLP/grammar_et",
+      "validation_split": "test",
+      "test_split": "test",
+      "process_docs": "def process_docs(dataset: datasets.Dataset):\n    def _helper(doc):\n      # modifies the contents of a single\n      # document in our dataset.\n      #doc[\"answer\"] = \"ABCDEFGHIJKLMNOPQ\".index(doc[\"answer\"])\n      return doc\n\n    return dataset.map(_helper) # returns back a datasets.Dataset object\n",
+      "doc_to_text": "Sa oled eesti keele ekspert. Sulle antakse ette eestikeelsed laused, kus võivad esineda grammatikavead. Tagasta korrektne lause, kus vead on parandatud. Juhul kui etteantud lause on juba õige, siis tagastagi see sama lause. Vasta ainult lausega!\nOriginaalne: {{original}}",
+      "doc_to_target": "correct",
+      "unsafe_code": false,
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "num_fewshot": 0,
+      "metric_list": [
+        {
+          "metric": "def lev(items):\n    return items\n",
+          "higher_is_better": true,
+          "aggregation": "def lev_agg(items):\n    goodness = 0\n    for item in items:\n      dist = levv(item[0], item[1])\n      goodness += 1 / (1 + dist)\n    return goodness / len(items)\n"
+        },
+        {
+          "metric": "def precise(items):\n    return items\n",
+          "higher_is_better": true,
+          "aggregation": "def precise_agg(items):\n    goodness = 0\n    for item in items:\n      if item[0] == item[1]:\n        goodness += 1\n    return goodness / len(items)\n"
+        },
+        {
+          "metric": "def raw_lev(items):\n    return items\n",
+          "higher_is_better": false,
+          "aggregation": "def raw_lev_agg(items):\n    total_lev = 0\n    for item in items:\n      dist = levv(item[0], item[1])\n      total_lev += dist\n    return total_lev / len(items)\n"
+        }
+      ],
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "until": [
+          "\n\n\n\n\n"
+        ],
+        "max_gen_toks": 2000
+      },
+      "repeats": 1,
+      "filter_list": [
+        {
+          "filter": [
+            {
+              "function": "regex",
+              "regex_pattern": "\\s*(.*)\\s*"
+            },
+            {
+              "function": "take_first"
+            }
+          ],
+          "name": "nimi"
+        }
+      ],
+      "should_decontaminate": false,
+      "metadata": {
+        "version": 1.0,
+        "base_url": "http://localhost:11434/v1/chat/completions",
+        "model": "gemma3:12b",
+        "num_concurrent": 1,
+        "tokenized_requests": false
+      }
+    },
+    "inflection_et_instr": {
+      "task": "inflection_et_instr",
+      "tag": [
+        "instr_tag_est",
+        "lrec2026_instr_tag"
+      ],
+      "dataset_path": "TalTechNLP/inflection_et",
+      "validation_split": "train",
+      "test_split": "train",
+      "process_docs": "def process_docs(dataset: datasets.Dataset):\n    def _helper(doc):\n      # modifies the contents of a single\n      # document in our dataset.\n      #doc[\"answer\"] = \"ABCDEFGHIJKLMNOPQ\".index(doc[\"answer\"])\n      return doc\n\n    return dataset.map(_helper) # returns back a datasets.Dataset object\n",
+      "doc_to_text": "Sa oled eesti keele ekspert. Sulle antakse sõnapaar ainsuse nimetavas käändes ja sinu ülesandeks on käänata see etteantud käändesse. Jälgi, kas käänet on küsitud ainsuses või mitmuses. Anna vastus kujul: \"Vastus: {käänatud sõnapaar}\"\nSõnapaar ainsuse nimetavas käändes on: {{noun_phrase}}\nKääna see käändesse: {{plurality}} {{case}}",
+      "doc_to_target": "inflection",
+      "unsafe_code": false,
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "num_fewshot": 0,
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "until": [
+          "\n\n\n\n\n"
+        ]
+      },
+      "repeats": 1,
+      "filter_list": [
+        {
+          "filter": [
+            {
+              "function": "regex",
+              "regex_pattern": "Vastus: (([a-zA-ZÄÖÜÕŠŽäöüõšž]*)(\\s([a-zA-ZÖÄÜÕŽŠöäüõžš]*))*)"
+            },
+            {
+              "function": "take_first"
+            }
+          ],
+          "name": "nimi"
+        }
+      ],
+      "should_decontaminate": false,
+      "metadata": {
+        "version": 1.0,
+        "base_url": "http://localhost:11434/v1/chat/completions",
+        "model": "gemma3:12b",
+        "num_concurrent": 1,
+        "tokenized_requests": false
+      }
+    },
+    "word_meanings_et_instr": {
+      "task": "word_meanings_et_instr",
+      "tag": [
+        "instr_tag_est",
+        "lrec2026_instr_tag"
+      ],
+      "dataset_path": "TalTechNLP/word_meanings_et",
+      "validation_split": "test",
+      "test_split": "test",
+      "process_docs": "def process_docs(dataset: datasets.Dataset):\n    def _helper(doc):\n      # modifies the contents of a single\n      # document in our dataset.\n      #doc[\"answer\"] = \"ABCDEFGHIJKLMNOPQ\".index(doc[\"answer\"])\n      #doc[\"definition\"] = random.choice(doc[\"definition\"])\n      return doc\n\n    return dataset.map(_helper) # returns back a datasets.Dataset object\n",
+      "doc_to_text": "Sa oled sõnade teadmise ekspert. Sulle antakse sõna definitsioon ning sina pead tagastama sõna, mida see definitsioon kirjeldab. Anna vastus kujul: \"Vastus: {definitsioonile_vastav_sõna}\". Vasta ainult vastusega.\nSõna definitsioon(id): {{definition}}",
+      "doc_to_target": "words",
+      "unsafe_code": false,
+      "description": "",
+      "target_delimiter": " ",
+      "fewshot_delimiter": "\n\n",
+      "num_fewshot": 0,
+      "output_type": "generate_until",
+      "generation_kwargs": {
+        "until": [
+          "\n\n\n\n\n"
+        ],
+        "max_gen_toks": 2000
+      },
+      "repeats": 1,
+      "filter_list": [
+        {
+          "filter": [
+            {
+              "function": "regex",
+              "regex_pattern": "(?:\\s*Vastus:)?\\s*\\{?([A-Za-z0-9ÄÖÜÕäöüõšž-]+(?: +[A-Za-z0-9ÄÖÜÕäöüõšž-]+)*)\\}?"
+            },
+            {
+              "function": "lowercase"
+            },
+            {
+              "function": "take_first"
+            }
+          ],
+          "name": "nimi"
+        }
+      ],
+      "should_decontaminate": false,
+      "metadata": {
+        "version": 1.0,
+        "base_url": "http://localhost:11434/v1/chat/completions",
+        "model": "gemma3:12b",
+        "num_concurrent": 1,
+        "tokenized_requests": false
+      }
+    }
+  },
+  "versions": {
+    "grammar_et_instr": 1.0,
+    "inflection_et_instr": 1.0,
+    "word_meanings_et_instr": 1.0
+  },
+  "n-shot": {
+    "grammar_et_instr": 0,
+    "inflection_et_instr": 0,
+    "word_meanings_et_instr": 0
+  },
+  "higher_is_better": {
+    "grammar_et_instr": {
+      "lev": true,
+      "precise": true,
+      "raw_lev": false
+    },
+    "inflection_et_instr": {
+      "exact_match": true
+    },
+    "word_meanings_et_instr": {
+      "exact_match": true
+    }
+  },
+  "n-samples": {
+    "word_meanings_et_instr": {
+      "original": 1000,
+      "effective": 100
+    },
+    "inflection_et_instr": {
+      "original": 1400,
+      "effective": 100
+    },
+    "grammar_et_instr": {
+      "original": 1000,
+      "effective": 100
+    }
+  },
+  "config": {
+    "model": "openai-chat-completions",
+    "model_args": "base_url=http://localhost:11434/v1/chat/completions,model=gemma3:12b,num_concurrent=1,tokenized_requests=False",
+    "batch_size": "1",
+    "batch_sizes": [],
+    "device": null,
+    "use_cache": null,
+    "limit": 100.0,
+    "bootstrap_iters": 100000,
+    "gen_kwargs": null,
+    "random_seed": 0,
+    "numpy_seed": 1234,
+    "torch_seed": 1234,
+    "fewshot_seed": 1234
+  },
+  "git_hash": "ae3677c",
+  "date": 1775569641.472019,
+  "pretty_env_info": "PyTorch version: 2.8.0\nIs debug build: False\nCUDA used to build PyTorch: None\nROCM used to build PyTorch: N/A\n\nOS: macOS 26.2 (arm64)\nGCC version: Could not collect\nClang version: 17.0.0 (clang-1700.6.3.2)\nCMake version: version 4.3.1\nLibc version: N/A\n\nPython version: 3.9.25 (main, Oct 31 2025, 18:40:52)  [Clang 17.0.0 (clang-1700.4.4.1)] (64-bit runtime)\nPython platform: macOS-26.2-arm64-arm-64bit\nIs CUDA available: False\nCUDA runtime version: No CUDA\nCUDA_MODULE_LOADING set to: N/A\nGPU models and configuration: No CUDA\nNvidia driver version: No CUDA\ncuDNN version: No CUDA\nHIP runtime version: N/A\nMIOpen runtime version: N/A\nIs XNNPACK available: True\n\nCPU:\nApple M1 Pro\n\nVersions of relevant libraries:\n[pip3] numpy==1.26.4\n[pip3] numpy-minmax==0.5.0\n[pip3] numpy-rms==0.6.0\n[pip3] optree==0.19.0\n[pip3] sherpa_onnx==1.12.35\n[pip3] sherpa-onnx-core==1.12.35\n[pip3] torch==2.8.0\n[conda] Could not collect",
+  "transformers_version": "4.57.6",
+  "lm_eval_version": "0.4.9.1",
+  "upper_git_hash": null,
+  "task_hashes": {},
+  "model_source": "openai-chat-completions",
+  "model_name": "gemma3:12b",
+  "model_name_sanitized": "gemma3__12b",
+  "system_instruction": null,
+  "system_instruction_sha": null,
+  "fewshot_as_multiturn": false,
+  "chat_template": "",
+  "chat_template_sha": null,
+  "start_time": 7.787386208,
+  "end_time": 445.261276708,
+  "total_evaluation_time_seconds": "437.47389050000004"
+}

@@ -24,7 +24,36 @@ if [[ ! -f "$MODEL" ]]; then
   exit 1
 fi
 
+LOG_DIR="${KRATT_ROOT}/output/demo-logs"
+CAPTURE_DIR="${KRATT_ROOT}/output/false-accepts"
+OVERLAY_SWIFT="${KRATT_ROOT}/scripts/demo/kratt_detection_overlay.swift"
+mkdir -p "${LOG_DIR}" "${CAPTURE_DIR}"
+
+timestamp="$(date +%Y%m%d_%H%M%S)"
+log_file="${LOG_DIR}/live_test_${timestamp}.log"
+latest_link="${LOG_DIR}/live_test_latest.log"
+ln -sfn "${log_file}" "${latest_link}"
+
+overlay_pid=""
+cleanup() {
+  if [[ -n "${overlay_pid}" ]] && kill -0 "${overlay_pid}" 2>/dev/null; then
+    kill "${overlay_pid}" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+if [[ -f "${OVERLAY_SWIFT}" ]]; then
+  /usr/bin/env swift "${OVERLAY_SWIFT}" --log-file "${latest_link}" --text "KRATT KUULIS" --hide-after 2.5 >/dev/null 2>&1 &
+  overlay_pid=$!
+else
+  echo "Warning: overlay script not found at ${OVERLAY_SWIFT}" >&2
+fi
+
 echo "Model: $VERSION ($(du -h "$MODEL" | cut -f1)), threshold: $THRESHOLD"
-exec "${KRATT_WW}/.venv-microwakeword/bin/python" \
+echo "Log: ${log_file}"
+PYTHONUNBUFFERED=1 "${KRATT_WW}/.venv-microwakeword/bin/python" \
   "${KRATT_WW}/evaluation/live_test_tflite.py" \
-  --model "$MODEL" --threshold "$THRESHOLD" --name "kuule kratt $VERSION"
+  --model "$MODEL" --threshold "$THRESHOLD" --name "kuule kratt $VERSION" \
+  --capture-dir "${CAPTURE_DIR}" --pre-roll-seconds 5 --post-roll-seconds 1 \
+  --alert-sound ping \
+  2>&1 | tee -a "${log_file}"

@@ -1,0 +1,209 @@
+{
+  "test_cases": [
+    {
+      "id": "T01_turn_on_simple",
+      "utterance": "lülita tuli põlema",
+      "expected_action": "turn_on",
+      "expected_entity": "light.elutuba",
+      "expected_response_keywords": []
+    },
+    {
+      "id": "T02_color",
+      "utterance": "tee tuli punaseks",
+      "expected_action": "set_color",
+      "expected_entity": "light.elutuba",
+      "expected_response_keywords": []
+    },
+    {
+      "id": "T03_get_temp",
+      "utterance": "kui soe toas on",
+      "expected_action": "get_state",
+      "expected_entity": "sensor.temperatuur",
+      "expected_response_keywords": []
+    },
+    {
+      "id": "T04_get_time",
+      "utterance": "mis kell on",
+      "expected_action": "get_state",
+      "expected_entity": "sensor.kellaaeg",
+      "expected_response_keywords": []
+    },
+    {
+      "id": "T05_specific_room",
+      "utterance": "pane magamistoa lamp kinni",
+      "expected_action": "turn_off",
+      "expected_entity": "light.magamistuba",
+      "expected_response_keywords": []
+    },
+    {
+      "id": "T06_brightness_implicit",
+      "utterance": "tee elutoas hämar",
+      "expected_action": "set_brightness",
+      "expected_entity": "light.elutuba",
+      "expected_response_keywords": []
+    },
+    {
+      "id": "T07_context_inference",
+      "utterance": "elutoas on liiga pime",
+      "expected_action": "turn_on",
+      "expected_entity": "light.elutuba",
+      "expected_response_keywords": []
+    },
+    {
+      "id": "T08_multi_action",
+      "utterance": "pane kohv käima ja elutoa tuli põlema",
+      "expected_action": "turn_on",
+      "expected_entity": null,
+      "expected_response_keywords": []
+    }
+  ],
+  "results": [
+    {
+      "model": "gemma4:26b",
+      "available": true,
+      "error": null,
+      "success_rate": 0.625,
+      "json_valid_rate": 0.875,
+      "median_latency_s": 14.96,
+      "cases": [
+        {
+          "case_id": "T01_turn_on_simple",
+          "utterance": "lülita tuli põlema",
+          "success": true,
+          "json_valid": true,
+          "action_match": true,
+          "entity_match": true,
+          "actions": [
+            {
+              "action": "turn_on",
+              "entity_id": "light.elutuba"
+            }
+          ],
+          "response": "Elutoa tuli on sülitud.",
+          "latency_s": 15.25,
+          "error": null
+        },
+        {
+          "case_id": "T02_color",
+          "utterance": "tee tuli punaseks",
+          "success": true,
+          "json_valid": true,
+          "action_match": true,
+          "entity_match": true,
+          "actions": [
+            {
+              "action": "set_color",
+              "entity_id": "light.elutuba",
+              "color": "punane"
+            }
+          ],
+          "response": "Elutoa lamp on seatud punaseks.",
+          "latency_s": 14.96,
+          "error": null
+        },
+        {
+          "case_id": "T03_get_temp",
+          "utterance": "kui soe toas on",
+          "success": false,
+          "json_valid": true,
+          "action_match": true,
+          "entity_match": false,
+          "actions": [
+            {
+              "action": "get_state",
+              "entity_id": ""
+            }
+          ],
+          "response": "",
+          "latency_s": 17.09,
+          "error": null
+        },
+        {
+          "case_id": "T04_get_time",
+          "utterance": "mis kell on",
+          "success": true,
+          "json_valid": true,
+          "action_match": true,
+          "entity_match": true,
+          "actions": [
+            {
+              "action": "get_state",
+              "entity_id": "sensor.kellaaeg"
+            }
+          ],
+          "response": "Kell on praegune kellaaeg.",
+          "latency_s": 21.67,
+          "error": null
+        },
+        {
+          "case_id": "T05_specific_room",
+          "utterance": "pane magamistoa lamp kinni",
+          "success": false,
+          "json_valid": true,
+          "action_match": true,
+          "entity_match": false,
+          "actions": [
+            {
+              "action": "turn_off",
+              "entity_id": "magamistoa lamp"
+            }
+          ],
+          "response": "Magamistoa lamp on kustetud.",
+          "latency_s": 8.51,
+          "error": null
+        },
+        {
+          "case_id": "T06_brightness_implicit",
+          "utterance": "tee elutoas hämar",
+          "success": true,
+          "json_valid": true,
+          "action_match": true,
+          "entity_match": true,
+          "actions": [
+            {
+              "action": "set_brightness",
+              "entity_id": "light.elutuba",
+              "brightness": 50
+            }
+          ],
+          "response": "Elutoa valgus on häämar.} ",
+          "latency_s": 9.32,
+          "error": null
+        },
+        {
+          "case_id": "T07_context_inference",
+          "utterance": "elutoas on liiga pime",
+          "success": false,
+          "json_valid": false,
+          "action_match": false,
+          "entity_match": false,
+          "actions": [],
+          "response": "",
+          "latency_s": 44.54,
+          "error": "JSON parse: Unterminated string starting at: line 1 column 98 (char 97); raw={\"actions\":[{\"action\":\"set_brightness\",\"entity_id\":\"light.elutuba\",\"brightness\":255}],\"response\":\"Lülitan elutoa tuvale täielise heleduse.} </code></code></code></code></code></code></code></code></co"
+        },
+        {
+          "case_id": "T08_multi_action",
+          "utterance": "pane kohv käima ja elutoa tuli põlema",
+          "success": true,
+          "json_valid": true,
+          "action_match": true,
+          "entity_match": null,
+          "actions": [
+            {
+              "action": "turn_on",
+              "entity_id": "light.elutuba"
+            },
+            {
+              "action": "turn_on",
+              "entity_id": "switch.kohvimasin"
+            }
+          ],
+          "response": "Kohv on valmistatud ja elutoa tuli on sisse lülitatud.",
+          "latency_s": 13.41,
+          "error": null
+        }
+      ]
+    }
+  ]
+}
