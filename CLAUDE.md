@@ -24,49 +24,50 @@ The missing link in Estonian smart home voice control is the wake word detection
 
 ```
 kratt/                          # Monorepo root
-├── docs/                       # All documentation
+├── docs/                       # Hooldatud projektidokumentatsioon
 │   ├── thesis/                 # LaTeX thesis (Estonian)
-│   ├── architecture/           # System design docs
-│   ├── research/               # Literature review, experiments
+│   ├── architecture/           # ADRs and system design
+│   ├── research/               # Evaluation methodology, literature
+│   ├── user-testing/           # Test plans, questionnaires
 │   └── user-guide/             # Installation & usage
+│
+├── notes/                      # Tööpäevik: märkmed, katsed, visandid
+│   ├── demos/                  # Demo session notes
+│   └── experiments/            # Hardware/firmware experiment logs
 │
 ├── wake-word/                  # CORE: Wake word training
 │   ├── data/                   # Data collection & augmentation
-│   ├── training/               # Model training scripts
-│   ├── models/                 # Trained models
-│   ├── evaluation/             # Testing & metrics
+│   ├── training/               # Scripts, configs, HPC submit
+│   ├── models/                 # Trained models (.tflite + analysis)
+│   ├── evaluation/             # Benchmarks, fuzzer, live testing
 │   └── deployment/             # ONNX/TFLite exports
 │
+├── android/                    # False-trigger logger app (Kotlin)
+│
 ├── hardware/                   # Hardware implementations
-│   ├── esp32/                  # ESP32C3 Supermini (microWakeWord)
+│   ├── esp32/                  # ESP32C3 firmware (microWakeWord)
 │   └── raspberry-pi/           # Raspberry Pi (openWakeWord)
 │
-├── home-assistant/             # HA integration
-│   ├── addon/                  # HA Add-on package
-│   └── configurations/         # Example configs
+├── home-assistant/             # HA integration planning (CLAUDE.md blueprint)
 │
-├── backend/                    # Optional: Data collection API
-├── tools/                      # Utilities
-├── experiments/                # Archive of old experiments
-└── tests/                      # Integration tests
+├── stt-integration/            # Kiirkirjutaja STT configs
+├── cli/                        # kratt CLI tool
+├── scripts/                    # Build, demo, deployment utilities
+├── docker/                     # Docker compose for demos
+├── tools/                      # Benchmarking, data validation, LLM eval
+└── external-repos/             # Vendored mirrors (gitignored)
 ```
 
-## 📋 Current Phase: Setup & Initial Data Collection
+## 📋 Current Phase: Evaluation & Thesis Writing (April 2026)
 
 **Priority Order**:
-1. 🎯 Wake word model training (CORE)
-2. ✅ User testing (CRITICAL for thesis validation)
-3. 🔌 Home Assistant integration (USABILITY)
-4. 💡 ESP32 implementation (BONUS)
-5. 📚 Comparative analysis (MINIMAL)
+1. 🎯 Wake word model evaluation (v12 trained, threshold tuning)
+2. ✅ User testing (20-30 participants, CRITICAL for thesis)
+3. 📝 Thesis writing (chapters 1-2 drafted, 3-5 pending)
+4. 🔌 Home Assistant integration polish
+5. 📚 Comparative analysis (EuroEval LLM benchmarks done)
 
-**Immediate Tasks** (Week 1-3):
-- [ ] Setup Python 3.9 environment (compatibility with llvmlite)
-- [ ] Port wake word collection scripts from ~/wakeword
-- [ ] Collect initial data: 10 people × 20 recordings = 200 base samples
-- [ ] Implement data augmentation pipeline
-- [ ] Link existing thesis LaTeX template
-- [ ] Archive old experiments from ~/agents/loputoo/iaib-proto
+**Status**: See `docs/PROJECT_TODO.md` for detailed task breakdown.
 
 ## 🛠️ Technical Stack
 
