@@ -37,7 +37,8 @@ TIME_MASK_SIZE=0
 TIME_MASK_COUNT=0
 FREQ_MASK_SIZE=0
 FREQ_MASK_COUNT=0
-RESIDUAL_CONNECTION="0,0,0,0"
+# v6-residual ablation proved residual ON = -37% FAPH. Always on by default.
+RESIDUAL_CONNECTION="1,1,1,1"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -78,6 +79,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --residual)
       RESIDUAL_CONNECTION="1,1,1,1"
+      shift 1
+      ;;
+    --no-residual)
+      RESIDUAL_CONNECTION="0,0,0,0"
       shift 1
       ;;
     -h|--help)
