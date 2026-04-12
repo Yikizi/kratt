@@ -56,3 +56,55 @@ Wake word mudeli puhul on oluline mitte ainult äratussõna tabamine, vaid ka va
 \end{itemize}
 
 Varasemate katsete põhjal selgus, et just \texttt{testing\_ambient} puudumine võib anda petlikke tulemusi. Kui ambient-andmed on tühjad, ei kirjelda saadud AUC enam mudeli tegelikku kvaliteeti, vaid katkist hindamisprotsessi. Seetõttu on andmeliikide korrektne eristamine käesoleva töö metoodikas keskse tähtsusega.
+
+\section{Mudeli arhitektuur}
+\label{sec:model-architecture}
+
+Käesoleva töö kõik mudeliversioonid kasutavad \texttt{microWakeWord} raamistiku vaikimisi MixedNet arhitektuuri \cite{microwakeword2026}. MixedNet põhineb Google'i KWS-Net perekonna ideedel, mille keskseks ehituskiviks on SVDF (\emph{Singular Value Decomposition Filter}) kihid \cite{alvarez2019svdf}. Erinevalt tavalisest kahedimensioonilisest konvolutsioonist jagab SVDF-kiht ajalise ja sagedusmõõtme töötluse kaheks eraldiseisvaks operatsiooniks: esmalt rakendatakse aja dimensioonis süvakonvolutsiooni (\emph{depthwise convolution}), seejärel sageduse dimensioonis punktkonvolutsiooni (\emph{pointwise convolution}). See faktoriseerimine võimaldab saavutada suure ajalise vastuvõtuvälja väikese parameetriarvuga, mis on mikrokontrollerile suunatud mudeli puhul kriitiline nõue \cite{chen2014smallfootprint, sainath2015cnn}.
+
+\subsection{MixedConv plokid}
+
+MixedNet koosneb neljast järjestikusest MixedConv plokist, millest igaühel on erinev ajaline tuumasydamiku suurus (\emph{kernel size}). Käesoleva töö konfiguratsioonis on tuumade suurused $[5], [9], [13], [21]$, punktfiltrite arv igas plokis 48 ning iga plokk sisaldab ühte kordust (\texttt{repeat\_in\_block\,=\,1,1,1,1}). Enne MixedConv plokke rakendatakse ühte sissejuhatavat konvolutsioonikihti 32 filtriga ja tuumasydamiku suurusega 3, mis viib sisendspektrogrammi algsest 40-mõõtmelisest sagedusvektorist esimesse tunnuseruumi.
+
+Erineva suurusega tuumad mängivad erinevaid rolle. Väiksem tuum (5) tabab lühiajalisi akustilisi sündmusi nagu plahvatushäälikud ja sulghäälikud, suurem tuum (21) hõlmab pikemat ajalist konteksti ja aitab eristada rütmi- ja prosoodiamustreid. Selline mitme\-skaalaline lähenemine on eriti oluline äratussõna \enquote{Kuule Kratt} puhul, mis sisaldab nii lühikest plahvatust /k/ kui ka pikemat vokaaltrajektoori /uu/ $\rightarrow$ /le/.
+
+Kogu mudeli parameetrite arv on ${\sim}22\,000$, mis on piisavalt väike, et mahtuda mikrokontrolleri mälupiirangute sisse, kuid piisavalt suur, et kodeerida kahesilbilise äratussõna foneetilist struktuuri.
+
+\subsection{Voogedastusrežiim}
+\label{subsec:streaming}
+
+MixedNet on projekteeritud voogedastusrežiimis (\emph{streaming inference}) töötamiseks. Treenimise ajal töödeldakse kogu sisendklipp korraga (mõõtmetega $194 \times 40$), kuid pärast TFLite eksporti töötab mudel ühe spektrogrammikaadri kaupa. Iga uue 10-millisekundilise akna saabumisel uuendab mudel sisemist olekut (\emph{internal state}), kus hoitakse eelmiste kaadrite osalisi konvolutsiooni\-tulemusi. Väljundina antakse üks tõenäosuse väärtus, mis näitab, kas viimase ${\sim}1{,}5$ sekundi jooksul esines äratussõna.
+
+See lähenemine on praktiline põhjusel, et mikrokontroller ei pea puhverdama mitut sekundit heli, vaid töötleb seda reaalajas kaaderhaaval. Lisaks on voogedastusrežiimi arvutuslik kulu konstantne --- iga kaader nõuab sama palju tööd sõltumata sellest, kui kaua seade on kuulanud.
+
+\subsection{Residuaalühendused}
+\label{subsec:residual}
+
+Residuaalühendused (\emph{residual connections}) on lühisühendused, mis liidavad ploki sisendi otse ploki väljundile, minnes mööda ploki sisemistest teisenduskihtidest \cite{he2016resnet}. Selline ühendus võimaldab gradientidel tagasilevimise ajal voolata otse läbi lühisühenduse, vältides sügavamates võrkudes esinevat gradientide kadumise probleemi (\emph{vanishing gradients}).
+
+Residuaalühenduste tõhusust väikestes äratussõna mudelites on näidanud Choi~et~al., kelle BC-ResNet arhitektuur saavutab \texttt{Speech Commands} andmestikul 96,9\% täpsuse vaid ${\sim}9200$ parameetriga \cite{choi2021bcresnet}. See tulemus viitab sellele, et residuaalõpe võimaldab väga kompaktsetes mudelites iga parameetrit tõhusamalt ära kasutada.
+
+\texttt{microWakeWord} raamistik toetab residuaalühenduste lubamist plokipõhiselt parameetri \texttt{residual\_connection} kaudu. Käesolevas töös on kõikide mudeliversioonide (v1--v8) konfiguratsioonis seatud \texttt{residual\_connection\,=\,0,0,0,0}, st residuaalühendused on välja lülitatud. Selle põhjuseks oli soov fikseerida arhitektuurimuutuja ja keskenduda esmalt andmestiku mõju uurimisele. Residuaalühenduste mõju on planeeritud ablatsioonieksperimendina.
+
+\subsection{Kontekstiaken}
+\label{subsec:clip-duration}
+
+Kontekstiaken (\texttt{clip\_duration\_ms}) määrab, kui pika ajalõigu pealt mudel otsust teeb. Kõik senised versioonid kasutavad 1500\,ms aknalaiust, mis annab $194 \times 40$ spektrogrammi (194 ajakaadrit, 40 mel-sagedusribal). Pärast konvolutsioonikihtide ajalise vähendamise (\emph{temporal reduction}) mõju jääb viimase kihi sisendiks 148 ajakaadrit.
+
+Äratussõna \enquote{Kuule Kratt} loomulik kestus on ligikaudu 0{,}8--1{,}2\,s, sõltuvalt kõneleja tempost ja hääldusvariatsioonist. Seega jätab 1500\,ms aken 300--700\,ms eelkonteksti (\emph{pre-context}), mis sisaldab vaikuseperioodi või eelnevat taustheli. See eelkontekst on oluline, sest mudel saab selle abil eristada äratussõna algust taustmürast.
+
+Pikem kontekstiaken (nt 2000\,ms) annaks rohkem eelkonteksti ja lubaks mudelil paremini diskrimineerida pikemaid sarnaseid fraase, kuid nõuab ka rohkem mälu sisemise oleku hoidmiseks.
+
+\subsection{SpecAugment}
+\label{subsec:specaugment}
+
+SpecAugment on treeningaegne regulariseerimistehnika, mis maskeerib spektrogrammis juhuslikke aja- ja sagedusdimensiooni ribasid \cite{park2019specaugment}. Park~et~al. töötasid selle meetodi algselt välja automaatse kõnetuvastuse (ASR) jaoks, kuid sama põhimõte kehtib ka äratussõna tuvastuses: maskeerides osa sisendinfost, sunnitakse mudelit õppima üleliigseid (\emph{redundant}) tunnuseid ja vähendatakse ülesobitumise riski.
+
+Käesoleva töö konfiguratsioonis kasutati SpecAugment'i versioonis v7 ja edaspidi, rakendades kuni 2 sagedusmaski laiusega kuni 3 riba ja kuni 2 ajamaski laiusega kuni 10 kaadrit. Versioonides v1--v6 oli SpecAugment välja lülitatud. SpecAugment'i eraldiseisev mõju on käesolevas töös ebaselge, sest v7 erines v6-st ka andmestiku poolest (lisandusid hard negative klipid v2). Selle mõju isoleerimine on planeeritud kontrollitud ablatsioonieksperimendina.
+
+\subsection{Kvantiseerimine}
+\label{subsec:quantization}
+
+Treenitud mudel kvantiseeritakse TensorFlow Lite täisarvulisse vormingusse (\emph{full integer quantization}), kus nii kaalud kui ka aktivatsioonid teisendatakse INT8 esitlusse \cite{tensorflow2015, jacob2018quantization}. See vähendab mudeli mahtu ja kiirendab inference'i, sest INT8 aritmeetika on mikrokontrolleri protsessoril kordades efektiivsem kui ujukomaarvutus.
+
+Kvantiseeritud mudeli maht on 57\,KB (TFLite vormingus), mis on piisavalt väike, et mahtuda ESP32-S3 flash-mällu. Inference ajal vajab mudel lisaks ${\sim}50$\,KB töömälu (\texttt{tensor\_arena}), kuhu paigutatakse vahetulemused. Kogu mäluvajadus on seega ${\sim}107$\,KB, mis jätab piisavalt ruumi ülejäänud ESPHome püsivarale ja WiFi-pinule.

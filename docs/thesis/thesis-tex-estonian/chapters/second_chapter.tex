@@ -223,3 +223,41 @@ See tulemus viitab \textbf{generaliseerumise asümmeetriale}:
 See leid on kooskõlas H1 tulemustega: sama-seadme negatiivsed parandasid KORVO-2 FPR-i, sest mudel õppis tõrjuma spetsiifiliselt selle mikrofoni tavakõnet. Korrigeeritud hindamise (vt §\ref{sec:data-leakage}) järgi langes FAPH Common~Voice ET hold-out komplektil v1 367-lt v6 154-le ja v7 96-ni, mis ka kvantitatiivselt kinnitab paranemist. MacBooki mikrofon on aga kolmas domeen, mille negatiivseid mudel pole näinud --- ja see pole ainus puudujääk: sama probleem kehtib ka uute kõnelejate suhtes (vt allpool).
 
 Praktilisest seisukohast ei ole see kriitiline puudus, sest lõppseade on ESP32-S3-Korvo-2, mitte sülearvuti. Kuid teaduslikult on tegemist olulise tähelepanekuga: \textbf{sisutunnuste õppimine on piisav positiivseks tuvastuseks ristseadmel, kuid valepositiivsete tõrjumine nõuab domeenispetsiifilist negatiivset treeningmaterjali}. See täpsustab hüpoteesi H2 ja annab selge suunise tulevasteks arendusteks: iga uue sihtseadme puhul tuleb lisada vastav negatiivne treeningmaterjal.
+
+\subsection{Ristkeelne FAPH analüüs}
+
+Korrigeeritud hindamine võimaldas teha täiendava eksperimendi: mõõta FAPH mitte ainult eestikeelsel kõnel, vaid ka ingliskeelsel kõnel. V6 mudelit testiti LibriSpeech test-clean korpusel \cite{librispeech2015} ($\sim$5,4 tundi puhas inglise lugemiskõne, 40 kõnelejat) ning tulemused olid märkimisväärsed:
+
+\begin{table}[H]
+\centering
+\caption{V6 mudeli FAPH erinevatel keeltel ja corpus'tel (cutoff\,=\,0,97).}
+\label{tab:cross-language-faph}
+\begin{tabular}{l l r r l}
+\hline
+\textbf{Corpus} & \textbf{Keel} & \textbf{Tunnid} & \textbf{FAPH} & \textbf{Allikas} \\
+\hline
+Common Voice ET (hold-out) & Eesti & 3,82 & 44,5 & \cite{commonvoice2020} \\
+LibriSpeech test-clean & Inglise & 5,40 & 6,6 & \cite{librispeech2015} \\
+\hline
+\end{tabular}
+\end{table}
+
+Mudel vallandub ingliskeelsel kõnel \textbf{6,7 korda harvem} kui eestikeelsel. See erinevus tuleneb foneetilisest kattuvusest: eesti keeles on /k/+tagavokaal ja /t:/ mustrid (\enquote{kuidas}, \enquote{küsimus}, \enquote{kõik}, \enquote{kott}) sagedased, inglise keeles aga \enquote{Kuule Kratt}-i spetsiifiline foneetiline muster esineb harvem. Ristkeelne FAPH kinnitab, et negatiivne treeningmaterjal peab pärinema \textbf{sihtkeel\-est}, mitte suvalises keeles --- domeeni\-väline (ingliskeelne) kõne ei sisalda foneetilisi mustreid, mille eristamist mudel peab õppima.
+
+See leid on kooskõlas ka kirjanduses toodud soovitusega: Apple kasutab \enquote{Hey Siri} hindamiseks \enquote{tuhandeid tunde} negatiive, sh \enquote{non-Hey-Siri Siri inputs in many languages} \cite{apple-heysiri2017}. Samas on Apple'i mudelid miljonite parameetritega ning piisava kapatsiteediga mitmekeelseks diskrimineerimiseks. Käesoleva töö 22\,000-parameetriline mudel on piiratud ressursiga, mistõttu iga gradient-uuendus peab kuluma sihtkeele foneetiliste eristuste õppimisele, mitte \enquote{kerge} ingliskeelse kõne tõrjumisele, mille mudel juba valdab.
+
+\subsection{Andmestiku skaleerimisvõimalused}
+
+Eestikeelse negatiivse treeningmaterjali puudulikkus on käesoleva töö üks peamisi pudelikaelu. Kõik mudeliversioonid v1--v8 kasutasid negatiivse kõnena ainult $\sim$5 tundi Common Voice ET klippe. Võrdluseks kasutab openWakeWord $\sim$31\,000 tundi negatiive \cite{openwakeword2026, openwakeword-features2024}, mis on \textbf{6200 korda rohkem}.
+
+Edasiste versioonide jaoks on kasutada märkimisväärsed avalikud eestikeelsed kõnekorpused:
+
+\begin{itemize}
+    \item \textbf{TalTechNLP Riigikogu audio-stenogrammid} \cite{riigikogu-stenograms2025}: 3084 tundi parlamendikõne, CC-BY-SA 3.0.
+    \item \textbf{TalTech Estonian Speech Dataset} \cite{taltech-asr-data2024}: 1334 tundi saatekõne, konverentsid, parlamendikõne.
+    \item \textbf{ERR videouudised} \cite{err-video-news2025}: $\sim$4000 tundi uudiste\-kõne (transkriptsioonid + lingid).
+    \item \textbf{EuroSpeech eesti osa} \cite{eurospeech2024}: $\sim$383 tundi kõrgekvaliteedilise Euroopa Parlamendi kõne.
+    \item \textbf{Common Voice ET ülejäänu}: $\sim$25 tundi veel kasutamata klippe.
+\end{itemize}
+
+Kokku on avalikult kättesaadav üle 8000 tunni eestikeelset kõnet, millest senistes katsetes kasutati vähem kui 0,1\%. Edasiste versioonide plaan näeb ette negatiivse pooli kasvatamist $\sim$200 tunnini, mis hõlmab ka keskkondlikke negatiive (MUSAN müra ja muusika \cite{musan2015}, $\sim$59 tundi).

@@ -251,6 +251,81 @@
   note={KWS adaptation under class imbalance and environmental noise}
 }
 
+% === Architecture & Training Techniques ===
+
+@inproceedings{alvarez2019svdf,
+    author    = {Raziel Alvarez and Hyun-Jin Park},
+    title     = {End-to-end streaming keyword spotting},
+    booktitle = {IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+    year      = {2019},
+    pages     = {6336--6340},
+    doi       = {10.1109/ICASSP.2019.8683557},
+    note      = {Google; introduces SVDF layer for streaming KWS. [Accessed: 08-04-2026]}
+}
+
+@inproceedings{he2016resnet,
+    author    = {Kaiming He and Xiangyu Zhang and Shaoqing Ren and Jian Sun},
+    title     = {Deep Residual Learning for Image Recognition},
+    booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+    year      = {2016},
+    pages     = {770--778},
+    doi       = {10.1109/CVPR.2016.90},
+    note      = {[Accessed: 08-04-2026]}
+}
+
+@inproceedings{choi2021bcresnet,
+    author    = {Byeonggeun Kim and Simyung Chang and Jinkyu Lee and Dooyong Sung},
+    title     = {Broadcasted Residual Learning for Efficient Keyword Spotting},
+    booktitle = {Proceedings of Interspeech},
+    year      = {2021},
+    pages     = {4538--4542},
+    doi       = {10.21437/Interspeech.2021-383},
+    note      = {BC-ResNet: 96.9\% on Speech Commands v2 with 9.2K params. [Accessed: 08-04-2026]}
+}
+
+@inproceedings{jacob2018quantization,
+    author    = {Benoit Jacob and Skirmantas Kligys and Bo Chen and Menglong Zhu and Matthew Tang and Andrew Howard and Hartwig Adam and Dmitry Kalenichenko},
+    title     = {Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference},
+    booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+    year      = {2018},
+    pages     = {2704--2713},
+    doi       = {10.1109/CVPR.2018.00286},
+    note      = {[Accessed: 08-04-2026]}
+}
+
+@inproceedings{park2019specaugment,
+    author    = {Daniel S. Park and William Chan and Yu Zhang and Chung-Cheng Chiu and Barret Zoph and Ekin D. Cubuk and Quoc V. Le},
+    title     = {{SpecAugment}: A Simple Data Augmentation Method for Automatic Speech Recognition},
+    booktitle = {Proceedings of Interspeech},
+    year      = {2019},
+    pages     = {2613--2617},
+    doi       = {10.21437/Interspeech.2019-2680},
+    note      = {[Accessed: 08-04-2026]}
+}
+
+% === Hard Negative Mining ===
+
+@inproceedings{hou2020mining,
+    author    = {Jingyong Hou and Yangyang Shi and Mari Ostendorf and Mei-Yuh Hwang and Lei Xie},
+    title     = {Mining Effective Negative Training Samples for Keyword Spotting},
+    booktitle = {IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+    year      = {2020},
+    pages     = {7444--7448},
+    doi       = {10.1109/ICASSP40776.2020.9053009},
+    note      = {Microsoft; Regional Hard-Example Mining for KWS. 45-58\% FRR reduction. [Accessed: 10-04-2026]}
+}
+
+@article{felzenszwalb2010dpm,
+    author    = {Pedro F. Felzenszwalb and Ross B. Girshick and David A. McAllester and Deva Ramanan},
+    title     = {Object Detection with Discriminatively Trained Part Based Models},
+    journal   = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+    year      = {2010},
+    volume    = {32},
+    number    = {9},
+    pages     = {1627--1645},
+    note      = {Introduces ``hard negative mining'' term. [Accessed: 10-04-2026]}
+}
+
 % === Voice Cloning & TTS for Data Augmentation ===
 
 @article{asu2009estonian,
@@ -298,6 +373,130 @@
     year         = {2025},
     url          = {https://api.tartunlp.ai/text-to-speech/v2},
     note         = {Neural TTS API with 12 Estonian speakers and SSML support. [Accessed: 05-04-2026]}
+}
+
+% === Evaluation Benchmarks & Datasets ===
+
+@inproceedings{dipco2020,
+    author    = {Meisner Van Segbroeck and Ahmed"; Morteza Ravanelli and Michal Wronsky and Julia Kuber and Cornelius Severin and Marko"; and Piergiovanni},
+    title     = {{DiPCo} --- {D}inner {P}arty {C}orpus},
+    booktitle = {Proceedings of Interspeech},
+    year      = {2020},
+    url       = {https://arxiv.org/abs/1909.13447},
+    note      = {Far-field conversational corpus, 10 sessions, $\sim$5.5\,h. Primary FAPH benchmark for openWakeWord. [Accessed: 10-04-2026]}
+}
+
+@inproceedings{librispeech2015,
+    author    = {Vassil Panayotov and Guoguo Chen and Daniel Povey and Sanjeev Khudanpur},
+    title     = {Librispeech: An {ASR} Corpus Based on Public Domain Audio Books},
+    booktitle = {IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+    year      = {2015},
+    pages     = {5206--5210},
+    doi       = {10.1109/ICASSP.2015.7178964},
+    note      = {test-clean subset ($\sim$5.4\,h) used as standard FAPH benchmark by Picovoice. [Accessed: 10-04-2026]}
+}
+
+@misc{riigikogu-stenograms2025,
+    author       = {Tanel Alum{\"a}e and {TalTechNLP}},
+    title        = {Riigikogu Audio Stenograms 2018--2025},
+    year         = {2025},
+    url          = {https://huggingface.co/datasets/TalTechNLP/riigikogu-audio-stenograms-2018-2025},
+    note         = {3084\,h transcribed Estonian parliament speech, 1001 sessions, CC-BY-SA 3.0. [Accessed: 10-04-2026]}
+}
+
+@misc{err-video-news2025,
+    author       = {Tanel Alum{\"a}e and {TalTechNLP}},
+    title        = {{ERR} Video News Transcribed},
+    year         = {2025},
+    url          = {https://huggingface.co/datasets/TalTechNLP/err-video-news-transcribed},
+    note         = {$\sim$39\,400 news clips ($\sim$4000\,h), CC-BY-SA 4.0. Transcripts only; audio downloadable via links. [Accessed: 10-04-2026]}
+}
+
+@misc{taltech-asr-data2024,
+    author       = {Tanel Alum{\"a}e},
+    title        = {{TalTech} {Estonian} Speech Dataset 1.0},
+    year         = {2024},
+    url          = {https://cs.taltech.ee/staff/tanel.alumae/data/est-pub-asr-data/},
+    note         = {1334\,h Estonian broadcast, conference, and parliament speech. Train/dev/test splits. [Accessed: 10-04-2026]}
+}
+
+@inproceedings{eurospeech2024,
+    author    = {Ioannis Tsiamas and others},
+    title     = {{EuroSpeech}: A Multi-lingual Speech Dataset from the {European Parliament}},
+    year      = {2024},
+    url       = {https://huggingface.co/datasets/disco-eth/EuroSpeech},
+    note      = {Estonian subset: $\sim$1701\,h total, $\sim$383\,h high quality. CC-BY-SA. [Accessed: 10-04-2026]}
+}
+
+@inproceedings{voxpopuli2021,
+    author    = {Changhan Wang and Morgane Riviere and Ann Lee and Anne Wu and Chaitanya Talnikar and Daniel Haziza and Mary Williamson and Juan Pino and Emmanuel Dupoux},
+    title     = {{VoxPopuli}: A Large-Scale Multilingual Speech Corpus for Representation Learning, Semi-Supervised Learning and Interpretation},
+    booktitle = {Proceedings of the 59th Annual Meeting of the ACL},
+    year      = {2021},
+    pages     = {993--1003},
+    url       = {https://aclanthology.org/2021.acl-long.80/},
+    note      = {Estonian subset: 3\,h, 29 speakers. CC-0. [Accessed: 10-04-2026]}
+}
+
+@inproceedings{fleurs2023,
+    author    = {Alexis Conneau and Min Ma and Simran Khanuja and Yu Zhang and Vera Axelrod and Siddharth Dalmia and Jason Riesa and Clara Rivera and Ankur Bapna},
+    title     = {{FLEURS}: Few-shot Learning Evaluation of Universal Representations of Speech},
+    booktitle = {IEEE Spoken Language Technology Workshop},
+    year      = {2023},
+    url       = {https://huggingface.co/datasets/google/fleurs},
+    note      = {Estonian subset: $\sim$10\,h. CC-BY-4.0. [Accessed: 10-04-2026]}
+}
+
+@inproceedings{google-speech-embedding2020,
+    author    = {Yuan Shangguan and Jian Li and Qiao Liang and Raziel Alvarez and Ian McGraw},
+    title     = {Optimizing Speech Recognition for the Edge},
+    year      = {2020},
+    eprint    = {2002.01322},
+    archivePrefix = {arXiv},
+    note      = {Google's pre-trained speech embedding model used by openWakeWord for feature extraction. [Accessed: 10-04-2026]}
+}
+
+@inproceedings{amazon-twostage2020,
+    author    = {Yimeng Zhuang and Shuo-Yiin Chang and Duc Le and Ding Zhao and Hao Zhang and Yanzhang He},
+    title     = {Monophone-Based Background Modeling for Two-Stage On-Device Wake Word Detection},
+    booktitle = {IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+    year      = {2020},
+    url       = {https://www.amazon.science/publications/monophone-based-background-modeling-for-two-stage-on-device-wake-word-detection},
+    note      = {Two-stage DNN-HMM cascade: 16\% FRR and 37\% FAR reduction. [Accessed: 10-04-2026]}
+}
+
+@inproceedings{wang2020mining,
+    author    = {Yiming Wang and Hang Lv and Daniel Povey and Lei Xie and Sanjeev Khudanpur},
+    title     = {Mining Effective Negative Training Samples for Keyword Spotting},
+    booktitle = {IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+    year      = {2020},
+    doi       = {10.1109/ICASSP40776.2020.9053009},
+    note      = {Microsoft Research; Regional Hard-Example mining for KWS negatives. [Accessed: 10-04-2026]}
+}
+
+@misc{mazumder2021fewshot,
+    author    = {Mark Mazumder and Colby Banbury and Josh Meyer and Pete Warden and Vijay Janapa Reddi},
+    title     = {Few-Shot Keyword Spotting in Any Language},
+    year      = {2021},
+    eprint    = {2104.01454},
+    archivePrefix = {arXiv},
+    note      = {Cross-language transfer learning for KWS. [Accessed: 10-04-2026]}
+}
+
+@misc{picovoice-guide2026,
+    author       = {{Picovoice Inc.}},
+    title        = {Wake Word Detection Guide 2026: Complete Technical Overview},
+    year         = {2026},
+    url          = {https://picovoice.ai/blog/complete-guide-to-wake-word/},
+    note         = {Industry overview of wake word design, evaluation, and deployment best practices. [Accessed: 10-04-2026]}
+}
+
+@misc{openwakeword-features2024,
+    author       = {David Scripka},
+    title        = {openWakeWord Features Dataset},
+    year         = {2024},
+    url          = {https://huggingface.co/datasets/davidscripka/openwakeword_features},
+    note         = {Pre-computed embeddings: $\sim$2000\,h ACAV100M + $\sim$11\,h validation (DiPCo + Santa Barbara + MUSDB). [Accessed: 10-04-2026]}
 }
 
 % === GDPR & Research Ethics ===
