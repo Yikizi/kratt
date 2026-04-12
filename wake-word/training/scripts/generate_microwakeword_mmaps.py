@@ -51,7 +51,10 @@ class SimpleWavClips:
 
     def __init__(self, input_directory: str, file_pattern: str, random_split_seed: int, split_count: float):
         self.input_directory = Path(input_directory)
-        self.paths = sorted([p for p in self.input_directory.glob(file_pattern)])
+        self.paths = sorted(
+            [p for p in self.input_directory.glob("*.wav")]
+            + [p for p in self.input_directory.glob("*.flac")]
+        )
         if not self.paths:
             raise ValueError(f"No clips found in {input_directory} matching {file_pattern}")
 

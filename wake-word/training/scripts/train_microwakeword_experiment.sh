@@ -37,6 +37,7 @@ TIME_MASK_SIZE=0
 TIME_MASK_COUNT=0
 FREQ_MASK_SIZE=0
 FREQ_MASK_COUNT=0
+RESIDUAL_CONNECTION="0,0,0,0"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -73,6 +74,10 @@ while [[ $# -gt 0 ]]; do
       TIME_MASK_COUNT=2
       FREQ_MASK_SIZE=3
       FREQ_MASK_COUNT=2
+      shift 1
+      ;;
+    --residual)
+      RESIDUAL_CONNECTION="1,1,1,1"
       shift 1
       ;;
     -h|--help)
@@ -226,7 +231,7 @@ python -m microwakeword.model_train_eval \
   --train 1 \
   --test_tflite_streaming_quantized 0 \
   mixednet \
-  --residual_connection "0,0,0,0"
+  --residual_connection "${RESIDUAL_CONNECTION}"
 
 python -m microwakeword.model_train_eval \
   --training_config="${CFG_PATH}" \
@@ -234,7 +239,7 @@ python -m microwakeword.model_train_eval \
   --test_tflite_streaming_quantized 1 \
   --use_weights best_weights \
   mixednet \
-  --residual_connection "0,0,0,0"
+  --residual_connection "${RESIDUAL_CONNECTION}"
 
 REPORT_CMD=(
   python "${ROOT_DIR}/wake-word/evaluation/microwakeword_report.py"

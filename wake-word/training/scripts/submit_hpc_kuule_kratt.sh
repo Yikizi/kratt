@@ -25,11 +25,17 @@ CV_WAV_DIR="${DATASETS_DIR}/common-voice-et-wav"
 POSITIVE_MIC1="${DATASETS_DIR}/kuule-kratt/positive/mic1"
 POSITIVE_MIC2="${DATASETS_DIR}/kuule-kratt/positive/mic2"
 AMBIENT_DIR="${DATASETS_DIR}/musan/musan/noise"
+# v10: MUSAN speech (~49h LibriVox+US gov) and music (~41h FMA+Jamendo+classical)
+MUSAN_SPEECH_DIR="${DATASETS_DIR}/musan/musan/speech"
+MUSAN_MUSIC_DIR="${DATASETS_DIR}/musan/musan/music"
+# v10: Riigikogu stenograms (~3084h Estonian parliament speech, 16kHz mono FLAC)
+RIIGIKOGU_DIR="${DATASETS_DIR}/riigikogu-stenograms/audio"
 KORVO2_NEG_DIR="${PROCESSED_DIR}/negative_korvo2"
 KORVO2_NEG_EXTRA_DIR="${PROCESSED_DIR}/negative_korvo2_extra"
 KORVO2_NEG_S2_DIR="${PROCESSED_DIR}/negative_korvo2_session2"
 KORVO2_AMB_DIR="${PROCESSED_DIR}/ambient_korvo2"
 MACBOOK_NEG_DIR="${PROCESSED_DIR}/negative_macbook_segmented"
+MINED_FALSE_NEG_V10_DIR="${PROCESSED_DIR}/negative_mined_false_accepts_v10_train"
 TTS_POS_DIR="${PROCESSED_DIR}/positive_tts"
 TTS_SSML_POS_DIR="${PROCESSED_DIR}/positive_tts_ssml"
 TTS_HARD_NEG_DIR="${PROCESSED_DIR}/negative_tts_hard"
@@ -51,8 +57,16 @@ XTTS_HARD_NEG_EMA="${DATA_ROOT}/raw/xtts_clones/ema/negative"
 # Isa neg held out for unseen-speaker test (NOT included)
 
 # v8: opt-in flags - only use TTS hard negs in legacy "negative" set if explicitly requested
+# v10: learned that separate hard_neg feature set HURTS FAPH (v9 = 76 FAPH vs v6 = 21).
+#      Prefer --use-legacy-tts-hard-neg (all negatives in one pool) for best results.
 USE_LEGACY_TTS_HARD_NEG=0
 USE_HARD_NEG_FEATURE_SET=1
+# v10: MUSAN speech/music auto-included if dirs exist (same pattern as KORVO-2 negs).
+# Use --no-musan to opt out for ablation experiments.
+USE_MUSAN_SPEECH=1
+USE_MUSAN_MUSIC=1
+# v10: Riigikogu - use N random files (each ~1-5h). 0 = disabled, 50 = ~200h, 100 = ~400h.
+RIIGIKOGU_FILE_LIMIT=50
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -66,6 +80,11 @@ while [[ $# -gt 0 ]]; do
     --no-hard-neg-feature-set) USE_HARD_NEG_FEATURE_SET=0; shift 1 ;;
     --spec-augment) USE_SPEC_AUGMENT=1; shift 1 ;;
     --tts-hard-neg-in-hard-set) USE_TTS_HARD_NEG_IN_HARD_SET=1; shift 1 ;;
+    --no-musan-speech) USE_MUSAN_SPEECH=0; shift 1 ;;
+    --no-musan-music) USE_MUSAN_MUSIC=0; shift 1 ;;
+    --no-musan) USE_MUSAN_SPEECH=0; USE_MUSAN_MUSIC=0; shift 1 ;;
+    --riigikogu-files) RIIGIKOGU_FILE_LIMIT="$2"; shift 2 ;;
+    --no-riigikogu) RIIGIKOGU_FILE_LIMIT=0; shift 1 ;;
     *) echo "Unknown: $1" >&2; exit 2 ;;
   esac
 done
@@ -102,14 +121,39 @@ for pos_d in "${EXTRA_POS_LIST[@]}"; do
   fi
 done
 
-# Build extra negative dirs (same-device KORVO-2 + MacBook segmented; legacy TTS hard neg opt-in)
+# Build extra negative dirs (same-device KORVO-2 + MacBook segmented + mined live false accepts; legacy TTS hard neg opt-in)
 EXTRA_NEG_LIST=""
-for neg_d in "${KORVO2_NEG_DIR}" "${KORVO2_NEG_EXTRA_DIR}" "${KORVO2_NEG_S2_DIR}" "${MACBOOK_NEG_DIR}"; do
+for neg_d in "${KORVO2_NEG_DIR}" "${KORVO2_NEG_EXTRA_DIR}" "${KORVO2_NEG_S2_DIR}" "${MACBOOK_NEG_DIR}" "${MINED_FALSE_NEG_V10_DIR}"; do
   if [[ -d "${neg_d}" ]]; then
     EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${neg_d}"
     echo "Including extra negatives: ${neg_d}"
   fi
 done
+# v10: opt-in MUSAN speech (~49h LibriVox) and music (~41h)
+if [[ "${USE_MUSAN_SPEECH}" == "1" ]] && [[ -d "${MUSAN_SPEECH_DIR}" ]]; then
+  EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${MUSAN_SPEECH_DIR}"
+  echo "Including MUSAN speech (~49h): ${MUSAN_SPEECH_DIR}"
+fi
+if [[ "${USE_MUSAN_MUSIC}" == "1" ]] && [[ -d "${MUSAN_MUSIC_DIR}" ]]; then
+  EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${MUSAN_MUSIC_DIR}"
+  echo "Including MUSAN music (~41h): ${MUSAN_MUSIC_DIR}"
+fi
+# v10: Riigikogu Estonian parliament speech (subset of 1001 FLAC files)
+if [[ "${RIIGIKOGU_FILE_LIMIT}" -gt 0 ]] && [[ -d "${RIIGIKOGU_DIR}" ]]; then
+  # Create a symlink dir with N random files to control dataset size
+  RIIGIKOGU_SUBSET="${PROCESSED_DIR}/riigikogu_subset_${RIIGIKOGU_FILE_LIMIT}"
+  if [[ ! -d "${RIIGIKOGU_SUBSET}" ]]; then
+    echo "Creating Riigikogu subset (${RIIGIKOGU_FILE_LIMIT} files)..."
+    mkdir -p "${RIIGIKOGU_SUBSET}"
+    # Use awk for deterministic shuffle (shuf --random-source needs more entropy than 3 bytes)
+    find "${RIIGIKOGU_DIR}" -name "*.flac" | awk 'BEGIN{srand(42)}{print rand()"\t"$0}' | sort -n | cut -f2 | head -n "${RIIGIKOGU_FILE_LIMIT}" | while read -r f; do
+      ln -sf "$f" "${RIIGIKOGU_SUBSET}/$(basename "$f")"
+    done
+  fi
+  RK_COUNT=$(find "${RIIGIKOGU_SUBSET}" -name "*.flac" | wc -l)
+  EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${RIIGIKOGU_SUBSET}"
+  echo "Including Riigikogu subset (${RK_COUNT} files): ${RIIGIKOGU_SUBSET}"
+fi
 if [[ "${USE_LEGACY_TTS_HARD_NEG}" == "1" ]]; then
   for neg_d in "${TTS_HARD_NEG_DIR}" "${TTS_HARD_NEG_V2_DIR}"; do
     if [[ -d "${neg_d}" ]]; then

@@ -155,7 +155,9 @@ def main():
         extra_dir = Path(extra_dir)
         if not extra_dir.exists():
             raise SystemExit(f"Extra negative dir not found: {extra_dir}")
-        extra_wavs = sorted(extra_dir.glob("*.wav"))
+        extra_wavs = sorted(
+            list(extra_dir.glob("*.wav")) + list(extra_dir.glob("*.flac"))
+        )
         print(f"  Extra negatives from {extra_dir.name}: {len(extra_wavs)}")
         for src in extra_wavs:
             dst = neg_out / f"extra_negative_{neg_idx:04d}.wav"
