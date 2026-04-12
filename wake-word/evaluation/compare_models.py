@@ -23,6 +23,7 @@ import numpy as np
 import soundfile as sf
 
 from microwakeword.inference import Model
+from microwakeword.test import compute_false_accepts_per_hour
 
 from test_sets import (
     TEST_SETS,
@@ -31,11 +32,12 @@ from test_sets import (
     assert_disjoint_from_training,
 )
 
+# Match canonical microWakeWord FAPH methodology (microwakeword.test.test_tflite_model)
 STEP_MS = 10
-MA_WINDOW = 5
+MA_WINDOW = 5                     # 50 ms moving average
+DEFAULT_COOLDOWN_SLICES = 25      # 250 ms refractory period
 DEFAULT_THRESHOLD = 0.97
-DEFAULT_REFRACTORY_MS = 2000
-INTER_CLIP_SILENCE_MS = 300
+INTER_CLIP_SILENCE_MS = 300       # tiny silence between concatenated clips
 
 # ANSI colors
 C_RESET = "\033[0m"
@@ -125,36 +127,51 @@ def streaming_faph(
     model: Model,
     test_set: TestSet,
     threshold: float,
-    refractory_ms: int = DEFAULT_REFRACTORY_MS,
+    cooldown_slices: int = DEFAULT_COOLDOWN_SLICES,
     silence_ms: int = INTER_CLIP_SILENCE_MS,
 ) -> dict:
-    refractory_frames = max(1, refractory_ms // STEP_MS)
-    silence = np.zeros((silence_ms * 16000) // 1000, dtype=np.int16)
+    """Canonical microWakeWord FAPH measurement.
+
+    Concatenates all clips into one long track (with brief inter-clip
+    silence to avoid abrupt boundaries), runs streaming inference,
+    smooths with a 50 ms moving average, and counts distinct activations
+    using microwakeword.test.compute_false_accepts_per_hour with the
+    framework's default 250 ms refractory period.
+    """
+    silence_samples = (silence_ms * 16000) // 1000
+    silence = np.zeros(silence_samples, dtype=np.int16)
 
     files = sorted(test_set.path.glob("*.wav"))
     if not files:
         return {"n": 0, "duration_s": 0.0, "activations": 0, "faph": 0.0}
 
-    total_samples = 0
-    activations = 0
-    for f in files:
-        pcm = np.concatenate([silence, load_audio_16k(f)])
-        total_samples += pcm.size
-        raw = np.array(model.predict_clip(pcm, step_ms=STEP_MS), dtype=np.float32)
-        smoothed = moving_average(raw, MA_WINDOW)
-        cooldown = 0
-        for s in smoothed:
-            if cooldown > 0:
-                cooldown -= 1
-                continue
-            if s >= threshold:
-                activations += 1
-                cooldown = refractory_frames
-        reset_model_state(model)
+    parts: list[np.ndarray] = []
+    for i, f in enumerate(files):
+        pcm = load_audio_16k(f)
+        if i > 0 and silence_samples > 0:
+            parts.append(silence)
+        parts.append(pcm)
+    track = np.concatenate(parts)
+    total_samples = track.size
+
+    raw = np.array(model.predict_clip(track, step_ms=STEP_MS), dtype=np.float32)
+    smoothed = moving_average(raw, MA_WINDOW)
+
+    cutoffs = np.array([threshold], dtype=np.float32)
+    faph_arr = compute_false_accepts_per_hour(
+        [smoothed],
+        cutoffs=cutoffs,
+        ignore_slices_after_accept=cooldown_slices,
+        stride=1,
+        step_s=STEP_MS / 1000.0,
+    )
+    faph = float(faph_arr[0])
 
     duration_s = total_samples / 16000.0
-    duration_h = duration_s / 3600.0
-    faph = activations / duration_h if duration_h > 0 else 0.0
+    # Recover activation count from FAPH and duration so we can report it
+    activations = int(round(faph * (duration_s / 3600.0)))
+
+    reset_model_state(model)
     return {
         "n": len(files),
         "duration_s": duration_s,

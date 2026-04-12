@@ -47,7 +47,7 @@ class TestSet:
 
 
 # All known model versions, in chronological order
-ALL_MODELS = ("v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8")
+ALL_MODELS = ("v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -109,6 +109,18 @@ TEST_SETS: dict[str, TestSet] = {
         ),
         held_out_for=ALL_MODELS,
     ),
+    "hard_neg_v10_false_accept_canary": TestSet(
+        name="hard_neg_v10_false_accept_canary",
+        path=DATA / "processed" / "test_neg_false_accepts_v10_canary",
+        kind=TestSetKind.NEGATIVE_HARD,
+        description=(
+            "Real-world adversarial false-accept canary clips mined from live "
+            "v10 testing (keyboard/tapping/music-triggering patterns). "
+            "Reserved for evaluation only; must never be used in training."
+        ),
+        held_out_for=ALL_MODELS,
+        notes="Canary set for regression testing deterministic false-trigger patterns.",
+    ),
 
     # ── Long-form FAPH (ambient) ─────────────────────────────────────────────
     "faph_cv_et": TestSet(
@@ -122,6 +134,32 @@ TEST_SETS: dict[str, TestSet] = {
         ),
         held_out_for=ALL_MODELS,
         notes="Primary FAPH benchmark for in-domain Estonian speech.",
+    ),
+
+    # ── Standard FAPH benchmarks (cross-system comparable) ─────────────────
+    "faph_librispeech": TestSet(
+        name="faph_librispeech",
+        path=DATA / "processed" / "benchmarks" / "librispeech-test-clean",
+        kind=TestSetKind.AMBIENT,
+        description=(
+            "LibriSpeech test-clean: ~5.4 hours of read English speech, "
+            "40 speakers. Standard FAPH benchmark used by Picovoice. "
+            "Enables direct comparison with published Porcupine results."
+        ),
+        held_out_for=ALL_MODELS,
+        notes="Cross-language FAPH. English speech should NOT trigger Estonian wake word.",
+    ),
+    "faph_dipco": TestSet(
+        name="faph_dipco",
+        path=DATA / "processed" / "benchmarks" / "dipco",
+        kind=TestSetKind.AMBIENT,
+        description=(
+            "DiPCo Dinner Party Corpus: ~5.5 hours of far-field dinner "
+            "party conversations. Primary FAPH benchmark used by openWakeWord. "
+            "Contains natural pauses, overlapping speech, laughter, clinking."
+        ),
+        held_out_for=ALL_MODELS,
+        notes="Cross-language FAPH. Realistic multi-speaker ambient with intermittent speech.",
     ),
 
     # ── KORVO-2 hold-out (to be recorded) ────────────────────────────────────
