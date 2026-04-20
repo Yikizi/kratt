@@ -1,15 +1,15 @@
 Nutikodu hääljuhtimise lahendused liiguvad üha rohkem servaseadmete suunas, kuid eestikeelsete äratussõnade tugi on endiselt piiratud. Paljud valmis lahendused eeldavad ingliskeelset kasutust, pilveühendust või riistvara, mis ei sobi väikese energiatarbega koduautomaatikaseadmetele. Seetõttu on eestikeelse äratussõna tuvastuse realiseerimine mikrokontrolleril korraga nii tehniline kui ka praktiline probleem.
 
-Käesoleva töö eesmärk on uurida, kuidas ehitada eestikeelset äratussõna tuvastust piiratud ressursiga nutikodu mikrokontrolleril nii, et lahendus oleks lokaalne, reprodutseeritav ja reaalses kasutuses hinnatav. Töö keskmes on projekt \enquote{Kratt}, mille kitsam fookus on wake word tuvastus, mitte kogu kõnetöötluse toru. Selline piirang on teadlik, sest äratussõna on kasutuskogemuse esimene filter ning selles etapis tekkivad vead mõjutavad kogu ülejäänud süsteemi.
+Käesoleva töö eesmärk on uurida, kuidas ehitada eestikeelset äratussõna tuvastust piiratud ressursiga nutikodu mikrokontrolleril nii, et lahendus oleks lokaalne, reprodutseeritav ja reaalses kasutuses hinnatav. Töö keskmes on projekt \enquote{Kratt}, mille kitsam fookus on äratussõna (ingl \emph{wake word}) tuvastus, mitte kogu kõnetöötluse toru. Selline piirang on teadlik, sest äratussõna on kasutuskogemuse esimene filter ning selles etapis tekkivad vead mõjutavad kogu ülejäänud süsteemi.
 
 Praktiliseks sihtplatvormiks on ESP32-S3 põhine seade, kuhu mudel paigaldatakse ESPHome tarkvarakihi kaudu \cite{esphome2026}. Mudeli treenimiseks ja hindamiseks kasutatakse \texttt{microWakeWord} raamistikku, mis tugineb TensorFlow ökosüsteemile \cite{microwakeword2026,tensorflow2015}. Nutikodu poolel on sihtintegratsiooniks Home Assistant \cite{homeassistant2026}.
 
-Töö käigus sai kiiresti selgeks, et wake word projekti puhul ei piisa ainult mudeli treenimisest. Sama mudel võib anda lühikeste testklippide peal häid tulemusi, kuid pidevas helivoo režiimis valesti vallanduda. Seetõttu tuleb lisaks klassikalistele mõõdikutele hinnata ka valevallandumisi pika ambient-signaali peal. See metoodiline aspekt osutus senise töö üks keskseid õppetunde.
+Töö käigus sai kiiresti selgeks, et äratussõna projekti puhul ei piisa ainult mudeli treenimisest. Sama mudel võib anda lühikeste testklippide peal häid tulemusi, kuid pidevas helivoo režiimis valesti vallanduda. Seetõttu tuleb lisaks klassikalistele mõõdikutele hinnata ka valevallandumisi pika ambient-signaali peal. See metoodiline aspekt osutus senise töö üks keskseid õppetunde.
 
 Töö põhiküsimus on järgmine: kuidas luua ja hinnata eestikeelset äratussõna tuvastust nii, et see oleks usaldusväärne nutikodu mikrokontrolleri piiratud ressursi tingimustes? Selle küsimuse lahendamiseks tuleb vastata mitmele alamküsimusele:
 \begin{itemize}
     \item kuidas valideerida treeningu- ja hindamistoru enne eestikeelse andmestiku juurde liikumist;
-    \item millist rolli mängivad positiivsed, negatiivsed ja ambient-andmed wake word mudeli kvaliteedi hindamisel;
+    \item millist rolli mängivad positiivsed, negatiivsed ja ambient-andmed äratussõna mudeli kvaliteedi hindamisel;
     \item kuidas eristada andmestikust tulenevaid probleeme toru tehnilistest vigadest.
 \end{itemize}
 
