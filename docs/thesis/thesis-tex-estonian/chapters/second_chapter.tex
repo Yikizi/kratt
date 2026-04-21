@@ -193,9 +193,9 @@ Korrigeeritud tulemused muudavad varasemate alapeatükkide järeldusi mitmes olu
 
 \subsubsection{Metoodikaline järeldus}
 
-Töö üks olulisemaid leide on, et \textbf{klipi-taseme FPR mõõtmine treeningandmete osahulgal ei ole usaldusväärne wake word mudeli kvaliteedi mõõdik}. Iga väide mudeli generaliseerumise kohta peab põhinema andmetel, mille mudel ei ole kunagi treeningus näinud. Kuni hold-out komplekti puudumiseni ei õnnestunud seda viga avastada, sest klipi-tasemel saadud numbrid (CV FPR 0,4\%) tundusid kõlblikud. Alles reaalajas testimine pikemate ambient-segmentidega tõi anomaalia esile.
+Töö üks olulisemaid leide on, et \textbf{klipi-taseme FPR mõõtmine treeningandmete osahulgal ei ole usaldusväärne äratussõna mudeli kvaliteedi mõõdik}. Iga väide mudeli generaliseerumise kohta peab põhinema andmetel, mille mudel ei ole kunagi treeningus näinud. Kuni hold-out komplekti puudumiseni ei õnnestunud seda viga avastada, sest klipi-tasemel saadud numbrid (CV FPR 0,4\%) tundusid kõlblikud. Alles reaalajas testimine pikemate ambient-segmentidega tõi anomaalia esile.
 
-Praktiline järeldus tulevasteks töödeks: wake word süsteemi hindamispipeline peab vaikimisi sisaldama (a) kohustuslikku disjointness checki test setide vs treeningandmete vahel, (b) pikkade ambient-segmentide peal arvutatud FAPH metrikat, ja (c) vähemalt ühte truly held-out positiivset komplekti, mille mudel ei ole \emph{ühelgi} koolitusringil näinud.
+Praktiline järeldus tulevasteks töödeks: äratussõna süsteemi hindamispipeline peab vaikimisi sisaldama (a) kohustuslikku disjointness checki test setide vs treeningandmete vahel, (b) pikkade ambient-segmentide peal arvutatud FAPH metrikat, ja (c) vähemalt ühte truly held-out positiivset komplekti, mille mudel ei ole \emph{ühelgi} koolitusringil näinud.
 
 \subsection{Ristmikrofoni testimine (H2)}
 
