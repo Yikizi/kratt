@@ -1,9 +1,9 @@
-Metoodika eesmärk on kirjeldada sellist tööprotsessi, mille abil on võimalik wake word mudeli arenduses eristada toru tehnilisi vigu andmestikust või mudeli üldistusvõimest tulenevatest probleemidest. See on oluline, sest vastasel juhul võib ebaõnnestunud tulemus jääda valesti kas andmete, deploy või treeningukoodi arvele.
+Metoodika eesmärk on kirjeldada sellist tööprotsessi, mille abil on võimalik äratussõna mudeli arenduses eristada toru tehnilisi vigu andmestikust või mudeli üldistusvõimest tulenevatest probleemidest. See on oluline, sest vastasel juhul võib ebaõnnestunud tulemus jääda valesti kas andmete, deploy või treeningukoodi arvele.
 
 \section{Kasutatud tehnoloogiad}
-Töö praktiline baas koosneb neljast peamisest komponendist. Esmaseks mikrokontrolleri-suunaliseks treeninguraamistikuks kasutatakse \texttt{microWakeWord} projekti \cite{microwakeword2026}, mille all töötab TensorFlow \cite{tensorflow2015}. Võrdlusraamistikuna kaasatakse \texttt{openWakeWord} \cite{openwakeword2026}, mis on suunatud kiiremale wake word prototüüpimisele ja mille ümber on aktiivne kasutuspraktika Home Assistanti ökosüsteemis. Mudeli sihtformaadiks on TensorFlow Lite ning sihtseadmeks ESP32-S3 põhine arendusplaat. Seadmel käitamiseks ja Home Assistantiga sidumiseks kasutatakse ESPHome'i \cite{esphome2026}. Nutikodu automaatikakihi ja sündmuste orkestreerimise eest vastutab Home Assistant \cite{homeassistant2026}.
+Töö praktiline baas koosneb neljast peamisest komponendist. Esmaseks mikrokontrolleri-suunaliseks treeninguraamistikuks kasutatakse \texttt{microWakeWord} projekti \cite{microwakeword2026}, mille all töötab TensorFlow \cite{tensorflow2015}. Võrdlusraamistikuna kaasatakse \texttt{openWakeWord} \cite{openwakeword2026}, mis on suunatud kiiremale äratussõna prototüüpimisele ja mille ümber on aktiivne kasutuspraktika Home Assistanti ökosüsteemis. Mudeli sihtformaadiks on TensorFlow Lite ning sihtseadmeks ESP32-S3 põhine arendusplaat. Seadmel käitamiseks ja Home Assistantiga sidumiseks kasutatakse ESPHome'i \cite{esphome2026}. Nutikodu automaatikakihi ja sündmuste orkestreerimise eest vastutab Home Assistant \cite{homeassistant2026}.
 
-Selline tehnoloogiline valik võimaldab hoida kogu toru lokaalsena. See tähendab, et treening toimub arendusmasinas, mudeli eksport tehakse TFLite vormingusse ning inference jookseb päris mikrokontrolleril ilma välise pilveteenuseta. Samal ajal võimaldab kahe erineva wake word raamistiku kasutamine hinnata mitte ainult lõplikku mudelikvaliteeti, vaid ka seda, kui suur on arenduskulu ja milliseid kompromisse nõuab tehnoloogiavalik väikese keeleruumi tingimustes.
+Selline tehnoloogiline valik võimaldab hoida kogu toru lokaalsena. See tähendab, et treening toimub arendusmasinas, mudeli eksport tehakse TFLite vormingusse ning inference jookseb päris mikrokontrolleril ilma välise pilveteenuseta. Samal ajal võimaldab kahe erineva äratussõna raamistiku kasutamine hinnata mitte ainult lõplikku mudelikvaliteeti, vaid ka seda, kui suur on arenduskulu ja milliseid kompromisse nõuab tehnoloogiavalik väikese keeleruumi tingimustes.
 
 \section{Võrdlusraamistik}
 Töö ei piirdu ühe tehnoloogia kasutamisega, vaid võrdleb kahte praktiliselt relevantset lähenemist: \texttt{microWakeWord} ja \texttt{openWakeWord}. Selline võrdlus on metoodiliselt oluline, sest vastasel juhul jääks tehnoloogiavalik osaliselt põhjendamata ning oleks raske eristada, kas probleem tuleneb konkreetsest raamistikust, andmestikust või sihtplatvormi piirangutest.
@@ -16,10 +16,10 @@ Võrdlus viiakse läbi neljal teljel:
     \item laiendatavus eesti keelele, sealhulgas sõltuvus ingliskeelsetest eeldustest ja sünteetilise andmestiku roll.
 \end{itemize}
 
-Sellise võrdlusraami eesmärk ei ole leida abstraktselt \enquote{parimat} wake word raamistikku, vaid hinnata, milline lähenemine on sobivam eestikeelse ja piiratud ressursiga nutikodu kasutusjuhtumi jaoks. See võimaldab hiljem põhjendada nii lõpliku tehnoloogiavaliku kui ka selle käigus tehtud kompromisside loogikat.
+Sellise võrdlusraami eesmärk ei ole leida abstraktselt \enquote{parimat} äratussõna raamistikku, vaid hinnata, milline lähenemine on sobivam eestikeelse ja piiratud ressursiga nutikodu kasutusjuhtumi jaoks. See võimaldab hiljem põhjendada nii lõpliku tehnoloogiavaliku kui ka selle käigus tehtud kompromisside loogikat.
 
 \section{Andmeliikide eristamine}
-Wake word mudeli arenduses ei piisa ainult tavalisest treeningu- ja testandmete jaotusest. Käesolevas töös eristatakse kolme andmeliiki:
+Äratussõna mudeli arenduses ei piisa ainult tavalisest treeningu- ja testandmete jaotusest. Käesolevas töös eristatakse kolme andmeliiki:
 \begin{itemize}
     \item positiivsed klipid, kus äratussõna on olemas;
     \item negatiivsed klipid, kus äratussõna puudub, kuid heli võib sisaldada kõnet või muid segavaid mustreid;
@@ -48,7 +48,7 @@ Praktilises torus moodustatakse eraldi järgmised andmekogumid:
 Selline jaotus on vajalik, sest streaming-eval ei saa toetuda ainult lühikestele negatiivsetele klippidele. Kui ambient-kogum puudub või on vigaselt moodustatud, muutub osa hindamistulemustest sisuliselt kasutuks.
 
 \section{Hindamismõõdikud}
-Wake word mudeli puhul on oluline mitte ainult äratussõna tabamine, vaid ka valevallandumiste kontroll. Seetõttu kasutatakse lisaks tavalistele täpsusmõõdikutele ka streaming-hindamise mõõdikuid:
+Äratussõna mudeli puhul on oluline mitte ainult äratussõna tabamine, vaid ka valevallandumiste kontroll. Seetõttu kasutatakse lisaks tavalistele täpsusmõõdikutele ka streaming-hindamise mõõdikuid:
 \begin{itemize}
     \item \texttt{FRR} ehk false rejection rate, mis näitab kui suur osa tegelikest äratussõna juhtudest jääb tabamata;
     \item \texttt{FAPH} ehk false accepts per hour, mis näitab valevallandumiste arvu tunni kohta;
