@@ -64,7 +64,7 @@ Käesoleva töö kõik mudeliversioonid kasutavad \texttt{microWakeWord} raamist
 
 \subsection{MixedConv plokid}
 
-MixedNet koosneb neljast järjestikusest MixedConv plokist, millest igaühel on erinev ajaline tuumasydamiku suurus (\emph{kernel size}). Käesoleva töö konfiguratsioonis on tuumade suurused $[5], [9], [13], [21]$, punktfiltrite arv igas plokis 48 ning iga plokk sisaldab ühte kordust (\texttt{repeat\_in\_block\,=\,1,1,1,1}). Enne MixedConv plokke rakendatakse ühte sissejuhatavat konvolutsioonikihti 32 filtriga ja tuumasydamiku suurusega 3, mis viib sisendspektrogrammi algsest 40-mõõtmelisest sagedusvektorist esimesse tunnuseruumi.
+MixedNet koosneb neljast järjestikusest MixedConv plokist, millest igaühel on erineva ajalise tuuma suurus (\emph{kernel size}). Käesoleva töö konfiguratsioonis on tuumade suurused $[5], [9], [13], [21]$, punktfiltrite arv igas plokis 48 ning iga plokk sisaldab ühte kordust (\texttt{repeat\_in\_block\,=\,1,1,1,1}). Enne MixedConv plokke rakendatakse ühte sissejuhatavat konvolutsioonikihti 32 filtriga ja tuuma suurusega 3, mis viib sisendspektrogrammi algsest 40-mõõtmelisest sagedusvektorist esimesse tunnuseruumi.
 
 Erineva suurusega tuumad mängivad erinevaid rolle. Väiksem tuum (5) tabab lühiajalisi akustilisi sündmusi nagu plahvatushäälikud ja sulghäälikud, suurem tuum (21) hõlmab pikemat ajalist konteksti ja aitab eristada rütmi- ja prosoodiamustreid. Selline mitme\-skaalaline lähenemine on eriti oluline äratussõna \enquote{Kuule Kratt} puhul, mis sisaldab nii lühikest plahvatust /k/ kui ka pikemat vokaaltrajektoori /uu/ $\rightarrow$ /le/.
 
