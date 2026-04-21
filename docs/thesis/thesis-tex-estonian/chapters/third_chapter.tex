@@ -1,12 +1,12 @@
-Senise töö kõige olulisem õppetund on, et wake word mudeli arenduses võib pealtnäha hea tulemus olla eksitav, kui hindamismetoodika on puudulik. Lühikeste klippide peal saadud head skoorid ei taga, et mudel käitub õigesti pidevas helivoo režiimis. See probleem ilmnes selgelt hetkel, kui varasemad \enquote{Kratt} tulemused osutusid clip-level vaates mõistlikuks, kuid streaming-eval oli ambient-andmete puudumise tõttu sisuliselt katki.
+Senise töö kõige olulisem õppetund on, et äratussõna (ingl \emph{wake word}) mudeli arenduses võib pealtnäha hea tulemus olla eksitav, kui hindamismetoodika on puudulik. Lühikeste klippide peal saadud head skoorid ei taga, et mudel käitub õigesti pidevas helivoo režiimis. See probleem ilmnes selgelt hetkel, kui varasemad \enquote{Kratt} tulemused osutusid clip-level vaates mõistlikuks, kuid streaming-eval oli ambient-andmete puudumise tõttu sisuliselt katki.
 
 \section{Miks avalik sanity-check oli vajalik}
-Avaliku \texttt{marvin} eksperimendi tegemine enne eestikeelse äratussõna juurde liikumist oli teadlik riskide vähendamise samm. Ilma selle vahekontrollita oleks iga hilisem ebaõnnestumine võinud näida kui eesti keele, väikese andmestiku või seadme mikrofoni probleem, kuigi tegelik põhjus võinuks peituda hoopis treeningutoru tehnilises veas.
+Avaliku \texttt{marvin} eksperimendi tegemine enne eestikeelse äratussõna juurde liikumist oli teadlik riskide vähendamise samm. Ilma selle vahekontrollita oleks iga hilisem ebaõnnestumine võinud näida kui eesti keele, väikese andmestiku või seadme mikrofoni probleem, kuigi tegelik põhjus võinuks peituda hoopis treeningutoru tehnilises veas — täpsemalt samas streaming-eval'i ambient-komponendi puudujäägis, mille \texttt{marvin}-katse lõpuks nähtavale tõi.
 
 Seetõttu oli sanity-check mitte kõrvalharu, vaid vajalik kontrollkiht. See kinnitas, et edasises töös tuleb keskenduda rohkem andmete kvaliteedile, domeeninihkele ja realistlikule ambient-evalile.
 
 \section{Miks kahe raamistiku võrdlus tugevdab tööd}
-Praktilises plaanis ei piisa väitest, et valitud tehnoloogia osutus sobivaks. Wake word lahenduste puhul on olemas mitu avatud lähtekoodiga rada, mille eesmärgid ja tugevused erinevad. \texttt{microWakeWord} sobib hästi mikrokontrolleri-piirangutega keskkonda, kuid selle treenimine on tundlik andmete, evaluatsiooni ja hüperparameetrite suhtes. \texttt{openWakeWord} lubab seevastu kiiremat prototüüpimist ja lihtsamat mudeliehitust, kuid ei pruugi samal kujul sobida lõplikuks ESP32-S3 deploy lahenduseks \cite{microwakeword2026,openwakeword2026}.
+Praktilises plaanis ei piisa väitest, et valitud tehnoloogia osutus sobivaks. Äratussõna lahenduste puhul on olemas mitu avatud lähtekoodiga rada, mille eesmärgid ja tugevused erinevad. \texttt{microWakeWord} sobib hästi mikrokontrolleri-piirangutega keskkonda, kuid selle treenimine on tundlik andmete, evaluatsiooni ja hüperparameetrite suhtes. \texttt{openWakeWord} lubab seevastu kiiremat prototüüpimist ja lihtsamat mudeliehitust, kuid ei pruugi samal kujul sobida lõplikuks ESP32-S3 deploy lahenduseks \cite{microwakeword2026,openwakeword2026}.
 
 Seetõttu annab kahe raamistiku praktiline läbiproovimine tööle lisaväärtuse. Võrdlus võimaldab näidata, et tehnoloogiavalik ei põhinenud pelgalt autori harjumusel või varasemal kogemusel, vaid kontrollitud katsetel. Selline lähenemine tugevdab töö põhjendatust isegi juhul, kui lõppjäreldus osutub kompromissiks, kus üks raamistik on parem arendatavuse ja teine lõpliku seadme-sobivuse poolest.
 
@@ -18,7 +18,7 @@ Sama loogika kehtib ambient-andmete kohta. Kui ambient koosneb ainult vaikusest 
 \section{Mida saab juba praegu väita}
 Praeguse töö seisu juures saab põhjendatult väita järgmist:
 \begin{itemize}
-    \item kohalik wake word treeningu- ja hindamistoru on avaliku andmestiku peal valideeritud;
+    \item kohalik äratussõna treeningu- ja hindamistoru on avaliku andmestiku peal valideeritud;
     \item evaluatsioon peab sisaldama eraldi ambient-komponenti, vastasel juhul on osa mõõdikuid eksitavad;
     \item eestikeelse mudeli järgmine peamine risk ei ole enam toru tehniline katkiolek, vaid andmestiku kvaliteet ja sobivus päris kasutuskeskkonnaga.
 \end{itemize}
