@@ -142,7 +142,7 @@ Need esialgsed tulemused olid aga \emph{eksitavad}. Edasine reaalajas testimine 
 \subsection{Andmelekke avastamine ja korrigeeritud hindamine}
 \label{sec:data-leakage}
 
-Pärast vahekaitsmist alustati v6 mudeli reaalajas testimist MacBook~Pro sisemikrofoniga (vt §2.X). Test näitas, et mudel registreeris umbes 50 valevallandumist tunnis (FAPH~$\approx$~50) tavakõne ajal. See tulemus oli teravas vastuolus tabelis~\ref{tab:full-comparison} esitatud CV FPR\,=\,0,4\% väärtusega, mis ennustanuks kordades vähem valeaktiveerimisi.
+Pärast vahekaitsmist alustati v6 mudeli reaalajas testimist MacBook~Pro sisemikrofoniga (vt §\ref{sec:cross-mic-asymmetry}). 40-minutilise tavakõne testi jooksul registreeriti umbes 50 valevallandumist tunnis (FAPH~$\approx$~50). See tulemus oli teravas vastuolus tabelis~\ref{tab:full-comparison} esitatud CV FPR\,=\,0,4\% väärtusega, mis ennustanuks kordades vähem valeaktiveerimisi.
 
 Anomaalia uurimisel selgus, et lokaalne hindamisskript \texttt{compare\_models.py} kasutas negatiivse testikomplektina kataloogi \texttt{data/processed/negative\_samples}, mis sisaldas \emph{täpselt samu} 5000 Common~Voice eestikeelset klippi, mida kasutati mudeli treenimiseks. Klipi-taseme FPR mõõtis seega seda, kui hästi mudel oli oma treeningkomplekti pähe õppinud, mitte seda, kui hästi ta üldistub uutele kõnenäidetele. Sama probleem kehtis ka KORVO-2 negatiivsete kohta: kõik kogutud klipid olid treeningusse võetud ning sõltumatut hold-out komplekti polnud kunagi loodud.
 
@@ -211,6 +211,7 @@ Testimise käigus ilmnes, et mudel:
 See tulemus andis esialgse kinnituse hüpoteesile H2: mudel on õppinud äratussõna foneetilist struktuuri ja suudab seda tuvastada treeningandmetest erineval seadmel.
 
 \subsection{Ristmikrofoni generaliseerumise asümmeetria}
+\label{sec:cross-mic-asymmetry}
 
 Pikema reaalajas testimise käigus ilmnes aga oluline nüanss. Kui v6 mudelit jooksutati MacBook~Pro mikrofoni peal 40-minutilise tavakõne ajal (kus äratussõna kordagi ei öeldud), registreeriti umbes 50 valevallandumist tunnis (FAPH~$\approx$~50). Samas tuvastas mudel päris äratussõna ütlusi usaldusväärselt.
 
