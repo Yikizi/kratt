@@ -16,7 +16,7 @@ Eestikeelse \enquote{Kratt} mudeli puhul tuleb arvestada domeeninihke riskiga. K
 Sama loogika kehtib ambient-andmete kohta. Kui ambient koosneb ainult vaikusest või liiga puhastest näidetest, ei kirjelda see koduse keskkonna tegelikku taustheli. Seetõttu tuleb lõppfaasis lisada avalikele korpustele ka samast mikrofoni- ja ruumiseadistusest kogutud salvestused.
 
 \subsection{Streaming-evali parameetrid}
-Et ambient-hindamine oleks reprodutseeritav, fikseeritakse järgmine protokoll:
+Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna (a) ühik on kasutajakogemusele otseselt tõlgendatav — valed aktiveeringud tunnis pideva kuulamise režiimis, (b) see ei sõltu positiivsete klippide hulgast ega klassijaotusest ning (c) on otse võrreldav microWakeWordi ja openWakeWordi avaldatud tulemustega. Et ambient-hindamine oleks reprodutseeritav, fikseeritakse järgmine protokoll:
 \begin{itemize}
     \item ambient-korpused: \texttt{faph\_cv\_et} (2000 Common Voice ET klippi, ${\sim}3{,}65$~tundi, indeksid 5000--7000), LibriSpeech test-clean (${\sim}5{,}4$~tundi) ja DiPCo (${\sim}5{,}5$~tundi);
     \item helivorming: 16~kHz mono PCM; klipid liidetakse üheks pikaks rajaks lühikese vaikuse-vahega;
