@@ -15,6 +15,18 @@ Eestikeelse \enquote{Kratt} mudeli puhul tuleb arvestada domeeninihke riskiga. K
 
 Sama loogika kehtib ambient-andmete kohta. Kui ambient koosneb ainult vaikusest või liiga puhastest näidetest, ei kirjelda see koduse keskkonna tegelikku taustheli. Seetõttu tuleb lõppfaasis lisada avalikele korpustele ka samast mikrofoni- ja ruumiseadistusest kogutud salvestused.
 
+\subsection{Streaming-evali parameetrid}
+Et ambient-hindamine oleks reprodutseeritav, fikseeritakse järgmine protokoll:
+\begin{itemize}
+    \item ambient-korpused: \texttt{faph\_cv\_et} (2000 Common Voice ET klippi, ${\sim}3{,}65$~tundi, indeksid 5000--7000), LibriSpeech test-clean (${\sim}5{,}4$~tundi) ja DiPCo (${\sim}5{,}5$~tundi);
+    \item helivorming: 16~kHz mono PCM; klipid liidetakse üheks pikaks rajaks lühikese vaikuse-vahega;
+    \item spektrogrammi akna samm on 10~ms; mudeli väljundit silutakse 5-freimilise libiseva keskmisega (50~ms);
+    \item aktivatsiooniläveks on valitud $0{,}97$ (vt ptk~2, tabel~\ref{tab:fair-comparison-holdout}), millele järgneb 2-sekundiline refraktoorperiood;
+    \item aktiveering loetakse siis, kui silutud tõenäosus ületab läve esimesel freimil pärast refraktoorperioodi lõppu (rising-edge detection); järjestikuseid üle-läve freime samas aknas ei loeta eraldi aktiveeringuteks;
+    \item FAPH arvutatakse valemiga $\text{FAPH}=\text{eristuvate aktiveeringute arv}\div\text{ambient-tunde}$, eraldi klipi- ja streaming-tasemel;
+    \item hindamise toru on kapseldatud skripti \texttt{wake-word/evaluation/compare\_models.py}, mis kutsub \texttt{microwakeword.test} kanoonilist FAPH-funktsiooni.
+\end{itemize}
+
 \section{Mida saab juba praegu väita}
 Praeguse töö seisu juures saab põhjendatult väita järgmist:
 \begin{itemize}
