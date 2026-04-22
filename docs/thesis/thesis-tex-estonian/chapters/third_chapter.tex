@@ -15,6 +15,19 @@ Eestikeelse \enquote{Kratt} mudeli puhul tuleb arvestada domeeninihke riskiga. K
 
 Sama loogika kehtib ambient-andmete kohta. Kui ambient koosneb ainult vaikusest või liiga puhastest näidetest, ei kirjelda see koduse keskkonna tegelikku taustheli. Seetõttu tuleb lõppfaasis lisada avalikele korpustele ka samast mikrofoni- ja ruumiseadistusest kogutud salvestused.
 
+\subsection{Positiivse klassi kogumisprotokoll}
+Et domeeninihke arutelu oleks reprodutseeritav, fikseeritakse positiivsete näidete (\enquote{Kuule Kratt}) kogumise protokoll järgmiselt (vt ka ptk~2, §\enquote{Mudeliversioonide andmestik}):
+\begin{itemize}
+    \item salvestusseade: ESP32-S3-Korvo-2 arendusplaat, kaks mikrofoni­konfiguratsiooni (\emph{mic1}, \emph{mic2}) samast plaadiseadistusest;
+    \item helivorming: 16~kHz mono PCM, salvestatud plaadi oma ADC kaudu ilma täiendava järeltöötluseta;
+    \item mikrofoni kaugus kõnelejast: ${\sim}0{,}3$--$1{,}0$~m (lauapealne kasutusasend, sama ruum kogu sessiooni jooksul);
+    \item ruum: vaikne siseruum ilma lisatud müra või järelkajata; ambient- ja hard-negatiivsed salvestused tehakse samas ruumis sama seadmega, et tagada mikrofoni- ja ruumisümmeetria positiivse ja negatiivse klassi vahel;
+    \item kõnelejad ja maht: üks kõneleja, kokku 1076 klippi (661~\emph{mic1} + 415~\emph{mic2}); iga klipp sisaldab ühte \enquote{Kuule Kratt} ütlust, mis on segmenteeritud käsitsi ja märgendatud ainsa kehtiva positiivse sildiga;
+    \item domeenilaiendus: täiendavad positiivsed genereeritakse Neurokõne TTS-iga (deterministlik, dedupliseeritud) ja XTTS v2 hääleklooniga, mis on treeningust selgelt eristatud hindamiskomplektides (vt ptk~2).
+\end{itemize}
+
+Seega viitab §-s eespool toodud \enquote{telefon vs.\ kaugmikrofon} kontrast hüpoteetilisele domeeninihkele, mitte praegusele Kratt-korpusele, mille positiivsed on salvestatud sama klassi seadmega, mis on ka sihtplatvorm.
+
 \subsection{Streaming-evali parameetrid}
 Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna (a) ühik on kasutajakogemusele otseselt tõlgendatav — valed aktiveeringud tunnis pideva kuulamise režiimis, (b) see ei sõltu positiivsete klippide hulgast ega klassijaotusest ning (c) on otse võrreldav microWakeWordi ja openWakeWordi avaldatud tulemustega. Et ambient-hindamine oleks reprodutseeritav, fikseeritakse järgmine protokoll:
 \begin{itemize}
