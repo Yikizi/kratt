@@ -3,7 +3,7 @@ Senise töö kõige olulisem õppetund on, et äratussõna (ingl \emph{wake word
 \section{Miks avalik sanity-check oli vajalik}
 Avaliku \texttt{marvin} eksperimendi tegemine enne eestikeelse äratussõna juurde liikumist oli teadlik riskide vähendamise samm. Ilma selle vahekontrollita oleks iga hilisem ebaõnnestumine võinud näida kui eesti keele, väikese andmestiku või seadme mikrofoni probleem, kuigi tegelik põhjus võinuks peituda hoopis treeningutoru tehnilises veas — täpsemalt samas streaming-eval'i ambient-komponendi puudujäägis, mille \texttt{marvin}-katse lõpuks nähtavale tõi.
 
-Seetõttu oli sanity-check mitte kõrvalharu, vaid vajalik kontrollkiht. See kinnitas, et edasises töös tuleb keskenduda rohkem andmete kvaliteedile, domeeninihkele ja realistlikule ambient-evalile.
+Seetõttu kinnitas sanity-check treeningutoru usaldusväärsuse ja muutis järgmises alampeatükis esitatud kahe raamistiku võrdluse tõeliseks samaväärsuse-testiks, mitte varjatud vigade silumisharjutuseks.
 
 \section{Miks kahe raamistiku võrdlus tugevdab tööd}
 Praktilises plaanis ei piisa väitest, et valitud tehnoloogia osutus sobivaks. Äratussõna lahenduste puhul on olemas mitu avatud lähtekoodiga rada, mille eesmärgid ja tugevused erinevad. \texttt{microWakeWord} sobib hästi mikrokontrolleri-piirangutega keskkonda, kuid selle treenimine on tundlik andmete, evaluatsiooni ja hüperparameetrite suhtes. \texttt{openWakeWord} lubab seevastu kiiremat prototüüpimist ja lihtsamat mudeliehitust, kuid ei pruugi samal kujul sobida lõplikuks ESP32-S3 deploy lahenduseks \cite{microwakeword2026,openwakeword2026}.
