@@ -45,7 +45,7 @@ Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna
 \section{Mida saab juba praegu väita}
 Praeguse töö seisu juures saab põhjendatult väita järgmist:
 \begin{itemize}
-    \item kohalik äratussõna treeningu- ja hindamistoru on avaliku andmestiku peal valideeritud;
+    \item kohalik äratussõna treeningu- ja hindamistoru on \texttt{Speech Commands} korpuse \texttt{marvin} sihtsõna sanity-check eksperimendi kaudu \cite{speechcommands2018} otsast lõpuni valideeritud (treenitud mudel, kvantiseeritud TFLite artefakt ja ROC-analüüs) ning annab korrigeerituna reprodutseeritavad streaming FAPH väärtused eestikeelsetel mudelitel (vt ptk~\ref{chapter:results}, tabel~\ref{tab:fair-comparison-holdout});
     \item evaluatsioon peab sisaldama eraldi ambient-komponenti, vastasel juhul on osa mõõdikuid eksitavad;
     \item eestikeelse mudeli järgmine peamine risk ei ole enam toru tehniline katkiolek, vaid andmestiku kvaliteet ja sobivus päris kasutuskeskkonnaga.
 \end{itemize}
