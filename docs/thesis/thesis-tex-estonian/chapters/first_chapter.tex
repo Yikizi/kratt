@@ -45,10 +45,10 @@ Praktilises torus moodustatakse eraldi järgmised andmekogumid:
     \item \texttt{testing\_ambient}.
 \end{itemize}
 
-Selline jaotus on vajalik, sest streaming-eval ei saa toetuda ainult lühikestele negatiivsetele klippidele. Kui ambient-kogum puudub või on vigaselt moodustatud, muutub osa hindamistulemustest sisuliselt kasutuks.
+Selline jaotus on vajalik, sest voogedastushindamine ei saa toetuda ainult lühikestele negatiivsetele klippidele. Kui ambient-kogum puudub või on vigaselt moodustatud, muutub osa hindamistulemustest sisuliselt kasutuks.
 
 \section{Hindamismõõdikud}
-Äratussõna mudeli puhul on oluline mitte ainult äratussõna tabamine, vaid ka valevallandumiste kontroll. Seetõttu kasutatakse lisaks tavalistele täpsusmõõdikutele ka streaming-hindamise mõõdikuid:
+Äratussõna mudeli puhul on oluline mitte ainult äratussõna tabamine, vaid ka valevallandumiste kontroll. Seetõttu kasutatakse lisaks tavalistele täpsusmõõdikutele ka voogedastushindamise mõõdikuid:
 \begin{itemize}
     \item \texttt{FRR} ehk false rejection rate, mis näitab kui suur osa tegelikest äratussõna juhtudest jääb tabamata;
     \item \texttt{FAPH} ehk false accepts per hour, mis näitab valevallandumiste arvu tunni kohta;
