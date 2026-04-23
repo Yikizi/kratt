@@ -35,6 +35,7 @@ Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna
 \begin{itemize}
     \item ambient-korpused: \texttt{faph\_cv\_et} (2000 Common Voice ET klippi, ${\sim}3{,}65$~tundi, indeksid 5000--7000), LibriSpeech test-clean (${\sim}5{,}4$~tundi) ja DiPCo (${\sim}5{,}5$~tundi);
     \item helivorming: 16~kHz mono PCM; klipid liidetakse üheks pikaks rajaks 200~ms digitaalse vaikuse (amplituud $0$, st $-\infty$~dBFS) vahega, mis arvatakse \texttt{ambient-tundide} hulka FAPH nimetajas;
+    \item agregeerimistase: konkatenatsioon toimub ainult korpusesiseselt (\texttt{faph\_cv\_et}, LibriSpeech ja DiPCo hinnatakse eraldi radadena); FAPH raporteeritakse iga korpuse kohta eraldi ning mudeli \texttt{streaming\_faph} kutsutakse korpusepõhiselt, mistõttu nii silumise libisev keskmine kui ka refraktoorperioodi seis lähtestatakse korpuste piiril;
     \item spektrogrammi akna samm on 10~ms; mudeli väljundit silutakse 5-freimilise libiseva keskmisega (50~ms);
     \item mudeli sisendaken: 194 freimi logmel-tunnuseid ($\approx 1{,}94$~s heli freimi sammul 10~ms; klassifikaatori efektiivne vastuvõtuväli pärast strideimist 148 freimi); streaming-inferentsi samm on 1 freim, mistõttu iga 10~ms järel hinnatakse uut 194-freimilist akent;
     \item aktivatsiooniläveks on valitud $0{,}97$ (vt ptk~\ref{chapter:results}, tabel~\ref{tab:fair-comparison-holdout}), millele järgneb 2-sekundiline refraktoorperiood;
