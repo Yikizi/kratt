@@ -28,6 +28,8 @@ Et domeeninihke arutelu oleks reprodutseeritav, fikseeritakse positiivsete näid
 
 Seega viitab §-s eespool toodud \enquote{telefon vs.\ kaugmikrofon} kontrast hüpoteetilisele domeeninihkele, mitte praegusele Kratt-korpusele, mille positiivsed on salvestatud sama klassi seadmega, mis on ka sihtplatvorm.
 
+Ühe kõneleja protokollist tulenevat kõnelejate mitmekesisuse piirangut leevendatakse eesmärgipäraselt: positiivset klassi laiendatakse Neurokõne TTS-iga (deterministlik, seetõttu dedupliseeritud) ning XTTS v2 hääleklooniga, mis lisab täiendavaid häältimbrid ja kõnestiile. Kõnelejapõhise ülesobitumise välistamiseks jäetakse osa TTS-hääli treeningust välja ja kasutatakse neid ainult hindamiskomplektides (vt ptk~2), nii et hindamistulemused peegeldavad üldistumist eelnevalt nägemata häältele, mitte sama kõneleja taastootmist.
+
 \subsection{Voogedastushindamise parameetrid}
 Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna (a) ühik on kasutajakogemusele otseselt tõlgendatav — valed aktiveeringud tunnis pideva kuulamise režiimis, (b) see ei sõltu positiivsete klippide hulgast ega klassijaotusest ning (c) on otse võrreldav microWakeWordi ja openWakeWordi avaldatud tulemustega. Et ambient-hindamine oleks reprodutseeritav, fikseeritakse järgmine protokoll:
 \begin{itemize}
