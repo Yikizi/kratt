@@ -137,7 +137,7 @@ Tabelist näis ilmnevat selge iteratiivne paranemine:
     \item \textbf{v6} (lisatud 3345 teise sessiooni sama-seadme negatiivset) --- esialgne \enquote{läbimurre}: recall 99,6--100\%, CV FPR 0,4\%, Korvo-2 FPR 0,9\%.
 \end{itemize}
 
-Need esialgsed tulemused olid aga \emph{eksitavad}. Edasine reaalajas testimine ja metoodika audit paljastasid süstemaatilise hindamisvea, mille tulemusena olid kõik tabelis~\ref{tab:full-comparison} esitatud negatiivsete FPR numbrid tegelikest tulemustest oluliselt paremad. Selle leiu kirjeldus ja korrigeeritud tulemused on järgmises alapeatükis.
+Need esialgsed tulemused olid aga \emph{eksitavad} --- ja nende ümberlükkamine tuli kiiresti. Esimene reaalajas test v6 mudeliga MacBook~Pro sisemikrofoni kaudu tootis umbes 50 valevallandumist tunnis (FAPH~$\approx$~50), mis oli teravas vastuolus tabelis esitatud CV FPR\,=\,0,4\% väärtusega ja andis märku, et kõik tabelis~\ref{tab:full-comparison} esitatud negatiivsete FPR numbrid on tegelikest tulemustest oluliselt paremad. Järgmine alapeatükk dokumenteerib selle vastuolu kaks haru: kuidas metoodika audit paljastas andmelekke CV~negatiivsete kasutuses ja kuidas ehitati üles sõltumatud hold-out hindamiskomplektid korrigeeritud tulemuste saamiseks.
 
 \subsection{Andmelekke avastamine ja korrigeeritud hindamine}
 \label{sec:data-leakage}
