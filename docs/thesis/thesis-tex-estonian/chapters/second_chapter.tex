@@ -11,7 +11,7 @@ Varasem \enquote{Kratt} treeningukatse ei andnud usaldusväärset tulemust. Hili
 Selle töö tulemusena parandati treeningu- ja raportiskripte ning muudeti evaluatsioonitugi selliseks, et ambient-andmete puudumine või vigane moodustamine oleks selgelt nähtav.
 
 \section{Avaliku sanity-check eksperimendi tulemus}
-Pärast kohaliku toru parandamist käivitati from-scratch sanity-check katse \texttt{Speech Commands} korpuse \texttt{marvin} sihtsõna peal \cite{speechcommands2018}. Selle katse eesmärk ei olnud lahendada eestikeelset ülesannet, vaid kontrollida, kas kohalik pipeline töötab otsast lõpuni avaliku kontrollitava sisendi peal.
+Pärast kohaliku toru (ingl k \emph{pipeline}) parandamist käivitati from-scratch sanity-check katse \texttt{Speech Commands} korpuse \texttt{marvin} sihtsõna peal \cite{speechcommands2018}. Selle katse eesmärk ei olnud lahendada eestikeelset ülesannet, vaid kontrollida, kas kohalik toru töötab otsast lõpuni avaliku kontrollitava sisendi peal.
 
 Sanity-check eksperimendi tulemusena saadi edukalt:
 \begin{itemize}
@@ -157,7 +157,7 @@ Korrektse hindamise tagamiseks koostati neli truly hold-out testikomplekti, mis 
     \item \textbf{\texttt{hard\_neg\_isa\_xtts}} --- 60 hard negative fraasi Isa kloonitud häälega.
 \end{itemize}
 
-Hindamispipeline'i kesksesse moodulisse \texttt{evaluation/test\_sets.py} kirjutati \texttt{assert\_disjoint\_from\_training()} kontroll, mis tagab et iga test set mida konkreetse mudeliga skooritakse on selle mudeli treeningandmetest disjoint. See tripwire takistab samalaadse vea kordumist.
+Hindamistoru kesksesse moodulisse \texttt{evaluation/test\_sets.py} kirjutati \texttt{assert\_disjoint\_from\_training()} kontroll, mis tagab et iga test set mida konkreetse mudeliga skooritakse on selle mudeli treeningandmetest disjoint. See tripwire takistab samalaadse vea kordumist.
 
 \subsubsection{Korrigeeritud tulemused}
 
@@ -195,7 +195,7 @@ Korrigeeritud tulemused muudavad varasemate alapeatükkide järeldusi mitmes olu
 
 Töö üks olulisemaid leide on, et \textbf{klipi-taseme FPR mõõtmine treeningandmete osahulgal ei ole usaldusväärne äratussõna mudeli kvaliteedi mõõdik}. Iga väide mudeli generaliseerumise kohta peab põhinema andmetel, mille mudel ei ole kunagi treeningus näinud. Kuni hold-out komplekti puudumiseni ei õnnestunud seda viga avastada, sest klipi-tasemel saadud numbrid (CV FPR 0,4\%) tundusid kõlblikud. Alles reaalajas testimine pikemate ambient-segmentidega tõi anomaalia esile.
 
-Praktiline järeldus tulevasteks töödeks: äratussõna süsteemi hindamispipeline peab vaikimisi sisaldama (a) kohustuslikku disjointness checki test setide vs treeningandmete vahel, (b) pikkade ambient-segmentide peal arvutatud FAPH metrikat, ja (c) vähemalt ühte truly held-out positiivset komplekti, mille mudel ei ole \emph{ühelgi} koolitusringil näinud.
+Praktiline järeldus tulevasteks töödeks: äratussõna süsteemi hindamistoru peab vaikimisi sisaldama (a) kohustuslikku disjointness checki test setide vs treeningandmete vahel, (b) pikkade ambient-segmentide peal arvutatud FAPH metrikat, ja (c) vähemalt ühte truly held-out positiivset komplekti, mille mudel ei ole \emph{ühelgi} koolitusringil näinud.
 
 \subsection{Ristmikrofoni testimine (H2)}
 \label{sec:cross-mic-h2}
