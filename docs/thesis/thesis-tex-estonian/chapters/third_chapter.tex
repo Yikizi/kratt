@@ -1,7 +1,7 @@
-Senise töö kõige olulisem õppetund on, et äratussõna (ingl \emph{wake word}) mudeli arenduses võib pealtnäha hea tulemus olla eksitav, kui hindamismetoodika on puudulik. Lühikeste klippide peal saadud head skoorid ei taga, et mudel käitub õigesti pidevas helivoo režiimis. See probleem ilmnes selgelt hetkel, kui varasemad \enquote{Kratt} tulemused osutusid klipi-tasemel vaates mõistlikuks, kuid streaming-eval oli ambient-andmete puudumise tõttu sisuliselt katki.
+Senise töö kõige olulisem õppetund on, et äratussõna (ingl \emph{wake word}) mudeli arenduses võib pealtnäha hea tulemus olla eksitav, kui hindamismetoodika on puudulik. Lühikeste klippide peal saadud head skoorid ei taga, et mudel käitub õigesti pidevas helivoo režiimis. See probleem ilmnes selgelt hetkel, kui varasemad \enquote{Kratt} tulemused osutusid klipi-tasemel vaates mõistlikuks, kuid voogedastushindamine (ingl \emph{streaming evaluation}) oli ambient-andmete puudumise tõttu sisuliselt katki.
 
 \section{Miks avalik sanity-check oli vajalik}
-Avaliku \texttt{marvin} eksperimendi tegemine enne eestikeelse äratussõna juurde liikumist oli teadlik riskide vähendamise samm. Ilma selle vahekontrollita oleks iga hilisem ebaõnnestumine võinud näida kui eesti keele, väikese andmestiku või seadme mikrofoni probleem, kuigi tegelik põhjus võinuks peituda hoopis treeningutoru tehnilises veas — täpsemalt samas streaming-eval'i ambient-komponendi puudujäägis, mille \texttt{marvin}-katse lõpuks nähtavale tõi.
+Avaliku \texttt{marvin} eksperimendi tegemine enne eestikeelse äratussõna juurde liikumist oli teadlik riskide vähendamise samm. Ilma selle vahekontrollita oleks iga hilisem ebaõnnestumine võinud näida kui eesti keele, väikese andmestiku või seadme mikrofoni probleem, kuigi tegelik põhjus võinuks peituda hoopis treeningutoru tehnilises veas — täpsemalt samas voogedastushindamise ambient-komponendi puudujäägis, mille \texttt{marvin}-katse lõpuks nähtavale tõi.
 
 Seetõttu kinnitas sanity-check treeningutoru usaldusväärsuse ja muutis järgmises alampeatükis esitatud kahe raamistiku võrdluse tõeliseks samaväärsuse-testiks, mitte varjatud vigade silumisharjutuseks.
 
@@ -28,7 +28,7 @@ Et domeeninihke arutelu oleks reprodutseeritav, fikseeritakse positiivsete näid
 
 Seega viitab §-s eespool toodud \enquote{telefon vs.\ kaugmikrofon} kontrast hüpoteetilisele domeeninihkele, mitte praegusele Kratt-korpusele, mille positiivsed on salvestatud sama klassi seadmega, mis on ka sihtplatvorm.
 
-\subsection{Streaming-evali parameetrid}
+\subsection{Voogedastushindamise parameetrid}
 Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna (a) ühik on kasutajakogemusele otseselt tõlgendatav — valed aktiveeringud tunnis pideva kuulamise režiimis, (b) see ei sõltu positiivsete klippide hulgast ega klassijaotusest ning (c) on otse võrreldav microWakeWordi ja openWakeWordi avaldatud tulemustega. Et ambient-hindamine oleks reprodutseeritav, fikseeritakse järgmine protokoll:
 \begin{itemize}
     \item ambient-korpused: \texttt{faph\_cv\_et} (2000 Common Voice ET klippi, ${\sim}3{,}65$~tundi, indeksid 5000--7000), LibriSpeech test-clean (${\sim}5{,}4$~tundi) ja DiPCo (${\sim}5{,}5$~tundi);
