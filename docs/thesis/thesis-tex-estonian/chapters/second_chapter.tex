@@ -151,7 +151,7 @@ Anomaalia uurimisel selgus, et lokaalne hindamisskript \texttt{compare\_models.p
 Korrektse hindamise tagamiseks koostati neli truly hold-out testikomplekti, mis on garanteeritult disjoint kõigi mudeliversioonide treeningandmetega:
 
 \begin{itemize}
-    \item \textbf{\texttt{faph\_cv\_et}} --- 2000 Common~Voice ET klippi (~3,82 tundi). Kasutati sama RNG seemet (\texttt{seed=42}) kui treeningus, kuid valiti indeksid 5000--7000, st jätkata sealt kus treeningu komplekt lõppes. Kasutatakse pikkvormi FAPH-i mõõtmiseks streaming inference'iga.
+    \item \textbf{\texttt{faph\_cv\_et}} --- 2000 Common~Voice ET klippi ($\sim$3,82\,tundi). Kasutati sama RNG seemet (\texttt{seed=42}) kui treeningus, kuid valiti indeksid 5000--7000, st jätkata sealt kus treeningu komplekt lõppes. Kasutatakse pikkvormi FAPH-i mõõtmiseks streaming inference'iga.
     \item \textbf{\texttt{pos\_isa\_xtts}} --- 48 \enquote{Kuule Kratt} ütlust, mis on genereeritud XTTS~v2 mudeliga, klooniti Isa hääl. Pole \emph{ühegi} mudeli treeningus kasutatud. Mõõdab unseen-speaker recalli.
     \item \textbf{\texttt{hard\_neg\_mac\_holdout}} --- 15 reaalset Mac mikrofoniga salvestatud foneetiliselt sarnast fraasi (\enquote{Kuule kraam}, \enquote{Kuule rott} jt), mis hoiti v8 treeningust eraldi. Mõõdab foneetilise eristusvõime tegelikku taset reaalse heli peal.
     \item \textbf{\texttt{hard\_neg\_isa\_xtts}} --- 60 hard negative fraasi Isa kloonitud häälega.
