@@ -204,12 +204,12 @@ Hüpotees H2 väitis, et kui mudel õpib foneetilise sisu tunnuseid, peaks ta ge
 
 Testimise käigus ilmnes, et mudel:
 \begin{itemize}
-    \item tuvastas \enquote{Kuule Kratt} usaldusväärselt erinevate hääldusvariatsioonidega;
-    \item ei vallandunud vaikuse, taustamüra ega üksiku sõna \enquote{kuule} või \enquote{kratt} peale;
-    \item ei vallandunud sarnaste fraaside peale nagu \enquote{Hei Kratt} või \enquote{Tere Kratt}.
+    \item tuvastas \enquote{Kuule Kratt} erinevate hääldusvariatsioonidega (Mac-mikrofoni hold-out recall 100,0\%, vt Tabel~\ref{tab:fair-comparison-holdout}, rida \enquote{Recall (Mac mic, unseen seade)});
+    \item ei vallandunud vaikuse, taustamüra ega üksiku sõna \enquote{kuule} või \enquote{kratt} peale selle informaalse sessiooni jooksul;
+    \item ei vallandunud sarnaste fraaside peale nagu \enquote{Hei Kratt} või \enquote{Tere Kratt} sama sessiooni piires.
 \end{itemize}
 
-See tulemus andis esialgse kinnituse hüpoteesile H2: mudel on õppinud äratussõna foneetilist struktuuri ja suudab seda tuvastada treeningandmetest erineval seadmel.
+See tulemus andis \emph{esialgse} kinnituse hüpoteesile H2: mudel on õppinud äratussõna foneetilist struktuuri ja suudab seda tuvastada treeningandmetest erineval seadmel. Hilisem süstemaatilisem testimine (pikem tavakõne ja hard-negatiivide komplekt) näitas selle mulje piire --- vt §\ref{sec:cross-mic-asymmetry} ja Tabel~\ref{tab:fair-comparison-holdout} (read \enquote{FPR hard neg (Mac, real)} ja \textbf{FAPH}).
 
 \subsection{Ristmikrofoni generaliseerumise asümmeetria}
 \label{sec:cross-mic-asymmetry}
