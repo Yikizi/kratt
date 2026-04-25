@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# DESC: Benchmark all models across all test sets (recall, hard neg FPR, FAPH)
+# USAGE: kratt benchmark [--models MODEL...] [--output FILE] [--thresholds T...]
+# ARGS: --models       Subset of models to benchmark (default: all)
+# ARGS: --output       Output CSV path (default: auto-timestamped)
+# ARGS: --thresholds   Thresholds to evaluate (default: 0.97 0.99 0.995 0.996 0.999)
+# EXAMPLES: kratt benchmark
+# EXAMPLES: kratt benchmark --models v6 v6-residual v8 v10 v11
+# EXAMPLES: kratt benchmark --output results.csv
+set -euo pipefail
+
+(cd "$KRATT_WW" && uv run python evaluation/benchmark_all_models.py "$@")

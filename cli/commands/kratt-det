@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# DESC: Generate DET curves (FRR vs FA/h) with operating points for all or selected models
+# USAGE: kratt det [MODEL...] [--all] [--output FILE]
+# ARGS: MODEL       Model tags to evaluate (e.g. v6 v6-residual v10)
+# ARGS: --all       All available models (default if no models given)
+# ARGS: --output    Output JSON path (default: evaluation/det_curves_YYYYMMDD.json)
+# EXAMPLES: kratt det --all
+# EXAMPLES: kratt det v6-residual v10 v14 expert-a
+# EXAMPLES: kratt det --all --output results/det.json
+set -euo pipefail
+
+ARGS=("$@")
+if [[ ${#ARGS[@]} -eq 0 ]]; then
+  ARGS=("--all")
+fi
+
+(cd "$KRATT_WW" && caffeinate -i -s uv run python evaluation/generate_det_curve.py "${ARGS[@]}")

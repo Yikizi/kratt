@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# DESC: Full voice demo pipeline: wake word → STT → LLM → smart home
+# USAGE: kratt demo [options] [model(s)]
+# ARGS: --models       One or more wake word model tags. Default: latest
+# ARGS: --threshold    Detection threshold(s). Default: 0.97
+# ARGS: --consensus    Min models that must agree. Default: all
+# ARGS: --no-wakeword  Manual trigger mode (press Enter)
+# ARGS: --wiz          Control real WiZ bulbs instead of mock HA
+# ARGS: --wiz-bash     Use WiZ bash-agent mode via local wiz CLI
+# ARGS: --bulbs        Comma-separated WiZ bulb IPs (skip discovery)
+# ARGS: --llm          Ollama model name. Default: gemma3:12b
+# ARGS: --log          Enable per-interaction JSONL telemetry
+# ARGS: --participant  Participant ID for log naming
+# ARGS: --task         Initial task ID tag for telemetry logs
+# ARGS: --no-tts       Disable voice output
+# ARGS: --no-tts-effects Disable sox voice effects
+# EXAMPLES: kratt demo --wiz --no-wakeword
+# EXAMPLES: kratt demo --wiz-bash --no-wakeword
+# EXAMPLES: kratt demo --wiz --models v15
+# EXAMPLES: kratt demo --wiz --models v10 v15 --consensus 2
+# EXAMPLES: kratt demo --wiz --bulbs 192.168.68.56,192.168.68.57 --models v15
+# EXAMPLES: kratt demo --wiz-bash --models v15 --llm qwen3:8b
+# EXAMPLES: kratt demo --log --participant P01 --task T1_turn_on
+set -euo pipefail
+
+PIPELINE="${KRATT_ROOT}/tools/demo-pipeline/pipeline.py"
+OVERLAY_SWIFT="${KRATT_ROOT}/scripts/demo/kratt_detection_overlay.swift"
+VENV_PYTHON="${KRATT_ROOT}/.venv/bin/python"
+LOG_DIR="${KRATT_ROOT}/output/demo-logs"
+LATEST_LOG="${LOG_DIR}/demo_latest.log"
+
+mkdir -p "${LOG_DIR}"
+
+# Check prerequisites
+if [[ ! -f "${PIPELINE}" ]]; then
+  echo "Pipeline not found: ${PIPELINE}" >&2
+  exit 1
+fi
+
+if [[ ! -f "${VENV_PYTHON}" ]]; then
+  echo "Wake word venv not found: ${VENV_PYTHON}" >&2
+  echo "Run: (cd ${KRATT_WW} && uv sync)" >&2
+  exit 1
+fi
+
+# Check Ollama
+if ! curl -sf http://localhost:11434/api/tags > /dev/null 2>&1; then
+  echo "Ollama not running. Start with: ollama serve" >&2
+  exit 1
+fi
+
+# Launch overlay (watches log file for detections)
+overlay_pid=""
+cleanup() {
+  if [[ -n "${overlay_pid}" ]] && kill -0 "${overlay_pid}" 2>/dev/null; then
+    kill "${overlay_pid}" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+if [[ -f "${OVERLAY_SWIFT}" ]]; then
+  /usr/bin/env swift "${OVERLAY_SWIFT}" \
+    --log-file "${LATEST_LOG}" \
+    --text "KRATT KUULIS" \
+    --hide-after 2.5 >/dev/null 2>&1 &
+  overlay_pid=$!
+fi
+
+# Run pipeline — PYTHONUNBUFFERED ensures real-time output for overlay log watching
+exec env PYTHONUNBUFFERED=1 "${VENV_PYTHON}" "${PIPELINE}" "$@"

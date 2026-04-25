@@ -1,27 +1,49 @@
 #!/usr/bin/env bash
-# DESC: Live wake word test with MacBook microphone
-# USAGE: kratt live [version] [threshold]
-# ARGS: version     Model version (v1, v6, v7...). Default: latest.
-# ARGS: threshold   Detection threshold 0.0-1.0. Default: 0.9.
-# EXAMPLES: kratt live v7
-# EXAMPLES: kratt live v7 0.85
-# EXAMPLES: kratt live           # uses latest model
+# DESC: Live wake word test with MacBook microphone (single or multi-model)
+# USAGE: kratt live <version(s)> [threshold(s)]
+# ARGS: version     One or more model versions (v6-residual v10 v15). Default: latest.
+# ARGS: threshold   One threshold for all, or one per model. Default: 0.997.
+# EXAMPLES: kratt live v15
+# EXAMPLES: kratt live v15 0.97
+# EXAMPLES: kratt live v6-residual v10 v15
+# EXAMPLES: kratt live v6-residual v10 v15 0.997
+# EXAMPLES: kratt live v6-residual v10 0.997 0.99
 set -euo pipefail
 
-VERSION="${1:-}"
-THRESHOLD="${2:-0.9}"
+# Parse args: split into versions and thresholds
+VERSIONS=()
+THRESHOLDS=()
+for arg in "$@"; do
+  if [[ "$arg" =~ ^0\.[0-9]+$ ]] || [[ "$arg" =~ ^1\.0*$ ]]; then
+    THRESHOLDS+=("$arg")
+  else
+    VERSIONS+=("$arg")
+  fi
+done
 
-if [[ -z "$VERSION" ]]; then
-  VERSION=$(ls -d "${KRATT_WW}/models/kuule-kratt-v"* 2>/dev/null | sort -V | tail -1 | grep -o 'v[0-9]*')
-  echo "Using latest: $VERSION"
+# Defaults
+if [[ ${#VERSIONS[@]} -eq 0 ]]; then
+  v=$(ls -d "${KRATT_WW}/models/kuule-kratt-v"* 2>/dev/null | sort -V | tail -1 | grep -o 'v[0-9a-z-]*')
+  VERSIONS=("$v")
+  echo "Using latest: $v"
 fi
 
-MODEL="${KRATT_WW}/models/kuule-kratt-${VERSION}/kuule_kratt_${VERSION}.tflite"
+if [[ ${#VERSIONS[@]} -gt 1 ]]; then
+  DEFAULT_THRESHOLD="0.95"  # product mode: prob*prob, so lower threshold
+else
+  DEFAULT_THRESHOLD="0.997"
+fi
+if [[ ${#THRESHOLDS[@]} -eq 0 ]]; then
+  THRESHOLDS=("$DEFAULT_THRESHOLD")
+fi
 
-if [[ ! -f "$MODEL" ]]; then
-  echo "Model not found: $MODEL"
-  echo "Available:" && kratt models
-  exit 1
+# If single threshold given for multiple models, apply to all
+if [[ ${#THRESHOLDS[@]} -eq 1 ]] && [[ ${#VERSIONS[@]} -gt 1 ]]; then
+  single="${THRESHOLDS[0]}"
+  THRESHOLDS=()
+  for _ in "${VERSIONS[@]}"; do
+    THRESHOLDS+=("$single")
+  done
 fi
 
 LOG_DIR="${KRATT_ROOT}/output/demo-logs"
@@ -49,11 +71,47 @@ else
   echo "Warning: overlay script not found at ${OVERLAY_SWIFT}" >&2
 fi
 
-echo "Model: $VERSION ($(du -h "$MODEL" | cut -f1)), threshold: $THRESHOLD"
-echo "Log: ${log_file}"
-PYTHONUNBUFFERED=1 "${KRATT_WW}/.venv-microwakeword/bin/python" \
-  "${KRATT_WW}/evaluation/live_test_tflite.py" \
-  --model "$MODEL" --threshold "$THRESHOLD" --name "kuule kratt $VERSION" \
-  --capture-dir "${CAPTURE_DIR}" --pre-roll-seconds 5 --post-roll-seconds 1 \
-  --alert-sound ping \
-  2>&1 | tee -a "${log_file}"
+# Single model mode
+if [[ ${#VERSIONS[@]} -eq 1 ]]; then
+  VERSION="${VERSIONS[0]}"
+  THRESHOLD="${THRESHOLDS[0]}"
+  MODEL="${KRATT_WW}/models/kuule-kratt-${VERSION}/kuule_kratt_${VERSION}.tflite"
+
+  if [[ ! -f "$MODEL" ]]; then
+    echo "Model not found: $MODEL"
+    echo "Available:" && kratt models
+    exit 1
+  fi
+
+  echo "Model: $VERSION ($(du -h "$MODEL" | cut -f1)), threshold: $THRESHOLD"
+  echo "Log: ${log_file}"
+  PYTHONUNBUFFERED=1 "${KRATT_WW}/.venv-microwakeword/bin/python" \
+    "${KRATT_WW}/evaluation/live_test_tflite.py" \
+    --model "$MODEL" --threshold "$THRESHOLD" --name "kuule kratt $VERSION" \
+    --capture-dir "${CAPTURE_DIR}" --pre-roll-seconds 5 --post-roll-seconds 1 \
+    --alert-sound ping \
+    2>&1 | tee -a "${log_file}"
+
+# Multi-model mode
+else
+  # Validate all models exist
+  for i in "${!VERSIONS[@]}"; do
+    v="${VERSIONS[$i]}"
+    m="${KRATT_WW}/models/kuule-kratt-${v}/kuule_kratt_${v}.tflite"
+    if [[ ! -f "$m" ]]; then
+      echo "Model not found: $m"
+      echo "Available:" && kratt models
+      exit 1
+    fi
+    t="${THRESHOLDS[$i]:-$DEFAULT_THRESHOLD}"
+    echo "  Model: $v ($(du -h "$m" | cut -f1)), threshold: $t"
+  done
+
+  echo "Log: ${log_file}"
+  echo ""
+  PYTHONUNBUFFERED=1 "${KRATT_WW}/.venv-microwakeword/bin/python" \
+    "${KRATT_WW}/evaluation/multi_model_live_test.py" \
+    "${VERSIONS[@]}" --threshold "${THRESHOLDS[@]}" \
+    --log "${log_file}" \
+    2>&1 | tee -a "${log_file}"
+fi

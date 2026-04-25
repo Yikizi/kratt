@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# DESC: STT-label captured wake-word audio (positive / hard_negative / garbage)
+# USAGE: kratt label [--input DIR ...] [--out FILE] | kratt label --apply FILE
+# ARGS: --input DIR   One or more directories of .wav captures (default: all output/ capture dirs)
+# ARGS: --out FILE    JSONL transcript output (default: wake-word/data/processed/_labeling/captures_stt.jsonl)
+# ARGS: --apply FILE  Apply labels from JSONL: copy files into test set dirs
+# EXAMPLES: kratt label
+# EXAMPLES: kratt label --input output/false-accepts
+# EXAMPLES: kratt label --apply wake-word/data/processed/_labeling/captures_stt.jsonl
+set -euo pipefail
+
+DEFAULT_INPUTS=(
+  "$KRATT_ROOT/output/false-accepts"
+  "$KRATT_ROOT/output/hard-negatives-caught"
+)
+# Note: false-false-accepts is already user-verified positives; copied directly, not STT-labeled.
+
+ARGS=("$@")
+if [[ ${#ARGS[@]} -eq 0 ]]; then
+  ARGS=(--input "${DEFAULT_INPUTS[@]}")
+fi
+
+(cd "$KRATT_WW" && uv run python evaluation/stt_label_captures.py "${ARGS[@]}")

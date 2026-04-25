@@ -4,7 +4,7 @@ import AppKit
 import Foundation
 
 struct Config {
-    var logFile = "/Users/mattias/kratt/output/demo-logs/live_test_latest.log"
+    var logFile = "output/demo-logs/live_test_latest.log"
     var titleText = "KRATT KUULIS"
     var hideAfter = 2.5
 }
@@ -176,6 +176,10 @@ final class LogFollower {
         pattern: #">>> DETECTED (.+?)! \(prob=([0-9.]+), count=([0-9]+)\) <<<"#,
         options: []
     )
+    private let consensusRegex = try! NSRegularExpression(
+        pattern: #">>> CONSENSUS ([0-9]+/[0-9]+): KUULE KRATT! \(#([0-9]+)\) \[(.+?)\] <<<"#,
+        options: []
+    )
 
     init(logFile: String, overlay: OverlayWindowController, hideAfter: Double) {
         self.logFile = URL(fileURLWithPath: logFile)
@@ -231,6 +235,23 @@ final class LogFollower {
     }
 
     private func handle(line: String) {
+        // Consensus detection (multi-model mode) — takes priority
+        if line.contains(">>> CONSENSUS ") {
+            let nsLine = line as NSString
+            let range = NSRange(location: 0, length: nsLine.length)
+            if let match = consensusRegex.firstMatch(in: line, options: [], range: range) {
+                let ratio = nsLine.substring(with: match.range(at: 1))
+                let count = nsLine.substring(with: match.range(at: 2))
+                let models = nsLine.substring(with: match.range(at: 3))
+                let subtitle = "consensus \(ratio)   |   #\(count)   |   \(models)"
+                overlay.showOverlay(subtitle: subtitle, hideAfter: hideAfter)
+            } else {
+                overlay.showOverlay(subtitle: line, hideAfter: hideAfter)
+            }
+            return
+        }
+
+        // Single-model detection (legacy mode)
         guard line.contains(">>> DETECTED ") else { return }
         let nsLine = line as NSString
         let range = NSRange(location: 0, length: nsLine.length)

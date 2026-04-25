@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# DESC: Analyze Android events.jsonl — per-model FAPH + co-trigger agreement
+# USAGE: kratt faph-log [EVENTS_JSONL] [--since DATE] [--cotrigger]
+# ARGS: EVENTS_JSONL   Path to events.jsonl (default: latest output/android-captures-*/events.jsonl)
+# ARGS: --since DATE   Only count sessions on or after ISO date
+# ARGS: --cotrigger    Also print co-trigger agreement matrix
+# EXAMPLES: kratt faph-log
+# EXAMPLES: kratt faph-log --since 2026-04-14
+# EXAMPLES: kratt faph-log --cotrigger
+# EXAMPLES: kratt faph-log output/android-captures-20260414-1115/events.jsonl
+set -euo pipefail
+
+EVENTS=""
+ARGS=()
+for arg in "$@"; do
+  if [[ "$arg" == *.jsonl || "$arg" == *events.jsonl ]]; then
+    EVENTS="$arg"
+  else
+    ARGS+=("$arg")
+  fi
+done
+
+# Default: find latest pulled events.jsonl
+if [[ -z "$EVENTS" ]]; then
+  EVENTS=$(ls -dt "$KRATT_ROOT"/output/android-captures-*/events.jsonl 2>/dev/null | head -1)
+  [[ -z "$EVENTS" ]] && { echo "No events.jsonl found. Pull first with: kratt android pull"; exit 1; }
+  echo "Using latest: $EVENTS"
+fi
+
+(cd "$KRATT_WW" && uv run python evaluation/analyze_android_events.py "$EVENTS" "${ARGS[@]}")

@@ -1,0 +1,404 @@
+#!/usr/bin/env python3
+"""Simple WiZ bulb CLI for LLM-generated bash commands.
+
+Usage:
+    wiz discover                          # find bulbs on network
+    wiz on [BULB]                         # turn on (all or specific)
+    wiz off [BULB]                        # turn off
+    wiz brightness BULB 0-100             # set brightness %
+    wiz color BULB (NAME|R G B)           # set RGB color
+    wiz temp BULB 2200-6500               # set color temperature in Kelvin
+    wiz scene BULB SCENE_ID               # set scene (1-32)
+    wiz status [BULB]                     # get current state
+    wiz list                              # list known bulbs
+    wiz disco [BULB] [SECONDS] [STEP]     # rotating party colors
+    wiz chase [BULB] [SECONDS] [STEP] [COLOR]  # moving highlight across bulbs
+    wiz pulse [BULB] [SECONDS] [STEP] [COLOR]  # pulse brightness on one color
+    wiz stop [BULB]                       # stop effect (sets warm white)
+
+BULB can be: IP address, index (1,2,..), or "all"
+
+Examples:
+    wiz on all
+    wiz off 1
+    wiz color 1 255 0 0                   # red
+    wiz color all 0 0 255                 # all blue
+    wiz brightness all 50                 # all at 50%
+    wiz temp 1 2700                       # warm white
+    wiz scene 1 4                         # "Night light"
+
+Disco example:
+    for c in "255 0 0" "0 255 0" "0 0 255"; do wiz color all $c; sleep 0.3; done
+"""
+from __future__ import annotations
+
+import json
+import socket
+import sys
+import time
+
+WIZ_PORT = 38899
+TIMEOUT = 2.0
+DISCOVERY_TIMEOUT = 3.0
+
+# Persistent bulb cache (written after discovery)
+CACHE_FILE = "/tmp/wiz_bulbs.json"
+
+NAMED_COLORS = {
+    "red": (255, 0, 0),
+    "green": (0, 255, 0),
+    "blue": (0, 0, 255),
+    "yellow": (255, 255, 0),
+    "purple": (180, 0, 255),
+    "cyan": (0, 255, 255),
+    "orange": (255, 120, 0),
+    "pink": (255, 30, 140),
+    "white": (255, 255, 255),
+}
+DISCO_PALETTE = [
+    (255, 0, 0),
+    (0, 255, 0),
+    (0, 0, 255),
+    (255, 255, 0),
+    (180, 0, 255),
+    (0, 255, 255),
+]
+MAX_EFFECT_SECONDS = 120
+MIN_STEP_SECONDS = 0.05
+MAX_STEP_SECONDS = 2.0
+
+
+def clamp(value: int, lo: int, hi: int) -> int:
+    return max(lo, min(hi, value))
+
+
+def clamp_float(value: float, lo: float, hi: float) -> float:
+    return max(lo, min(hi, value))
+
+
+def parse_color_parts(parts: list[str]) -> tuple[int, int, int]:
+    if len(parts) == 1:
+        name = parts[0].lower()
+        if name in NAMED_COLORS:
+            return NAMED_COLORS[name]
+        raise ValueError(f"Unknown named color: {parts[0]}")
+
+    if len(parts) == 3:
+        return (
+            clamp(int(parts[0]), 0, 255),
+            clamp(int(parts[1]), 0, 255),
+            clamp(int(parts[2]), 0, 255),
+        )
+
+    raise ValueError("Color must be NAME or R G B")
+
+
+def set_color_for_ips(ips: list[str], r: int, g: int, b: int):
+    for ip in ips:
+        resp = udp_send(ip, "setPilot", {"state": True, "r": r, "g": g, "b": b})
+        ok = resp.get("result", {}).get("success", False)
+        print(f"{'OK' if ok else 'FAIL'} color ({r},{g},{b}) {ip}")
+
+
+def run_palette_effect(ips: list[str], seconds: float, step: float):
+    end_time = time.time() + seconds
+    idx = 0
+    while time.time() < end_time:
+        r, g, b = DISCO_PALETTE[idx % len(DISCO_PALETTE)]
+        set_color_for_ips(ips, r, g, b)
+        time.sleep(step)
+        idx += 1
+
+
+def run_chase_effect(ips: list[str], seconds: float, step: float, color: tuple[int, int, int]):
+    if not ips:
+        return
+    end_time = time.time() + seconds
+    idx = 0
+    r, g, b = color
+    while time.time() < end_time:
+        for i, ip in enumerate(ips):
+            if i == idx % len(ips):
+                udp_send(ip, "setPilot", {"state": True, "r": r, "g": g, "b": b, "dimming": 100})
+            else:
+                udp_send(ip, "setPilot", {"state": True, "dimming": 10})
+        time.sleep(step)
+        idx += 1
+
+
+def parse_effect_timing(args: list[str], seconds_idx: int, step_idx: int) -> tuple[float, float]:
+    seconds = 10.0
+    step = 0.25
+    if len(args) > seconds_idx:
+        seconds = clamp_float(float(args[seconds_idx]), 0.1, float(MAX_EFFECT_SECONDS))
+    if len(args) > step_idx:
+        step = clamp_float(float(args[step_idx]), MIN_STEP_SECONDS, MAX_STEP_SECONDS)
+    return seconds, step
+
+
+def udp_send(ip: str, method: str, params: dict | None = None) -> dict:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(TIMEOUT)
+    msg = {"method": method}
+    if params:
+        msg["params"] = params
+    try:
+        sock.sendto(json.dumps(msg).encode(), (ip, WIZ_PORT))
+        data, _ = sock.recvfrom(1024)
+        return json.loads(data.decode())
+    except socket.timeout:
+        return {"error": "timeout"}
+    finally:
+        sock.close()
+
+
+def discover() -> list[dict]:
+    broadcast_msg = json.dumps({
+        "method": "registration",
+        "params": {"phoneMac": "AAAAAAAAAAAA", "register": False,
+                   "phoneIp": "1.2.3.4", "id": "1"},
+    })
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.settimeout(DISCOVERY_TIMEOUT)
+
+    for addr in ["255.255.255.255"]:
+        try:
+            sock.sendto(broadcast_msg.encode(), (addr, WIZ_PORT))
+        except Exception:
+            pass
+
+    bulbs = []
+    seen = set()
+    try:
+        while True:
+            data, addr = sock.recvfrom(1024)
+            ip = addr[0]
+            if ip not in seen:
+                seen.add(ip)
+                bulbs.append({"ip": ip, "index": len(bulbs) + 1})
+    except socket.timeout:
+        pass
+    finally:
+        sock.close()
+
+    # Save cache
+    with open(CACHE_FILE, "w") as f:
+        json.dump(bulbs, f)
+
+    return bulbs
+
+
+def load_bulbs() -> list[dict]:
+    try:
+        with open(CACHE_FILE) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return discover()
+
+
+def resolve_bulb(spec: str) -> list[str]:
+    """Resolve bulb spec to list of IPs."""
+    bulbs = load_bulbs()
+    if not bulbs:
+        print("No bulbs found. Run: wiz discover", file=sys.stderr)
+        sys.exit(1)
+
+    if spec == "all":
+        return [b["ip"] for b in bulbs]
+
+    # Try as index
+    try:
+        idx = int(spec)
+        for b in bulbs:
+            if b["index"] == idx:
+                return [b["ip"]]
+        print(f"No bulb with index {idx}", file=sys.stderr)
+        sys.exit(1)
+    except ValueError:
+        pass
+
+    # Try as IP
+    if "." in spec:
+        return [spec]
+
+    print(f"Unknown bulb: {spec}", file=sys.stderr)
+    sys.exit(1)
+
+
+def cmd_on(args: list[str]):
+    target = args[0] if args else "all"
+    for ip in resolve_bulb(target):
+        params = {"state": True}
+        if len(args) > 1:
+            params["dimming"] = max(10, min(100, int(args[1])))
+        r = udp_send(ip, "setPilot", params)
+        ok = r.get("result", {}).get("success", False)
+        print(f"{'OK' if ok else 'FAIL'} on {ip}")
+
+
+def cmd_off(args: list[str]):
+    target = args[0] if args else "all"
+    for ip in resolve_bulb(target):
+        r = udp_send(ip, "setPilot", {"state": False})
+        ok = r.get("result", {}).get("success", False)
+        print(f"{'OK' if ok else 'FAIL'} off {ip}")
+
+
+def cmd_brightness(args: list[str]):
+    if len(args) < 2:
+        print("Usage: wiz brightness BULB 0-100", file=sys.stderr)
+        sys.exit(1)
+    pct = max(10, min(100, int(args[1])))
+    for ip in resolve_bulb(args[0]):
+        r = udp_send(ip, "setPilot", {"state": True, "dimming": pct})
+        ok = r.get("result", {}).get("success", False)
+        print(f"{'OK' if ok else 'FAIL'} brightness {pct}% {ip}")
+
+
+def cmd_color(args: list[str]):
+    if len(args) < 2:
+        print("Usage: wiz color BULB (NAME|R G B)", file=sys.stderr)
+        sys.exit(1)
+    try:
+        r, g, b = parse_color_parts(args[1:])
+    except Exception as e:
+        print(f"Color parse error: {e}", file=sys.stderr)
+        sys.exit(1)
+    set_color_for_ips(resolve_bulb(args[0]), r, g, b)
+
+
+def cmd_temp(args: list[str]):
+    if len(args) < 2:
+        print("Usage: wiz temp BULB 2200-6500", file=sys.stderr)
+        sys.exit(1)
+    temp = max(2200, min(6500, int(args[1])))
+    for ip in resolve_bulb(args[0]):
+        r = udp_send(ip, "setPilot", {"state": True, "temp": temp})
+        ok = r.get("result", {}).get("success", False)
+        print(f"{'OK' if ok else 'FAIL'} temp {temp}K {ip}")
+
+
+def cmd_scene(args: list[str]):
+    if len(args) < 2:
+        print("Usage: wiz scene BULB SCENE_ID", file=sys.stderr)
+        sys.exit(1)
+    scene = int(args[1])
+    for ip in resolve_bulb(args[0]):
+        r = udp_send(ip, "setPilot", {"state": True, "sceneId": scene})
+        ok = r.get("result", {}).get("success", False)
+        print(f"{'OK' if ok else 'FAIL'} scene {scene} {ip}")
+
+
+def cmd_disco(args: list[str]):
+    target = args[0] if args else "all"
+    ips = resolve_bulb(target)
+    seconds, step = parse_effect_timing(args, 1, 2)
+    print(f"DISCO target={target} seconds={seconds:.1f} step={step:.2f}")
+    run_palette_effect(ips, seconds, step)
+
+
+def cmd_chase(args: list[str]):
+    target = args[0] if args else "all"
+    ips = resolve_bulb(target)
+    seconds, step = parse_effect_timing(args, 1, 2)
+    color = (0, 200, 255)
+    if len(args) > 3:
+        try:
+            color = parse_color_parts(args[3:])
+        except Exception:
+            color = (0, 200, 255)
+    print(f"CHASE target={target} seconds={seconds:.1f} step={step:.2f} color={color}")
+    run_chase_effect(ips, seconds, step, color)
+
+
+def cmd_pulse(args: list[str]):
+    target = args[0] if args else "all"
+    ips = resolve_bulb(target)
+    seconds, step = parse_effect_timing(args, 1, 2)
+    color = (255, 0, 180)
+    if len(args) > 3:
+        try:
+            color = parse_color_parts(args[3:])
+        except Exception:
+            color = (255, 0, 180)
+
+    end_time = time.time() + seconds
+    on = True
+    while time.time() < end_time:
+        if on:
+            for ip in ips:
+                udp_send(ip, "setPilot", {
+                    "state": True,
+                    "r": color[0],
+                    "g": color[1],
+                    "b": color[2],
+                    "dimming": 100,
+                })
+        else:
+            for ip in ips:
+                udp_send(ip, "setPilot", {"state": True, "dimming": 12})
+        on = not on
+        time.sleep(step)
+
+
+def cmd_stop(args: list[str]):
+    target = args[0] if args else "all"
+    for ip in resolve_bulb(target):
+        resp = udp_send(ip, "setPilot", {"state": True, "temp": 2700, "dimming": 70})
+        ok = resp.get("result", {}).get("success", False)
+        print(f"{'OK' if ok else 'FAIL'} stop/reset {ip}")
+
+
+def cmd_status(args: list[str]):
+    target = args[0] if args else "all"
+    for ip in resolve_bulb(target):
+        r = udp_send(ip, "getPilot")
+        s = r.get("result", {})
+        state = "ON" if s.get("state") else "OFF"
+        dim = s.get("dimming", "?")
+        temp = s.get("temp", "?")
+        rgb = f"({s.get('r','?')},{s.get('g','?')},{s.get('b','?')})" if "r" in s else ""
+        print(f"{ip}: {state} brightness={dim}% temp={temp}K {rgb}")
+
+
+def cmd_list(args: list[str]):
+    bulbs = load_bulbs()
+    for b in bulbs:
+        print(f"  {b['index']}: {b['ip']}")
+
+
+def main():
+    if len(sys.argv) < 2:
+        print(__doc__)
+        sys.exit(0)
+
+    cmd = sys.argv[1]
+    args = sys.argv[2:]
+
+    commands = {
+        "discover": lambda a: [print(f"  {b['index']}: {b['ip']}") for b in discover()],
+        "on": cmd_on,
+        "off": cmd_off,
+        "brightness": cmd_brightness,
+        "color": cmd_color,
+        "temp": cmd_temp,
+        "scene": cmd_scene,
+        "disco": cmd_disco,
+        "chase": cmd_chase,
+        "pulse": cmd_pulse,
+        "stop": cmd_stop,
+        "status": cmd_status,
+        "list": cmd_list,
+    }
+
+    if cmd in commands:
+        commands[cmd](args)
+    else:
+        print(f"Unknown command: {cmd}", file=sys.stderr)
+        print("Commands: " + ", ".join(commands.keys()), file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
