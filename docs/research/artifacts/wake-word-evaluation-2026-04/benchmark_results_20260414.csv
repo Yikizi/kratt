@@ -1,0 +1,906 @@
+timestamp,model,test_set,kind,threshold,metric,value,n,duration_h,combo
+2026-04-14T07:51:47Z,v6-residual,pos_isa_xtts,positive,0.97,recall,1.0000,48,,
+2026-04-14T07:51:47Z,v6-residual,pos_isa_xtts,positive,0.99,recall,1.0000,48,,
+2026-04-14T07:51:47Z,v6-residual,pos_isa_xtts,positive,0.995,recall,1.0000,48,,
+2026-04-14T07:51:47Z,v6-residual,pos_isa_xtts,positive,0.996,recall,1.0000,48,,
+2026-04-14T07:51:47Z,v6-residual,pos_isa_xtts,positive,0.999,recall,1.0000,48,,
+2026-04-14T07:51:47Z,v6-residual,pos_ode,positive,0.97,recall,0.9091,11,,
+2026-04-14T07:51:47Z,v6-residual,pos_ode,positive,0.99,recall,0.9091,11,,
+2026-04-14T07:51:47Z,v6-residual,pos_ode,positive,0.995,recall,0.9091,11,,
+2026-04-14T07:51:47Z,v6-residual,pos_ode,positive,0.996,recall,0.9091,11,,
+2026-04-14T07:51:47Z,v6-residual,pos_ode,positive,0.999,recall,0.9091,11,,
+2026-04-14T07:51:47Z,v6-residual,pos_mattias_short,positive,0.97,recall,0.8000,50,,
+2026-04-14T07:51:47Z,v6-residual,pos_mattias_short,positive,0.99,recall,0.8000,50,,
+2026-04-14T07:51:47Z,v6-residual,pos_mattias_short,positive,0.995,recall,0.7800,50,,
+2026-04-14T07:51:47Z,v6-residual,pos_mattias_short,positive,0.996,recall,0.7800,50,,
+2026-04-14T07:51:47Z,v6-residual,pos_mattias_short,positive,0.999,recall,0.7600,50,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_mac_holdout,hard_negative,0.97,fpr,1.0000,15,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_mac_holdout,hard_negative,0.99,fpr,1.0000,15,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.9333,15,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.9333,15,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.9333,15,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.7500,60,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.7333,60,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.7333,60,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.7333,60,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.7333,60,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_canary,hard_negative,0.97,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_canary,hard_negative,0.99,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_canary,hard_negative,0.995,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_canary,hard_negative,0.996,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v6-residual,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v6-residual,faph_cv_et,ambient,0.97,faph,23.5560,2000,3.82,
+2026-04-14T07:51:47Z,v6-residual,faph_cv_et,ambient,0.99,faph,17.7979,2000,3.82,
+2026-04-14T07:51:47Z,v6-residual,faph_cv_et,ambient,0.995,faph,14.3953,2000,3.82,
+2026-04-14T07:51:47Z,v6-residual,faph_cv_et,ambient,0.996,faph,14.3953,2000,3.82,
+2026-04-14T07:51:47Z,v6-residual,faph_cv_et,ambient,0.999,faph,12.3015,2000,3.82,
+2026-04-14T07:51:47Z,v6-residual,faph_librispeech,ambient,0.97,faph,7.8268,2620,5.62,
+2026-04-14T07:51:47Z,v6-residual,faph_librispeech,ambient,0.99,faph,4.9807,2620,5.62,
+2026-04-14T07:51:47Z,v6-residual,faph_librispeech,ambient,0.995,faph,4.0913,2620,5.62,
+2026-04-14T07:51:47Z,v6-residual,faph_librispeech,ambient,0.996,faph,3.9134,2620,5.62,
+2026-04-14T07:51:47Z,v6-residual,faph_librispeech,ambient,0.999,faph,3.3798,2620,5.62,
+2026-04-14T07:51:47Z,v6-residual,faph_macbook_bg,ambient,0.97,faph,5.1382,14,1.17,
+2026-04-14T07:51:47Z,v6-residual,faph_macbook_bg,ambient,0.99,faph,4.2818,14,1.17,
+2026-04-14T07:51:47Z,v6-residual,faph_macbook_bg,ambient,0.995,faph,3.4254,14,1.17,
+2026-04-14T07:51:47Z,v6-residual,faph_macbook_bg,ambient,0.996,faph,3.4254,14,1.17,
+2026-04-14T07:51:47Z,v6-residual,faph_macbook_bg,ambient,0.999,faph,3.4254,14,1.17,
+2026-04-14T07:51:47Z,v6-residual,faph_dipco,ambient,0.97,faph,1.2040,6,3.32,
+2026-04-14T07:51:47Z,v6-residual,faph_dipco,ambient,0.99,faph,0.3010,6,3.32,
+2026-04-14T07:51:47Z,v6-residual,faph_dipco,ambient,0.995,faph,0.3010,6,3.32,
+2026-04-14T07:51:47Z,v6-residual,faph_dipco,ambient,0.996,faph,0.3010,6,3.32,
+2026-04-14T07:51:47Z,v6-residual,faph_dipco,ambient,0.999,faph,0.3010,6,3.32,
+2026-04-14T07:51:47Z,v10,pos_isa_xtts,positive,0.97,recall,0.8750,48,,
+2026-04-14T07:51:47Z,v10,pos_isa_xtts,positive,0.99,recall,0.6875,48,,
+2026-04-14T07:51:47Z,v10,pos_isa_xtts,positive,0.995,recall,0.6458,48,,
+2026-04-14T07:51:47Z,v10,pos_isa_xtts,positive,0.996,recall,0.6250,48,,
+2026-04-14T07:51:47Z,v10,pos_isa_xtts,positive,0.999,recall,0.5625,48,,
+2026-04-14T07:51:47Z,v10,pos_ode,positive,0.97,recall,0.7273,11,,
+2026-04-14T07:51:47Z,v10,pos_ode,positive,0.99,recall,0.7273,11,,
+2026-04-14T07:51:47Z,v10,pos_ode,positive,0.995,recall,0.6364,11,,
+2026-04-14T07:51:47Z,v10,pos_ode,positive,0.996,recall,0.6364,11,,
+2026-04-14T07:51:47Z,v10,pos_ode,positive,0.999,recall,0.6364,11,,
+2026-04-14T07:51:47Z,v10,pos_mattias_short,positive,0.97,recall,1.0000,50,,
+2026-04-14T07:51:47Z,v10,pos_mattias_short,positive,0.99,recall,0.9600,50,,
+2026-04-14T07:51:47Z,v10,pos_mattias_short,positive,0.995,recall,0.9600,50,,
+2026-04-14T07:51:47Z,v10,pos_mattias_short,positive,0.996,recall,0.9400,50,,
+2026-04-14T07:51:47Z,v10,pos_mattias_short,positive,0.999,recall,0.9400,50,,
+2026-04-14T07:51:47Z,v10,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.6000,15,,
+2026-04-14T07:51:47Z,v10,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.5333,15,,
+2026-04-14T07:51:47Z,v10,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.4667,15,,
+2026-04-14T07:51:47Z,v10,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.4667,15,,
+2026-04-14T07:51:47Z,v10,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.4667,15,,
+2026-04-14T07:51:47Z,v10,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.3000,60,,
+2026-04-14T07:51:47Z,v10,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.1667,60,,
+2026-04-14T07:51:47Z,v10,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.1000,60,,
+2026-04-14T07:51:47Z,v10,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.1000,60,,
+2026-04-14T07:51:47Z,v10,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.0833,60,,
+2026-04-14T07:51:47Z,v10,hard_neg_canary,hard_negative,0.97,fpr,0.8000,5,,
+2026-04-14T07:51:47Z,v10,hard_neg_canary,hard_negative,0.99,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,v10,hard_neg_canary,hard_negative,0.995,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,v10,hard_neg_canary,hard_negative,0.996,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v10,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v10,faph_cv_et,ambient,0.97,faph,54.4406,2000,3.82,
+2026-04-14T07:51:47Z,v10,faph_cv_et,ambient,0.99,faph,33.2402,2000,3.82,
+2026-04-14T07:51:47Z,v10,faph_cv_et,ambient,0.995,faph,22.7708,2000,3.82,
+2026-04-14T07:51:47Z,v10,faph_cv_et,ambient,0.996,faph,20.9387,2000,3.82,
+2026-04-14T07:51:47Z,v10,faph_cv_et,ambient,0.999,faph,14.1336,2000,3.82,
+2026-04-14T07:51:47Z,v10,faph_librispeech,ambient,0.97,faph,54.0762,2620,5.62,
+2026-04-14T07:51:47Z,v10,faph_librispeech,ambient,0.99,faph,36.6437,2620,5.62,
+2026-04-14T07:51:47Z,v10,faph_librispeech,ambient,0.995,faph,30.0621,2620,5.62,
+2026-04-14T07:51:47Z,v10,faph_librispeech,ambient,0.996,faph,28.4611,2620,5.62,
+2026-04-14T07:51:47Z,v10,faph_librispeech,ambient,0.999,faph,19.7449,2620,5.62,
+2026-04-14T07:51:47Z,v10,faph_macbook_bg,ambient,0.97,faph,11.1327,14,1.17,
+2026-04-14T07:51:47Z,v10,faph_macbook_bg,ambient,0.99,faph,5.1382,14,1.17,
+2026-04-14T07:51:47Z,v10,faph_macbook_bg,ambient,0.995,faph,4.2818,14,1.17,
+2026-04-14T07:51:47Z,v10,faph_macbook_bg,ambient,0.996,faph,4.2818,14,1.17,
+2026-04-14T07:51:47Z,v10,faph_macbook_bg,ambient,0.999,faph,4.2818,14,1.17,
+2026-04-14T07:51:47Z,v10,faph_dipco,ambient,0.97,faph,11.7388,6,3.32,
+2026-04-14T07:51:47Z,v10,faph_dipco,ambient,0.99,faph,6.9229,6,3.32,
+2026-04-14T07:51:47Z,v10,faph_dipco,ambient,0.995,faph,6.0199,6,3.32,
+2026-04-14T07:51:47Z,v10,faph_dipco,ambient,0.996,faph,5.7189,6,3.32,
+2026-04-14T07:51:47Z,v10,faph_dipco,ambient,0.999,faph,3.3109,6,3.32,
+2026-04-14T07:51:47Z,v11,pos_isa_xtts,positive,0.97,recall,1.0000,48,,
+2026-04-14T07:51:47Z,v11,pos_isa_xtts,positive,0.99,recall,1.0000,48,,
+2026-04-14T07:51:47Z,v11,pos_isa_xtts,positive,0.995,recall,1.0000,48,,
+2026-04-14T07:51:47Z,v11,pos_isa_xtts,positive,0.996,recall,1.0000,48,,
+2026-04-14T07:51:47Z,v11,pos_isa_xtts,positive,0.999,recall,1.0000,48,,
+2026-04-14T07:51:47Z,v11,pos_ode,positive,0.97,recall,0.7273,11,,
+2026-04-14T07:51:47Z,v11,pos_ode,positive,0.99,recall,0.5455,11,,
+2026-04-14T07:51:47Z,v11,pos_ode,positive,0.995,recall,0.5455,11,,
+2026-04-14T07:51:47Z,v11,pos_ode,positive,0.996,recall,0.5455,11,,
+2026-04-14T07:51:47Z,v11,pos_ode,positive,0.999,recall,0.5455,11,,
+2026-04-14T07:51:47Z,v11,pos_mattias_short,positive,0.97,recall,0.9800,50,,
+2026-04-14T07:51:47Z,v11,pos_mattias_short,positive,0.99,recall,0.9800,50,,
+2026-04-14T07:51:47Z,v11,pos_mattias_short,positive,0.995,recall,0.9800,50,,
+2026-04-14T07:51:47Z,v11,pos_mattias_short,positive,0.996,recall,0.9800,50,,
+2026-04-14T07:51:47Z,v11,pos_mattias_short,positive,0.999,recall,0.9400,50,,
+2026-04-14T07:51:47Z,v11,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.8667,15,,
+2026-04-14T07:51:47Z,v11,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.8667,15,,
+2026-04-14T07:51:47Z,v11,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.8667,15,,
+2026-04-14T07:51:47Z,v11,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.8667,15,,
+2026-04-14T07:51:47Z,v11,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.8667,15,,
+2026-04-14T07:51:47Z,v11,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.9833,60,,
+2026-04-14T07:51:47Z,v11,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.9833,60,,
+2026-04-14T07:51:47Z,v11,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.9833,60,,
+2026-04-14T07:51:47Z,v11,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.9833,60,,
+2026-04-14T07:51:47Z,v11,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.9667,60,,
+2026-04-14T07:51:47Z,v11,hard_neg_canary,hard_negative,0.97,fpr,0.4000,5,,
+2026-04-14T07:51:47Z,v11,hard_neg_canary,hard_negative,0.99,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,v11,hard_neg_canary,hard_negative,0.995,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,v11,hard_neg_canary,hard_negative,0.996,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,v11,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v11,faph_cv_et,ambient,0.97,faph,147.6177,2000,3.82,
+2026-04-14T07:51:47Z,v11,faph_cv_et,ambient,0.99,faph,97.3649,2000,3.82,
+2026-04-14T07:51:47Z,v11,faph_cv_et,ambient,0.995,faph,79.0435,2000,3.82,
+2026-04-14T07:51:47Z,v11,faph_cv_et,ambient,0.996,faph,75.9027,2000,3.82,
+2026-04-14T07:51:47Z,v11,faph_cv_et,ambient,0.999,faph,60.7222,2000,3.82,
+2026-04-14T07:51:47Z,v11,faph_librispeech,ambient,0.97,faph,186.5984,2620,5.62,
+2026-04-14T07:51:47Z,v11,faph_librispeech,ambient,0.99,faph,139.4596,2620,5.62,
+2026-04-14T07:51:47Z,v11,faph_librispeech,ambient,0.995,faph,119.1810,2620,5.62,
+2026-04-14T07:51:47Z,v11,faph_librispeech,ambient,0.996,faph,115.6234,2620,5.62,
+2026-04-14T07:51:47Z,v11,faph_librispeech,ambient,0.999,faph,100.8592,2620,5.62,
+2026-04-14T07:51:47Z,v11,faph_macbook_bg,ambient,0.97,faph,38.5363,14,1.17,
+2026-04-14T07:51:47Z,v11,faph_macbook_bg,ambient,0.99,faph,29.1163,14,1.17,
+2026-04-14T07:51:47Z,v11,faph_macbook_bg,ambient,0.995,faph,25.6909,14,1.17,
+2026-04-14T07:51:47Z,v11,faph_macbook_bg,ambient,0.996,faph,25.6909,14,1.17,
+2026-04-14T07:51:47Z,v11,faph_macbook_bg,ambient,0.999,faph,23.1218,14,1.17,
+2026-04-14T07:51:47Z,v11,faph_dipco,ambient,0.97,faph,44.2461,6,3.32,
+2026-04-14T07:51:47Z,v11,faph_dipco,ambient,0.99,faph,31.3034,6,3.32,
+2026-04-14T07:51:47Z,v11,faph_dipco,ambient,0.995,faph,25.8855,6,3.32,
+2026-04-14T07:51:47Z,v11,faph_dipco,ambient,0.996,faph,24.3805,6,3.32,
+2026-04-14T07:51:47Z,v11,faph_dipco,ambient,0.999,faph,21.3706,6,3.32,
+2026-04-14T07:51:47Z,v15,pos_isa_xtts,positive,0.97,recall,0.9792,48,,
+2026-04-14T07:51:47Z,v15,pos_isa_xtts,positive,0.99,recall,0.9792,48,,
+2026-04-14T07:51:47Z,v15,pos_isa_xtts,positive,0.995,recall,0.9792,48,,
+2026-04-14T07:51:47Z,v15,pos_isa_xtts,positive,0.996,recall,0.9792,48,,
+2026-04-14T07:51:47Z,v15,pos_isa_xtts,positive,0.999,recall,0.9583,48,,
+2026-04-14T07:51:47Z,v15,pos_ode,positive,0.97,recall,0.6364,11,,
+2026-04-14T07:51:47Z,v15,pos_ode,positive,0.99,recall,0.6364,11,,
+2026-04-14T07:51:47Z,v15,pos_ode,positive,0.995,recall,0.6364,11,,
+2026-04-14T07:51:47Z,v15,pos_ode,positive,0.996,recall,0.6364,11,,
+2026-04-14T07:51:47Z,v15,pos_ode,positive,0.999,recall,0.6364,11,,
+2026-04-14T07:51:47Z,v15,pos_mattias_short,positive,0.97,recall,0.9400,50,,
+2026-04-14T07:51:47Z,v15,pos_mattias_short,positive,0.99,recall,0.9200,50,,
+2026-04-14T07:51:47Z,v15,pos_mattias_short,positive,0.995,recall,0.9200,50,,
+2026-04-14T07:51:47Z,v15,pos_mattias_short,positive,0.996,recall,0.9200,50,,
+2026-04-14T07:51:47Z,v15,pos_mattias_short,positive,0.999,recall,0.9200,50,,
+2026-04-14T07:51:47Z,v15,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.3333,15,,
+2026-04-14T07:51:47Z,v15,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.2667,15,,
+2026-04-14T07:51:47Z,v15,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.2667,15,,
+2026-04-14T07:51:47Z,v15,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.2667,15,,
+2026-04-14T07:51:47Z,v15,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.2667,15,,
+2026-04-14T07:51:47Z,v15,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.9167,60,,
+2026-04-14T07:51:47Z,v15,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.8833,60,,
+2026-04-14T07:51:47Z,v15,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.8833,60,,
+2026-04-14T07:51:47Z,v15,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.8833,60,,
+2026-04-14T07:51:47Z,v15,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.8667,60,,
+2026-04-14T07:51:47Z,v15,hard_neg_canary,hard_negative,0.97,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,v15,hard_neg_canary,hard_negative,0.99,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,v15,hard_neg_canary,hard_negative,0.995,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v15,hard_neg_canary,hard_negative,0.996,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v15,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,v15,faph_cv_et,ambient,0.97,faph,321.1470,2000,3.82,
+2026-04-14T07:51:47Z,v15,faph_cv_et,ambient,0.99,faph,260.6865,2000,3.82,
+2026-04-14T07:51:47Z,v15,faph_cv_et,ambient,0.995,faph,242.8887,2000,3.82,
+2026-04-14T07:51:47Z,v15,faph_cv_et,ambient,0.996,faph,239.4861,2000,3.82,
+2026-04-14T07:51:47Z,v15,faph_cv_et,ambient,0.999,faph,201.7965,2000,3.82,
+2026-04-14T07:51:47Z,v15,faph_librispeech,ambient,0.97,faph,96.0564,2620,5.62,
+2026-04-14T07:51:47Z,v15,faph_librispeech,ambient,0.99,faph,79.6912,2620,5.62,
+2026-04-14T07:51:47Z,v15,faph_librispeech,ambient,0.995,faph,73.8211,2620,5.62,
+2026-04-14T07:51:47Z,v15,faph_librispeech,ambient,0.996,faph,72.3980,2620,5.62,
+2026-04-14T07:51:47Z,v15,faph_librispeech,ambient,0.999,faph,59.9463,2620,5.62,
+2026-04-14T07:51:47Z,v15,faph_macbook_bg,ambient,0.97,faph,81.3544,14,1.17,
+2026-04-14T07:51:47Z,v15,faph_macbook_bg,ambient,0.99,faph,61.6581,14,1.17,
+2026-04-14T07:51:47Z,v15,faph_macbook_bg,ambient,0.995,faph,59.9453,14,1.17,
+2026-04-14T07:51:47Z,v15,faph_macbook_bg,ambient,0.996,faph,58.2326,14,1.17,
+2026-04-14T07:51:47Z,v15,faph_macbook_bg,ambient,0.999,faph,46.2435,14,1.17,
+2026-04-14T07:51:47Z,v15,faph_dipco,ambient,0.97,faph,29.4974,6,3.32,
+2026-04-14T07:51:47Z,v15,faph_dipco,ambient,0.99,faph,22.5746,6,3.32,
+2026-04-14T07:51:47Z,v15,faph_dipco,ambient,0.995,faph,21.3706,6,3.32,
+2026-04-14T07:51:47Z,v15,faph_dipco,ambient,0.996,faph,21.3706,6,3.32,
+2026-04-14T07:51:47Z,v15,faph_dipco,ambient,0.999,faph,17.4577,6,3.32,
+2026-04-14T07:51:47Z,ex3a,pos_isa_xtts,positive,0.97,recall,1.0000,48,,
+2026-04-14T07:51:47Z,ex3a,pos_isa_xtts,positive,0.99,recall,1.0000,48,,
+2026-04-14T07:51:47Z,ex3a,pos_isa_xtts,positive,0.995,recall,1.0000,48,,
+2026-04-14T07:51:47Z,ex3a,pos_isa_xtts,positive,0.996,recall,1.0000,48,,
+2026-04-14T07:51:47Z,ex3a,pos_isa_xtts,positive,0.999,recall,1.0000,48,,
+2026-04-14T07:51:47Z,ex3a,pos_ode,positive,0.97,recall,0.7273,11,,
+2026-04-14T07:51:47Z,ex3a,pos_ode,positive,0.99,recall,0.7273,11,,
+2026-04-14T07:51:47Z,ex3a,pos_ode,positive,0.995,recall,0.7273,11,,
+2026-04-14T07:51:47Z,ex3a,pos_ode,positive,0.996,recall,0.7273,11,,
+2026-04-14T07:51:47Z,ex3a,pos_ode,positive,0.999,recall,0.7273,11,,
+2026-04-14T07:51:47Z,ex3a,pos_mattias_short,positive,0.97,recall,0.9200,50,,
+2026-04-14T07:51:47Z,ex3a,pos_mattias_short,positive,0.99,recall,0.9200,50,,
+2026-04-14T07:51:47Z,ex3a,pos_mattias_short,positive,0.995,recall,0.9200,50,,
+2026-04-14T07:51:47Z,ex3a,pos_mattias_short,positive,0.996,recall,0.9200,50,,
+2026-04-14T07:51:47Z,ex3a,pos_mattias_short,positive,0.999,recall,0.8000,50,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.7333,15,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.7333,15,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.7333,15,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.6667,15,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.6667,15,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.8667,60,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.8500,60,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.8500,60,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.8500,60,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.8500,60,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_canary,hard_negative,0.97,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_canary,hard_negative,0.99,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_canary,hard_negative,0.995,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_canary,hard_negative,0.996,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,ex3a,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,ex3a,faph_cv_et,ambient,0.97,faph,53.3936,2000,3.82,
+2026-04-14T07:51:47Z,ex3a,faph_cv_et,ambient,0.99,faph,39.5218,2000,3.82,
+2026-04-14T07:51:47Z,ex3a,faph_cv_et,ambient,0.995,faph,32.9784,2000,3.82,
+2026-04-14T07:51:47Z,ex3a,faph_cv_et,ambient,0.996,faph,31.4080,2000,3.82,
+2026-04-14T07:51:47Z,ex3a,faph_cv_et,ambient,0.999,faph,24.8647,2000,3.82,
+2026-04-14T07:51:47Z,ex3a,faph_librispeech,ambient,0.97,faph,14.0527,2620,5.62,
+2026-04-14T07:51:47Z,ex3a,faph_librispeech,ambient,0.99,faph,11.2066,2620,5.62,
+2026-04-14T07:51:47Z,ex3a,faph_librispeech,ambient,0.995,faph,10.4950,2620,5.62,
+2026-04-14T07:51:47Z,ex3a,faph_librispeech,ambient,0.996,faph,10.1393,2620,5.62,
+2026-04-14T07:51:47Z,ex3a,faph_librispeech,ambient,0.999,faph,7.2932,2620,5.62,
+2026-04-14T07:51:47Z,ex3a,faph_macbook_bg,ambient,0.97,faph,11.1327,14,1.17,
+2026-04-14T07:51:47Z,ex3a,faph_macbook_bg,ambient,0.99,faph,7.7073,14,1.17,
+2026-04-14T07:51:47Z,ex3a,faph_macbook_bg,ambient,0.995,faph,6.8509,14,1.17,
+2026-04-14T07:51:47Z,ex3a,faph_macbook_bg,ambient,0.996,faph,6.8509,14,1.17,
+2026-04-14T07:51:47Z,ex3a,faph_macbook_bg,ambient,0.999,faph,5.9945,14,1.17,
+2026-04-14T07:51:47Z,ex3a,faph_dipco,ambient,0.97,faph,5.1169,6,3.32,
+2026-04-14T07:51:47Z,ex3a,faph_dipco,ambient,0.99,faph,4.2139,6,3.32,
+2026-04-14T07:51:47Z,ex3a,faph_dipco,ambient,0.995,faph,3.9129,6,3.32,
+2026-04-14T07:51:47Z,ex3a,faph_dipco,ambient,0.996,faph,3.6119,6,3.32,
+2026-04-14T07:51:47Z,ex3a,faph_dipco,ambient,0.999,faph,2.7089,6,3.32,
+2026-04-14T07:51:47Z,ex3b,pos_isa_xtts,positive,0.97,recall,1.0000,48,,
+2026-04-14T07:51:47Z,ex3b,pos_isa_xtts,positive,0.99,recall,1.0000,48,,
+2026-04-14T07:51:47Z,ex3b,pos_isa_xtts,positive,0.995,recall,1.0000,48,,
+2026-04-14T07:51:47Z,ex3b,pos_isa_xtts,positive,0.996,recall,1.0000,48,,
+2026-04-14T07:51:47Z,ex3b,pos_isa_xtts,positive,0.999,recall,1.0000,48,,
+2026-04-14T07:51:47Z,ex3b,pos_ode,positive,0.97,recall,0.6364,11,,
+2026-04-14T07:51:47Z,ex3b,pos_ode,positive,0.99,recall,0.6364,11,,
+2026-04-14T07:51:47Z,ex3b,pos_ode,positive,0.995,recall,0.6364,11,,
+2026-04-14T07:51:47Z,ex3b,pos_ode,positive,0.996,recall,0.6364,11,,
+2026-04-14T07:51:47Z,ex3b,pos_ode,positive,0.999,recall,0.6364,11,,
+2026-04-14T07:51:47Z,ex3b,pos_mattias_short,positive,0.97,recall,1.0000,50,,
+2026-04-14T07:51:47Z,ex3b,pos_mattias_short,positive,0.99,recall,0.9800,50,,
+2026-04-14T07:51:47Z,ex3b,pos_mattias_short,positive,0.995,recall,0.9800,50,,
+2026-04-14T07:51:47Z,ex3b,pos_mattias_short,positive,0.996,recall,0.9800,50,,
+2026-04-14T07:51:47Z,ex3b,pos_mattias_short,positive,0.999,recall,0.9800,50,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.9333,15,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.9333,15,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.9333,15,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.9333,15,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.9333,15,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.9833,60,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.9833,60,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.9833,60,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.9833,60,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.9833,60,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_canary,hard_negative,0.97,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_canary,hard_negative,0.99,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_canary,hard_negative,0.995,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_canary,hard_negative,0.996,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,ex3b,hard_neg_canary,hard_negative,0.999,fpr,0.2000,5,,
+2026-04-14T07:51:47Z,ex3b,faph_cv_et,ambient,0.97,faph,235.2984,2000,3.82,
+2026-04-14T07:51:47Z,ex3b,faph_cv_et,ambient,0.99,faph,196.8236,2000,3.82,
+2026-04-14T07:51:47Z,ex3b,faph_cv_et,ambient,0.995,faph,175.0997,2000,3.82,
+2026-04-14T07:51:47Z,ex3b,faph_cv_et,ambient,0.996,faph,170.3885,2000,3.82,
+2026-04-14T07:51:47Z,ex3b,faph_cv_et,ambient,0.999,faph,148.9263,2000,3.82,
+2026-04-14T07:51:47Z,ex3b,faph_librispeech,ambient,0.97,faph,171.3005,2620,5.62,
+2026-04-14T07:51:47Z,ex3b,faph_librispeech,ambient,0.99,faph,144.6182,2620,5.62,
+2026-04-14T07:51:47Z,ex3b,faph_librispeech,ambient,0.995,faph,133.7674,2620,5.62,
+2026-04-14T07:51:47Z,ex3b,faph_librispeech,ambient,0.996,faph,130.0318,2620,5.62,
+2026-04-14T07:51:47Z,ex3b,faph_librispeech,ambient,0.999,faph,114.0224,2620,5.62,
+2026-04-14T07:51:47Z,ex3b,faph_macbook_bg,ambient,0.97,faph,86.4926,14,1.17,
+2026-04-14T07:51:47Z,ex3b,faph_macbook_bg,ambient,0.99,faph,74.5035,14,1.17,
+2026-04-14T07:51:47Z,ex3b,faph_macbook_bg,ambient,0.995,faph,65.9399,14,1.17,
+2026-04-14T07:51:47Z,ex3b,faph_macbook_bg,ambient,0.996,faph,65.0835,14,1.17,
+2026-04-14T07:51:47Z,ex3b,faph_macbook_bg,ambient,0.999,faph,50.5254,14,1.17,
+2026-04-14T07:51:47Z,ex3b,faph_dipco,ambient,0.97,faph,43.9451,6,3.32,
+2026-04-14T07:51:47Z,ex3b,faph_dipco,ambient,0.99,faph,34.3133,6,3.32,
+2026-04-14T07:51:47Z,ex3b,faph_dipco,ambient,0.995,faph,30.7014,6,3.32,
+2026-04-14T07:51:47Z,ex3b,faph_dipco,ambient,0.996,faph,30.0994,6,3.32,
+2026-04-14T07:51:47Z,ex3b,faph_dipco,ambient,0.999,faph,24.9825,6,3.32,
+2026-04-14T07:51:47Z,expert-a,pos_isa_xtts,positive,0.97,recall,1.0000,48,,
+2026-04-14T07:51:47Z,expert-a,pos_isa_xtts,positive,0.99,recall,1.0000,48,,
+2026-04-14T07:51:47Z,expert-a,pos_isa_xtts,positive,0.995,recall,1.0000,48,,
+2026-04-14T07:51:47Z,expert-a,pos_isa_xtts,positive,0.996,recall,1.0000,48,,
+2026-04-14T07:51:47Z,expert-a,pos_isa_xtts,positive,0.999,recall,1.0000,48,,
+2026-04-14T07:51:47Z,expert-a,pos_ode,positive,0.97,recall,0.9091,11,,
+2026-04-14T07:51:47Z,expert-a,pos_ode,positive,0.99,recall,0.9091,11,,
+2026-04-14T07:51:47Z,expert-a,pos_ode,positive,0.995,recall,0.8182,11,,
+2026-04-14T07:51:47Z,expert-a,pos_ode,positive,0.996,recall,0.8182,11,,
+2026-04-14T07:51:47Z,expert-a,pos_ode,positive,0.999,recall,0.8182,11,,
+2026-04-14T07:51:47Z,expert-a,pos_mattias_short,positive,0.97,recall,1.0000,50,,
+2026-04-14T07:51:47Z,expert-a,pos_mattias_short,positive,0.99,recall,1.0000,50,,
+2026-04-14T07:51:47Z,expert-a,pos_mattias_short,positive,0.995,recall,1.0000,50,,
+2026-04-14T07:51:47Z,expert-a,pos_mattias_short,positive,0.996,recall,1.0000,50,,
+2026-04-14T07:51:47Z,expert-a,pos_mattias_short,positive,0.999,recall,1.0000,50,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.9333,15,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.9333,15,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.8667,15,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.8667,15,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.8000,15,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.7667,60,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.7500,60,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.7333,60,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.7333,60,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.7333,60,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_canary,hard_negative,0.97,fpr,0.4000,5,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_canary,hard_negative,0.99,fpr,0.4000,5,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_canary,hard_negative,0.995,fpr,0.4000,5,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_canary,hard_negative,0.996,fpr,0.4000,5,,
+2026-04-14T07:51:47Z,expert-a,hard_neg_canary,hard_negative,0.999,fpr,0.4000,5,,
+2026-04-14T07:51:47Z,expert-a,faph_cv_et,ambient,0.97,faph,41.8774,2000,3.82,
+2026-04-14T07:51:47Z,expert-a,faph_cv_et,ambient,0.99,faph,34.2871,2000,3.82,
+2026-04-14T07:51:47Z,expert-a,faph_cv_et,ambient,0.995,faph,32.9784,2000,3.82,
+2026-04-14T07:51:47Z,expert-a,faph_cv_et,ambient,0.996,faph,32.9784,2000,3.82,
+2026-04-14T07:51:47Z,expert-a,faph_cv_et,ambient,0.999,faph,25.9116,2000,3.82,
+2026-04-14T07:51:47Z,expert-a,faph_librispeech,ambient,0.97,faph,3.3798,2620,5.62,
+2026-04-14T07:51:47Z,expert-a,faph_librispeech,ambient,0.99,faph,2.6682,2620,5.62,
+2026-04-14T07:51:47Z,expert-a,faph_librispeech,ambient,0.995,faph,2.6682,2620,5.62,
+2026-04-14T07:51:47Z,expert-a,faph_librispeech,ambient,0.996,faph,2.6682,2620,5.62,
+2026-04-14T07:51:47Z,expert-a,faph_librispeech,ambient,0.999,faph,1.9567,2620,5.62,
+2026-04-14T07:51:47Z,expert-a,faph_macbook_bg,ambient,0.97,faph,12.8454,14,1.17,
+2026-04-14T07:51:47Z,expert-a,faph_macbook_bg,ambient,0.99,faph,11.9891,14,1.17,
+2026-04-14T07:51:47Z,expert-a,faph_macbook_bg,ambient,0.995,faph,11.9891,14,1.17,
+2026-04-14T07:51:47Z,expert-a,faph_macbook_bg,ambient,0.996,faph,11.9891,14,1.17,
+2026-04-14T07:51:47Z,expert-a,faph_macbook_bg,ambient,0.999,faph,8.5636,14,1.17,
+2026-04-14T07:51:47Z,expert-a,faph_dipco,ambient,0.97,faph,3.0099,6,3.32,
+2026-04-14T07:51:47Z,expert-a,faph_dipco,ambient,0.99,faph,2.1070,6,3.32,
+2026-04-14T07:51:47Z,expert-a,faph_dipco,ambient,0.995,faph,2.1070,6,3.32,
+2026-04-14T07:51:47Z,expert-a,faph_dipco,ambient,0.996,faph,2.1070,6,3.32,
+2026-04-14T07:51:47Z,expert-a,faph_dipco,ambient,0.999,faph,1.5050,6,3.32,
+2026-04-14T07:51:47Z,expert-b,pos_isa_xtts,positive,0.97,recall,1.0000,48,,
+2026-04-14T07:51:47Z,expert-b,pos_isa_xtts,positive,0.99,recall,1.0000,48,,
+2026-04-14T07:51:47Z,expert-b,pos_isa_xtts,positive,0.995,recall,1.0000,48,,
+2026-04-14T07:51:47Z,expert-b,pos_isa_xtts,positive,0.996,recall,1.0000,48,,
+2026-04-14T07:51:47Z,expert-b,pos_isa_xtts,positive,0.999,recall,1.0000,48,,
+2026-04-14T07:51:47Z,expert-b,pos_ode,positive,0.97,recall,1.0000,11,,
+2026-04-14T07:51:47Z,expert-b,pos_ode,positive,0.99,recall,1.0000,11,,
+2026-04-14T07:51:47Z,expert-b,pos_ode,positive,0.995,recall,1.0000,11,,
+2026-04-14T07:51:47Z,expert-b,pos_ode,positive,0.996,recall,1.0000,11,,
+2026-04-14T07:51:47Z,expert-b,pos_ode,positive,0.999,recall,1.0000,11,,
+2026-04-14T07:51:47Z,expert-b,pos_mattias_short,positive,0.97,recall,0.9800,50,,
+2026-04-14T07:51:47Z,expert-b,pos_mattias_short,positive,0.99,recall,0.9800,50,,
+2026-04-14T07:51:47Z,expert-b,pos_mattias_short,positive,0.995,recall,0.9800,50,,
+2026-04-14T07:51:47Z,expert-b,pos_mattias_short,positive,0.996,recall,0.9800,50,,
+2026-04-14T07:51:47Z,expert-b,pos_mattias_short,positive,0.999,recall,0.9400,50,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_mac_holdout,hard_negative,0.97,fpr,1.0000,15,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_mac_holdout,hard_negative,0.99,fpr,1.0000,15,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_mac_holdout,hard_negative,0.995,fpr,1.0000,15,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_mac_holdout,hard_negative,0.996,fpr,1.0000,15,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_mac_holdout,hard_negative,0.999,fpr,1.0000,15,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.9667,60,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.9500,60,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.8167,60,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.8167,60,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.8167,60,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_canary,hard_negative,0.97,fpr,1.0000,5,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_canary,hard_negative,0.99,fpr,0.8000,5,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_canary,hard_negative,0.995,fpr,0.8000,5,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_canary,hard_negative,0.996,fpr,0.8000,5,,
+2026-04-14T07:51:47Z,expert-b,hard_neg_canary,hard_negative,0.999,fpr,0.8000,5,,
+2026-04-14T07:51:47Z,expert-b,faph_cv_et,ambient,0.97,faph,9507.7302,2000,3.82,
+2026-04-14T07:51:47Z,expert-b,faph_cv_et,ambient,0.99,faph,9005.4637,2000,3.82,
+2026-04-14T07:51:47Z,expert-b,faph_cv_et,ambient,0.995,faph,8766.7628,2000,3.82,
+2026-04-14T07:51:47Z,expert-b,faph_cv_et,ambient,0.996,faph,8721.7446,2000,3.82,
+2026-04-14T07:51:47Z,expert-b,faph_cv_et,ambient,0.999,faph,8395.1012,2000,3.82,
+2026-04-14T07:51:47Z,expert-b,faph_librispeech,ambient,0.97,faph,9873.5258,2620,5.62,
+2026-04-14T07:51:47Z,expert-b,faph_librispeech,ambient,0.99,faph,9330.6295,2620,5.62,
+2026-04-14T07:51:47Z,expert-b,faph_librispeech,ambient,0.995,faph,9054.2007,2620,5.62,
+2026-04-14T07:51:47Z,expert-b,faph_librispeech,ambient,0.996,faph,8997.8120,2620,5.62,
+2026-04-14T07:51:47Z,expert-b,faph_librispeech,ambient,0.999,faph,8633.6873,2620,5.62,
+2026-04-14T07:51:47Z,expert-b,faph_macbook_bg,ambient,0.97,faph,2185.4357,14,1.17,
+2026-04-14T07:51:47Z,expert-b,faph_macbook_bg,ambient,0.99,faph,1848.8854,14,1.17,
+2026-04-14T07:51:47Z,expert-b,faph_macbook_bg,ambient,0.995,faph,1712.7239,14,1.17,
+2026-04-14T07:51:47Z,expert-b,faph_macbook_bg,ambient,0.996,faph,1685.3203,14,1.17,
+2026-04-14T07:51:47Z,expert-b,faph_macbook_bg,ambient,0.999,faph,1508.0534,14,1.17,
+2026-04-14T07:51:47Z,expert-b,faph_dipco,ambient,0.97,faph,3131.8429,6,3.32,
+2026-04-14T07:51:47Z,expert-b,faph_dipco,ambient,0.99,faph,2635.8047,6,3.32,
+2026-04-14T07:51:47Z,expert-b,faph_dipco,ambient,0.995,faph,2433.8377,6,3.32,
+2026-04-14T07:51:47Z,expert-b,faph_dipco,ambient,0.996,faph,2391.0966,6,3.32,
+2026-04-14T07:51:47Z,expert-b,faph_dipco,ambient,0.999,faph,2137.9606,6,3.32,
+2026-04-14T07:51:47Z,expert-b2,pos_isa_xtts,positive,0.97,recall,0.4792,48,,
+2026-04-14T07:51:47Z,expert-b2,pos_isa_xtts,positive,0.99,recall,0.3542,48,,
+2026-04-14T07:51:47Z,expert-b2,pos_isa_xtts,positive,0.995,recall,0.3333,48,,
+2026-04-14T07:51:47Z,expert-b2,pos_isa_xtts,positive,0.996,recall,0.3333,48,,
+2026-04-14T07:51:47Z,expert-b2,pos_isa_xtts,positive,0.999,recall,0.2917,48,,
+2026-04-14T07:51:47Z,expert-b2,pos_ode,positive,0.97,recall,0.8182,11,,
+2026-04-14T07:51:47Z,expert-b2,pos_ode,positive,0.99,recall,0.7273,11,,
+2026-04-14T07:51:47Z,expert-b2,pos_ode,positive,0.995,recall,0.6364,11,,
+2026-04-14T07:51:47Z,expert-b2,pos_ode,positive,0.996,recall,0.6364,11,,
+2026-04-14T07:51:47Z,expert-b2,pos_ode,positive,0.999,recall,0.4545,11,,
+2026-04-14T07:51:47Z,expert-b2,pos_mattias_short,positive,0.97,recall,0.9600,50,,
+2026-04-14T07:51:47Z,expert-b2,pos_mattias_short,positive,0.99,recall,0.9000,50,,
+2026-04-14T07:51:47Z,expert-b2,pos_mattias_short,positive,0.995,recall,0.9000,50,,
+2026-04-14T07:51:47Z,expert-b2,pos_mattias_short,positive,0.996,recall,0.9000,50,,
+2026-04-14T07:51:47Z,expert-b2,pos_mattias_short,positive,0.999,recall,0.8800,50,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.2667,15,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.2000,15,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.1333,15,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.1333,15,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.1333,15,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.2333,60,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.1667,60,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.1500,60,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.1333,60,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.1000,60,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_canary,hard_negative,0.97,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_canary,hard_negative,0.99,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_canary,hard_negative,0.995,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_canary,hard_negative,0.996,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,expert-b2,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,
+2026-04-14T07:51:47Z,expert-b2,faph_cv_et,ambient,0.97,faph,124.0617,2000,3.82,
+2026-04-14T07:51:47Z,expert-b2,faph_cv_et,ambient,0.99,faph,77.7348,2000,3.82,
+2026-04-14T07:51:47Z,expert-b2,faph_cv_et,ambient,0.995,faph,63.0778,2000,3.82,
+2026-04-14T07:51:47Z,expert-b2,faph_cv_et,ambient,0.996,faph,59.4135,2000,3.82,
+2026-04-14T07:51:47Z,expert-b2,faph_cv_et,ambient,0.999,faph,46.5886,2000,3.82,
+2026-04-14T07:51:47Z,expert-b2,faph_librispeech,ambient,0.97,faph,254.5493,2620,5.62,
+2026-04-14T07:51:47Z,expert-b2,faph_librispeech,ambient,0.99,faph,168.6323,2620,5.62,
+2026-04-14T07:51:47Z,expert-b2,faph_librispeech,ambient,0.995,faph,142.6615,2620,5.62,
+2026-04-14T07:51:47Z,expert-b2,faph_librispeech,ambient,0.996,faph,137.8587,2620,5.62,
+2026-04-14T07:51:47Z,expert-b2,faph_librispeech,ambient,0.999,faph,110.2869,2620,5.62,
+2026-04-14T07:51:47Z,expert-b2,faph_macbook_bg,ambient,0.97,faph,75.3599,14,1.17,
+2026-04-14T07:51:47Z,expert-b2,faph_macbook_bg,ambient,0.99,faph,45.3872,14,1.17,
+2026-04-14T07:51:47Z,expert-b2,faph_macbook_bg,ambient,0.995,faph,35.9672,14,1.17,
+2026-04-14T07:51:47Z,expert-b2,faph_macbook_bg,ambient,0.996,faph,34.2545,14,1.17,
+2026-04-14T07:51:47Z,expert-b2,faph_macbook_bg,ambient,0.999,faph,28.2599,14,1.17,
+2026-04-14T07:51:47Z,expert-b2,faph_dipco,ambient,0.97,faph,109.8628,6,3.32,
+2026-04-14T07:51:47Z,expert-b2,faph_dipco,ambient,0.99,faph,74.0445,6,3.32,
+2026-04-14T07:51:47Z,expert-b2,faph_dipco,ambient,0.995,faph,62.3058,6,3.32,
+2026-04-14T07:51:47Z,expert-b2,faph_dipco,ambient,0.996,faph,58.9948,6,3.32,
+2026-04-14T07:51:47Z,expert-b2,faph_dipco,ambient,0.999,faph,46.3531,6,3.32,
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_isa_xtts,positive,0.97,recall,1.0000,48,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_isa_xtts,positive,0.99,recall,1.0000,48,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_isa_xtts,positive,0.995,recall,1.0000,48,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_isa_xtts,positive,0.996,recall,1.0000,48,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_isa_xtts,positive,0.999,recall,1.0000,48,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_ode,positive,0.97,recall,0.7273,11,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_ode,positive,0.99,recall,0.7273,11,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_ode,positive,0.995,recall,0.7273,11,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_ode,positive,0.996,recall,0.7273,11,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_ode,positive,0.999,recall,0.7273,11,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_mattias_short,positive,0.97,recall,0.9200,50,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_mattias_short,positive,0.99,recall,0.9200,50,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_mattias_short,positive,0.995,recall,0.9200,50,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_mattias_short,positive,0.996,recall,0.9200,50,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,pos_mattias_short,positive,0.999,recall,0.8000,50,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.7333,15,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.7333,15,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.7333,15,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.6667,15,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.6667,15,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.7500,60,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.7333,60,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.7167,60,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.7167,60,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.7167,60,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_canary,hard_negative,0.97,fpr,0.0000,5,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_canary,hard_negative,0.99,fpr,0.0000,5,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_canary,hard_negative,0.995,fpr,0.0000,5,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_canary,hard_negative,0.996,fpr,0.0000,5,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_cv_et,ambient,0.97,faph,6.0199,2000,3.82,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_cv_et,ambient,0.99,faph,4.1877,2000,3.82,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_cv_et,ambient,0.995,faph,3.4025,2000,3.82,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_cv_et,ambient,0.996,faph,3.4025,2000,3.82,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_cv_et,ambient,0.999,faph,2.6173,2000,3.82,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_librispeech,ambient,0.97,faph,0.8894,2620,5.62,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_librispeech,ambient,0.99,faph,0.7115,2620,5.62,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_librispeech,ambient,0.995,faph,0.5336,2620,5.62,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_librispeech,ambient,0.996,faph,0.5336,2620,5.62,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_librispeech,ambient,0.999,faph,0.5336,2620,5.62,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_macbook_bg,ambient,0.97,faph,0.0000,14,1.17,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_macbook_bg,ambient,0.99,faph,0.0000,14,1.17,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_macbook_bg,ambient,0.995,faph,0.0000,14,1.17,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_macbook_bg,ambient,0.996,faph,0.0000,14,1.17,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_macbook_bg,ambient,0.999,faph,0.0000,14,1.17,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_dipco,ambient,0.97,faph,0.0000,6,3.32,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_dipco,ambient,0.99,faph,0.0000,6,3.32,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_dipco,ambient,0.995,faph,0.0000,6,3.32,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_dipco,ambient,0.996,faph,0.0000,6,3.32,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-a,faph_dipco,ambient,0.999,faph,0.0000,6,3.32,ex3a + expert-a
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_isa_xtts,positive,0.97,recall,0.4792,48,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_isa_xtts,positive,0.99,recall,0.3542,48,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_isa_xtts,positive,0.995,recall,0.3333,48,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_isa_xtts,positive,0.996,recall,0.3333,48,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_isa_xtts,positive,0.999,recall,0.2917,48,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_ode,positive,0.97,recall,0.7273,11,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_ode,positive,0.99,recall,0.6364,11,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_ode,positive,0.995,recall,0.5455,11,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_ode,positive,0.996,recall,0.5455,11,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_ode,positive,0.999,recall,0.4545,11,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_mattias_short,positive,0.97,recall,0.8800,50,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_mattias_short,positive,0.99,recall,0.8200,50,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_mattias_short,positive,0.995,recall,0.8200,50,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_mattias_short,positive,0.996,recall,0.8200,50,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,pos_mattias_short,positive,0.999,recall,0.6800,50,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.2667,15,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.2000,15,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.1333,15,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.1333,15,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.1333,15,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.2000,60,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.1333,60,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.1167,60,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.1000,60,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.0667,60,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_canary,hard_negative,0.97,fpr,0.0000,5,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_canary,hard_negative,0.99,fpr,0.0000,5,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_canary,hard_negative,0.995,fpr,0.0000,5,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_canary,hard_negative,0.996,fpr,0.0000,5,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_cv_et,ambient,0.97,faph,3.4025,2000,3.82,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_cv_et,ambient,0.99,faph,1.0469,2000,3.82,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_cv_et,ambient,0.995,faph,1.0469,2000,3.82,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_cv_et,ambient,0.996,faph,1.0469,2000,3.82,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_cv_et,ambient,0.999,faph,0.5235,2000,3.82,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_librispeech,ambient,0.97,faph,0.7115,2620,5.62,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_librispeech,ambient,0.99,faph,0.1779,2620,5.62,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_librispeech,ambient,0.995,faph,0.1779,2620,5.62,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_librispeech,ambient,0.996,faph,0.1779,2620,5.62,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_librispeech,ambient,0.999,faph,0.1779,2620,5.62,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_macbook_bg,ambient,0.97,faph,0.0000,14,1.17,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_macbook_bg,ambient,0.99,faph,0.0000,14,1.17,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_macbook_bg,ambient,0.995,faph,0.0000,14,1.17,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_macbook_bg,ambient,0.996,faph,0.0000,14,1.17,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_macbook_bg,ambient,0.999,faph,0.0000,14,1.17,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_dipco,ambient,0.97,faph,0.6020,6,3.32,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_dipco,ambient,0.99,faph,0.6020,6,3.32,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_dipco,ambient,0.995,faph,0.3010,6,3.32,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_dipco,ambient,0.996,faph,0.3010,6,3.32,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-b2,faph_dipco,ambient,0.999,faph,0.3010,6,3.32,ex3a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_isa_xtts,positive,0.97,recall,0.4792,48,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_isa_xtts,positive,0.99,recall,0.3542,48,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_isa_xtts,positive,0.995,recall,0.3333,48,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_isa_xtts,positive,0.996,recall,0.3333,48,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_isa_xtts,positive,0.999,recall,0.2917,48,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_ode,positive,0.97,recall,0.7273,11,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_ode,positive,0.99,recall,0.6364,11,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_ode,positive,0.995,recall,0.5455,11,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_ode,positive,0.996,recall,0.5455,11,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_ode,positive,0.999,recall,0.4545,11,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_mattias_short,positive,0.97,recall,0.8800,50,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_mattias_short,positive,0.99,recall,0.8200,50,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_mattias_short,positive,0.995,recall,0.8200,50,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_mattias_short,positive,0.996,recall,0.8200,50,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,pos_mattias_short,positive,0.999,recall,0.6800,50,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.2667,15,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.2000,15,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.1333,15,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.1333,15,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.1333,15,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.1667,60,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.1000,60,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.0833,60,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.0667,60,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.0500,60,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_canary,hard_negative,0.97,fpr,0.0000,5,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_canary,hard_negative,0.99,fpr,0.0000,5,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_canary,hard_negative,0.995,fpr,0.0000,5,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_canary,hard_negative,0.996,fpr,0.0000,5,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_cv_et,ambient,0.97,faph,0.5235,2000,3.82,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_cv_et,ambient,0.99,faph,0.2617,2000,3.82,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_cv_et,ambient,0.995,faph,0.2617,2000,3.82,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_cv_et,ambient,0.996,faph,0.2617,2000,3.82,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_cv_et,ambient,0.999,faph,0.2617,2000,3.82,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_librispeech,ambient,0.97,faph,0.0000,2620,5.62,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_librispeech,ambient,0.99,faph,0.0000,2620,5.62,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_librispeech,ambient,0.995,faph,0.0000,2620,5.62,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_librispeech,ambient,0.996,faph,0.0000,2620,5.62,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_librispeech,ambient,0.999,faph,0.0000,2620,5.62,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_macbook_bg,ambient,0.97,faph,0.0000,14,1.17,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_macbook_bg,ambient,0.99,faph,0.0000,14,1.17,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_macbook_bg,ambient,0.995,faph,0.0000,14,1.17,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_macbook_bg,ambient,0.996,faph,0.0000,14,1.17,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_macbook_bg,ambient,0.999,faph,0.0000,14,1.17,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_dipco,ambient,0.97,faph,0.0000,6,3.32,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_dipco,ambient,0.99,faph,0.0000,6,3.32,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_dipco,ambient,0.995,faph,0.0000,6,3.32,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_dipco,ambient,0.996,faph,0.0000,6,3.32,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b2,faph_dipco,ambient,0.999,faph,0.0000,6,3.32,ex3a + expert-a + expert-b2
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_isa_xtts,positive,0.97,recall,1.0000,48,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_isa_xtts,positive,0.99,recall,1.0000,48,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_isa_xtts,positive,0.995,recall,1.0000,48,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_isa_xtts,positive,0.996,recall,1.0000,48,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_isa_xtts,positive,0.999,recall,1.0000,48,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_ode,positive,0.97,recall,0.7273,11,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_ode,positive,0.99,recall,0.7273,11,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_ode,positive,0.995,recall,0.7273,11,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_ode,positive,0.996,recall,0.7273,11,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_ode,positive,0.999,recall,0.7273,11,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_mattias_short,positive,0.97,recall,0.9000,50,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_mattias_short,positive,0.99,recall,0.9000,50,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_mattias_short,positive,0.995,recall,0.9000,50,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_mattias_short,positive,0.996,recall,0.9000,50,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,pos_mattias_short,positive,0.999,recall,0.7400,50,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.7333,15,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.7333,15,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.7333,15,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.6667,15,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.6667,15,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.7167,60,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.6833,60,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.5500,60,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.5500,60,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.5500,60,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_canary,hard_negative,0.97,fpr,0.0000,5,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_canary,hard_negative,0.99,fpr,0.0000,5,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_canary,hard_negative,0.995,fpr,0.0000,5,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_canary,hard_negative,0.996,fpr,0.0000,5,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_cv_et,ambient,0.97,faph,2.0939,2000,3.82,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_cv_et,ambient,0.99,faph,1.8321,2000,3.82,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_cv_et,ambient,0.995,faph,1.8321,2000,3.82,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_cv_et,ambient,0.996,faph,1.8321,2000,3.82,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_cv_et,ambient,0.999,faph,1.8321,2000,3.82,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_librispeech,ambient,0.97,faph,0.7115,2620,5.62,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_librispeech,ambient,0.99,faph,0.5336,2620,5.62,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_librispeech,ambient,0.995,faph,0.3558,2620,5.62,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_librispeech,ambient,0.996,faph,0.3558,2620,5.62,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_librispeech,ambient,0.999,faph,0.3558,2620,5.62,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_macbook_bg,ambient,0.97,faph,0.0000,14,1.17,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_macbook_bg,ambient,0.99,faph,0.0000,14,1.17,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_macbook_bg,ambient,0.995,faph,0.0000,14,1.17,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_macbook_bg,ambient,0.996,faph,0.0000,14,1.17,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_macbook_bg,ambient,0.999,faph,0.0000,14,1.17,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_dipco,ambient,0.97,faph,0.0000,6,3.32,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_dipco,ambient,0.99,faph,0.0000,6,3.32,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_dipco,ambient,0.995,faph,0.0000,6,3.32,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_dipco,ambient,0.996,faph,0.0000,6,3.32,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,ex3a + expert-a + expert-b,faph_dipco,ambient,0.999,faph,0.0000,6,3.32,ex3a + expert-a + expert-b
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_isa_xtts,positive,0.97,recall,1.0000,48,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_isa_xtts,positive,0.99,recall,1.0000,48,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_isa_xtts,positive,0.995,recall,1.0000,48,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_isa_xtts,positive,0.996,recall,1.0000,48,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_isa_xtts,positive,0.999,recall,1.0000,48,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_ode,positive,0.97,recall,0.9091,11,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_ode,positive,0.99,recall,0.9091,11,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_ode,positive,0.995,recall,0.8182,11,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_ode,positive,0.996,recall,0.8182,11,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_ode,positive,0.999,recall,0.8182,11,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_mattias_short,positive,0.97,recall,0.8000,50,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_mattias_short,positive,0.99,recall,0.8000,50,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_mattias_short,positive,0.995,recall,0.7800,50,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_mattias_short,positive,0.996,recall,0.7800,50,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,pos_mattias_short,positive,0.999,recall,0.7600,50,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.9333,15,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_mac_holdout,hard_negative,0.99,fpr,0.9333,15,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_mac_holdout,hard_negative,0.995,fpr,0.8000,15,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_mac_holdout,hard_negative,0.996,fpr,0.8000,15,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_mac_holdout,hard_negative,0.999,fpr,0.7333,15,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.7000,60,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_isa_xtts,hard_negative,0.99,fpr,0.6833,60,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_isa_xtts,hard_negative,0.995,fpr,0.6667,60,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_isa_xtts,hard_negative,0.996,fpr,0.6667,60,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_isa_xtts,hard_negative,0.999,fpr,0.6667,60,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_canary,hard_negative,0.97,fpr,0.0000,5,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_canary,hard_negative,0.99,fpr,0.0000,5,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_canary,hard_negative,0.995,fpr,0.0000,5,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_canary,hard_negative,0.996,fpr,0.0000,5,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,hard_neg_canary,hard_negative,0.999,fpr,0.0000,5,,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_cv_et,ambient,0.97,faph,4.9729,2000,3.82,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_cv_et,ambient,0.99,faph,3.1408,2000,3.82,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_cv_et,ambient,0.995,faph,2.6173,2000,3.82,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_cv_et,ambient,0.996,faph,2.6173,2000,3.82,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_cv_et,ambient,0.999,faph,2.3556,2000,3.82,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_librispeech,ambient,0.97,faph,0.8894,2620,5.62,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_librispeech,ambient,0.99,faph,0.3558,2620,5.62,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_librispeech,ambient,0.995,faph,0.3558,2620,5.62,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_librispeech,ambient,0.996,faph,0.3558,2620,5.62,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_librispeech,ambient,0.999,faph,0.3558,2620,5.62,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_macbook_bg,ambient,0.97,faph,1.7127,14,1.17,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_macbook_bg,ambient,0.99,faph,0.8564,14,1.17,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_macbook_bg,ambient,0.995,faph,0.8564,14,1.17,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_macbook_bg,ambient,0.996,faph,0.8564,14,1.17,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_macbook_bg,ambient,0.999,faph,0.8564,14,1.17,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_dipco,ambient,0.97,faph,0.0000,6,3.32,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_dipco,ambient,0.99,faph,0.0000,6,3.32,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_dipco,ambient,0.995,faph,0.0000,6,3.32,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_dipco,ambient,0.996,faph,0.0000,6,3.32,v6-residual + expert-a
+2026-04-14T07:51:47Z,v6-residual + expert-a,faph_dipco,ambient,0.999,faph,0.0000,6,3.32,v6-residual + expert-a
+2026-04-14T17:32:40Z,ex2a,pos_mattias_short_v2,positive,0.97,recall,0.9556,135,,
+2026-04-14T17:32:40Z,ex2a,pos_mattias_short_v2,positive,0.99,recall,0.9481,135,,
+2026-04-14T17:32:40Z,ex2a,pos_mattias_short_v2,positive,0.995,recall,0.9481,135,,
+2026-04-14T17:32:40Z,ex2a,pos_mattias_short_v2,positive,0.996,recall,0.9481,135,,
+2026-04-14T17:32:40Z,ex2a,pos_mattias_short_v2,positive,0.999,recall,0.9407,135,,
+2026-04-14T17:32:40Z,ex3a,pos_mattias_short_v2,positive,0.97,recall,0.8370,135,,
+2026-04-14T17:32:40Z,ex3a,pos_mattias_short_v2,positive,0.99,recall,0.8296,135,,
+2026-04-14T17:32:40Z,ex3a,pos_mattias_short_v2,positive,0.995,recall,0.8296,135,,
+2026-04-14T17:32:40Z,ex3a,pos_mattias_short_v2,positive,0.996,recall,0.8296,135,,
+2026-04-14T17:32:40Z,ex3a,pos_mattias_short_v2,positive,0.999,recall,0.7778,135,,
+2026-04-14T17:32:40Z,ex3b,pos_mattias_short_v2,positive,0.97,recall,0.9852,135,,
+2026-04-14T17:32:40Z,ex3b,pos_mattias_short_v2,positive,0.99,recall,0.9778,135,,
+2026-04-14T17:32:40Z,ex3b,pos_mattias_short_v2,positive,0.995,recall,0.9778,135,,
+2026-04-14T17:32:40Z,ex3b,pos_mattias_short_v2,positive,0.996,recall,0.9778,135,,
+2026-04-14T17:32:40Z,ex3b,pos_mattias_short_v2,positive,0.999,recall,0.9704,135,,
+2026-04-14T17:32:40Z,expert-a,pos_mattias_short_v2,positive,0.97,recall,0.9704,135,,
+2026-04-14T17:32:40Z,expert-a,pos_mattias_short_v2,positive,0.99,recall,0.9704,135,,
+2026-04-14T17:32:40Z,expert-a,pos_mattias_short_v2,positive,0.995,recall,0.9630,135,,
+2026-04-14T17:32:40Z,expert-a,pos_mattias_short_v2,positive,0.996,recall,0.9630,135,,
+2026-04-14T17:32:40Z,expert-a,pos_mattias_short_v2,positive,0.999,recall,0.9556,135,,
+2026-04-14T17:32:40Z,expert-b,pos_mattias_short_v2,positive,0.97,recall,0.9926,135,,
+2026-04-14T17:32:40Z,expert-b,pos_mattias_short_v2,positive,0.99,recall,0.9926,135,,
+2026-04-14T17:32:40Z,expert-b,pos_mattias_short_v2,positive,0.995,recall,0.9926,135,,
+2026-04-14T17:32:40Z,expert-b,pos_mattias_short_v2,positive,0.996,recall,0.9926,135,,
+2026-04-14T17:32:40Z,expert-b,pos_mattias_short_v2,positive,0.999,recall,0.9778,135,,
+2026-04-14T17:32:40Z,expert-b2,pos_mattias_short_v2,positive,0.97,recall,0.9481,135,,
+2026-04-14T17:32:40Z,expert-b2,pos_mattias_short_v2,positive,0.99,recall,0.8963,135,,
+2026-04-14T17:32:40Z,expert-b2,pos_mattias_short_v2,positive,0.995,recall,0.8889,135,,
+2026-04-14T17:32:40Z,expert-b2,pos_mattias_short_v2,positive,0.996,recall,0.8815,135,,
+2026-04-14T17:32:40Z,expert-b2,pos_mattias_short_v2,positive,0.999,recall,0.8667,135,,
+2026-04-14T17:32:40Z,v1,pos_mattias_short_v2,positive,0.97,recall,0.8074,135,,
+2026-04-14T17:32:40Z,v1,pos_mattias_short_v2,positive,0.99,recall,0.7778,135,,
+2026-04-14T17:32:40Z,v1,pos_mattias_short_v2,positive,0.995,recall,0.7630,135,,
+2026-04-14T17:32:40Z,v1,pos_mattias_short_v2,positive,0.996,recall,0.7481,135,,
+2026-04-14T17:32:40Z,v1,pos_mattias_short_v2,positive,0.999,recall,0.7185,135,,
+2026-04-14T17:32:40Z,v10,pos_mattias_short_v2,positive,0.97,recall,0.9630,135,,
+2026-04-14T17:32:40Z,v10,pos_mattias_short_v2,positive,0.99,recall,0.9333,135,,
+2026-04-14T17:32:40Z,v10,pos_mattias_short_v2,positive,0.995,recall,0.9185,135,,
+2026-04-14T17:32:40Z,v10,pos_mattias_short_v2,positive,0.996,recall,0.9111,135,,
+2026-04-14T17:32:40Z,v10,pos_mattias_short_v2,positive,0.999,recall,0.8889,135,,
+2026-04-14T17:32:40Z,v11,pos_mattias_short_v2,positive,0.97,recall,0.8815,135,,
+2026-04-14T17:32:40Z,v11,pos_mattias_short_v2,positive,0.99,recall,0.8370,135,,
+2026-04-14T17:32:40Z,v11,pos_mattias_short_v2,positive,0.995,recall,0.8074,135,,
+2026-04-14T17:32:40Z,v11,pos_mattias_short_v2,positive,0.996,recall,0.8074,135,,
+2026-04-14T17:32:40Z,v11,pos_mattias_short_v2,positive,0.999,recall,0.7704,135,,
+2026-04-14T17:32:40Z,v12,pos_mattias_short_v2,positive,0.97,recall,0.9481,135,,
+2026-04-14T17:32:40Z,v12,pos_mattias_short_v2,positive,0.99,recall,0.9407,135,,
+2026-04-14T17:32:40Z,v12,pos_mattias_short_v2,positive,0.995,recall,0.9333,135,,
+2026-04-14T17:32:40Z,v12,pos_mattias_short_v2,positive,0.996,recall,0.9333,135,,
+2026-04-14T17:32:40Z,v12,pos_mattias_short_v2,positive,0.999,recall,0.9259,135,,
+2026-04-14T17:32:40Z,v13a,pos_mattias_short_v2,positive,0.97,recall,0.9185,135,,
+2026-04-14T17:32:40Z,v13a,pos_mattias_short_v2,positive,0.99,recall,0.8963,135,,
+2026-04-14T17:32:40Z,v13a,pos_mattias_short_v2,positive,0.995,recall,0.8963,135,,
+2026-04-14T17:32:40Z,v13a,pos_mattias_short_v2,positive,0.996,recall,0.8963,135,,
+2026-04-14T17:32:40Z,v13a,pos_mattias_short_v2,positive,0.999,recall,0.8963,135,,
+2026-04-14T17:32:40Z,v13b,pos_mattias_short_v2,positive,0.97,recall,0.9704,135,,
+2026-04-14T17:32:40Z,v13b,pos_mattias_short_v2,positive,0.99,recall,0.9556,135,,
+2026-04-14T17:32:40Z,v13b,pos_mattias_short_v2,positive,0.995,recall,0.9556,135,,
+2026-04-14T17:32:40Z,v13b,pos_mattias_short_v2,positive,0.996,recall,0.9556,135,,
+2026-04-14T17:32:40Z,v13b,pos_mattias_short_v2,positive,0.999,recall,0.9556,135,,
+2026-04-14T17:32:40Z,v14,pos_mattias_short_v2,positive,0.97,recall,0.8370,135,,
+2026-04-14T17:32:40Z,v14,pos_mattias_short_v2,positive,0.99,recall,0.8074,135,,
+2026-04-14T17:32:40Z,v14,pos_mattias_short_v2,positive,0.995,recall,0.7926,135,,
+2026-04-14T17:32:40Z,v14,pos_mattias_short_v2,positive,0.996,recall,0.7926,135,,
+2026-04-14T17:32:40Z,v14,pos_mattias_short_v2,positive,0.999,recall,0.7852,135,,
+2026-04-14T17:32:40Z,v15,pos_mattias_short_v2,positive,0.97,recall,0.8889,135,,
+2026-04-14T17:32:40Z,v15,pos_mattias_short_v2,positive,0.99,recall,0.8741,135,,
+2026-04-14T17:32:40Z,v15,pos_mattias_short_v2,positive,0.995,recall,0.8667,135,,
+2026-04-14T17:32:40Z,v15,pos_mattias_short_v2,positive,0.996,recall,0.8667,135,,
+2026-04-14T17:32:40Z,v15,pos_mattias_short_v2,positive,0.999,recall,0.8593,135,,
+2026-04-14T17:32:40Z,v16a,pos_mattias_short_v2,positive,0.97,recall,0.9037,135,,
+2026-04-14T17:32:40Z,v16a,pos_mattias_short_v2,positive,0.99,recall,0.9037,135,,
+2026-04-14T17:32:40Z,v16a,pos_mattias_short_v2,positive,0.995,recall,0.9037,135,,
+2026-04-14T17:32:40Z,v16a,pos_mattias_short_v2,positive,0.996,recall,0.9037,135,,
+2026-04-14T17:32:40Z,v16a,pos_mattias_short_v2,positive,0.999,recall,0.9037,135,,
+2026-04-14T17:32:40Z,v16b,pos_mattias_short_v2,positive,0.97,recall,0.6889,135,,
+2026-04-14T17:32:40Z,v16b,pos_mattias_short_v2,positive,0.99,recall,0.6370,135,,
+2026-04-14T17:32:40Z,v16b,pos_mattias_short_v2,positive,0.995,recall,0.6074,135,,
+2026-04-14T17:32:40Z,v16b,pos_mattias_short_v2,positive,0.996,recall,0.6000,135,,
+2026-04-14T17:32:40Z,v16b,pos_mattias_short_v2,positive,0.999,recall,0.5704,135,,
+2026-04-14T17:32:40Z,v16c,pos_mattias_short_v2,positive,0.97,recall,0.9037,135,,
+2026-04-14T17:32:40Z,v16c,pos_mattias_short_v2,positive,0.99,recall,0.8963,135,,
+2026-04-14T17:32:40Z,v16c,pos_mattias_short_v2,positive,0.995,recall,0.8963,135,,
+2026-04-14T17:32:40Z,v16c,pos_mattias_short_v2,positive,0.996,recall,0.8963,135,,
+2026-04-14T17:32:40Z,v16c,pos_mattias_short_v2,positive,0.999,recall,0.8889,135,,
+2026-04-14T17:32:40Z,v2,pos_mattias_short_v2,positive,0.97,recall,0.9481,135,,
+2026-04-14T17:32:40Z,v2,pos_mattias_short_v2,positive,0.99,recall,0.9185,135,,
+2026-04-14T17:32:40Z,v2,pos_mattias_short_v2,positive,0.995,recall,0.9185,135,,
+2026-04-14T17:32:40Z,v2,pos_mattias_short_v2,positive,0.996,recall,0.9185,135,,
+2026-04-14T17:32:40Z,v2,pos_mattias_short_v2,positive,0.999,recall,0.9111,135,,
+2026-04-14T17:32:40Z,v3,pos_mattias_short_v2,positive,0.97,recall,0.9778,135,,
+2026-04-14T17:32:40Z,v3,pos_mattias_short_v2,positive,0.99,recall,0.9704,135,,
+2026-04-14T17:32:40Z,v3,pos_mattias_short_v2,positive,0.995,recall,0.9630,135,,
+2026-04-14T17:32:40Z,v3,pos_mattias_short_v2,positive,0.996,recall,0.9630,135,,
+2026-04-14T17:32:40Z,v3,pos_mattias_short_v2,positive,0.999,recall,0.9481,135,,
+2026-04-14T17:32:40Z,v4,pos_mattias_short_v2,positive,0.97,recall,0.7926,135,,
+2026-04-14T17:32:40Z,v4,pos_mattias_short_v2,positive,0.99,recall,0.7926,135,,
+2026-04-14T17:32:40Z,v4,pos_mattias_short_v2,positive,0.995,recall,0.7704,135,,
+2026-04-14T17:32:40Z,v4,pos_mattias_short_v2,positive,0.996,recall,0.7630,135,,
+2026-04-14T17:32:40Z,v4,pos_mattias_short_v2,positive,0.999,recall,0.7407,135,,
+2026-04-14T17:32:40Z,v5,pos_mattias_short_v2,positive,0.97,recall,0.7630,135,,
+2026-04-14T17:32:40Z,v5,pos_mattias_short_v2,positive,0.99,recall,0.7333,135,,
+2026-04-14T17:32:40Z,v5,pos_mattias_short_v2,positive,0.995,recall,0.7333,135,,
+2026-04-14T17:32:40Z,v5,pos_mattias_short_v2,positive,0.996,recall,0.7333,135,,
+2026-04-14T17:32:40Z,v5,pos_mattias_short_v2,positive,0.999,recall,0.7333,135,,
+2026-04-14T17:32:40Z,v6,pos_mattias_short_v2,positive,0.97,recall,0.8519,135,,
+2026-04-14T17:32:40Z,v6,pos_mattias_short_v2,positive,0.99,recall,0.8444,135,,
+2026-04-14T17:32:40Z,v6,pos_mattias_short_v2,positive,0.995,recall,0.8370,135,,
+2026-04-14T17:32:40Z,v6,pos_mattias_short_v2,positive,0.996,recall,0.8370,135,,
+2026-04-14T17:32:40Z,v6,pos_mattias_short_v2,positive,0.999,recall,0.8222,135,,
+2026-04-14T17:32:40Z,v6-r2,pos_mattias_short_v2,positive,0.97,recall,0.9926,135,,
+2026-04-14T17:32:40Z,v6-r2,pos_mattias_short_v2,positive,0.99,recall,0.9926,135,,
+2026-04-14T17:32:40Z,v6-r2,pos_mattias_short_v2,positive,0.995,recall,0.9926,135,,
+2026-04-14T17:32:40Z,v6-r2,pos_mattias_short_v2,positive,0.996,recall,0.9926,135,,
+2026-04-14T17:32:40Z,v6-r2,pos_mattias_short_v2,positive,0.999,recall,0.9778,135,,
+2026-04-14T17:32:40Z,v6-r2-novtlp,pos_mattias_short_v2,positive,0.97,recall,1.0000,135,,
+2026-04-14T17:32:40Z,v6-r2-novtlp,pos_mattias_short_v2,positive,0.99,recall,1.0000,135,,
+2026-04-14T17:32:40Z,v6-r2-novtlp,pos_mattias_short_v2,positive,0.995,recall,1.0000,135,,
+2026-04-14T17:32:40Z,v6-r2-novtlp,pos_mattias_short_v2,positive,0.996,recall,1.0000,135,,
+2026-04-14T17:32:40Z,v6-r2-novtlp,pos_mattias_short_v2,positive,0.999,recall,1.0000,135,,
+2026-04-14T17:32:40Z,v6-r2-plus,pos_mattias_short_v2,positive,0.97,recall,0.9926,135,,
+2026-04-14T17:32:40Z,v6-r2-plus,pos_mattias_short_v2,positive,0.99,recall,0.9926,135,,
+2026-04-14T17:32:40Z,v6-r2-plus,pos_mattias_short_v2,positive,0.995,recall,0.9926,135,,
+2026-04-14T17:32:40Z,v6-r2-plus,pos_mattias_short_v2,positive,0.996,recall,0.9926,135,,
+2026-04-14T17:32:40Z,v6-r2-plus,pos_mattias_short_v2,positive,0.999,recall,0.9778,135,,
+2026-04-14T17:32:40Z,v6-residual,pos_mattias_short_v2,positive,0.97,recall,0.7630,135,,
+2026-04-14T17:32:40Z,v6-residual,pos_mattias_short_v2,positive,0.99,recall,0.7333,135,,
+2026-04-14T17:32:40Z,v6-residual,pos_mattias_short_v2,positive,0.995,recall,0.7185,135,,
+2026-04-14T17:32:40Z,v6-residual,pos_mattias_short_v2,positive,0.996,recall,0.7185,135,,
+2026-04-14T17:32:40Z,v6-residual,pos_mattias_short_v2,positive,0.999,recall,0.6741,135,,
+2026-04-14T17:32:40Z,v6-residual-novtlp,pos_mattias_short_v2,positive,0.97,recall,0.9704,135,,
+2026-04-14T17:32:40Z,v6-residual-novtlp,pos_mattias_short_v2,positive,0.99,recall,0.9704,135,,
+2026-04-14T17:32:40Z,v6-residual-novtlp,pos_mattias_short_v2,positive,0.995,recall,0.9704,135,,
+2026-04-14T17:32:40Z,v6-residual-novtlp,pos_mattias_short_v2,positive,0.996,recall,0.9704,135,,
+2026-04-14T17:32:40Z,v6-residual-novtlp,pos_mattias_short_v2,positive,0.999,recall,0.9704,135,,
+2026-04-14T17:32:40Z,v6-residual-plus,pos_mattias_short_v2,positive,0.97,recall,0.9185,135,,
+2026-04-14T17:32:40Z,v6-residual-plus,pos_mattias_short_v2,positive,0.99,recall,0.9111,135,,
+2026-04-14T17:32:40Z,v6-residual-plus,pos_mattias_short_v2,positive,0.995,recall,0.9037,135,,
+2026-04-14T17:32:40Z,v6-residual-plus,pos_mattias_short_v2,positive,0.996,recall,0.9037,135,,
+2026-04-14T17:32:40Z,v6-residual-plus,pos_mattias_short_v2,positive,0.999,recall,0.8889,135,,
+2026-04-14T17:32:40Z,v6-residual-r3,pos_mattias_short_v2,positive,0.97,recall,0.8741,135,,
+2026-04-14T17:32:40Z,v6-residual-r3,pos_mattias_short_v2,positive,0.99,recall,0.8667,135,,
+2026-04-14T17:32:40Z,v6-residual-r3,pos_mattias_short_v2,positive,0.995,recall,0.8667,135,,
+2026-04-14T17:32:40Z,v6-residual-r3,pos_mattias_short_v2,positive,0.996,recall,0.8667,135,,
+2026-04-14T17:32:40Z,v6-residual-r3,pos_mattias_short_v2,positive,0.999,recall,0.8222,135,,
+2026-04-14T17:32:40Z,v6-specaug,pos_mattias_short_v2,positive,0.97,recall,1.0000,135,,
+2026-04-14T17:32:40Z,v6-specaug,pos_mattias_short_v2,positive,0.99,recall,0.9926,135,,
+2026-04-14T17:32:40Z,v6-specaug,pos_mattias_short_v2,positive,0.995,recall,0.9852,135,,
+2026-04-14T17:32:40Z,v6-specaug,pos_mattias_short_v2,positive,0.996,recall,0.9852,135,,
+2026-04-14T17:32:40Z,v6-specaug,pos_mattias_short_v2,positive,0.999,recall,0.9778,135,,
+2026-04-14T17:32:40Z,v7,pos_mattias_short_v2,positive,0.97,recall,0.8741,135,,
+2026-04-14T17:32:40Z,v7,pos_mattias_short_v2,positive,0.99,recall,0.8296,135,,
+2026-04-14T17:32:40Z,v7,pos_mattias_short_v2,positive,0.995,recall,0.8148,135,,
+2026-04-14T17:32:40Z,v7,pos_mattias_short_v2,positive,0.996,recall,0.8148,135,,
+2026-04-14T17:32:40Z,v7,pos_mattias_short_v2,positive,0.999,recall,0.8000,135,,
+2026-04-14T17:32:40Z,v8,pos_mattias_short_v2,positive,0.97,recall,0.8148,135,,
+2026-04-14T17:32:40Z,v8,pos_mattias_short_v2,positive,0.99,recall,0.7704,135,,
+2026-04-14T17:32:40Z,v8,pos_mattias_short_v2,positive,0.995,recall,0.7630,135,,
+2026-04-14T17:32:40Z,v8,pos_mattias_short_v2,positive,0.996,recall,0.7630,135,,
+2026-04-14T17:32:40Z,v8,pos_mattias_short_v2,positive,0.999,recall,0.7333,135,,
+2026-04-14T17:32:40Z,v9,pos_mattias_short_v2,positive,0.97,recall,0.9407,135,,
+2026-04-14T17:32:40Z,v9,pos_mattias_short_v2,positive,0.99,recall,0.9259,135,,
+2026-04-14T17:32:40Z,v9,pos_mattias_short_v2,positive,0.995,recall,0.9037,135,,
+2026-04-14T17:32:40Z,v9,pos_mattias_short_v2,positive,0.996,recall,0.9037,135,,
+2026-04-14T17:32:40Z,v9,pos_mattias_short_v2,positive,0.999,recall,0.8963,135,,
+2026-04-14T17:32:40Z,ex3a + expert-a,pos_mattias_short_v2,positive,0.97,recall,0.8370,135,,ex3a + expert-a
+2026-04-14T17:32:40Z,ex3a + expert-a,pos_mattias_short_v2,positive,0.99,recall,0.8296,135,,ex3a + expert-a
+2026-04-14T17:32:40Z,ex3a + expert-a,pos_mattias_short_v2,positive,0.995,recall,0.8296,135,,ex3a + expert-a
+2026-04-14T17:32:40Z,ex3a + expert-a,pos_mattias_short_v2,positive,0.996,recall,0.8296,135,,ex3a + expert-a
+2026-04-14T17:32:40Z,ex3a + expert-a,pos_mattias_short_v2,positive,0.999,recall,0.7778,135,,ex3a + expert-a
+2026-04-14T17:32:40Z,ex3a + expert-b2,pos_mattias_short_v2,positive,0.97,recall,0.8000,135,,ex3a + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-b2,pos_mattias_short_v2,positive,0.99,recall,0.7556,135,,ex3a + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-b2,pos_mattias_short_v2,positive,0.995,recall,0.7481,135,,ex3a + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-b2,pos_mattias_short_v2,positive,0.996,recall,0.7407,135,,ex3a + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-b2,pos_mattias_short_v2,positive,0.999,recall,0.6741,135,,ex3a + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-a + expert-b2,pos_mattias_short_v2,positive,0.97,recall,0.8000,135,,ex3a + expert-a + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-a + expert-b2,pos_mattias_short_v2,positive,0.99,recall,0.7556,135,,ex3a + expert-a + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-a + expert-b2,pos_mattias_short_v2,positive,0.995,recall,0.7481,135,,ex3a + expert-a + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-a + expert-b2,pos_mattias_short_v2,positive,0.996,recall,0.7407,135,,ex3a + expert-a + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-a + expert-b2,pos_mattias_short_v2,positive,0.999,recall,0.6741,135,,ex3a + expert-a + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-a + expert-b,pos_mattias_short_v2,positive,0.97,recall,0.8296,135,,ex3a + expert-a + expert-b
+2026-04-14T17:32:40Z,ex3a + expert-a + expert-b,pos_mattias_short_v2,positive,0.99,recall,0.8222,135,,ex3a + expert-a + expert-b
+2026-04-14T17:32:40Z,ex3a + expert-a + expert-b,pos_mattias_short_v2,positive,0.995,recall,0.8222,135,,ex3a + expert-a + expert-b
+2026-04-14T17:32:40Z,ex3a + expert-a + expert-b,pos_mattias_short_v2,positive,0.996,recall,0.8222,135,,ex3a + expert-a + expert-b
+2026-04-14T17:32:40Z,ex3a + expert-a + expert-b,pos_mattias_short_v2,positive,0.999,recall,0.7556,135,,ex3a + expert-a + expert-b
+2026-04-14T17:32:40Z,ex3a + expert-b + expert-b2,pos_mattias_short_v2,positive,0.97,recall,0.8000,135,,ex3a + expert-b + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-b + expert-b2,pos_mattias_short_v2,positive,0.99,recall,0.7556,135,,ex3a + expert-b + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-b + expert-b2,pos_mattias_short_v2,positive,0.995,recall,0.7481,135,,ex3a + expert-b + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-b + expert-b2,pos_mattias_short_v2,positive,0.996,recall,0.7407,135,,ex3a + expert-b + expert-b2
+2026-04-14T17:32:40Z,ex3a + expert-b + expert-b2,pos_mattias_short_v2,positive,0.999,recall,0.6741,135,,ex3a + expert-b + expert-b2
+2026-04-14T17:32:40Z,v6-residual + expert-a,pos_mattias_short_v2,positive,0.97,recall,0.7630,135,,v6-residual + expert-a
+2026-04-14T17:32:40Z,v6-residual + expert-a,pos_mattias_short_v2,positive,0.99,recall,0.7333,135,,v6-residual + expert-a
+2026-04-14T17:32:40Z,v6-residual + expert-a,pos_mattias_short_v2,positive,0.995,recall,0.7111,135,,v6-residual + expert-a
+2026-04-14T17:32:40Z,v6-residual + expert-a,pos_mattias_short_v2,positive,0.996,recall,0.7111,135,,v6-residual + expert-a
+2026-04-14T17:32:40Z,v6-residual + expert-a,pos_mattias_short_v2,positive,0.999,recall,0.6667,135,,v6-residual + expert-a
+2026-04-14T17:32:40Z,ex3b + expert-b2,pos_mattias_short_v2,positive,0.97,recall,0.9333,135,,ex3b + expert-b2
+2026-04-14T17:32:40Z,ex3b + expert-b2,pos_mattias_short_v2,positive,0.99,recall,0.8889,135,,ex3b + expert-b2
+2026-04-14T17:32:40Z,ex3b + expert-b2,pos_mattias_short_v2,positive,0.995,recall,0.8815,135,,ex3b + expert-b2
+2026-04-14T17:32:40Z,ex3b + expert-b2,pos_mattias_short_v2,positive,0.996,recall,0.8741,135,,ex3b + expert-b2
+2026-04-14T17:32:40Z,ex3b + expert-b2,pos_mattias_short_v2,positive,0.999,recall,0.8519,135,,ex3b + expert-b2
+2026-04-14T17:32:40Z,v14 + expert-b,pos_mattias_short_v2,positive,0.97,recall,0.8296,135,,v14 + expert-b
+2026-04-14T17:32:40Z,v14 + expert-b,pos_mattias_short_v2,positive,0.99,recall,0.8000,135,,v14 + expert-b
+2026-04-14T17:32:40Z,v14 + expert-b,pos_mattias_short_v2,positive,0.995,recall,0.7852,135,,v14 + expert-b
+2026-04-14T17:32:40Z,v14 + expert-b,pos_mattias_short_v2,positive,0.996,recall,0.7852,135,,v14 + expert-b
+2026-04-14T17:32:40Z,v14 + expert-b,pos_mattias_short_v2,positive,0.999,recall,0.7704,135,,v14 + expert-b

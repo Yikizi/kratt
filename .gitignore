@@ -46,6 +46,12 @@ wake-word/models/kuule-kratt-*/train/
 wake-word/models/kuule-kratt-*/*.h5
 wake-word/models/kuule-kratt-*/model_summary.txt
 wake-word/models/kuule-kratt-*/training_config.yaml
+# Per-model generated analysis plots/tables. Keep curated summaries as
+# analysis/*.json and promote thesis figures/tables to docs/research/artifacts/.
+wake-word/models/*/analysis/*.csv
+wake-word/models/*/analysis/*.html
+wake-word/models/*/analysis/*.png
+wake-word/models/*/analysis/*.pdf
 *.pb
 *.pkl
 
@@ -92,6 +98,7 @@ sdkconfig.old
 managed_components/
 dependencies.lock
 .cache/
+hardware/esp32/firmware/recorder/main/index.html
 
 # Vendored git subtrees (cloned separately, not submodules)
 tools/tartunlp-tts/
@@ -114,6 +121,14 @@ hardware/esp32/esphome/**/*.onnx
 # Evaluation outputs (generated, large or privacy-sensitive)
 wake-word/evaluation/fuzz_runs/
 wake-word/evaluation/det_curves*.json
+# Flat files in evaluation/ are ad-hoc run outputs. Promote curated evidence to
+# docs/research/artifacts/<dated-run>/ or wake-word/evaluation/reports/.
+wake-word/evaluation/*.csv
+wake-word/evaluation/*.html
+wake-word/evaluation/*.png
+wake-word/evaluation/*.pdf
+!wake-word/evaluation/reports/
+!wake-word/evaluation/reports/**
 output/
 
 # Audio test samples
@@ -124,19 +139,21 @@ tmp/
 temp/
 *.tmp
 
-# LaTeX (legacy flat thesis path)
-docs/thesis/*.aux
-docs/thesis/*.bbl
-docs/thesis/*.blg
-docs/thesis/*.bcf
-docs/thesis/*.log
-docs/thesis/*.out
-docs/thesis/*.pdf
-docs/thesis/*.run.xml
-docs/thesis/*.synctex.gz
-docs/thesis/*.toc
-docs/thesis/*.lof
-docs/thesis/*.lot
+# LaTeX build outputs
+docs/thesis/**/*.aux
+docs/thesis/**/*.bbl
+docs/thesis/**/*.blg
+docs/thesis/**/*.bcf
+docs/thesis/**/*.log
+docs/thesis/**/*.out
+docs/thesis/**/*.pdf
+docs/thesis/**/*.run.xml
+docs/thesis/**/*.synctex.gz
+docs/thesis/**/*.toc
+docs/thesis/**/*.lof
+docs/thesis/**/*.lot
+docs/thesis/**/*.fdb_latexmk
+docs/thesis/**/*.fls
 
 # Keep thesis template assets even with global output ignores
 !docs/thesis/thesis-tex-estonian/figures/**
@@ -145,11 +162,14 @@ docs/thesis/*.lot
 .ipynb_checkpoints/
 */.ipynb_checkpoints/*
 
-# Analysis outputs
-*.png
-*.pdf
-*.html
-*.csv
+# Unsorted presentation/brand exports. Promote curated thesis-facing artifacts
+# to docs/research/artifacts/ with a README instead of relying on broad globs.
+docs/notebooklm-pack/*.pdf
+docs/stitch-taltech-pack/*.png
+docs/thesis/presentation/*.pdf
+docs/thesis/presentation/*.html
+docs/thesis/thesis-typst-estonian/figures/penguins/
+wake-word/figures/
 
 # Keep example/template files
 !*example*

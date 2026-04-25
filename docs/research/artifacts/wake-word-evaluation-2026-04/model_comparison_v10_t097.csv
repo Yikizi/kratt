@@ -1,0 +1,6 @@
+model,test_set,kind,threshold,metric,value,n,duration_s,mean,p5,p95
+v10,pos_isa_xtts,positive,0.97,recall,0.8750,48,,0.9690,0.8045,1.0000
+v10,hard_neg_mac_holdout,hard_negative,0.97,fpr,0.6667,15,,0.8224,0.2727,1.0000
+v10,hard_neg_isa_xtts,hard_negative,0.97,fpr,0.3000,60,,0.6577,0.0307,1.0000
+v10,faph_cv_et,ambient,0.97,faph,54.4406,2000,13754.5,,,
+v10,faph_librispeech,ambient,0.97,faph,54.0762,2620,20238.2,,,
