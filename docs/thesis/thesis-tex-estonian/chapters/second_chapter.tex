@@ -104,7 +104,7 @@ Tabelist ilmneb, et v3 recall paranes (+6\%), kuid Common~Voice negatiivsete FPR
 
 \subsection{Degradatsiooni org}
 
-See tulemus on kooskõlas Park~et~al. \cite{park2024adversarial} leiuga, mille kohaselt tekib KWS mudelites \emph{degradatsiooni org} (\emph{valley of degradation}): kui domeeni\-siseste andmete osakaal jääb vahemikku 2--10\% koguandmestikust, halveneb mudeli kvaliteet võrreldes nii puhta domeenivälise kui ka piisavalt suure domeenisisese andmehulgaga.
+See tulemus on kooskõlas Park~et~al. \cite{park2024adversarial} leiuga, mille kohaselt tekib märksõnatuvastuse (\emph{keyword spotting}, KWS) mudelites \emph{degradatsiooni org} (\emph{valley of degradation}): kui domeeni\-siseste andmete osakaal jääb vahemikku 2--10\% koguandmestikust, halveneb mudeli kvaliteet võrreldes nii puhta domeenivälise kui ka piisavalt suure domeenisisese andmehulgaga.
 
 Versiooni v3 Korvo-2 negatiivsete osakaal oli 2,7\%{} --- täpselt degradatsiooni orgu langev vahemik. Mudel nägi negatiivses klassis kahte akustiliselt erinevat klastrit (Common~Voice ja Korvo-2), kuid 109 sama-seadme näitest ei piisanud stabiilse otsustuspiiri õppimiseks. Versiooni v4 jaoks suurendati Korvo-2 negatiivsete hulka 1311~klipile (25\% osakaal), mis Park~et~al. tulemuste põhjal peaks jääma juba degradatsiooni orust välja.
 
@@ -252,7 +252,7 @@ See leid on kooskõlas ka kirjanduses toodud soovitusega: Apple kasutab \enquote
 
 Eestikeelse negatiivse treeningmaterjali puudulikkus on käesoleva töö üks peamisi pudelikaelu. Kõik mudeliversioonid v1--v8 kasutasid negatiivse kõnena ainult $\sim$5 tundi Common Voice ET klippe. Võrdluseks kasutab openWakeWord $\sim$31\,000 tundi negatiive \cite{openwakeword2026, openwakeword-features2024}, mis on \textbf{6200 korda rohkem}.
 
-Need korpused on kogutud ja seni kasutatud eeskätt eestikeelse kõnetuvastuse (ASR) tarbeks \cite{taltech-asr-data2024, riigikogu-stenograms2025}; ükski varasem eestikeelne äratussõna- ega märksõnatuvastuse (KWS) töö pole neid ressursse negatiivse materjalina rakendanud. Kontrollitud allikate hulka kuulusid TalTechNLP publikatsioonid ja avalik koodivaramu, ETIS-e lõputööde register ning Common Voice ET-d kasutavaid järgtöid loetlevad viited --- neist ei leitud ühtegi eestikeelset äratussõna- ega väikesemahulise KWS-uuringut, mis ülalnimetatud ASR-korpusi negatiivse materjalina rakendaks. Käesolev töö on seetõttu esimene, mis eesti ASR-mastaabis korpusi KWS-negatiividena ümber kasutab.
+Need korpused on kogutud ja seni kasutatud eeskätt eestikeelse kõnetuvastuse (ASR) tarbeks \cite{taltech-asr-data2024, riigikogu-stenograms2025}; ükski varasem eestikeelne äratussõna- ega KWS-töö pole neid ressursse negatiivse materjalina rakendanud. Kontrollitud allikate hulka kuulusid TalTechNLP publikatsioonid ja avalik koodivaramu, ETIS-e lõputööde register ning Common Voice ET-d kasutavaid järgtöid loetlevad viited --- neist ei leitud ühtegi eestikeelset äratussõna- ega väikesemahulise KWS-uuringut, mis ülalnimetatud ASR-korpusi negatiivse materjalina rakendaks. Käesolev töö on seetõttu esimene, mis eesti ASR-mastaabis korpusi KWS-negatiividena ümber kasutab.
 
 Edasiste versioonide jaoks on kasutada märkimisväärsed avalikud eestikeelsed kõnekorpused:
 
