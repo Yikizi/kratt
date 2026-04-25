@@ -30,10 +30,11 @@ class SnippetWriter(
 
     private val captureRelativeDir: String = "Download/Kratt/captures"
 
-    fun save(pcm: ShortArray, score: Float, count: Int): String {
+    fun save(pcm: ShortArray, score: Float, count: Int, triggerModel: String = "unknown"): String {
         val stamp = FILENAME_FMT.format(Date())
+        val modelTag = triggerModel.removeSuffix(".tflite").removePrefix("kuule_kratt_")
         val filename = String.format(
-            Locale.US, "%s_kuule_kratt_p%.3f_c%d.wav", stamp, score, count
+            Locale.US, "%s_%s_p%.3f_c%d.wav", stamp, modelTag, score, count
         )
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

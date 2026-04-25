@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
  */
 object ServiceState {
     val running = MutableLiveData<Boolean>(false)
+    val activeModel = MutableLiveData<String?>(null)
     val lastScore = MutableLiveData<Float?>(null)
     val lastDetectionCount = MutableLiveData<Int>(0)
     val lastDetectionScore = MutableLiveData<Float?>(null)

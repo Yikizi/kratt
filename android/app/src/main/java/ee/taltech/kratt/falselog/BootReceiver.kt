@@ -5,15 +5,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 
-/**
- * Restarts the detector service automatically on device boot, so that
- * 24/7 logging resumes after a reboot without requiring the user to
- * launch the app manually.
- *
- * The service only takes the last-known defaults here; if you need a
- * specific configuration after boot, open the app at least once to
- * persist them (post-MVP we'd store these via DataStore).
- */
 class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -24,6 +15,8 @@ class BootReceiver : BroadcastReceiver() {
                 val cfg = SettingsRepository(context).loadBlocking()
                 val start = DetectorService.startIntent(
                     context = context,
+                    modelAssets = cfg.modelAssets,
+                    triggerMode = cfg.triggerMode,
                     threshold = cfg.threshold,
                     cooldownSec = cfg.cooldownSec,
                     preRollSec = cfg.preRollSec,

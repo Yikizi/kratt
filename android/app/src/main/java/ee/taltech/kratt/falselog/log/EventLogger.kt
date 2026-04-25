@@ -2,6 +2,7 @@ package ee.taltech.kratt.falselog.log
 
 import android.content.Context
 import android.os.Build
+import ee.taltech.kratt.falselog.TriggerMode
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -14,9 +15,11 @@ import java.util.TimeZone
 @Serializable
 data class DetectionEvent(
     val ts: String,
-    val model: String,
+    val trigger_model: String,
+    val trigger_score: Float,
+    val scores: Map<String, Float>,
+    val trigger_mode: String,
     val threshold: Float,
-    val score: Float,
     val cooldown_sec: Float,
     val pre_roll_sec: Float,
     val post_roll_sec: Float,
@@ -29,13 +32,24 @@ data class DetectionEvent(
 data class SessionHeader(
     val ts: String,
     val session_start: Boolean = true,
-    val model: String,
+    val models: List<String>,
+    val trigger_mode: String,
     val threshold: Float,
     val cooldown_sec: Float,
     val pre_roll_sec: Float,
     val post_roll_sec: Float,
     val device: String,
     val android_sdk: Int,
+    val app_version: String,
+)
+
+@Serializable
+data class SessionEnd(
+    val ts: String,
+    val session_end: Boolean = true,
+    val session_start_ts: String,
+    val duration_s: Double,
+    val detection_count: Int,
     val app_version: String,
 )
 
@@ -47,7 +61,8 @@ class EventLogger(context: Context) {
 
     @Synchronized
     fun appendHeader(
-        model: String,
+        models: List<String>,
+        triggerMode: TriggerMode,
         threshold: Float,
         cooldownSec: Float,
         preRollSec: Float,
@@ -56,7 +71,8 @@ class EventLogger(context: Context) {
     ) {
         val header = SessionHeader(
             ts = isoNow(),
-            model = model,
+            models = models,
+            trigger_mode = triggerMode.wireValue,
             threshold = threshold,
             cooldown_sec = cooldownSec,
             pre_roll_sec = preRollSec,
@@ -72,20 +88,27 @@ class EventLogger(context: Context) {
 
     @Synchronized
     fun appendDetection(
-        model: String,
+        triggerModel: String,
+        triggerScore: Float,
+        scores: Map<String, Float>,
+        triggerMode: TriggerMode,
         threshold: Float,
-        score: Float,
         cooldownSec: Float,
         preRollSec: Float,
         postRollSec: Float,
         wavRelativePath: String,
         appVersion: String,
     ) {
+        // Sparse: only non-zero scores to keep JSONL compact (saves ~90% when
+        // most models are silent). Offline readers assume missing models = 0.
+        val sparse = scores.filterValues { it > 0f }
         val evt = DetectionEvent(
             ts = isoNow(),
-            model = model,
+            trigger_model = triggerModel,
+            trigger_score = triggerScore,
+            scores = sparse,
+            trigger_mode = triggerMode.wireValue,
             threshold = threshold,
-            score = score,
             cooldown_sec = cooldownSec,
             pre_roll_sec = preRollSec,
             post_roll_sec = postRollSec,
@@ -95,6 +118,25 @@ class EventLogger(context: Context) {
         )
         FileWriter(logFile, true).use { w ->
             w.appendLine(json.encodeToString(DetectionEvent.serializer(), evt))
+        }
+    }
+
+    @Synchronized
+    fun appendSessionEnd(
+        sessionStartTs: String,
+        durationSec: Double,
+        detectionCount: Int,
+        appVersion: String,
+    ) {
+        val end = SessionEnd(
+            ts = isoNow(),
+            session_start_ts = sessionStartTs,
+            duration_s = durationSec,
+            detection_count = detectionCount,
+            app_version = appVersion,
+        )
+        FileWriter(logFile, true).use { w ->
+            w.appendLine(json.encodeToString(SessionEnd.serializer(), end))
         }
     }
 

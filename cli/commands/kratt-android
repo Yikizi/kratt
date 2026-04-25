@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# DESC: Android false-logger app management (pull captures, install, logs)
+# USAGE: kratt android <subcommand> [args...]
+# ARGS: pull [DEST]      Pull captures + events.jsonl into DEST (default: output/android-captures-YYYYMMDD-HHMM)
+# ARGS: install          Build debug APK and install via adb
+# ARGS: logs             Tail adb logcat filtered by DetectorService
+# ARGS: devices          List connected adb devices
+# EXAMPLES: kratt android pull
+# EXAMPLES: kratt android pull ~/kratt-captures
+# EXAMPLES: kratt android install
+# EXAMPLES: kratt android logs
+set -euo pipefail
+
+ANDROID_DIR="$KRATT_ROOT/android"
+APP_ID="ee.taltech.kratt.falselog"
+REMOTE_CAPTURES="/sdcard/Download/Kratt/captures"
+JDK17="$HOME/.sdkman/candidates/java/17.0.10-tem"
+
+cmd_pull() {
+  local dest="${1:-$KRATT_ROOT/output/android-captures-$(date +%Y%m%d-%H%M)}"
+  mkdir -p "$dest"
+
+  echo "→ Pulling captures to $dest"
+  local count_before=0
+  count_before=$(find "$dest" -name "*.wav" 2>/dev/null | wc -l | tr -d ' ')
+
+  adb pull "$REMOTE_CAPTURES/." "$dest/" 2>&1 | tail -5 || {
+    echo "! adb pull failed — is device connected?"
+    adb devices
+    exit 1
+  }
+
+  echo "→ Pulling events.jsonl"
+  local events_remote="/sdcard/Android/data/$APP_ID/files/logs/events.jsonl"
+  adb pull "$events_remote" "$dest/events.jsonl" 2>&1 | tail -1 || {
+    echo "! events.jsonl not found — app never started?"
+    rm -f "$dest/events.jsonl"
+  }
+
+  local count_after=0
+  count_after=$(find "$dest" -name "*.wav" 2>/dev/null | wc -l | tr -d ' ')
+  local added=$((count_after - count_before))
+
+  echo ""
+  echo "✓ Pulled $added new wav files (total in dest: $count_after)"
+  if [[ -f "$dest/events.jsonl" ]]; then
+    local evt_count
+    evt_count=$(wc -l < "$dest/events.jsonl" | tr -d ' ')
+    echo "✓ events.jsonl: $evt_count lines"
+
+    echo ""
+    (cd "$KRATT_WW" && uv run python evaluation/build_pull_index.py "$dest")
+
+    echo ""
+    echo "── FAPH summary (this pull) ──"
+    (cd "$KRATT_WW" && uv run python evaluation/analyze_android_events.py "$dest/events.jsonl")
+  fi
+  echo ""
+  echo "  Location: $dest"
+}
+
+cmd_install() {
+  export JAVA_HOME="$JDK17"
+  echo "→ Building debug APK..."
+  (cd "$ANDROID_DIR" && ./gradlew assembleDebug 2>&1 | tail -5)
+  echo "→ Installing..."
+  adb install -r "$ANDROID_DIR/app/build/outputs/apk/debug/app-debug.apk"
+}
+
+cmd_logs() {
+  echo "→ adb logcat (DetectorService | WakeDetector | ModelRunner)"
+  adb logcat -v color -s DetectorService WakeDetector ModelRunner MultiDetector
+}
+
+cmd_devices() {
+  adb devices
+}
+
+sub="${1:-}"
+shift || true
+case "$sub" in
+  pull)     cmd_pull "$@" ;;
+  install)  cmd_install "$@" ;;
+  logs)     cmd_logs "$@" ;;
+  devices)  cmd_devices "$@" ;;
+  ""|-h|--help)
+    grep '^# ' "$0" | sed 's/^# //'
+    ;;
+  *)
+    echo "Unknown subcommand: $sub" >&2
+    echo "Run 'kratt android --help' for usage." >&2
+    exit 1
+    ;;
+esac

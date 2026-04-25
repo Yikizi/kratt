@@ -16,7 +16,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import ee.taltech.kratt.falselog.audio.AudioCapture
 import ee.taltech.kratt.falselog.audio.AudioRingBuffer
-import ee.taltech.kratt.falselog.detect.WakeDetector
+import ee.taltech.kratt.falselog.detect.MultiDetector
 import ee.taltech.kratt.falselog.log.EventLogger
 import ee.taltech.kratt.falselog.log.SnippetWriter
 import java.util.concurrent.LinkedBlockingQueue
@@ -30,7 +30,7 @@ class DetectorService : Service() {
 
     private var wakeLock: PowerManager.WakeLock? = null
     private lateinit var capture: AudioCapture
-    private lateinit var detector: WakeDetector
+    private lateinit var detector: MultiDetector
     private lateinit var ringBuffer: AudioRingBuffer
     private lateinit var snippetWriter: SnippetWriter
     private lateinit var eventLogger: EventLogger
@@ -43,12 +43,18 @@ class DetectorService : Service() {
         val pre: ShortArray,
         val post: ArrayList<Short>,
         var remaining: Int,
-        val score: Float,
+        val triggerModel: String,
+        val triggerScore: Float,
+        val allScores: Map<String, Float>,
         val count: Int,
     )
 
     private var pending: PendingSnippet? = null
     @Volatile private var lastDetectionTimeMs: Long = 0
+
+    // Session timing for accurate duration recording
+    @Volatile private var sessionStartTs: String = ""
+    @Volatile private var sessionStartMs: Long = 0
 
     // --- Config ------------------------------------------------------------
     private val sampleRate: Int = 16_000
@@ -56,8 +62,9 @@ class DetectorService : Service() {
     @Volatile private var cooldownSec: Float = 2f
     @Volatile private var preRollSec: Float = 4f
     @Volatile private var postRollSec: Float = 1f
-    private val modelAsset: String = "kuule_kratt_v11.tflite"
-    private val appVersion: String = "0.1.0"
+    @Volatile private var modelAssets: List<String> = listOf(DEFAULT_MODEL)
+    @Volatile private var triggerMode: TriggerMode = TriggerMode.ANY
+    private val appVersion: String = "0.3.0"
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -96,6 +103,10 @@ class DetectorService : Service() {
 
     private fun applyConfig(intent: Intent?) {
         intent ?: return
+        intent.getStringArrayExtra(EXTRA_MODELS)?.toList()?.let { modelAssets = it }
+        if (intent.hasExtra(EXTRA_TRIGGER_MODE)) {
+            triggerMode = TriggerMode.fromWireValue(intent.getStringExtra(EXTRA_TRIGGER_MODE))
+        }
         if (intent.hasExtra(EXTRA_THRESHOLD)) {
             threshold = intent.getFloatExtra(EXTRA_THRESHOLD, threshold)
         }
@@ -119,8 +130,14 @@ class DetectorService : Service() {
         ringBuffer = AudioRingBuffer((sampleRate * preRollSec).toInt())
         snippetWriter = SnippetWriter(this, sampleRate)
         eventLogger = EventLogger(this)
+
+        sessionStartTs = ee.taltech.kratt.falselog.log.EventLogger.isoNow()
+        sessionStartMs = SystemClock.elapsedRealtime()
+        detectionCount.set(0)
+
         eventLogger.appendHeader(
-            model = modelAsset,
+            models = modelAssets,
+            triggerMode = triggerMode,
             threshold = threshold,
             cooldownSec = cooldownSec,
             preRollSec = preRollSec,
@@ -128,7 +145,7 @@ class DetectorService : Service() {
             appVersion = appVersion,
         )
 
-        detector = WakeDetector(this, modelAsset = modelAsset)
+        detector = MultiDetector(this, modelAssets)
 
         capture = AudioCapture(sampleRate = sampleRate, frameMs = 20) { buf, len ->
             val copy = buf.copyOf(len)
@@ -146,7 +163,7 @@ class DetectorService : Service() {
         }
 
         workerThread = Thread({
-            Log.i(TAG, "detector worker started")
+            Log.i(TAG, "detector worker started with ${modelAssets.size} models")
             while (workerRunning.get()) {
                 val chunk = try {
                     audioQueue.take()
@@ -154,8 +171,8 @@ class DetectorService : Service() {
                     break
                 }
                 try {
-                    detector.processSamples(chunk) { score ->
-                        maybeTriggerDetection(score)
+                    detector.processSamples(chunk) { frameScores ->
+                        maybeTriggerDetection(frameScores)
                     }
                 } catch (t: Throwable) {
                     Log.e(TAG, "processSamples threw", t)
@@ -168,6 +185,12 @@ class DetectorService : Service() {
             start()
         }
 
+        val active = when (triggerMode) {
+            TriggerMode.ANY -> if (modelAssets.size == 1) modelAssets[0] else "${modelAssets.size} models"
+            TriggerMode.CONSENSUS -> modelAssets
+                .joinToString(" + ") { it.removeSuffix(".tflite").removePrefix("kuule_kratt_") }
+        }
+        ServiceState.activeModel.postValue(active)
         ServiceState.running.postValue(true)
     }
 
@@ -179,6 +202,22 @@ class DetectorService : Service() {
         try { workerThread?.join(1_500) } catch (_: InterruptedException) {}
         workerThread = null
         try { detector.close() } catch (_: Throwable) {}
+
+        // Log accurate session end + duration before releasing resources
+        if (sessionStartMs > 0 && ::eventLogger.isInitialized) {
+            val durationS = (SystemClock.elapsedRealtime() - sessionStartMs) / 1000.0
+            try {
+                eventLogger.appendSessionEnd(
+                    sessionStartTs = sessionStartTs,
+                    durationSec = durationS,
+                    detectionCount = detectionCount.get(),
+                    appVersion = appVersion,
+                )
+            } catch (t: Throwable) {
+                Log.w(TAG, "session_end append failed: ${t.message}")
+            }
+        }
+
         releaseWakeLock()
         ServiceState.running.postValue(false)
     }
@@ -187,18 +226,45 @@ class DetectorService : Service() {
     // Detection handling
     // -----------------------------------------------------------------------
 
-    private fun maybeTriggerDetection(score: Float) {
-        ServiceState.lastScore.postValue(score)
+    private fun maybeTriggerDetection(frameScores: MultiDetector.FrameScores) {
+        // Find best-scoring model and collect non-null scores
+        var bestModel: String? = null
+        var bestScore = 0f
+        val allScores = LinkedHashMap<String, Float>()
 
-        // Suppress detections until the pre-roll buffer has been filled at
-        // least once. Otherwise the very first detection after service start
-        // produces a partial-length snippet with only the audio captured
-        // since boot, which is useless for false-trigger analysis.
+        for ((model, score) in frameScores.scores) {
+            if (score != null) {
+                allScores[model] = score
+                if (score > bestScore) {
+                    bestScore = score
+                    bestModel = model
+                }
+            }
+        }
+
+        if (bestModel != null) {
+            ServiceState.lastScore.postValue(bestScore)
+        }
+
+        // Suppress until ring buffer is full
         if (!ringBuffer.isFull) return
 
         val now = SystemClock.elapsedRealtime()
         val inCooldown = (now - lastDetectionTimeMs) < (cooldownSec * 1000).toLong()
-        if (score <= threshold || inCooldown) return
+        if (inCooldown) return
+
+        val shouldTrigger = when (triggerMode) {
+            TriggerMode.ANY -> bestModel != null && bestScore > threshold
+            TriggerMode.CONSENSUS ->
+                allScores.isNotEmpty() && allScores.size == modelAssets.size &&
+                    allScores.values.all { it > threshold }
+        }
+        if (!shouldTrigger || bestModel == null) return
+
+        val triggerLabel = when (triggerMode) {
+            TriggerMode.ANY -> bestModel
+            TriggerMode.CONSENSUS -> modelAssets.joinToString("+")
+        }
 
         lastDetectionTimeMs = now
         val count = detectionCount.incrementAndGet()
@@ -210,14 +276,20 @@ class DetectorService : Service() {
                 pre = pre,
                 post = ArrayList(postSamples + 512),
                 remaining = postSamples,
-                score = score,
+                triggerModel = triggerLabel,
+                triggerScore = bestScore,
+                allScores = allScores,
                 count = count,
             )
         }
 
         ServiceState.lastDetectionCount.postValue(count)
-        ServiceState.lastDetectionScore.postValue(score)
-        Log.i(TAG, "DETECTED score=$score count=$count (collecting post-roll…)")
+        ServiceState.lastDetectionScore.postValue(bestScore)
+        Log.i(
+            TAG,
+            "DETECTED mode=${triggerMode.wireValue} model=$triggerLabel score=$bestScore count=$count " +
+                "scores=${allScores.entries.joinToString { "${it.key.removeSuffix(".tflite")}=%.3f".format(it.value) }}"
+        )
 
         if (postSamples == 0) {
             finalizePending()
@@ -247,7 +319,7 @@ class DetectorService : Service() {
         for (i in snap.post.indices) pcm[snap.pre.size + i] = snap.post[i]
 
         val wavRelativePath = try {
-            snippetWriter.save(pcm, snap.score, snap.count)
+            snippetWriter.save(pcm, snap.triggerScore, snap.count, snap.triggerModel)
         } catch (t: Throwable) {
             Log.e(TAG, "wav save failed", t)
             ServiceState.lastError.postValue("wav save failed: ${t.message}")
@@ -256,9 +328,11 @@ class DetectorService : Service() {
 
         try {
             eventLogger.appendDetection(
-                model = modelAsset,
+                triggerModel = snap.triggerModel,
+                triggerScore = snap.triggerScore,
+                scores = snap.allScores,
+                triggerMode = triggerMode,
                 threshold = threshold,
-                score = snap.score,
                 cooldownSec = cooldownSec,
                 preRollSec = preRollSec,
                 postRollSec = postRollSec,
@@ -352,6 +426,8 @@ class DetectorService : Service() {
         const val ACTION_START = "ee.taltech.kratt.falselog.action.START"
         const val ACTION_STOP = "ee.taltech.kratt.falselog.action.STOP"
 
+        const val EXTRA_MODELS = "models"
+        const val EXTRA_TRIGGER_MODE = "trigger_mode"
         const val EXTRA_THRESHOLD = "threshold"
         const val EXTRA_COOLDOWN = "cooldown"
         const val EXTRA_PRE_ROLL = "pre_roll"
@@ -359,12 +435,16 @@ class DetectorService : Service() {
 
         fun startIntent(
             context: Context,
+            modelAssets: List<String>,
+            triggerMode: TriggerMode,
             threshold: Float,
             cooldownSec: Float,
             preRollSec: Float,
             postRollSec: Float,
         ): Intent = Intent(context, DetectorService::class.java).apply {
             action = ACTION_START
+            putExtra(EXTRA_MODELS, modelAssets.toTypedArray())
+            putExtra(EXTRA_TRIGGER_MODE, triggerMode.wireValue)
             putExtra(EXTRA_THRESHOLD, threshold)
             putExtra(EXTRA_COOLDOWN, cooldownSec)
             putExtra(EXTRA_PRE_ROLL, preRollSec)
