@@ -1,0 +1,83 @@
+{
+  "batch_size": 128,
+  "clip_duration_ms": 1500,
+  "eval_step_interval": 250,
+  "features": [
+    {
+      "features_dir": "/gpfs/mariana/smbhome/malinh/kratt-data/training/features/microwakeword-kuule-kratt-v6-residual-r4-exact/positive",
+      "penalty_weight": 1.0,
+      "sampling_weight": 2.0,
+      "truncation_strategy": "truncate_start",
+      "truth": true,
+      "type": "mmap"
+    },
+    {
+      "features_dir": "/gpfs/mariana/smbhome/malinh/kratt-data/training/features/microwakeword-kuule-kratt-v6-residual-r4-exact/negative",
+      "penalty_weight": 1.0,
+      "sampling_weight": 10.0,
+      "truncation_strategy": "random",
+      "truth": false,
+      "type": "mmap"
+    }
+  ],
+  "flags": {
+    "first_conv_filters": 32,
+    "first_conv_kernel_size": 3,
+    "max_pool": 0,
+    "mixconv_kernel_sizes": "[5], [9], [13], [21]",
+    "model_name": "mixednet",
+    "pointwise_filters": "48, 48, 48, 48",
+    "pooled": 0,
+    "repeat_in_block": "1,1,1,1",
+    "residual_connection": "1,1,1,1",
+    "restore_checkpoint": 0,
+    "spatial_attention": 0,
+    "stride": 1,
+    "test_tf_nonstreaming": 0,
+    "test_tflite_nonstreaming": 0,
+    "test_tflite_nonstreaming_quantized": 0,
+    "test_tflite_streaming": 0,
+    "test_tflite_streaming_quantized": 0,
+    "train": 1,
+    "training_config": "/gpfs/mariana/home/malinh/kratt/wake-word/training/configs/microwakeword-kuule-kratt-v6-residual-r4-exact.yaml",
+    "use_weights": "best_weights",
+    "verbosity": 0
+  },
+  "freq_mask_count": [
+    0
+  ],
+  "freq_mask_max_size": [
+    0
+  ],
+  "learning_rates": [
+    0.001
+  ],
+  "maximization_metric": "accuracy",
+  "minimization_metric": null,
+  "negative_class_weight": [
+    20
+  ],
+  "positive_class_weight": [
+    1
+  ],
+  "spectrogram_length": 194,
+  "spectrogram_length_final_layer": 148,
+  "stride": 1,
+  "summaries_dir": "/gpfs/mariana/smbhome/malinh/kratt-data/training/runs/microwakeword-kuule-kratt-v6-residual-r4-exact-20260414-202634/logs/",
+  "target_minimization": 0.0,
+  "time_mask_count": [
+    0
+  ],
+  "time_mask_max_size": [
+    0
+  ],
+  "train_dir": "/gpfs/mariana/smbhome/malinh/kratt-data/training/runs/microwakeword-kuule-kratt-v6-residual-r4-exact-20260414-202634",
+  "training_input_shape": [
+    194,
+    40
+  ],
+  "training_steps": [
+    10000
+  ],
+  "window_step_ms": 10
+}
