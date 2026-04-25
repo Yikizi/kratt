@@ -1,143 +1,118 @@
-# Wake Word Training - "Kratt"
+# Wake Word
 
-See on lõputöö **peamine panus** - esimene eestikeelne wake word mudel!
+Last updated: 2026-04-23
 
-## 🚀 Kiire Alustamine
+`wake-word/` on Kratti põhikaust: andmestik, treeningskriptid, evaluatsioon ja
+versioneeritud mudelid fraasile **"Kuule Kratt"**.
 
-### 1. Setup Python Environment
-```bash
-cd ~/kratt/wake-word
+See README kirjeldab praegust töövoogu. Kui vajad kiiret joondust üle repo,
+loe esmalt:
 
-# Python 3.9 (compatibility)
-python3.9 -m venv .venv
-source .venv/bin/activate
+1. `../docs/PROJECT_TODO.md`
+2. `../docs/research/source-of-truth-apr-2026.md`
+3. `../docs/research/wake-word-evaluation-methodology.md`
+4. `CLAUDE.md`
 
-# Install dependencies
-pip install -r requirements.txt
-```
+## Current State
 
-### 2. Salvesta Positive Samples
-```bash
-cd data/collection
-python record_samples.py --phrase "kratt" --count 20
-```
+- Canonical baseline on **streaming FAPH**, mitte clip-level FPR.
+- Mudelite võrdlus käib koos mõõdikutega:
+  `FAPH + Recall + Hard-negative FPR`.
+- Üksik “parim mudel” ei ole enam põhiline eesmärk; suund on
+  **multi-model consensus**.
+- `v16c` on värskeim single-model kandidaat.
+- `expert-a + expert-b2` konsensus saavutas sub-1 FAPH benchmarkis, aga vajab
+  jätkuvalt päris seadme valideerimist.
 
-### 3. Laadi Negative Samples
-```bash
-python download_negatives.py
-```
+## Setup
 
-### 4. Treeni Mudel
-
-#### Dataset prep (processed/)
-Neurokõne raw faile ja negative dataset'e ei commiti git'i. Lokaalselt valmista treeningu sisendkaustad nii:
+Põhikeskkond:
 
 ```bash
-cd /Users/mattias/kratt
-/Users/mattias/kratt/wake-word/.venv/bin/python wake-word/data/collection/prepare_processed_dataset.py --download-negatives
+cd wake-word
+uv sync
 ```
 
-#### Raspberry Pi (openWakeWord)
-```bash
-cd ../../external-repos/openWakeWord/training
-python train_wake_word.py \
-    --positive_dir ../../wake-word/data/processed/positive \
-    --negative_dir ../../wake-word/data/processed/negative \
-    --output_name kratt \
-    --epochs 100 \
-    --output_dir ../../wake-word/models/production/
-```
-
-#### ESP32 (microWakeWord)
-microWakeWord treenimine on “full pipeline” (mmaps + TF training + TFLite export). Repo’s on selleks skript:
+Mõned evaluatsiooni- ja live-skriptid kasutavad eraldi microWakeWord env'i:
 
 ```bash
-cd /path/to/kratt
-./wake-word/training/scripts/train_microwakeword.sh
+cd ..
+./wake-word/training/scripts/setup_microwakeword_env.sh
 ```
 
-### HPC / large-data layout
+## Common Workflows
 
-Kui treenid TalTech HPC peal, ekspordi enne:
+Võrdle mudeleid CLI kaudu:
 
 ```bash
-export KRATT_DATA=/gpfs/mariana/smbhome/$USER/kratt-data
+cd ..
+./cli/kratt compare v16a v16c -t 0.997
 ```
 
-Oodatud layout:
-
-- `"$KRATT_DATA/datasets/speech-commands"`: Speech Commands extract
-- `"$KRATT_DATA/datasets/common-voice"`: Common Voice mirror / extract
-- `"$KRATT_DATA/datasets/musan"`: MUSAN extract
-- `"$KRATT_DATA/datasets/voices"`: VOiCES extract
-- `"$KRATT_DATA/processed"`: materialized experiment datasets
-- `"$KRATT_DATA/training/features"` ja `"$KRATT_DATA/training/runs"`: mmap-id ja treeningu artefaktid
-
-Minimaalne Slurm smoke-run avaliku `marvin` sihtsõnaga:
+Live test ühe mudeliga:
 
 ```bash
-export KRATT_DATA=/gpfs/mariana/smbhome/$USER/kratt-data
-./wake-word/training/scripts/submit_hpc_smoke_run.sh \
-  --ambient-dir /path/to/flat_ambient_wavs
+cd ..
+./cli/kratt live v16c 0.997
 ```
 
-### 5. Testi Mudelit
+Live test mitme mudeli konsensusega:
+
 ```bash
-cd evaluation
-python test_model.py \
-    --model ../models/production/kratt.onnx \
-    --positive-dir ../data/processed/positive \
-    --negative-dir ../data/processed/negative
+cd wake-word
+uv run python evaluation/multi_model_live_test.py --models expert-a expert-b2 --thresholds 0.996 0.996
 ```
 
-## 📊 Data Collection Goals
+Saada uus microWakeWord treening HPC-sse:
 
-- **Target**: 10 inimest × 20 salvestust = 200 base samples
-- **Augmentation**: 200 → 2000+ samples
-- **Negative**: 5000+ samples (Speech Commands + generated)
-
-## 📁 Directory Structure
-
-```
-wake-word/
-├── data/
-│   ├── collection/          # Scripts
-│   │   ├── record_samples.py
-│   │   └── download_negatives.py
-│   ├── raw/                 # Raw recordings (gitignore)
-│   ├── processed/           # Validated + normalized
-│   │   ├── positive/
-│   │   └── negative/
-│   └── augmented/           # Synthetic data
-├── training/
-│   ├── scripts/
-│   ├── configs/
-│   └── experiments/
-├── models/
-│   ├── checkpoints/
-│   ├── production/          # Final models
-│   └── benchmarks/
-├── evaluation/
-│   ├── test_model.py
-│   ├── test-sets/
-│   └── metrics/
-└── deployment/
-    ├── onnx/
-    └── tflite/
+```bash
+cd ..
+./cli/kratt train v17 --steps 15000 --mem 64G
 ```
 
-## 🎯 Success Metrics
+Android loggeri capture'ite analüüs:
 
-- Accuracy: >95%
-- False Positive Rate: <5%
-- False Negative Rate: <5%
-- Latency: <500ms
+```bash
+cd ..
+./cli/kratt android pull
+```
 
-## 📝 Documentation
+## Data / Training Layout
 
-See CLAUDE.md for detailed context and workflow.
+Olulised alajaotused:
 
-Vaata ka:
-- `docs/thesis/` - LaTeX lõputöö
-- `hardware/` - Deployment ESP32/Pi
-- `home-assistant/` - HA integratsioon
+- `data/collection/`
+  Salvestus-, TTS- ja andmeettevalmistuse skriptid.
+- `training/configs/`
+  microWakeWord ja openWakeWord konfiguratsioonid.
+- `training/scripts/`
+  mmap generation, HPC submitid, treeningu wrapperid.
+- `evaluation/`
+  benchmarkid, Android capture labeling, DET/FAPH raportid.
+- `models/`
+  mudeliversioonid koos `.tflite` failide ja `analysis/` kokkuvõtetega.
+- `docs/`
+  wake-word-spetsiifiline taustainfo nagu model lineage.
+
+Kui treenid HPC peal, kasuta `KRATT_DATA` andmejuurt. Treeningskriptid eeldavad,
+et `processed`, `datasets`, `training/features` ja `training/runs` elavad selle
+juure all.
+
+## Non-Negotiable Evaluation Rules
+
+- Ära mõõda treeningandmetel.
+- FAPH mõõda pideval voolul, mitte reset-per-clip loogikaga.
+- Sama thresholdi juures raporteeri koos `FAPH`, `Recall` ja
+  `Hard-negative FPR`.
+- Hoia benchmarki tulemused artefaktides, mitte ainult sessioonijutus.
+
+## Documentation
+
+- `CLAUDE.md`
+  lühike operator context selle kausta jaoks.
+- `docs/MODEL_LINEAGE.md`
+  mudeliversioonide kronoloogiline areng.
+- `evaluation/training_data_manifest.md`
+  mida mingi mudel või benchmark tegelikult kasutas.
+- `../scripts/docs_freshness_audit.py`
+  kiire kontroll, mis aitab märgata vananenud setup-juhiseid ja protsessidokke.

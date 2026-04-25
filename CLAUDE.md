@@ -61,13 +61,15 @@ kratt/                          # Monorepo root
 ## 📋 Current Phase: Evaluation & Thesis Writing (April 2026)
 
 **Priority Order**:
-1. 🎯 Wake word model evaluation (v12 trained, threshold tuning)
+1. 🎯 Wake word model evaluation (v16c ready, MoE consensus validated — sub-1 FAPH achieved)
 2. ✅ User testing (20-30 participants, CRITICAL for thesis)
 3. 📝 Thesis writing (chapters 1-2 drafted, 3-5 pending)
 4. 🔌 Home Assistant integration polish
 5. 📚 Comparative analysis (EuroEval LLM benchmarks done)
 
 **Status**: See `docs/PROJECT_TODO.md` for detailed task breakdown.
+
+**Important framing note**: before major planning or thesis-shaping work, also read `docs/research/agentic-thesis-positioning-and-shortcomings-2026-04-14.md`. It captures the current methodological weaknesses, thesis-positioning advice, and the role/limits of agentic engineering in this project.
 
 ## Technical Stack
 
@@ -83,7 +85,8 @@ kratt/                          # Monorepo root
 **"Kuule Kratt"** — two-word Estonian wake phrase.
 - Estonian mythology reference (kratt creature)
 - Distinctive phonetics, not in everyday speech
-- Current best model: v11 (deployed), v12 (evaluating)
+- Current best model: **v16c** (148KB, 100% recall + 100% hard neg rejection + FAPH 75)
+- MoE consensus (Expert A + Expert B2) achieves **0.79 FAPH** @ 0.996/0.996
 
 ## Key References
 
@@ -98,6 +101,16 @@ kratt/                          # Monorepo root
 - Thesis in Estonian, code/docs in English
 - Commit messages: English, conventional commits
 - All Python packages managed with `uv` (project-scoped)
+- All workflow scripts must have a `kratt <name>` CLI wrapper (`cli/commands/kratt-*`)
+
+### Model documentation (per-version)
+
+Every model version in `wake-word/models/kuule-kratt-*/` MUST have:
+
+1. **`NOTES.md` in the model's own directory** — hypothesis, delta from previous version, data, observed results, interpretation, next step. Discoverable when someone opens the model dir directly.
+2. **Entry in `wake-word/docs/MODEL_LINEAGE.md`** — single chronological timeline of all versions. Same content, condensed.
+
+This prevents confusion about whether a version was a new experiment, a re-run, or an ablation. Especially important for "orphan" models that would otherwise appear unexplained (e.g. v2 which looked like a duplicate of v1 but was actually a silence-trimming preprocessing experiment).
 
 ## Guidelines for Claude
 
@@ -105,4 +118,5 @@ kratt/                          # Monorepo root
 - This is a bachelor's thesis — manageable scope over perfection
 - Privacy-first: always consider GDPR/opt-in for voice data
 - See `docs/PROJECT_TODO.md` for current task breakdown
+- Read `docs/research/agentic-thesis-positioning-and-shortcomings-2026-04-14.md` before making broad methodological or thesis-direction proposals
 - See sub-package CLAUDE.md files for area-specific context

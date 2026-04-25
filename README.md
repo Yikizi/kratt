@@ -1,285 +1,188 @@
-# 🔥 Kratt - Eestikeelne Wake Word ja Voice Satellite Süsteem
+# Kratt
 
-> Bakalaureusetöö projekt - TalTech Informaatika 2025
+Monorepo eestikeelse wake-word projekti jaoks. Praegune praktiline fookus on
+fraasil **"Kuule Kratt"**: mudelite treenimine, korrektne evaluatsioon,
+Android/ESP32 välitestid ja lõputöö kirjutamine.
 
-**Autor**: Mattias
-**Juhendaja**: Tanel Alumäe
-**Kaitsmise aeg**: Suvi 2025
+See repo ei ole enam ainult "bakalaureusetöö skeleton". See on aktiivne
+uurimis- ja tööjaam, kus koos elavad:
+- wake-word treening ja benchmarkid
+- Android false-trigger logger
+- ESP32-S3 / ESPHome deploy
+- demo pipeline (wake word -> STT -> LLM -> action)
+- thesis / research docs
 
-## 🎯 Projekti Eesmärk
+## Praegune seis
 
-Luua **esimene eestikeelne wake word mudel** "Kratt" ja integreerida see **Home Assistant**'iga kui täielik, privaatsust väärtustav helisatelliit süsteem.
+- Canonical evaluatsioon on **streaming FAPH**, mitte clip-level FPR.
+- Mudeleid võrreldakse **FAPH + recall + hard-negative FPR** kombinatsioonina,
+  samal deployment thresholdil.
+- Suund on nihkunud ühe "parima universaalse mudeli" otsimiselt
+  **multi-model consensus** lahenduste poole.
+- Päris seadme ja päris maailma mõõtmine toimub peamiselt
+  **Android false-loggeri** ja **ESP32-S3 Korvo-2** peal.
+- `home-assistant/` on praegu pigem plaan / blueprint; päris deploy tee käib
+  peamiselt `hardware/esp32/esphome/` ja demo tooling'u kaudu.
 
-### Miks See On Oluline?
+## Source Of Truth
 
-Eesti keele jaoks puudub praegu:
-- ❌ Custom wake word mudel
-- ❌ Kerge kättesaadav voice satellite lahendus
-- ❌ Täielikult lokaalne (privacy-first) voice assistant
+Kui tahad enne uut tööd kiiresti joonduda, loe neid selles järjekorras:
 
-See projekt täidab selle tühimiku.
+1. [docs/PROJECT_TODO.md](docs/PROJECT_TODO.md)
+2. [docs/research/source-of-truth-apr-2026.md](docs/research/source-of-truth-apr-2026.md)
+3. [docs/research/wake-word-evaluation-methodology.md](docs/research/wake-word-evaluation-methodology.md)
+4. [docs/research/session-findings-apr-2026.md](docs/research/session-findings-apr-2026.md)
+5. [wake-word/CLAUDE.md](wake-word/CLAUDE.md)
 
-### Peamised Panused (Contributions)
+Dokumentatsiooni reegel:
+- `docs/` = hooldatud, jagatav, pikema elueaga dokumentatsioon
+- `notes/` = tööpäevik, katsed, visandid, vahepealsed mõtted
 
-1. **Esimene eestikeelne wake word mudel** "Kratt"
-2. **Data augmentation methodology** väikese keele jaoks
-3. **Täielik Home Assistant integratsioon** (Wyoming protocol)
-4. **ESP32 ja Raspberry Pi implementatsioonid**
-5. **Opt-in data collection framework** (iterative improvement)
+## Repo Kaart
 
-## 📁 Monorepo Struktuur
+Peamised kaustad päris kasutuses:
 
-```
-kratt/
-├── README.md                          # See fail
-├── CHANGELOG.md                       # Versioonid ja muudatused
-├── LICENSE                            # Open source litsents (MIT/Apache 2.0)
-│
-├── docs/                              # Dokumentatsioon
-│   ├── thesis/                        # LaTeX lõputöö
-│   │   ├── main.tex
-│   │   ├── chapters/
-│   │   ├── figures/
-│   │   └── references.bib
-│   ├── architecture/                  # Süsteemi arhitektuur
-│   │   ├── system-overview.md
-│   │   ├── data-flow.md
-│   │   └── diagrams/
-│   ├── research/                      # Uurimismaterjalid
-│   │   ├── literature-review.md
-│   │   ├── related-work.md
-│   │   └── datasets.md
-│   └── user-guide/                    # Kasutajajuhendid
-│       ├── installation.md
-│       ├── configuration.md
-│       └── troubleshooting.md
-│
-├── notes/                             # Tööpäevik ja eksperimendimärkmed
-│   ├── experiments/
-│   └── demos/
-│
-├── wake-word/                         # Wake word mudel ja treening
-│   ├── README.md
-│   ├── data/                          # Data kogumine
-│   │   ├── collection/                # Salvestamise skriptid
-│   │   ├── raw/                       # Raw audio (gitignore)
-│   │   ├── processed/                 # Töödeldud data
-│   │   └── augmented/                 # Augmented data
-│   ├── training/                      # Mudeli treenimine
-│   │   ├── notebooks/                 # Jupyter notebooks
-│   │   ├── scripts/                   # Training scripts
-│   │   ├── configs/                   # Hyperparameters
-│   │   └── experiments/               # Experiment tracking
-│   ├── models/                        # Treenitud mudelid
-│   │   ├── checkpoints/
-│   │   ├── production/                # Production-ready models
-│   │   └── benchmarks/                # Performance metrics
-│   ├── evaluation/                    # Testimine ja hindamine
-│   │   ├── test-sets/
-│   │   ├── metrics/
-│   │   └── reports/
-│   └── deployment/                    # Model deployment
-│       ├── onnx/                      # ONNX exports
-│       └── tflite/                    # TFLite (ESP32)
-│
-├── hardware/                          # Hardware implementatsioonid
-│   ├── esp32/                         # ESP32C3 Supermini
-│   │   ├── esphome/                   # ESPHome configs
-│   │   │   ├── voice-satellite-esp32-s3.yaml
-│   │   │   └── secrets.yaml.example
-│   │   ├── firmware/                  # Custom firmware (if needed)
-│   │   └── schematics/                # Wiring diagrams
-│   └── raspberry-pi/                  # Raspberry Pi implementation
-│       ├── wyoming/                   # Wyoming satellite
-│       ├── systemd/                   # Service files
-│       └── setup-scripts/
-│
-├── home-assistant/                    # Home Assistant integratsioon
-│   ├── addon/                         # HA Add-on
-│   │   ├── Dockerfile
-│   │   ├── config.yaml
-│   │   ├── run.sh
-│   │   └── rootfs/
-│   ├── custom-component/              # Custom integration (if needed)
-│   └── configurations/                # Example configs
-│       └── voice-pipeline.yaml
-│
-├── backend/                           # Backend teenused
-│   ├── api/                           # REST API (opt-in data collection)
-│   │   ├── src/
-│   │   ├── tests/
-│   │   └── docker-compose.yml
-│   └── retraining/                    # Automated retraining pipeline
-│       └── scripts/
-│
-├── tools/                             # Utility tools
-│   ├── audio-processing/              # Audio utilities
-│   ├── data-validation/               # Data quality checks
-│   └── benchmarking/                  # Performance testing
-│
-├── experiments/                       # Varased eksperimendid (archive)
-│   ├── whisper/                       # Old Whisper experiments
-│   ├── kiirkirjutaja/                 # STT experiments
-│   └── voip/                          # Phone interface experiments
-│
-├── scripts/                           # Helper scripts
-│   ├── setup/                         # Initial setup
-│   ├── build/                         # Build automation
-│   └── deployment/                    # Deployment automation
-│
-└── tests/                             # Integration tests
-    ├── unit/
-    ├── integration/
-    └── e2e/
-```
+- `wake-word/`  
+  Projekti tuum: data, training, evaluation, versioneeritud mudelid.
 
-## 🚀 Kiire Alustamine
+- `cli/`  
+  `./cli/kratt` gateway enamiku igapäevaste töövoogude jaoks.
 
-### 1. Clone Repository
+- `android/`  
+  Pixel/Android false-trigger logger, mis jookseb TFLite mudelitega ja kogub
+  `events.jsonl` + WAV snippet'e.
+
+- `hardware/esp32/`  
+  ESPHome voice satellite configid ja ESP-IDF firmware utiliidid
+  (`recorder`, `wake-word-logger`, `speaker-test`, `mic-test`, jne).
+
+- `tools/`  
+  Demo pipeline, WiZ kontroll, TTS server, LLM/STT benchmarkid.
+
+- `stt-integration/`  
+  Kiirkirjutaja Wyoming/STT integratsiooni materjal.
+
+- `docs/`  
+  Research, thesis, user-testing, ADR-id, esitlusmaterjalid.
+
+- `notes/`  
+  Eksperimendimärkmed ja töölogi.
+
+- `external-repos/`  
+  Vendordatud / peegeldatud sõltuvused nagu `microWakeWord`,
+  `openWakeWord` ja vana `iaib-proto`.
+
+- `output/`  
+  Pullitud Android capture'id, demo logid ja muud jooksu-artefaktid.
+
+Kaustad, mida vanad dokid veel mainivad, aga mis pole enam päriselt top-level
+osas aktiivsed: `backend/`, `experiments/`, `tests/`.
+
+## Kohalikud Peidetud Kaustad
+
+Need on tööriistade artefaktid, mitte toote osa:
+
+- `.claude/`  
+  Claude Code local hook'id, settings ja worktree snapshotid.
+
+- `.serena/`  
+  Serena projektikonf + lühikesed püsivad mälud/strateegiamärkmed.
+
+Oluline tähelepanek:
+- `.claude/worktrees/agent-adf0f5ad/` on vana worktree snapshot, mis on
+  praegusest `main`-ist maas. Seda ei tasu võtta source-of-truth'ina.
+
+## Setup
+
+Eeldused:
+- Python `3.10` kuni `3.12`
+- `uv`
+- vajadusel `adb`, `esphome`, `ssh`, `ollama`
+
+Põhiline setup:
 
 ```bash
-cd ~
-git clone <your-repo-url> kratt
+git clone <repo-url> kratt
 cd kratt
+
+# Core Python env enamiku Python tooling'u jaoks
+cd wake-word
+uv sync
+cd ..
+
+# microWakeWord env, mida kasutavad live/compare skriptid
+./wake-word/training/scripts/setup_microwakeword_env.sh
+
+# Vaata saadaval käske
+./cli/kratt help
+./cli/kratt models
 ```
 
-### 2. Setup Python Environment
+Andmeradade loogika:
+- lokaalselt on vaikimisi data juur `wake-word/data/`
+- HPC peal saab seda üle kirjutada `KRATT_DATA` env var'iga
+- teised abikaustad (`processed`, `datasets`, `training/runs`) tulenevad sellest
+
+## Levinud Töövood
 
 ```bash
-# Python 3.9 (compatibility)
-python3.9 -m venv .venv
-source .venv/bin/activate
+# Võrdle mudeleid held-out test setidel
+./cli/kratt compare v15 v16a -t 0.997
 
-# Install dependencies
-pip install -r requirements.txt
+# Live test MacBooki mikrofoniga
+./cli/kratt live v16c 0.997
+
+# Saada uus treening HPC-sse
+./cli/kratt train v17 --steps 15000 --mem 64G
+
+# Build + install Android false-logger
+./cli/kratt android install
+
+# Tõmba Android capture'id ja analüüsi need ära
+./cli/kratt android pull
+
+# Flashi mudel ESP32-S3 Korvo-2 peale
+./cli/kratt flash v16c --cutoff 0.997
+
+# Käivita täis demo pipeline
+./cli/kratt demo --wiz --models v15
 ```
 
-### 3. Salvesta Esimesed Näited
+Märkused:
+- `kratt train` eeldab SSH ligipääsu TalTech HPC-sse.
+- `kratt compare` ja `kratt live` kasutavad `.venv-microwakeword` env'i.
+- `kratt android pull` teeb lisaks automaatselt indekseerimise ja FAPH kokkuvõtte.
 
-```bash
-cd wake-word/data/collection
-python record_samples.py --phrase "kratt" --count 20
-```
+## Evaluatsiooni Põhireeglid
 
-### 4. Loe Dokumentatsiooni
+Need on repo tänase tööviisi jaoks sisuliselt invariandid:
 
-- 📖 [Arhitektuur](docs/architecture/system-overview.md)
-- 📖 [Uurimistöö](docs/research/literature-review.md)
-- 📖 [Kasutajajuhend](docs/user-guide/installation.md)
+- Ära mõõda treeningandmetel; test setid peavad olema held-out.
+- FAPH mõõda pideval voolul, mitte reset-per-clip loogikaga.
+- Sama thresholdi juures raporteeri koos:
+  `FAPH`, `Recall`, `Hard-negative FPR`.
+- Benchmark üksi ei ennusta päris elu; live-domain mõõtmine on kohustuslik.
 
-`docs/` hoiab lühikest ja hooldatud projektidokumentatsiooni. `notes/` hoiab
-tööpäevikut, eksperimendimärkmeid ja iteratiivseid visandeid.
+Vaata:
+- [wake-word/evaluation/test_sets.py](wake-word/evaluation/test_sets.py)
+- [wake-word/evaluation/compare_models.py](wake-word/evaluation/compare_models.py)
+- [wake-word/evaluation/run_faph_test.py](wake-word/evaluation/run_faph_test.py)
 
-## 🎓 Lõputöö Timeline
+## Dokumentatsioon Kiireks Orienteerumiseks
 
-| Milestone | Tähtaeg | Staatus |
-|-----------|---------|---------|
-| ✅ Projekti setup | Nädal 1 | ✅ Done |
-| 🔄 Data kogumine (10 inimest) | Nädal 2-3 | 🔄 In Progress |
-| ⏳ Data augmentation | Nädal 4 | ⏳ Planned |
-| ⏳ Initial model training | Nädal 5-6 | ⏳ Planned |
-| ⏳ Raspberry Pi prototype | Nädal 7-8 | ⏳ Planned |
-| ⏳ ESP32 implementation | Nädal 9-10 | ⏳ Planned |
-| ⏳ HA Add-on development | Nädal 11-12 | ⏳ Planned |
-| ⏳ User testing (20-30 users) | Nädal 13-14 | ⏳ Planned |
-| ⏳ Opt-in collection pilot | Nädal 15-16 | ⏳ Optional |
-| ⏳ Thesis writing | Nädal 17-20 | ⏳ Planned |
-| ⏳ Defense preparation | Nädal 21-22 | ⏳ Planned |
-| 🎯 Kaitsmine | Juuni 2025 | 🎯 Goal |
+- [docs/research/android-false-trigger-logger-mvp-plan.md](docs/research/android-false-trigger-logger-mvp-plan.md)
+- [docs/user-testing/portable-setup.md](docs/user-testing/portable-setup.md)
+- [hardware/esp32/esphome/README.md](hardware/esp32/esphome/README.md)
+- [stt-integration/README.md](stt-integration/README.md)
+- [external-repos/README.md](external-repos/README.md)
 
-## 🏆 Eesmärgid
+## Lühikokkuvõte
 
-### Minimaalsed (Guaranteed)
+Kui sa alustad nullist, siis õige vaimne mudel on:
 
-- ✅ Töötav "Kratt" wake word mudel (>95% accuracy)
-- ✅ Raspberry Pi + Home Assistant integratsioon
-- ✅ 20+ kasutajaga user testing
-- ✅ Published HA add-on
-- ✅ Täielik dokumentatsioon
-
-### Lisaeesmärgid (If Time Permits)
-
-- 🎁 ESP32C3 implementation
-- 🎁 Opt-in data collection framework
-- 🎁 Multi-wake-word support ("Kuule Kratt")
-- 🎁 Mobile app (data collection)
-- 🎁 Published paper/blog post
-
-## 🛠️ Tehnoloogiad
-
-### Wake Word Detection
-- **microWakeWord** - ESP32 (TFLite INT8)
-- **openWakeWord** - Raspberry Pi (ONNX/PyTorch)
-- **Data Augmentation**: audiomentations, pyroomacoustics
-
-### Hardware
-- **ESP32C3 Supermini** - €5, 400KB RAM, WiFi
-- **Raspberry Pi 5** - Home Assistant host
-- **INMP441** - I2S microphone
-
-### Software Stack
-- **Python 3.9** - Core development
-- **TensorFlow/PyTorch** - Model training
-- **ESPHome** - ESP32 firmware
-- **Home Assistant** - Smart home platform
-- **Wyoming Protocol** - Voice pipeline
-- **Docker** - Containerization
-
-### Existing Estonian STT
-- **Kiirkirjutaja** (Tanel Alumäe) - 1s latency, 3GB RAM
-
-## 📊 Metrics ja Success Criteria
-
-### Model Performance
-- **Accuracy**: >95% (wake word detection)
-- **False Positive Rate**: <5%
-- **False Negative Rate**: <5%
-- **Latency**: <500ms (end-to-end wake word detection)
-
-### System Performance
-- **End-to-End Latency**: <2s (wake word → action)
-- **Power Consumption**: <1W (ESP32 idle)
-- **Memory Usage**: <150KB (ESP32 active)
-
-### User Satisfaction
-- **Usability Score**: >4/5
-- **Setup Time**: <30min
-- **Daily Active Usage**: Data collected during testing
-
-## 🤝 Kaastöö ja Privaatsus
-
-### Data Collection Ethics
-- ✅ Opt-in ainult
-- ✅ Anonümiseeritud
-- ✅ GDPR compliant
-- ✅ Selge privacy policy
-- ✅ Õigus andmeid kustutada
-
-### Open Source
-- MIT/Apache 2.0 litsents
-- Avalik GitHub/GitLab repo
-- Community contributions oodatud
-- Dokumenteeritud koodi standard
-
-## 📞 Kontakt
-
-- **Email**: mattiaslinholm@gmail.com
-- **GitHub**: [your-github]
-- **Discord**: [if relevant]
-
-## 📄 Viited ja Tunnustused
-
-### Key References
-- microWakeWord: https://github.com/kahrendt/microWakeWord
-- openWakeWord: https://github.com/dscripka/openWakeWord
-- Kiirkirjutaja: https://github.com/alumae/kiirkirjutaja
-- Home Assistant: https://www.home-assistant.io/
-
-### Inspiratsioon
-- Rhasspy (multilingual voice assistant)
-- Mozilla Common Voice (crowdsourced speech data)
-- ESPHome Voice Kit
-
----
-
-**⚡ "Kuule Kratt!" - Esimene eestikeelne privaatne voice assistant**
+1. `wake-word/` on projekti tuum.
+2. `./cli/kratt` on praktiline sissepääs.
+3. `docs/PROJECT_TODO.md` ja `docs/research/source-of-truth-apr-2026.md`
+   on kõige olulisemad joondusdokid.
+4. `android/` ja `hardware/esp32/` annavad päris maailma signaali sellest,
+   kas mudel on kasutatav või ainult benchmark'is ilus.
