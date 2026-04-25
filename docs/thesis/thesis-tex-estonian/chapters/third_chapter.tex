@@ -55,6 +55,66 @@ Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna
     \item hindamise toru on kapseldatud skripti \texttt{wake-word/evaluation/compare\_models.py}, mis kutsub \texttt{microwakeword.test} kanoonilist FAPH-funktsiooni.
 \end{itemize}
 
+\section{Standardsete võrdlusaluste ebapiisavus reaalse kasutuse ennustamisel}
+\label{sec:benchmark-gap}
+
+Käesoleva töö üks kõige selgemaid ja praktiliselt olulisemaid leide on süstemaatiline lahknevus standardsete KWS võrdlusaluste tulemuste ja tegeliku kasutajakogemuse vahel. See lahknevus ilmnes 15+ mudeliversiooni itereerimise käigus, kuid ei ole pelgalt metoodika ebaküpsuse artefakt --- tegemist on valdkondliku probleemiga, mida kirjandus alles hiljuti on hakanud tunnistama.
+
+\subsection{Empiiriline tõendus lahknevusest}
+
+Kõige teravamalt ilmnes probleem kahe mudeliversiooni vahel. Versioon v6-residual saavutas kõigil standardsetel võrdlusalustel parima tulemuse: FAPH\,=\,3,4 (Common~Voice ET hold-out'il), 0\% FRR klipi-taseme testil ning 100\% recall XTTS-kloonitud positiivsetel klippidel. Pelgalt numbreid vaadates oleks see versioon olnud selge valik juurutamiseks. Reaalajas testimine näitas aga vastupidist pilti: v6-residual aktiveerus sarnastel fraasidel nagu \enquote{kuule rott} ja \enquote{kuule kraam} 100\% juhtudest ning tõelise kõneleja (autori õe) hääl tõi välja vaid 82\% recall'i juurutamislävel.
+
+Seevastu v15 sai standardsetel võrdlusalustel kõige halvemad numbrid kogu mudeliseeriast: FAPH\,=\,216 Common~Voice kõne peal ja FRR\,=\,6,2\%. Ometi oli v15 reaalkasutuses selgelt parim mudel --- 9 äratust 11-st päris kõneleja häälega, vaid 27\% valepositiivne määr foneetiliselt sarnastel hard negative fraasidel ning minimaalsed valevallandumised mittekõnelistel helidel (klaviatuuriklõpsud, ninakahin, taustamuusika).
+
+See paradoks ei ole juhuslik ega ühekordselt esinenud anomaalia. Sama muster kordus mitme vaheversiooni puhul: mudelid, mis standardsel hindamisel paistsid paremad, osutusid seadmel halvemateks, ja vastupidi. Lahknevuse põhjused on struktuursed ja tulenevad sellest, kuidas standardsed KWS võrdlusalused on üles ehitatud.
+
+\subsection{Põhjus 1: klipitaseme recall ei kajasta reaalse kõneleja käitumist}
+
+Positiivse recall'i mõõtmine toimus XTTS-kloonitud hääle isoleeritud klippide peal. Kõik klipid olid normaliseeritud, konstantse kauguse ja helitugevusega ning samalt kõnelejalt kloonitud. Selline testimine andis skoore täpselt 1,0000, mis tekitas vale kindlustunnet. Tegelikud kõnelejad varieeruvad häälduse, helitugevuse ja kauguse poolest märkimisväärselt. Reaalsete ütluste skoorid jäid vahemikku 0,97--0,99, mis tähendab, et juurutamislävel (cutoff\,$\geq$\,0,97) jääb osa ütlusi allapoole piiri.
+
+Park et al.~\cite{park2024adversarial} on näidanud, et TTS-andmetega treenitud mudelid kipuvad sünteesitud kõne peal näitama ülehinnatud recall'i, sest TTS-kõne ei sisalda sama varieeruvust kui loomulik kõne. Käesoleva töö tulemused kinnitavad seda leidu, kuid lisavad olulise täpsustuse: probleem ei piirdu ainult treenimisega, vaid laieneb ka hindamisele. Kui testikomplekt koosneb samadest TTS-häältest, millega treeniti, on recall'i hinnang topelt üle paisutatud.
+
+\subsection{Põhjus 2: FAPH tihedal kõnel ei ennusta FAPH reaalses keskkonnas}
+
+FAPH mõõtmine Common~Voice eestikeelsel kõnel kujutab olukorda, kus mikrofon kuuleb pidevat, selgesti artikuleeritud kõnet. Tegelikus nutikodu kasutuses on heli koostis aga hoopis teine: valdavalt vaikus, vahetevahel televisioon, muusika, vestlused teises toas, köögihelid. Mudel, mis tihedal kõnel vallandub 216 korda tunnis, ei pruugi elutoas vallanduda üldse, sest suurem osa ajast puudub foneetiliselt sarnane sisend. Vastupidi, mudel, mis tihedal kõnel näitab FAPH\,=\,3,4, võib olla liialt tundlik just nende üksikute mitte-kõne mustrite suhtes, mida standardne testkorpus ei sisalda.
+
+Dubois et al.~\cite{dubois2020triggers} demonstreerisid seda lahknevust empiiriliselt: kommertsiaalsetel nutikõlaritel mõõdeti keskmiselt 0,95 tahtmatut aktiveerimist tunnis, kui seadmed kuulsid televisioonisignaali --- tulemus, mida standardsed võrdlusalused ei olnud ennustanud. Sensory, kes arendab Samsung'i äratussõna mudeleid, on tunnistanud, et nende sisemine hindamine ei kattunud alati klientide tegeliku kogemusega~\cite{sensory2024realworld}.
+
+\subsection{Põhjus 3: klipitaseme hard negative test ei kajasta streaming-konteksti}
+
+Foneetiliselt sarnaste fraaside eristamist testiti isoleeritud klippidena. Mudel, mis korrektselt tõrjub üksiku klipi \enquote{kuule rott}, võib reageerida teisiti, kui sama fraas tuleb lause kontekstis: \enquote{kuule, rott on köögis}. Streaming-režiimis on mudeli sisemine olek eelmiste freimide mõjutatud, koartikulatsioon muudab akustilist pilti ja ajastus varieerub. Klipitaseme hindamine ignoreerib neid efekte täielikult.
+
+\subsection{Põhjus 4: mittekõneliste helide puudumine}
+
+Standardsed KWS võrdlusalused sisaldavad kõnet ja vahel keskkondlikke helisid (nt MUSAN müra \cite{musan2015}), kuid ei sisalda konkreetseid koduse keskkonna mittekõnelisi helisid. Käesoleva töö reaalajas testimisel selgus, et mõned mudeliversioonid vallandusid klaviatuuriklõpsude, ninakahinaga ja teatud muusikalis\-te melodiate peale. SpecAugment'i \cite{park2019specaugment} kasutamine treeningus aitas seda probleemi osaliselt leevendada, kuid ainult juhul, kui mittekõnelised mustrid olid negatiivses treeningmaterjalis esindatud. Ükski standardne benchmark selliseid juhtumeid ei mõõda.
+
+\subsection{Lahendusena: stsenaariumpõhine testimisvoog}
+
+Eelneva analüüsi põhjal väidab autor, et wake word mudelite usaldusväärne hindamine nõuab standardsete mõõdikute kõrvale täiendavat \emph{stsenaariumpõhist testimisvoogu}. Konkreetselt tähendab see 2-tunnist annoteeritud salvestust, mis sisaldab reaalseid kasutusolukordi:
+
+\begin{enumerate}
+    \item pikk vaikus (elutuba ilma aktiivsuseta),
+    \item taustamuusika ja televisioon,
+    \item loomulik vestlus, kuhu on põimitud foneetiliselt sarnased fraasid lausekontekstis,
+    \item äratussõna ütlused mitme kõneleja poolt erinevatel kaugustel ja helitugevustel.
+\end{enumerate}
+
+Salvestust hinnatakse streaming-inference'iga, mitte klipilõikamisega, ja tulemus võrreldakse ajaliste põhitõe (\emph{ground truth}) märgenditega. Selline metoodika mõõdab mudeli kvaliteeti viisil, mis on isomorfne tegeliku kasutajakogemusega.
+
+Sarnast lähenemist on propageeritud ka kirjanduses. MISP Challenge~\cite{chen2022misp} loodi spetsiaalselt selleks, et ületada standardsete võrdlusaluste ja reaalse kasutuse vahelist lõhet mandariini keele puhul, ning hõlmab multimodaalseid salvestusi reaalsetest eluruumidest. Käesoleva töö ettepanek on kitsamalt fokusseeritud --- ühe keele üks sõna ---\, kuid põhimõte on sama: hindamine peab peegeldama kasutusolukordi, mitte laboritingimusi.
+
+See leid omab laiemat tähtsust kui üksnes käesolev projekt. Iga madala ressursiga keele äratussõna arendaja, kes tugineb ainult standardsetele mõõdikutele, riskib valida juurutamiseks vale mudeli. Käesolev töö dokumenteerib selle riski konkreetsete numbritega ja pakub välja alternatiivse hindamismetoodika, mis võiks olla ülekantav teistele väikeste keelte projektidele.
+
+\section{Agentpõhine arendus kui töövõimendaja, mitte tõendusmaterjali asendaja}
+
+Käesoleva töö praktilist kulgu mõjutas oluliselt agentpõhine tarkvaraarendus. Erinevalt tavapärasest bakalaureusetöö protsessist, kus autor kirjutab kogu katsekoodi, abiskriptid ja analüüsivahendid järjestikku käsitsi, võimaldas see tööviis arendada mitut alamülesannet paralleelselt. See avaldus eeskätt selles, et projekti ümber tekkis lühikese ajaga terve mõõte- ja tugivahendite kiht: Androidi rakendus valevallandumiste logimiseks, automaatsed hindamisskriptid, andmete koondajad, reaalaja katsetamise abivahendid ning tulemuste kokkuvõtteprogrammid. Mitmed sellised komponendid, mille ehitamine oleks üksikautori tavapärases töövoos olnud liiga ajamahukas, muutusid teostatavaks just seetõttu, et koodi esmast mustandit, ümberkirjutamist ja tehnilist dokumenteerimist sai osaliselt delegeerida tehisagentidele.
+
+See kiirendus ei ole käesolevas töös pelgalt tootlikkuse detail, vaid sisuline uurimist kujundanud tegur. Näiteks Androidi rakendus, mis talletab valevallandumisi ja salvestab vastavad helilõigud, võimaldas koguda päris kasutusolukorrast selliseid negatiivseid näiteid, mida avalikest korpustest ei oleks olnud võimalik saada. Sama kehtib hindamis- ja analüüsiskriptide kohta: kiire tööriistaehitus võimaldas avastada andmelekke, korrata hindamist uutel sõltumatutel testikomplektidel ja võrrelda mudeliversioone lühikese ajaga mitme mõõdiku lõikes. Seega ei seisne agentpõhise tööviisi väärtus ainult selles, et valmis rohkem koodi, vaid selles, et võimalikuks muutus varasemast tihedam tagasisideahel idee, tööriista, mõõtmise ja mudelivaliku vahel.
+
+Samas ei tohi agentpõhise arenduse mõju üle tõlgendada. Kui tehisagendid vähendavad märkimisväärselt rakendusliku töö, skriptimise ja prototüüpimise kulu, siis nad ei vähenda samal määral tõendusmaterjali hankimise kulu. Tehisagendid ei loo juurde päris kõnelejaid, ei asenda sõltumatuid testikomplekte ega lahenda välise valiidsuse probleemi. Käesoleva töö üks keskseid järeldusi ongi, et tänapäevane agentpõhine tööviis nihutab peamise pudelikaela teostuselt tõendusmaterjalile: üksi töötav autor võib ehitada lühikese ajaga oluliselt laiema tehnilise süsteemi kui varem, kuid lõppjärelduste tugevus sõltub endiselt sellest, kui hästi on korraldatud pärisandmete kogumine, hindamismetoodika ja esialgsete tulemuste eristamine lõplikest väidetest.
+
+Sellest vaatepunktist ei ole agentpõhine arendus käesolevas töös ei kõrvaline mugavus ega ka teadusliku ranguse asendaja. Pigem toimib see töövõimendajana, mis võimaldab väikese ressursiga projektis jõuda kiiremini nende küsimusteni, mis tegelikult loevad: millised mudelid üldistuvad uutele kõnelejatele, milline hindamine ennustab päris kasutust ja kus paikneb praktiline kompromiss tundlikkuse ning valevallandumiste vahel. Seega on agentpõhine tööviis selles töös osa uurimiskontekstist, kuid mitte põhjus metodoloogilisi nõudeid leevendada.
+
 \section{Mida saab juba praegu väita}
 Praeguse töö seisu juures saab põhjendatult väita järgmist:
 \begin{itemize}

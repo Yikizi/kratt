@@ -265,3 +265,106 @@ Edasiste versioonide jaoks on kasutada märkimisväärsed avalikud eestikeelsed 
 \end{itemize}
 
 Kokku on avalikult kättesaadav üle 8000 tunni eestikeelset kõnet, millest senistes katsetes kasutati vähem kui 0,1\%. Edasiste versioonide plaan näeb ette negatiivse pooli kasvatamist $\sim$200 tunnini, mis hõlmab ka keskkondlikke negatiive (MUSAN müra ja muusika \cite{musan2015}, $\sim$59 tundi).
+
+\subsection{Sihipäraselt projekteeritud ekspertmudelite konsensus}
+\label{sec:expert-consensus}
+
+Eelmiste alapeatükkide tulemused näitasid, et üksiku mudeli optimeerimine viib paratamatult kompromissini: v7 saavutas parima FAPH (96), kuid kaotas recall'i uue kõneleja peal (43,8\%); v6 saavutas täieliku recall'i, kuid FAPH jäi kõrgeks (154). Üle 15 mudeliversiooni jooksul ilmnes, et ükski üksik ${\sim}22\,000$-parameetriline mudel ei suuda samaaegselt tagada madalat valevallandumiste sagedust, kõrget recall'i ja foneetiliste lähisugulaste tõrjumist. See tähelepanek viis mitme\-mudeli konsensuse idee juurde.
+
+\subsubsection{Komplementaarsete tugevuste avastamine}
+
+Mudeliversioonide hold-out tulemuste analüüs paljastas, et erinevad mudelid eksivad \emph{erinevates kohtades}. V6 residuaalühendusega variant (edaspidi v6-res) saavutas madala FAPH, kuid oli tundlik hard negatiividele. V10, mis oli treenitud suure hard negatiivide osakaaluga, eristab foneetilisi lähisugulasi paremini, kuid ei diskrimineeri üldist kõnet sama hästi. V15, mis oli optimeeritud reaalajas testimise tagasiside põhjal, näitas head käitumist MacBook mikrofoni peal, kuid mitte Common~Voice peal. Need tugevused on \emph{komplementaarsed}: kahe mudeli samaaegse aktiveerumise nõue (konsensus) võimaldab ühendada ühe mudeli madala FAPH teise mudeli foneetilise eristusvõimega.
+
+Esmane konsensuskatse v10 ja v15 mudelitega saavutas lävel 0,997/0,997 tulemuse FAPH\,=\,6,8 Common~Voice ET hold-out komplektil. See oli oluline paranemine võrreldes üksikmudeli parima tulemusega (96), kuid mitte piisav reaalajas kasutuselevõtuks. Järgmine samm oli sihipärane ekspertmudelite projekteerimine, kus iga mudel treenitakse konkreetse diskrimineerimisülesande jaoks.
+
+\subsubsection{Ekspertmudelite arhitektuur}
+
+Kaskaadne lähenemine, kus esimene mudel filtreerib lihtsamad juhud ja teine mudel kontrollib raskemaid, on äratussõna süsteemides laialdaselt kasutusel. Apple kasutab \enquote{Hey Siri} tuvastamiseks kahetasandilist DNN-kaskaadi \cite{apple-heysiri2017} ja Kundu~et~al. näitasid HEiMDaL arhitektuuriga, et kaskaadne detektsioon vähendab valepositiivsete määra 37\% võrra võrreldes ühemudelilise süsteemiga \cite{kundu2023heimdal}. Käesolev töö rakendab sarnast põhimõtet, kuid oluline erinevus seisneb selles, et siin ei ole tegemist mitte ühe suure ja ühe väikese mudeliga, vaid kahe \emph{funktsionaalselt spetsialiseeritud} mudeliga, mis mõlemad on mikrokontrollerile sobiva suurusega.
+
+Projekteeriti kaks ekspertmudelit:
+
+\begin{itemize}
+    \item \textbf{Ekspert~A (\enquote{väravavaht})}: 96 filtrini laiendatud MixedNet residuaalühendusega \cite{he2016resnet}, treenitud \emph{ainult} üldiste negatiividega (Common~Voice ET + MUSAN ambient). Selle mudeli roll on filtreerimisfunktsioon: tõrjuda üldine kõne ja taustamüra. Mudeli maht on 148\,KB (TFLite INT8).
+    \item \textbf{Ekspert~B (\enquote{kontrollija})}: 48-filtriline standardne MixedNet, treenitud hard negatiivide põhiselt. Selle mudeli roll on foneetiline eristamine: tõrjuda fraasid, mis kõlavad sarnaselt, kuid ei ole äratussõna. Mudeli maht on 55\,KB (TFLite INT8).
+\end{itemize}
+
+Konsensusreegel on lihtne konjunktsioon: äratussõna loetakse tuvastatuks ainult juhul, kui \emph{mõlemad} mudelid ületavad samaaegselt oma läve. See tähendab, et valepositiivne tulemus nõuab kahe sõltumatu mudeli samaaegset eksimust.
+
+\subsubsection{Ekspert~B treeningandmete koosseisu mõju}
+
+Ekspert~B projekteerimisel ilmnes oluline leid treeningandmete koosseisu kohta. Esimene variant (Ekspert~B~v1) treeniti ainult hard negatiividega: positiivsed ja negatiivsed näited olid 1:1 vahekorras, kusjuures 100\% negatiividest olid foneetilised lähisugulased (\enquote{Kuule kraam}, \enquote{Kuule rott}, \enquote{Hei Kratt} jm). See mudel osutus täiesti kasutamiskõlbmatuks: hard negatiivide valepositiivsete määr (HN~FPR) oli 100\% ja FAPH ületas 1400 (tabel~\ref{tab:expert-individual}).
+
+\begin{table}[H]
+\centering
+\caption{Ekspertmudelite individuaalsed tulemused (lävi\,=\,0,997). \enquote{Recall (sõsar)} tähistab XTTS-iga genereeritud unseen kõneleja recall'i 11 klipist. HN~Mac = hard negatiivide FPR MacBook mikrofoni peal.}
+\label{tab:expert-individual}
+\begin{tabular}{l r r r r r}
+\hline
+\textbf{Mudel} & \textbf{Maht} & \textbf{FAPH CV} & \textbf{FAPH Mac} & \textbf{Recall (sõsar)} & \textbf{HN Mac} \\
+\hline
+Ekspert A (väravavaht) & 148\,KB & 25,6 & 9,4 & 9/11 & 87\% \\
+Ekspert B v1 (100\% HN) & 55\,KB & 1482,7 & 546,4 & 13/11$^*$ & 100\% \\
+Ekspert B v2 (80\% HN + 20\% üld.) & 55\,KB & 42,7 & 24,8 & 5/11 & 13\% \\
+\hline
+\end{tabular}
+\begin{flushleft}
+\small $^*$Ülevallandunud mudel annab rohkem aktiveerimisi kui tegelikke positiivseid klippe.
+\end{flushleft}
+\end{table}
+
+Ekspert~B~v1 ebaõnnestumine on teaduslikult informatiivne. Kui mudel näeb negatiivses klassis \emph{ainult} foneetiliselt sarnaseid fraase, puudub tal kalibreerimisbaas: kõik negatiivsed näited sisaldavad kõneenergiat ja sarnast foneetilist struktuuri, mistõttu mudel õpib seostama \emph{igasugust} kõneenergiat positiivse klassiga. Sisuliselt puudub mudelil skaala ülemine ots --- ta ei tea, milline on \enquote{tavaline} negatiivne kõne, mille suhtes hard negatiive eristada.
+
+Ekspert~B~v2 lahendab selle probleemi, lisades 20\% üldisi negatiive (Common~Voice ET klipid) hard negatiivide kõrvale. See väike lisand annab mudelile kalibreerimisankru: üldine kõne saab madala skoori, hard negatiivid veidi kõrgema, ja ainult päris äratussõna ületab läve. HN~FPR langes 100\%-lt 13\%-le --- seitsme\-kordne paranemine ühe treeningparaameetri muutusega.
+
+\subsubsection{Konsensustulemused}
+
+Tabel~\ref{tab:expert-consensus} esitab ekspertmudelite konsensustulemused võrdluses esialgse v10+v15 konsensusega.
+
+\begin{table}[H]
+\centering
+\caption{Mitme mudeli konsensustulemused erinevatel lävedel. FAPH~CV = Common~Voice ET hold-out (3,82\,h). FAPH~Mac = MacBook taustamonitor (70\,min). HN~Mac = hard negatiivide FPR MacBook mikrofoni peal. Android = Android seadme hard negatiivide FPR. Parimad tulemused \textbf{paksus kirjas}.}
+\label{tab:expert-consensus}
+\begin{tabular}{l r r r r r}
+\hline
+\textbf{Konfiguratsioon} & \textbf{FAPH CV} & \textbf{FAPH Mac} & \textbf{Recall} & \textbf{HN Mac} & \textbf{Android} \\
+\hline
+v10 + v15 @ 0,997/0,997 & 6,8 & 0,0 & 7/11 & 7\% & 8\% \\
+Ekspert A+B v2 @ 0,90/0,90 & 11,0 & 1,7 & 6/11 & 33\% & 4\% \\
+Ekspert A+B v2 @ 0,997/0,997 & \textbf{0,8} & \textbf{0,0} & 5/11 & \textbf{7\%} & \textbf{4\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+Ekspert~A ja B~v2 konsensus lävega 0,997/0,997 saavutab \textbf{FAPH\,=\,0,8} Common~Voice ET hold-out komplektil. See tähendab, et 3,82 tunni pideva tiheda eestikeelse kõne jooksul registreeritakse keskmiselt vähem kui üks valevallandmine tunnis. MacBook taustamonitori 70-minutilise seansi jooksul ei registreeritud ühtegi valevallandumist (FAPH\,=\,0,0).
+
+Tulemust tuleb tõlgendada kontekstis. Common~Voice ET koosneb lühikestest ettelloetud lausetest, mis moodustavad tiheda ja katkematu kõnevoolu --- see on äratussõna detektori jaoks oluliselt raskem keskkond kui tüüpiline kodune olukord, kus kõne on vahelduv ja pausidega. Reaalne FAPH koduses keskkonnas on tõenäoliselt madalam, mida MacBook taustamonitori 0,0 FAPH ka kaudselt kinnitab.
+
+\subsubsection{Võrdlus avaldatud süsteemidega}
+
+Otsene võrdlus avaldatud süsteemidega on piiratud, sest eri tööd kasutavad erinevaid hindamiskorpusi. Siiski annavad publitseeritud FAPH väärtused konteksti:
+
+\begin{itemize}
+    \item \texttt{microWakeWord} \enquote{okay nabu}: 0,16 FAPH DiPCo korpusel \cite{microwakeword2026, dipco2020};
+    \item \texttt{openWakeWord} \enquote{hey jarvis}: 0,187 FAPH DiPCo korpusel \cite{openwakeword2026, dipco2020};
+    \item Picovoice \enquote{alexa}: ${\sim}0{,}1$ FAPH LibriSpeech korpusel \cite{picovoice-benchmark2026}.
+\end{itemize}
+
+Need süsteemid on treenitud kümnete tuhandete tundide negatiivsete andmetega ja kasutavad ingliskeelseid äratussõnu, mille foneetiline eristuvus on pikemaajaliselt optimeeritud. Käesoleva töö 0,8 FAPH on saavutatud ${\sim}5$ tunni eestikeelsete negatiividega ning Common~Voice ET korpusel, mis on tihedam kõnekeskkond kui DiPCo vestluskorpus. Kuigi korpuste erinevus ei võimalda otsest võrdlust, näitab tulemus, et sihipäraselt projekteeritud ekspertmudelite konsensus viib FAPH sama suurusjärgu piirkonda, mille tööstuslikud süsteemid on saavutanud oluliselt suuremate ressurssidega.
+
+\subsubsection{Recall'i kompromiss ja ESP32 teostatavus}
+
+Konsensuse hind on recall'i langus: 5/11 (45\%) unseen kõneleja klippidest tuvastatakse. See on fundamentaalne kapatsiteedi piirang: kaks ${\sim}22\,000$-parameetrilist mudelit konsensuses on selektiivsemad, kuid ka tõenäolisemalt eriarvamusel piirjuhtudel. Kõrgema läve (0,997) juures piisab ühe mudeli ebakindlusest, et kogu süsteem loobub aktiveerimisest.
+
+Madalama läve (0,90/0,90) kasutamine tõstab recall'i 6/11-le, kuid FAPH kasvab 11,0-ni. See kompromiss on reguleeritav ja sõltub rakenduse nõuetest: koduses keskkonnas, kus kasutaja saab äratussõna vajaduse korral korrata, on madalam recall aktsepteeritav, kui valevallandumised on peaaegu elimineeritud.
+
+ESP32-S3 teostatavuse seisukohast on tulemus paljulubav. Ekspert~A (148\,KB) ja Ekspert~B~v2 (55\,KB) nõuavad kokku 203\,KB flash-mälu ja hinnanguliselt ${\sim}120$\,KB töömälu vahelduvaks inference'iks. See mahub ESP32-S3 piirangutesse (4\,MB flash, 512\,KB SRAM), jättes piisavalt ruumi ESPHome püsivarale ja WiFi-pinule.
+
+\subsubsection{Järeldused}
+
+Sihipäraselt projekteeritud ekspertmudelite konsensus valideerib kaskaadse spetsialiseerumise põhimõtet \cite{kundu2023heimdal} mikrokontrolleri suurusjärgus mudelite kontekstis. Kolm peamist järeldust on:
+
+\begin{enumerate}
+    \item \textbf{Hard negatiivide kalibreerimine}: puhtalt hard negatiividel treenitud mudel (Ekspert~B~v1) on kasutamiskõlbmatu, sest tal puudub diskrimineerimise baastase. Juba 20\% üldiste negatiivide lisamine taastab mudeli eristusvõime, langetades HN~FPR 100\%-lt 13\%-le.
+    \item \textbf{Sub-1 FAPH on saavutatav}: kahe kompaktse ekspertmudeli (kokku ${\sim}44\,000$ parameetrit, 203\,KB flash) konsensus saavutab 0,8 FAPH tihedal eestikeelsel kõnel, mis on sama suurusjärgu tulemus kui tööstuslikud süsteemid kümnete tuhandete kordade suurema treeningandmestikuga.
+    \item \textbf{Recall on järgmine pudelikael}: 45\% recall unseen kõnelejal on praeguse süsteemi peamine piirang. Selle parandamine nõuab tõenäoliselt suuremat treeningandmestikku (rohkem kõnelejaid), madalamat konsensusläve (recall'i ja FAPH kompromiss) või kolmandat ekspertmudelit, mis on spetsialiseerunud erinevate kõnelejate äratundmisele.
+\end{enumerate}
