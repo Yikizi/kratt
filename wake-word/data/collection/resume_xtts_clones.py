@@ -6,26 +6,37 @@ Checks existing files and generates only what's missing.
 Usage:
     python resume_xtts_clones.py --name ema
     python resume_xtts_clones.py --name isa
+    python resume_xtts_clones.py --name ode --positive-target 200 --skip-negatives
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import time
 from pathlib import Path
 
-import soundfile as sf
-import librosa
 import shutil
 
 from generate_xtts_clones import (
     POSITIVE_TEXTS,
     NEGATIVE_TEXTS,
     CLIP_DURATION_S,
+    build_positive_plan,
     find_best_reference,
-    generate_with_xtts,
-    clip_and_resample_to_16k,
+    ensure_generated_variant,
+    slugify_prompt,
 )
+
+
+def load_manifest(output_dir: Path) -> dict | None:
+    manifest_path = output_dir / "generation_manifest.json"
+    if not manifest_path.exists():
+        return None
+    try:
+        return json.loads(manifest_path.read_text())
+    except Exception:
+        return None
 
 
 def main():
@@ -34,6 +45,15 @@ def main():
     parser.add_argument("--output-root", default="../raw/xtts_clones")
     parser.add_argument("--ref-root", default="../raw/voice_references")
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument(
+        "--positive-target",
+        type=int,
+        default=None,
+        help="Generate this many positive variants using the deterministic target plan "
+             "(overrides --repeats for positives).",
+    )
+    parser.add_argument("--seed", type=int, default=42, help="Shuffle seed used by --positive-target mode.")
+    parser.add_argument("--skip-negatives", action="store_true", help="Only resume positives.")
     parser.add_argument("--delay", type=float, default=1.0)
     args = parser.parse_args()
 
@@ -48,30 +68,55 @@ def main():
     for d in [pos_dir, pos_16k_dir, neg_dir, neg_16k_dir]:
         d.mkdir(parents=True, exist_ok=True)
 
-    # Build expected file lists
-    expected_pos = []  # (idx, text, safe, repeat, out_24k, out_16k)
-    idx = 0
-    for i, text in enumerate(POSITIVE_TEXTS):
-        safe = text.replace(" ", "_").replace(",", "").replace(".", "").replace("!", "").replace("?", "")
-        for r in range(args.repeats):
-            out_24k = pos_dir / f"{args.name}_xtts_pos_{idx:04d}_{safe}_r{r}.wav"
-            out_16k = pos_16k_dir / f"{args.name}_xtts_pos_{idx:04d}_{safe}_r{r}.wav"
-            expected_pos.append((idx, text, safe, r, out_24k, out_16k))
-            idx += 1
+    manifest = load_manifest(output_dir)
+    if manifest and manifest.get("seed") is not None:
+        args.seed = int(manifest["seed"])
+    if manifest and manifest.get("positive_target") is not None and args.positive_target is None:
+        args.positive_target = int(manifest["positive_target"])
+    elif manifest and args.positive_target is not None:
+        manifest_target = manifest.get("positive_target")
+        if manifest_target is not None and int(manifest_target) != args.positive_target:
+            raise SystemExit(
+                f"Manifest target mismatch: manifest has {manifest_target}, "
+                f"requested {args.positive_target}."
+            )
+
+    if args.positive_target is not None:
+        positive_plan = build_positive_plan(POSITIVE_TEXTS, args.positive_target, args.seed)
+        expected_pos = [
+            (
+                int(item["slot"]),
+                str(item["text"]),
+                str(item["slug"]),
+                pos_dir / f"{args.name}_xtts_pos_{int(item['slot']):04d}_{str(item['slug'])}.wav",
+                pos_16k_dir / f"{args.name}_xtts_pos_{int(item['slot']):04d}_{str(item['slug'])}.wav",
+            )
+            for item in positive_plan
+        ]
+    else:
+        expected_pos = []
+        idx = 0
+        for text in POSITIVE_TEXTS:
+            safe = slugify_prompt(text)
+            for r in range(args.repeats):
+                out_24k = pos_dir / f"{args.name}_xtts_pos_{idx:04d}_{safe}_r{r}.wav"
+                out_16k = pos_16k_dir / f"{args.name}_xtts_pos_{idx:04d}_{safe}_r{r}.wav"
+                expected_pos.append((idx, text, safe, out_24k, out_16k))
+                idx += 1
 
     expected_neg = []
-    idx = 0
-    for i, text in enumerate(NEGATIVE_TEXTS):
-        safe = text.replace(" ", "_").replace(",", "").replace(".", "").replace("!", "").replace("?", "")
-        for r in range(args.repeats):
-            out_24k = neg_dir / f"{args.name}_xtts_neg_{idx:04d}_{safe}_r{r}.wav"
-            out_16k = neg_16k_dir / f"{args.name}_xtts_neg_{idx:04d}_{safe}_r{r}.wav"
-            expected_neg.append((idx, text, safe, r, out_24k, out_16k))
-            idx += 1
+    if not args.skip_negatives:
+        idx = 0
+        for text in NEGATIVE_TEXTS:
+            safe = slugify_prompt(text)
+            for r in range(args.repeats):
+                out_24k = neg_dir / f"{args.name}_xtts_neg_{idx:04d}_{safe}_r{r}.wav"
+                out_16k = neg_16k_dir / f"{args.name}_xtts_neg_{idx:04d}_{safe}_r{r}.wav"
+                expected_neg.append((idx, text, safe, out_24k, out_16k))
+                idx += 1
 
-    # Find missing
-    missing_pos = [item for item in expected_pos if not item[5].exists()]
-    missing_neg = [item for item in expected_neg if not item[5].exists()]
+    missing_pos = [item for item in expected_pos if not item[-1].exists()]
+    missing_neg = [item for item in expected_neg if not item[-1].exists()]
 
     print(f"  {args.name}:")
     print(f"    Positiivseid: {len(expected_pos) - len(missing_pos)}/{len(expected_pos)} olemas")
@@ -95,21 +140,23 @@ def main():
     failed = 0
 
     # Generate missing positives
-    for idx, text, safe, r, out_24k, out_16k in missing_pos:
-        if generate_with_xtts(client, text, ref_handle, out_24k):
-            clip_and_resample_to_16k(out_24k, out_16k, clip_s=CLIP_DURATION_S)
+    for item in missing_pos:
+        if args.positive_target is not None:
+            idx, text, safe, out_24k, out_16k = item
+        else:
+            idx, text, safe, out_24k, out_16k = item
+        if ensure_generated_variant(client, text, ref_handle, out_24k, out_16k, clip_s=CLIP_DURATION_S):
             success += 1
-            print(f"  pos {idx:04d}/r{r}: {text}")
+            print(f"  pos {idx:04d}: {text}")
         else:
             failed += 1
         time.sleep(args.delay)
 
     # Generate missing negatives
-    for idx, text, safe, r, out_24k, out_16k in missing_neg:
-        if generate_with_xtts(client, text, ref_handle, out_24k):
-            clip_and_resample_to_16k(out_24k, out_16k, clip_s=None)
+    for idx, text, safe, out_24k, out_16k in missing_neg:
+        if ensure_generated_variant(client, text, ref_handle, out_24k, out_16k, clip_s=None):
             success += 1
-            print(f"  neg {idx:04d}/r{r}: {text}")
+            print(f"  neg {idx:04d}: {text}")
         else:
             failed += 1
         time.sleep(args.delay)

@@ -9,12 +9,17 @@ Usage:
     python generate_xtts_clones.py --name marta \
         --ref-dir ../raw/voice_references/marta \
         --output ../raw/xtts_clones/marta
+    python generate_xtts_clones.py --name isa \
+        --ref-dir ../raw/voice_references/isa \
+        --output ../raw/xtts_clones/isa \
+        --positive-target 200 --skip-negatives
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import random
 import shutil
 import time
 from pathlib import Path
@@ -73,6 +78,47 @@ NEGATIVE_TEXTS = [
 ]
 
 
+def slugify_prompt(text: str) -> str:
+    return (
+        text.strip()
+        .lower()
+        .replace(" ", "_")
+        .replace(",", "")
+        .replace(".", "")
+        .replace("!", "")
+        .replace("?", "")
+        .replace("—", "-")
+        .replace("–", "-")
+    )
+
+
+def build_positive_plan(texts: list[str], target_count: int, seed: int) -> list[dict[str, object]]:
+    """Build a deterministic stochastic plan for positive-only generation.
+
+    The XTTS model itself is stochastic, so repeating a text prompt with a
+    stable slot index is enough to create a resumable "variant" plan.
+    """
+    if target_count <= 0:
+        return []
+
+    rng = random.Random(seed)
+    ordered_texts = list(texts)
+    rng.shuffle(ordered_texts)
+
+    plan: list[dict[str, object]] = []
+    for slot in range(target_count):
+        text = ordered_texts[slot % len(ordered_texts)]
+        plan.append(
+            {
+                "slot": slot,
+                "cycle": slot // len(ordered_texts),
+                "text": text,
+                "slug": slugify_prompt(text),
+            }
+        )
+    return plan
+
+
 def find_best_reference(ref_dir: Path) -> Path:
     """Pick the best reference WAV (largest file = longest recording)."""
     wavs = sorted(ref_dir.glob("*.wav"), key=lambda f: f.stat().st_size, reverse=True)
@@ -122,6 +168,30 @@ def generate_with_xtts(
             return False
 
 
+def ensure_generated_variant(
+    client,
+    text: str,
+    ref_handle,
+    out_24k: Path,
+    out_16k: Path,
+    clip_s: float | None,
+) -> bool:
+    """Generate a single variant if needed.
+
+    Returns True when the final 16 kHz file exists, either because it was
+    already present or because it was generated successfully.
+    """
+    if out_16k.exists():
+        return True
+    if out_24k.exists():
+        clip_and_resample_to_16k(out_24k, out_16k, clip_s=clip_s)
+        return out_16k.exists()
+    if generate_with_xtts(client, text, ref_handle, out_24k):
+        clip_and_resample_to_16k(out_24k, out_16k, clip_s=clip_s)
+        return out_16k.exists()
+    return False
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate XTTS v2 cloned voice samples")
     parser.add_argument("--name", required=True, help="Speaker name")
@@ -129,6 +199,19 @@ def main():
     parser.add_argument("--output", required=True, help="Output directory")
     parser.add_argument("--skip-negatives", action="store_true", help="Only generate positives")
     parser.add_argument("--repeats", type=int, default=3, help="Generate each phrase N times (default: 3)")
+    parser.add_argument(
+        "--positive-target",
+        type=int,
+        default=None,
+        help="Generate this many positive variants using a deterministic stochastic plan "
+             "(overrides --repeats for positives).",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Shuffle seed used by --positive-target mode.",
+    )
     parser.add_argument("--delay", type=float, default=1.0, help="Delay between API calls (s)")
     args = parser.parse_args()
 
@@ -156,24 +239,46 @@ def main():
 
     stats = {"name": args.name, "ref": ref_path.name, "positive": 0, "negative": 0, "failed": 0}
 
-    total_pos = len(POSITIVE_TEXTS) * args.repeats
-    print(f"  Genereerin positiivseid ({len(POSITIVE_TEXTS)} fraasi × {args.repeats} korda = {total_pos}, lõikan {CLIP_DURATION_S}s)...")
-    idx = 0
-    for i, text in enumerate(POSITIVE_TEXTS):
-        safe = text.replace(" ", "_").replace(",", "").replace(".", "").replace("!", "").replace("?", "")
-        for r in range(args.repeats):
-            out_24k = pos_dir / f"{args.name}_xtts_pos_{idx:04d}_{safe}_r{r}.wav"
-            out_16k = pos_16k_dir / f"{args.name}_xtts_pos_{idx:04d}_{safe}_r{r}.wav"
+    positive_plan: list[dict[str, object]] = []
+    if args.positive_target is not None:
+        positive_plan = build_positive_plan(POSITIVE_TEXTS, args.positive_target, args.seed)
+        total_pos = len(positive_plan)
+        print(
+            f"  Genereerin positiivseid (target {args.positive_target}, "
+            f"{len(POSITIVE_TEXTS)} fraasi, seed={args.seed}, lõikan {CLIP_DURATION_S}s)..."
+        )
+        for item in positive_plan:
+            slot = int(item["slot"])
+            text = str(item["text"])
+            safe = str(item["slug"])
+            out_24k = pos_dir / f"{args.name}_xtts_pos_{slot:04d}_{safe}.wav"
+            out_16k = pos_16k_dir / f"{args.name}_xtts_pos_{slot:04d}_{safe}.wav"
 
-            if generate_with_xtts(client, text, ref_handle, out_24k):
-                clip_and_resample_to_16k(out_24k, out_16k, clip_s=CLIP_DURATION_S)
+            if ensure_generated_variant(client, text, ref_handle, out_24k, out_16k, CLIP_DURATION_S):
                 stats["positive"] += 1
             else:
                 stats["failed"] += 1
-            idx += 1
-            print(f"\r  pos: {idx}/{total_pos}", end="", flush=True)
+            print(f"\r  pos: {slot + 1}/{total_pos}", end="", flush=True)
             time.sleep(args.delay)
-    print()
+        print()
+    else:
+        total_pos = len(POSITIVE_TEXTS) * args.repeats
+        print(f"  Genereerin positiivseid ({len(POSITIVE_TEXTS)} fraasi × {args.repeats} korda = {total_pos}, lõikan {CLIP_DURATION_S}s)...")
+        idx = 0
+        for i, text in enumerate(POSITIVE_TEXTS):
+            safe = slugify_prompt(text)
+            for r in range(args.repeats):
+                out_24k = pos_dir / f"{args.name}_xtts_pos_{idx:04d}_{safe}_r{r}.wav"
+                out_16k = pos_16k_dir / f"{args.name}_xtts_pos_{idx:04d}_{safe}_r{r}.wav"
+
+                if ensure_generated_variant(client, text, ref_handle, out_24k, out_16k, CLIP_DURATION_S):
+                    stats["positive"] += 1
+                else:
+                    stats["failed"] += 1
+                idx += 1
+                print(f"\r  pos: {idx}/{total_pos}", end="", flush=True)
+                time.sleep(args.delay)
+        print()
 
     # Generate negatives (symmetry principle)
     if not args.skip_negatives:
@@ -186,13 +291,12 @@ def main():
         print(f"\n  Genereerin negatiivseid ({len(NEGATIVE_TEXTS)} fraasi × {args.repeats} korda = {total_neg})...")
         idx = 0
         for i, text in enumerate(NEGATIVE_TEXTS):
-            safe = text.replace(" ", "_").replace(",", "").replace(".", "").replace("!", "").replace("?", "")
+            safe = slugify_prompt(text)
             for r in range(args.repeats):
                 out_24k = neg_dir / f"{args.name}_xtts_neg_{idx:04d}_{safe}_r{r}.wav"
                 out_16k = neg_16k_dir / f"{args.name}_xtts_neg_{idx:04d}_{safe}_r{r}.wav"
 
-                if generate_with_xtts(client, text, ref_handle, out_24k):
-                    clip_and_resample_to_16k(out_24k, out_16k, clip_s=None)
+                if ensure_generated_variant(client, text, ref_handle, out_24k, out_16k, clip_s=None):
                     stats["negative"] += 1
                 else:
                     stats["failed"] += 1
@@ -205,11 +309,28 @@ def main():
     stats_path = output_dir / "generation_stats.json"
     stats_path.write_text(json.dumps(stats, indent=2, ensure_ascii=False) + "\n")
 
+    manifest_path = output_dir / "generation_manifest.json"
+    manifest = {
+        "name": args.name,
+        "ref": str(ref_path),
+        "seed": args.seed,
+        "positive_target": args.positive_target,
+        "positive_plan_mode": "target" if args.positive_target is not None else "repeat",
+        "repeats": None if args.positive_target is not None else args.repeats,
+        "skip_negatives": args.skip_negatives,
+        "positive_count": stats["positive"],
+        "negative_count": stats["negative"],
+        "failed_count": stats["failed"],
+        "positive_plan": positive_plan,
+    }
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+
     print(f"\n  {'=' * 50}")
     print(f"  ✅ {args.name} kloonid valmis")
     print(f"     Positiivseid: {stats['positive']}")
     print(f"     Negatiivseid: {stats['negative']}")
     print(f"     Ebaõnnestunud: {stats['failed']}")
+    print(f"     Manifest: {manifest_path}")
     print(f"     24kHz: {output_dir}/positive/ ja negative/")
     print(f"     16kHz: {output_dir}/positive_16k/ ja negative_16k/")
     print(f"     Stats: {stats_path}")

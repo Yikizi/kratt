@@ -94,7 +94,7 @@ def score_clip_max(model: Model, path: Path) -> float:
 
 def score_clip_set(model: Model, test_set: TestSet) -> list[float]:
     scores = []
-    for f in sorted(test_set.path.glob("*.wav")):
+    for f in sorted(test_set.path.rglob("*.wav")):
         scores.append(score_clip_max(model, f))
         reset_model_state(model)
     return scores
@@ -141,7 +141,7 @@ def streaming_faph(
     silence_samples = (silence_ms * 16000) // 1000
     silence = np.zeros(silence_samples, dtype=np.int16)
 
-    files = sorted(test_set.path.glob("*.wav"))
+    files = sorted(test_set.path.rglob("*.wav"))
     if not files:
         return {"n": 0, "duration_s": 0.0, "activations": 0, "faph": 0.0}
 
@@ -230,7 +230,7 @@ def section(text: str) -> None:
 
 def discover_models(base: Path, selected: list[str] | None) -> dict[str, Path]:
     models: dict[str, Path] = {}
-    for d in sorted(base.glob("models/kuule-kratt-v*")):
+    for d in sorted(base.glob("models/kuule-kratt-*")):
         version = d.name.replace("kuule-kratt-", "")
         tflite = d / f"kuule_kratt_{version}.tflite"
         if not tflite.exists():

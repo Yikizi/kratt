@@ -18,7 +18,15 @@ Usage:
     --positive-dir DIR \
     --negative-dir DIR \
     [--ambient-dir DIR] \
+    [--background-noise-dir DIR]... \
+    [--impulse-response-dir DIR]... \
     [--training-steps N] \
+    [--learning-rates CSV] \
+    [--neg-class-weight N] \
+    [--recall-profile] \
+    [--vtlp-prob P] \
+    [--vtlp-alpha-min A] \
+    [--vtlp-alpha-max A] \
     [--clip-duration-ms N]
 
 This script builds RaggedMmap features, writes a temporary training config,
@@ -31,14 +39,23 @@ POS_DIR=""
 NEG_DIR=""
 HARD_NEG_DIR=""
 AMBIENT_DIR=""
-TRAINING_STEPS=3000
+BACKGROUND_NOISE_DIRS=()
+IMPULSE_RESPONSE_DIRS=()
+TRAINING_STEPS="15000, 5000"
 CLIP_DURATION_MS=1500
+NEGATIVE_CLASS_WEIGHT="5"
+LEARNING_RATES="0.001, 0.0001"
 TIME_MASK_SIZE=0
 TIME_MASK_COUNT=0
 FREQ_MASK_SIZE=0
 FREQ_MASK_COUNT=0
 # v6-residual ablation proved residual ON = -37% FAPH. Always on by default.
 RESIDUAL_CONNECTION="1,1,1,1"
+POINTWISE_FILTERS="48, 48, 48, 48"
+VTLP_PROB="0.5"
+VTLP_ALPHA_MIN="0.85"
+VTLP_ALPHA_MAX="1.15"
+AUG_PROFILE="aggressive"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -66,8 +83,34 @@ while [[ $# -gt 0 ]]; do
       TRAINING_STEPS="$2"
       shift 2
       ;;
+    --neg-class-weight)
+      NEGATIVE_CLASS_WEIGHT="$2"
+      shift 2
+      ;;
+    --learning-rates)
+      LEARNING_RATES="$2"
+      shift 2
+      ;;
+    --recall-profile)
+      TRAINING_STEPS="15000, 5000"
+      NEGATIVE_CLASS_WEIGHT="5"
+      LEARNING_RATES="0.001, 0.0001"
+      RESIDUAL_CONNECTION="1,1,1,1"
+      VTLP_PROB="0.5"
+      VTLP_ALPHA_MIN="0.85"
+      VTLP_ALPHA_MAX="1.15"
+      shift 1
+      ;;
     --clip-duration-ms)
       CLIP_DURATION_MS="$2"
+      shift 2
+      ;;
+    --background-noise-dir)
+      BACKGROUND_NOISE_DIRS+=("$2")
+      shift 2
+      ;;
+    --impulse-response-dir)
+      IMPULSE_RESPONSE_DIRS+=("$2")
       shift 2
       ;;
     --spec-augment)
@@ -85,6 +128,30 @@ while [[ $# -gt 0 ]]; do
       RESIDUAL_CONNECTION="0,0,0,0"
       shift 1
       ;;
+    --pointwise-filters)
+      POINTWISE_FILTERS="$2"
+      shift 2
+      ;;
+    --vtlp-prob)
+      VTLP_PROB="$2"
+      shift 2
+      ;;
+    --vtlp-alpha-min)
+      VTLP_ALPHA_MIN="$2"
+      shift 2
+      ;;
+    --vtlp-alpha-max)
+      VTLP_ALPHA_MAX="$2"
+      shift 2
+      ;;
+    --no-vtlp)
+      VTLP_PROB="0.0"
+      shift 1
+      ;;
+    --aug-profile)
+      AUG_PROFILE="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -99,6 +166,30 @@ done
 
 if [[ -z "${EXPERIMENT_NAME}" || -z "${POS_DIR}" || -z "${NEG_DIR}" ]]; then
   usage >&2
+  exit 2
+fi
+
+trim_csv_len() {
+  printf '%s\n' "$1" | tr ',' '\n' | sed 's/^ *//; s/ *$//' | sed '/^$/d' | wc -l | tr -d ' '
+}
+
+PHASE_COUNT="$(trim_csv_len "${TRAINING_STEPS}")"
+LR_PHASE_COUNT="$(trim_csv_len "${LEARNING_RATES}")"
+if [[ "${PHASE_COUNT}" != "${LR_PHASE_COUNT}" ]]; then
+  echo "training_steps phases (${PHASE_COUNT}) must match learning_rates phases (${LR_PHASE_COUNT})" >&2
+  exit 2
+fi
+
+if ! python3 - "${VTLP_PROB}" "${VTLP_ALPHA_MIN}" "${VTLP_ALPHA_MAX}" <<'PY'
+import sys
+prob, alpha_min, alpha_max = map(float, sys.argv[1:])
+if not (0.0 <= prob <= 1.0):
+    raise SystemExit(1)
+if alpha_min <= 0 or alpha_max <= 0 or alpha_min > alpha_max:
+    raise SystemExit(1)
+PY
+then
+  echo "Invalid VTLP parameters: prob=${VTLP_PROB} alpha_min=${VTLP_ALPHA_MIN} alpha_max=${VTLP_ALPHA_MAX}" >&2
   exit 2
 fi
 
@@ -144,7 +235,7 @@ if [[ -n "${AMBIENT_DIR}" ]]; then
   AMBIENT_COUNT="$(find "${AMBIENT_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
 fi
 
-STAMP="pos_wavs=${POS_COUNT} neg_wavs=${NEG_COUNT} hard_neg_wavs=${HARD_NEG_COUNT} ambient_wavs=${AMBIENT_COUNT} clip_ms=${CLIP_DURATION_MS}"
+STAMP="pos_wavs=${POS_COUNT} neg_wavs=${NEG_COUNT} hard_neg_wavs=${HARD_NEG_COUNT} ambient_wavs=${AMBIENT_COUNT} clip_ms=${CLIP_DURATION_MS} train_steps=${TRAINING_STEPS} lrs=${LEARNING_RATES} neg_w=${NEGATIVE_CLASS_WEIGHT} vtlp=${VTLP_PROB}:${VTLP_ALPHA_MIN}-${VTLP_ALPHA_MAX}"
 
 NEED_MMAPS=1
 if [[ "${REGEN_MMAPS:-0}" != "1" ]]; then
@@ -181,6 +272,19 @@ else
   if [[ -n "${AMBIENT_DIR}" ]]; then
     MMAP_CMD+=(--ambient-dir "${AMBIENT_DIR}")
   fi
+  if [[ ${#BACKGROUND_NOISE_DIRS[@]} -gt 0 ]]; then
+    for bg_dir in "${BACKGROUND_NOISE_DIRS[@]}"; do
+      MMAP_CMD+=(--background-noise-dir "${bg_dir}")
+    done
+  fi
+  if [[ ${#IMPULSE_RESPONSE_DIRS[@]} -gt 0 ]]; then
+    for ir_dir in "${IMPULSE_RESPONSE_DIRS[@]}"; do
+      MMAP_CMD+=(--impulse-response-dir "${ir_dir}")
+    done
+  fi
+  MMAP_CMD+=(--vtlp-prob "${VTLP_PROB}")
+  MMAP_CMD+=(--vtlp-alpha-min "${VTLP_ALPHA_MIN}" --vtlp-alpha-max "${VTLP_ALPHA_MAX}")
+  MMAP_CMD+=(--aug-profile "${AUG_PROFILE}")
   "${MMAP_CMD[@]}"
   echo "${STAMP}" > "${MMAP_STAMP_PATH}"
 fi
@@ -197,6 +301,21 @@ if [[ -n "${HARD_NEG_DIR}" ]]; then
 EOB
 )
 fi
+
+# Build per-phase weight lists (match number of training phases)
+NUM_PHASES=$(echo "${TRAINING_STEPS}" | tr ',' '\n' | wc -l | tr -d ' ')
+POS_WEIGHTS=$(printf '1%.0s' $(seq 1 "${NUM_PHASES}") | sed 's/1/, 1/g; s/^, //')
+# Avoid `yes | head` which triggers SIGPIPE under pipefail
+NEG_WEIGHTS=$(for _ in $(seq 1 "${NUM_PHASES}"); do printf '%s\n' "${NEGATIVE_CLASS_WEIGHT}"; done | paste -sd',' - | sed 's/,/, /g')
+
+echo "Training profile:"
+echo "  experiment      ${EXPERIMENT_NAME}"
+echo "  training_steps  [${TRAINING_STEPS}]"
+echo "  learning_rates  [${LEARNING_RATES}]"
+echo "  neg_class_w     [${NEG_WEIGHTS}]"
+echo "  residual        ${RESIDUAL_CONNECTION}"
+echo "  pointwise       ${POINTWISE_FILTERS}"
+echo "  VTLP            prob=${VTLP_PROB} alpha=[${VTLP_ALPHA_MIN}, ${VTLP_ALPHA_MAX}]"
 
 cat > "${CFG_PATH}" <<EOF
 window_step_ms: 10
@@ -216,9 +335,9 @@ features:
     type: mmap
 ${HARD_NEG_BLOCK}
 training_steps: [${TRAINING_STEPS}]
-positive_class_weight: [1]
-negative_class_weight: [20]
-learning_rates: [0.001]
+positive_class_weight: [${POS_WEIGHTS}]
+negative_class_weight: [${NEG_WEIGHTS}]
+learning_rates: [${LEARNING_RATES}]
 batch_size: 128
 time_mask_max_size: [${TIME_MASK_SIZE}]
 time_mask_count: [${TIME_MASK_COUNT}]
@@ -236,7 +355,8 @@ python -m microwakeword.model_train_eval \
   --train 1 \
   --test_tflite_streaming_quantized 0 \
   mixednet \
-  --residual_connection "${RESIDUAL_CONNECTION}"
+  --residual_connection "${RESIDUAL_CONNECTION}" \
+  --pointwise_filters "${POINTWISE_FILTERS}"
 
 python -m microwakeword.model_train_eval \
   --training_config="${CFG_PATH}" \
@@ -244,7 +364,8 @@ python -m microwakeword.model_train_eval \
   --test_tflite_streaming_quantized 1 \
   --use_weights best_weights \
   mixednet \
-  --residual_connection "${RESIDUAL_CONNECTION}"
+  --residual_connection "${RESIDUAL_CONNECTION}" \
+  --pointwise_filters "${POINTWISE_FILTERS}"
 
 REPORT_CMD=(
   python "${ROOT_DIR}/wake-word/evaluation/microwakeword_report.py"

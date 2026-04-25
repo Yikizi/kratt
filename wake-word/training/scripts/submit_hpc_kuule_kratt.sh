@@ -11,20 +11,28 @@ PROCESSED_DIR="$(kratt_processed_dir)"
 DATASETS_DIR="$(kratt_datasets_dir)"
 RUNS_DIR="$(kratt_training_runs_dir)"
 
-TRAINING_STEPS="10000"
+TRAINING_STEPS="15000, 5000"
 NEGATIVE_LIMIT="5000"
-TIME_LIMIT="02:30:00"
+TIME_LIMIT="04:00:00"
 CPUS="4"
 MEM="48G"
 EXPERIMENT_TAG="v1"
 USE_SPEC_AUGMENT=0
 USE_TTS_HARD_NEG_IN_HARD_SET=0
+VTLP_FLAG=""
+NEG_CLASS_WEIGHT_FLAG=""
+LEARNING_RATES_FLAG=""
+RECALL_PROFILE_FLAG=""
+AUG_PROFILE_FLAG=""
 
 CV_ROOT="${DATASETS_DIR}/common-voice-et/cv-corpus-24.0-2025-12-05/et"
 CV_WAV_DIR="${DATASETS_DIR}/common-voice-et-wav"
 POSITIVE_MIC1="${DATASETS_DIR}/kuule-kratt/positive/mic1"
 POSITIVE_MIC2="${DATASETS_DIR}/kuule-kratt/positive/mic2"
 AMBIENT_DIR="${DATASETS_DIR}/musan/musan/noise"
+# Augmentation resource dirs (background noise for AddBackgroundNoise, IRs for RIR)
+MUSAN_NOISE_DIR="${DATASETS_DIR}/musan/musan/noise"
+MIT_IR_DIR="${DATASETS_DIR}/benchmarks/mit-impulse-responses/16khz"
 # v10: MUSAN speech (~49h LibriVox+US gov) and music (~41h FMA+Jamendo+classical)
 MUSAN_SPEECH_DIR="${DATASETS_DIR}/musan/musan/speech"
 MUSAN_MUSIC_DIR="${DATASETS_DIR}/musan/musan/music"
@@ -47,6 +55,12 @@ MAC_POS_AUG_DIR="${DATA_ROOT}/augmented/positive_mattias_mac"
 XTTS_POS_MARTA="${DATA_ROOT}/raw/xtts_clones/marta/positive"
 XTTS_POS_ANNAM="${DATA_ROOT}/raw/xtts_clones/annam/positive"
 XTTS_POS_EMA="${DATA_ROOT}/raw/xtts_clones/ema/positive"
+# Mattias short pronunciation "kule kratt" (135 clips, recorded 2026-04-14)
+MATTIAS_SHORT_POS="${DATA_ROOT}/raw/mattias-short/positive"
+# v17: "Kule Kratt" SSML mirror — same SSML variations as Kuule but with short-u spelling
+# 969 clips, 12 speakers, 0 deduped (all acoustically distinct from Kuule originals)
+TTS_SSML_KULE_POS_DIR="${DATA_ROOT}/raw/neurokone_ssml_kule"
+
 # Isa pos held out for unseen-speaker test (NOT included)
 
 # v8: hard negatives (real + voice-cloned)
@@ -54,19 +68,36 @@ MAC_HARD_NEG_DIR="${DATA_ROOT}/augmented/hard_neg_mattias_mac_train"
 XTTS_HARD_NEG_MARTA="${DATA_ROOT}/raw/xtts_clones/marta/negative"
 XTTS_HARD_NEG_ANNAM="${DATA_ROOT}/raw/xtts_clones/annam/negative"
 XTTS_HARD_NEG_EMA="${DATA_ROOT}/raw/xtts_clones/ema/negative"
+# Real recorded hard negatives (KORVO-2 mic, Mattias "kuule kraam" etc)
+KORVO2_HARD_NEG_DIR="${DATA_ROOT}/raw/hard_neg/segmented"
+# OHEM-mined CV ET false triggers (expert-a score >= 0.97, 449 clips)
+OHEM_MINED_DIR="${DATA_ROOT}/mined/ohem_expert_a_all_097"
 # Isa neg held out for unseen-speaker test (NOT included)
 
 # v8: opt-in flags - only use TTS hard negs in legacy "negative" set if explicitly requested
 # v10: learned that separate hard_neg feature set HURTS FAPH (v9 = 76 FAPH vs v6 = 21).
 #      Prefer --use-legacy-tts-hard-neg (all negatives in one pool) for best results.
+# Dataset presets for clean ablation experiments
+# v6-data: mic1+mic2 + positive_tts positives, CV ET + KORVO-2 + TTS hard neg in main pool
+# v8-data: full v8 dataset (mic + TTS + SSML + Mac + XTTS clones, separate hard neg set)
+# current: everything available (default)
+DATASET_PRESET="current"
 USE_LEGACY_TTS_HARD_NEG=0
 USE_HARD_NEG_FEATURE_SET=1
+INCLUDE_BASE_EXTRA_NEGS=1
 # v10: MUSAN speech/music auto-included if dirs exist (same pattern as KORVO-2 negs).
 # Use --no-musan to opt out for ablation experiments.
 USE_MUSAN_SPEECH=1
 USE_MUSAN_MUSIC=1
 # v10: Riigikogu - use N random files (each ~1-5h). 0 = disabled, 50 = ~200h, 100 = ~400h.
 RIIGIKOGU_FILE_LIMIT=50
+
+# Track explicit CLI overrides so they take precedence over presets
+_CLI_HARD_NEG_FEATURE_SET=""
+_CLI_LEGACY_TTS_HARD_NEG=""
+_CLI_MUSAN_SPEECH=""
+_CLI_MUSAN_MUSIC=""
+_CLI_RIIGIKOGU=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -76,15 +107,24 @@ while [[ $# -gt 0 ]]; do
     --cpus) CPUS="$2"; shift 2 ;;
     --mem) MEM="$2"; shift 2 ;;
     --tag) EXPERIMENT_TAG="$2"; shift 2 ;;
-    --use-legacy-tts-hard-neg) USE_LEGACY_TTS_HARD_NEG=1; shift 1 ;;
-    --no-hard-neg-feature-set) USE_HARD_NEG_FEATURE_SET=0; shift 1 ;;
+    --use-legacy-tts-hard-neg) _CLI_LEGACY_TTS_HARD_NEG=1; shift 1 ;;
+    --no-hard-neg-feature-set) _CLI_HARD_NEG_FEATURE_SET=0; shift 1 ;;
     --spec-augment) USE_SPEC_AUGMENT=1; shift 1 ;;
     --tts-hard-neg-in-hard-set) USE_TTS_HARD_NEG_IN_HARD_SET=1; shift 1 ;;
-    --no-musan-speech) USE_MUSAN_SPEECH=0; shift 1 ;;
-    --no-musan-music) USE_MUSAN_MUSIC=0; shift 1 ;;
-    --no-musan) USE_MUSAN_SPEECH=0; USE_MUSAN_MUSIC=0; shift 1 ;;
-    --riigikogu-files) RIIGIKOGU_FILE_LIMIT="$2"; shift 2 ;;
-    --no-riigikogu) RIIGIKOGU_FILE_LIMIT=0; shift 1 ;;
+    --no-musan-speech) _CLI_MUSAN_SPEECH=0; shift 1 ;;
+    --no-musan-music) _CLI_MUSAN_MUSIC=0; shift 1 ;;
+    --no-musan) _CLI_MUSAN_SPEECH=0; _CLI_MUSAN_MUSIC=0; shift 1 ;;
+    --riigikogu-files) _CLI_RIIGIKOGU="$2"; shift 2 ;;
+    --no-riigikogu) _CLI_RIIGIKOGU=0; shift 1 ;;
+    --dataset-preset) DATASET_PRESET="$2"; shift 2 ;;
+    --recall-profile) RECALL_PROFILE_FLAG="--recall-profile"; shift 1 ;;
+    --no-vtlp) VTLP_FLAG="--no-vtlp"; shift 1 ;;
+    --vtlp-prob) VTLP_FLAG="--vtlp-prob $2"; shift 2 ;;
+    --vtlp-alpha-min) VTLP_FLAG="${VTLP_FLAG:+${VTLP_FLAG} }--vtlp-alpha-min $2"; shift 2 ;;
+    --vtlp-alpha-max) VTLP_FLAG="${VTLP_FLAG:+${VTLP_FLAG} }--vtlp-alpha-max $2"; shift 2 ;;
+    --neg-class-weight) NEG_CLASS_WEIGHT_FLAG="--neg-class-weight $2"; shift 2 ;;
+    --learning-rates) LEARNING_RATES_FLAG="--learning-rates \"$2\""; shift 2 ;;
+    --aug-profile) AUG_PROFILE_FLAG="--aug-profile $2"; shift 2 ;;
     *) echo "Unknown: $1" >&2; exit 2 ;;
   esac
 done
@@ -103,17 +143,89 @@ for d in "${CV_ROOT}" "${POSITIVE_MIC1}" "${POSITIVE_MIC2}" "${AMBIENT_DIR}"; do
   fi
 done
 
-# Build extra positive dirs (TTS + SSML + Mac + XTTS clones)
+# Apply dataset preset overrides
+case "${DATASET_PRESET}" in
+  v6-data)
+    echo "=== PRESET: v6-data (mic1+mic2 + TTS pos, legacy TTS hard neg in main pool) ==="
+    USE_LEGACY_TTS_HARD_NEG=1
+    USE_HARD_NEG_FEATURE_SET=0
+    USE_MUSAN_SPEECH=0
+    USE_MUSAN_MUSIC=0
+    RIIGIKOGU_FILE_LIMIT=0
+    EXTRA_POS_LIST=("${TTS_POS_DIR}")
+    ;;
+  v6-plus)
+    echo "=== PRESET: v6-plus (v6 + Mac pos + mattias-short + XTTS clones + Kule SSML) ==="
+    USE_LEGACY_TTS_HARD_NEG=1
+    USE_HARD_NEG_FEATURE_SET=0
+    USE_MUSAN_SPEECH=0
+    USE_MUSAN_MUSIC=0
+    RIIGIKOGU_FILE_LIMIT=0
+    EXTRA_POS_LIST=(
+      "${TTS_POS_DIR}"
+      "${TTS_SSML_KULE_POS_DIR}"
+      "${MAC_POS_DIR}" "${MAC_POS_AUG_DIR}"
+      "${XTTS_POS_MARTA}" "${XTTS_POS_ANNAM}" "${XTTS_POS_EMA}"
+      "${MATTIAS_SHORT_POS}"
+    )
+    ;;
+  v8-data)
+    echo "=== PRESET: v8-data (full v8: mic + TTS + SSML + Mac + XTTS, separate hard neg) ==="
+    USE_LEGACY_TTS_HARD_NEG=0
+    USE_HARD_NEG_FEATURE_SET=1
+    USE_MUSAN_SPEECH=0
+    USE_MUSAN_MUSIC=0
+    RIIGIKOGU_FILE_LIMIT=0
+    EXTRA_POS_LIST=(
+      "${TTS_POS_DIR}" "${TTS_SSML_POS_DIR}"
+      "${MAC_POS_DIR}" "${MAC_POS_AUG_DIR}"
+      "${XTTS_POS_MARTA}" "${XTTS_POS_ANNAM}" "${XTTS_POS_EMA}"
+    )
+    ;;
+  confusable-filter)
+    echo "=== PRESET: confusable-filter (pos=kuule kratt real+TTS, neg=hard neg ONLY) ==="
+    # Same positives as expert-a (real + TTS, both domains represented)
+    EXTRA_POS_LIST=(
+      "${TTS_POS_DIR}" "${TTS_SSML_POS_DIR}"
+      "${TTS_SSML_KULE_POS_DIR}"
+      "${MAC_POS_DIR}" "${MAC_POS_AUG_DIR}"
+      "${XTTS_POS_MARTA}" "${XTTS_POS_ANNAM}" "${XTTS_POS_EMA}"
+      "${MATTIAS_SHORT_POS}"
+    )
+    # No CV ET random negatives — only hard negatives as the negative class
+    NEGATIVE_LIMIT="-1"
+    # Exclude generic/random negative pools entirely for this preset
+    INCLUDE_BASE_EXTRA_NEGS=0
+    # Hard neg sources go into the MAIN negative pool (not separate feature set)
+    USE_HARD_NEG_FEATURE_SET=0
+    # Include ALL hard neg sources (TTS + real) as regular negatives
+    USE_LEGACY_TTS_HARD_NEG=1
+    # No MUSAN/Riigikogu — keep negatives focused on phonetic confusables only
+    USE_MUSAN_SPEECH=0
+    USE_MUSAN_MUSIC=0
+    RIIGIKOGU_FILE_LIMIT=0
+    ;;
+  current|*)
+    echo "=== PRESET: current (all available data) ==="
+    EXTRA_POS_LIST=(
+      "${TTS_POS_DIR}" "${TTS_SSML_POS_DIR}"
+      "${TTS_SSML_KULE_POS_DIR}"
+      "${MAC_POS_DIR}" "${MAC_POS_AUG_DIR}"
+      "${XTTS_POS_MARTA}" "${XTTS_POS_ANNAM}" "${XTTS_POS_EMA}"
+      "${MATTIAS_SHORT_POS}"
+    )
+    ;;
+esac
+
+# CLI flags override preset values (explicit flag always wins)
+[[ -n "$_CLI_HARD_NEG_FEATURE_SET" ]] && USE_HARD_NEG_FEATURE_SET="$_CLI_HARD_NEG_FEATURE_SET"
+[[ -n "$_CLI_LEGACY_TTS_HARD_NEG" ]] && USE_LEGACY_TTS_HARD_NEG="$_CLI_LEGACY_TTS_HARD_NEG"
+[[ -n "$_CLI_MUSAN_SPEECH" ]] && USE_MUSAN_SPEECH="$_CLI_MUSAN_SPEECH"
+[[ -n "$_CLI_MUSAN_MUSIC" ]] && USE_MUSAN_MUSIC="$_CLI_MUSAN_MUSIC"
+[[ -n "$_CLI_RIIGIKOGU" ]] && RIIGIKOGU_FILE_LIMIT="$_CLI_RIIGIKOGU"
+
+# Build extra positive dirs
 EXTRA_POS=""
-EXTRA_POS_LIST=(
-  "${TTS_POS_DIR}"
-  "${TTS_SSML_POS_DIR}"
-  "${MAC_POS_DIR}"
-  "${MAC_POS_AUG_DIR}"
-  "${XTTS_POS_MARTA}"
-  "${XTTS_POS_ANNAM}"
-  "${XTTS_POS_EMA}"
-)
 for pos_d in "${EXTRA_POS_LIST[@]}"; do
   if [[ -d "${pos_d}" ]]; then
     EXTRA_POS="${EXTRA_POS} ${pos_d}"
@@ -123,12 +235,16 @@ done
 
 # Build extra negative dirs (same-device KORVO-2 + MacBook segmented + mined live false accepts; legacy TTS hard neg opt-in)
 EXTRA_NEG_LIST=""
-for neg_d in "${KORVO2_NEG_DIR}" "${KORVO2_NEG_EXTRA_DIR}" "${KORVO2_NEG_S2_DIR}" "${MACBOOK_NEG_DIR}" "${MINED_FALSE_NEG_V10_DIR}"; do
-  if [[ -d "${neg_d}" ]]; then
-    EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${neg_d}"
-    echo "Including extra negatives: ${neg_d}"
-  fi
-done
+if [[ "${INCLUDE_BASE_EXTRA_NEGS}" == "1" ]]; then
+  for neg_d in "${KORVO2_NEG_DIR}" "${KORVO2_NEG_EXTRA_DIR}" "${KORVO2_NEG_S2_DIR}" "${MACBOOK_NEG_DIR}" "${MINED_FALSE_NEG_V10_DIR}"; do
+    if [[ -d "${neg_d}" ]]; then
+      EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${neg_d}"
+      echo "Including extra negatives: ${neg_d}"
+    fi
+  done
+else
+  echo "Skipping base extra negatives for preset: ${DATASET_PRESET}"
+fi
 # v10: opt-in MUSAN speech (~49h LibriVox) and music (~41h)
 if [[ "${USE_MUSAN_SPEECH}" == "1" ]] && [[ -d "${MUSAN_SPEECH_DIR}" ]]; then
   EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${MUSAN_SPEECH_DIR}"
@@ -162,11 +278,13 @@ if [[ "${USE_LEGACY_TTS_HARD_NEG}" == "1" ]]; then
     fi
   done
 fi
-EXTRA_NEG_ARGS=""
-if [[ -n "${EXTRA_NEG_LIST}" ]]; then
-  EXTRA_NEG_ARGS="--extra-negative-dirs ${EXTRA_NEG_LIST}"
-fi
-
+# Real recorded hard negatives (KORVO-2 + OHEM mined)
+for neg_d in "${KORVO2_HARD_NEG_DIR}" "${OHEM_MINED_DIR}"; do
+  if [[ -d "${neg_d}" ]]; then
+    EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${neg_d}"
+    echo "Including real hard negatives: ${neg_d}"
+  fi
+done
 # Build hard negative dirs (separate feature set with higher penalty weight)
 HARD_NEG_LIST=""
 HARD_NEG_ARGS=""
@@ -188,6 +306,19 @@ if [[ "${USE_HARD_NEG_FEATURE_SET}" == "1" ]]; then
   if [[ -n "${HARD_NEG_LIST}" ]]; then
     HARD_NEG_ARGS="--hard-negative-dirs ${HARD_NEG_LIST}"
   fi
+else
+  # When hard neg feature set is OFF, fold hard neg dirs into general negative pool
+  for hn_d in "${MAC_HARD_NEG_DIR}" "${XTTS_HARD_NEG_MARTA}" "${XTTS_HARD_NEG_ANNAM}" "${XTTS_HARD_NEG_EMA}"; do
+    if [[ -d "${hn_d}" ]]; then
+      EXTRA_NEG_LIST="${EXTRA_NEG_LIST:+${EXTRA_NEG_LIST},}${hn_d}"
+      echo "Folding hard negatives into general pool: ${hn_d}"
+    fi
+  done
+fi
+
+EXTRA_NEG_ARGS=""
+if [[ -n "${EXTRA_NEG_LIST}" ]]; then
+  EXTRA_NEG_ARGS="--extra-negative-dirs ${EXTRA_NEG_LIST}"
 fi
 
 EXTRA_AMB_ARGS=""
@@ -221,11 +352,15 @@ echo "Repo root: ${ROOT_DIR}"
 echo "Data root: ${DATA_ROOT}"
 
 # Step 1: Convert CV MP3 → WAV (one-time, cached)
-echo "=== Step 1: Convert Common Voice MP3 → WAV ==="
-bash "${ROOT_DIR}/wake-word/training/scripts/convert_cv_mp3_to_wav.sh" \
-  "${CV_ROOT}/clips" \
-  "${CV_WAV_DIR}" \
-  "${NEGATIVE_LIMIT}"
+if [[ "${NEGATIVE_LIMIT}" == "-1" ]]; then
+  echo "=== Step 1: SKIPPED (NEGATIVE_LIMIT=${NEGATIVE_LIMIT}, no CV negatives needed) ==="
+else
+  echo "=== Step 1: Convert Common Voice MP3 → WAV ==="
+  bash "${ROOT_DIR}/wake-word/training/scripts/convert_cv_mp3_to_wav.sh" \
+    "${CV_ROOT}/clips" \
+    "${CV_WAV_DIR}" \
+    "${NEGATIVE_LIMIT}"
+fi
 
 # Step 2: Prepare experiment directory (symlinks only)
 echo "=== Step 2: Prepare experiment directory ==="
@@ -254,6 +389,18 @@ if [[ "${USE_SPEC_AUGMENT}" == "1" ]]; then
   TRAIN_SPEC_AUGMENT_ARG="--spec-augment"
 fi
 
+# Build augmentation resource args (background noise + room impulse responses)
+TRAIN_BG_NOISE_ARG=""
+if [[ -d "${MUSAN_NOISE_DIR}" ]]; then
+  TRAIN_BG_NOISE_ARG="--background-noise-dir ${MUSAN_NOISE_DIR}"
+  echo "Augmentation: background noise from ${MUSAN_NOISE_DIR}"
+fi
+TRAIN_IR_ARG=""
+if [[ -d "${MIT_IR_DIR}" ]]; then
+  TRAIN_IR_ARG="--impulse-response-dir ${MIT_IR_DIR}"
+  echo "Augmentation: impulse responses from ${MIT_IR_DIR}"
+fi
+
 "${ROOT_DIR}/wake-word/training/scripts/train_microwakeword_experiment.sh" \
   --experiment-name "microwakeword-kuule-kratt-${EXPERIMENT_TAG}" \
   --positive-dir "${OUTPUT_DIR}/positive_samples" \
@@ -261,7 +408,14 @@ fi
   --ambient-dir "${OUTPUT_DIR}/ambient_samples" \
   \${TRAIN_HARD_NEG_ARG} \
   \${TRAIN_SPEC_AUGMENT_ARG} \
-  --training-steps "${TRAINING_STEPS}"
+  \${TRAIN_BG_NOISE_ARG} \
+  \${TRAIN_IR_ARG} \
+  ${RECALL_PROFILE_FLAG} \
+  --training-steps "${TRAINING_STEPS}" \
+  ${VTLP_FLAG} \
+  ${NEG_CLASS_WEIGHT_FLAG} \
+  ${LEARNING_RATES_FLAG} \
+  ${AUG_PROFILE_FLAG}
 EOF
 )"
 

@@ -26,6 +26,12 @@ fi
 
 mkdir -p "${OUTPUT_DIR}"
 
+# Negative limit: -1 = skip entirely, 0 = unlimited, >0 = cap
+if [[ "${LIMIT}" -lt 0 ]]; then
+  echo "LIMIT=${LIMIT} — skipping CV conversion entirely."
+  exit 0
+fi
+
 # Count already converted
 EXISTING=$(find "${OUTPUT_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')
 echo "Existing WAVs in output: ${EXISTING}"

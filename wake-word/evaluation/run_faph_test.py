@@ -142,11 +142,11 @@ def main() -> None:
     p.add_argument("--verbose", action="store_true")
     args = p.parse_args()
 
-    files = sorted(Path(args.input_dir).glob("*.wav"))
+    files = sorted(Path(args.input_dir).rglob("*.wav"))
     if args.limit > 0:
         files = files[: args.limit]
     if not files:
-        raise SystemExit(f"No WAV files in {args.input_dir}")
+        raise SystemExit(f"No WAV files in {args.input_dir} (searched recursively)")
 
     print(f"Loading model: {args.model}")
     model = Model(args.model)

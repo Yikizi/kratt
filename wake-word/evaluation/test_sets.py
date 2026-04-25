@@ -40,14 +40,18 @@ class TestSet:
     def file_count(self) -> int:
         if not self.path.exists():
             return 0
-        return len(list(self.path.glob("*.wav")))
+        return len(list(self.path.rglob("*.wav")))
 
     def is_held_out_for(self, model_version: str) -> bool:
         return model_version in self.held_out_for or "all" in self.held_out_for
 
 
 # All known model versions, in chronological order
-ALL_MODELS = ("v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11")
+ALL_MODELS = (
+    "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11",
+    "v12", "v13a", "v13b", "v14", "v15", "v16a", "v16b", "v16c",
+    "expert-a", "expert-b", "expert-b2", "ex2a", "ex3a", "ex3b",
+)
 
 
 # ──────────────────────────────────────────────────────────────────────────────

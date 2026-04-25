@@ -115,34 +115,38 @@ def main():
         dst.symlink_to(src.resolve())
 
     # --- Negative samples (Common Voice ET, pre-converted WAVs) ---
-    print("Reading Common Voice validated.tsv...")
-    cv_clips = read_cv_validated(cv_root)
-    exclude_lower = [w.lower() for w in (args.exclude_words or [])]
-
-    filtered = []
-    excluded_count = 0
-    for clip in cv_clips:
-        sentence_lower = clip["sentence"].lower()
-        if any(w in sentence_lower for w in exclude_lower):
-            excluded_count += 1
-            continue
-        # Check if pre-converted WAV exists
-        stem = Path(clip["path"]).stem
-        wav_path = cv_wav_dir / f"{stem}.wav"
-        if wav_path.exists():
-            filtered.append(wav_path)
-
-    print(f"  Total validated: {len(cv_clips)}")
-    print(f"  Excluded (contains {exclude_lower}): {excluded_count}")
-    print(f"  Available WAVs: {len(filtered)}")
-
-    rnd.shuffle(filtered)
-    if args.negative_limit > 0:
-        filtered = filtered[:args.negative_limit]
-
     neg_out = output_dir / "negative_samples"
     neg_out.mkdir(parents=True)
     neg_idx = 0
+    filtered: list[Path] = []
+    excluded_count = 0
+
+    if args.negative_limit < 0:
+        print("CV negatives: SKIPPED (negative_limit < 0)")
+    else:
+        print("Reading Common Voice validated.tsv...")
+        cv_clips = read_cv_validated(cv_root)
+        exclude_lower = [w.lower() for w in (args.exclude_words or [])]
+
+        for clip in cv_clips:
+            sentence_lower = clip["sentence"].lower()
+            if any(w in sentence_lower for w in exclude_lower):
+                excluded_count += 1
+                continue
+            # Check if pre-converted WAV exists
+            stem = Path(clip["path"]).stem
+            wav_path = cv_wav_dir / f"{stem}.wav"
+            if wav_path.exists():
+                filtered.append(wav_path)
+
+        print(f"  Total validated: {len(cv_clips)}")
+        print(f"  Excluded (contains {exclude_lower}): {excluded_count}")
+        print(f"  Available WAVs: {len(filtered)}")
+
+        rnd.shuffle(filtered)
+        if args.negative_limit > 0:
+            filtered = filtered[:args.negative_limit]
+
     for src in filtered:
         dst = neg_out / f"cv_negative_{neg_idx:04d}.wav"
         dst.symlink_to(src.resolve())

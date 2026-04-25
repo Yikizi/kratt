@@ -1,22 +1,22 @@
 window_step_ms: 10
-train_dir: "/Users/mattias/kratt/wake-word/training/runs/microwakeword-kratt-20260213-122420"
+train_dir: "training/runs/microwakeword-kratt-20260213-122420"
 features:
-  - features_dir: "/Users/mattias/kratt/wake-word/training/features/microwakeword/positive"
+  - features_dir: "training/features/microwakeword/positive"
     sampling_weight: 2.0
     penalty_weight: 1.0
     truth: true
     truncation_strategy: truncate_start
     type: mmap
-  - features_dir: "/Users/mattias/kratt/wake-word/training/features/microwakeword/negative"
+  - features_dir: "training/features/microwakeword/negative"
     sampling_weight: 10.0
     penalty_weight: 1.0
     truth: false
     truncation_strategy: random
     type: mmap
-training_steps: [3000]
-positive_class_weight: [1]
-negative_class_weight: [20]
-learning_rates: [0.001]
+training_steps: [15000, 5000]
+positive_class_weight: [1, 1]
+negative_class_weight: [5, 5]
+learning_rates: [0.001, 0.0001]
 batch_size: 128
 time_mask_max_size: [0]
 time_mask_count: [0]

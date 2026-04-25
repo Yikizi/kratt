@@ -27,6 +27,44 @@ All models use:
 model (different sources combined), the held-out 15% set is **DIFFERENT for each
 model**. Each model's `test_positive_samples` dir is its own canonical hold-out.
 
+---
+
+## Positives v9-v16c (sourced from dataset_summary.json + training_config_snapshot.json)
+
+| Ver | Sources | pos_train | pos_test | Architecture | Residual | SpecAug | Notes |
+|-----|---------|-----------|----------|--------------|----------|---------|-------|
+| v9  | mic1+mic2 + positive_tts + positive_tts_ssml + raw/mattias + augmented/mattias_mac + xtts_clones | 3343 | ? | 4×48f | OFF | **ON** | 8123 hard neg 3× set |
+| v10 | sama mis v8 | 3343 | ? | 4×48f | **ON** | OFF | MUSAN glob bug (0 files ingested) |
+| v11 | sama mis v8 | 3343 | ? | 4×48f | OFF | OFF | Riigikogu shuf bug |
+| v12 | sama mis v8 | 3343 | ? | 4×48f | OFF | **ON** | larger neg pool (16853) |
+| v13a | sama mis v12 | 3343 | ? | 4×48f | **ON** | OFF | **SA abl pair** with v13b |
+| v13b | sama mis v12 | 3343 | ? | 4×48f | **ON** | **ON** | **SA abl pair** with v13a |
+| v14 | sama mis v12? | 3343 | ? | 4×48f | OFF | **ON** | reduced neg pool (11204) |
+| v15 | mic1+mic2 + positive_tts (**NO** Mac/XTTS) | **2241** | ? | 4×48f | **ON** | OFF | best IRL balance |
+| v16a | same as v15 | **2241** | ? | 4×48f | **ON** | OFF | reduced neg (10728) |
+| v16b | same as v15 | **2241** | ? | wider (4×96f, 104KB) | OFF | OFF | wider filters |
+| v16c | same as v15 | **2241** | ? | widest (4×96f, 148KB) | **ON** | OFF | latest candidate |
+
+**Puuduv info:** manifest.json ei ole alla laetud v9-v16c jaoks. Täpne positiivide allikad ja held-out test set suurused vajavad HPC-st alla laadimist. Võimalik et v12-v16 kasutavad laiemat CV ET (mitte ainult 5000 esimest).
+
+## Negatives v9-v16c (sourced from dataset_summary.json)
+
+| Ver | Negatives (total) | Hard neg (separate 3× set) | Known issues |
+|-----|------------------|----------------------------|--------------|
+| v9  | 9139 | 8123 | hard neg overdose (47% ratio) |
+| v10 | ~17k+ (actual: no MUSAN due to glob bug) | 0 | MUSAN non-recursive glob |
+| v11 | 9160 | 0 | Riigikogu shuf failure + FLAC glob |
+| v12 | 16853 | 0 | bug fixes applied, but neg_class_weight=20 |
+| v13a | 17203 | 0 | same dataset as v13b (clean ablation pair) |
+| v13b | 17203 | 0 | same dataset as v13a (clean ablation pair) |
+| v14 | 11204 | 0 | reduced neg pool (hard neg ratio ~18%) |
+| v15 | 11728 | 0 | pos=2241 (no Mac/XTTS positives) |
+| v16a | 10728 | 0 | |
+| v16b | 10228 | 0 | |
+| v16c | 10228 | 0 | |
+
+**NB:** v15-v16c neg pool on ~10-11K, vähendatud v14 11K-lt. Positiivid on samuti vähendatud 3343 → 2241. Põhjus: Mac/XTTS positiivid eemaldatud, mis tõenäoliselt ka negative pool-i mõjutas (vähendatud neg kuna Mac augments ei olnud enam treeningus).
+
 ## Negatives (NO train/test split — all of these were trained on)
 
 | Ver | CV ET | KORVO-2 | KORVO-2 extra | KORVO-2 sess2 | TTS hard | TTS hard v2 | XTTS hard (sep set) | Mac hard (sep set) | Total |
@@ -59,28 +97,33 @@ model**. Each model's `test_positive_samples` dir is its own canonical hold-out.
 A test set is **truly held out** for a model only if it contains files
 that this model's training pool does NOT include.
 
-### Truly held out for ALL models (v1-v8)
+### Truly held out for ALL models (v1-v16c)
 
-| Test set | Source | What it tests |
-|---|---|---|
-| `pos_test_isa_xtts` | data/processed/test_pos_xtts_isa (48) | Recall on unseen male speaker (XTTS clone) |
-| `hard_neg_test_mac` | data/processed/hard_neg_test (15) | FPR on real recorded hard negatives (held out from v8) |
-| `hard_neg_test_isa` | data/processed/test_hard_neg_xtts_isa (60) | FPR on unseen-speaker XTTS hard negatives |
-| `faph_cv_et` | data/processed/faph_test_cv_et (2000, 3.65h) | FAPH on unseen Estonian speech (CV ET clips 5000-7000) |
+| Test set | Source | What it tests | N |
+|---|---|---|---|
+| `pos_isa_xtts` | data/processed/test_pos_xtts_isa | Recall on unseen male speaker (XTTS clone) | 48 |
+| `hard_neg_mac_holdout` | data/processed/hard_neg_test | FPR on real recorded hard negatives | 15 |
+| `hard_neg_isa_xtts` | data/processed/test_hard_neg_xtts_isa | FPR on unseen-speaker XTTS hard negatives | 60 |
+| `faph_cv_et` | data/processed/faph_test_cv_et | FAPH on unseen Estonian speech (CV ET clips 5000-7000) | 2000 (3.65h) |
+| `faph_librispeech` | data/processed/faph_test_librispeech | FAPH on English speech (cross-language robustness) | 2620 (5.62h) |
+| `faph_dipco` | data/processed/faph_test_dipco | FAPH on dialogue corpus | 6 (3.32h) |
+
+**Important:** v15-v16c positive set differs from v8-v14 (2241 vs 3343 — Mac/XTTS positives removed). Cross-version recall on `pos_isa_xtts` remains valid since that set was never in any model's training pool.
 
 ### Held out for SOME models
 
 | Test set | Held out for | Trained on by |
 |---|---|---|
-| `pos_test_mac_mattias` (Mac mic, real voice) | v1-v7 | v8 |
-| `hard_neg_test_mac` (Mac voice augmented) | v1-v7 | NONE in training (always test) |
+| `pos_mac_mattias` (Mac mic, real voice) | v1-v7 | v8-v16c |
+| `pos_ode` (Ode real speaker) | all (not in any training) | N/A — used as real-speaker recall proxy |
 
 ### Not yet available — needs new collection
 
 | Test set | Source | Status |
 |---|---|---|
 | `neg_test_korvo2` (held-out KORVO-2 speech) | new recording session, never in training | **TODO**: user records ~30 min |
-| `pos_test_mattias_korvo2_canonical` | files outside ALL models' training shuffles | derived from intersection of held-out sets across models |
+| `pos_real_20plus` (20+ real unseen speakers) | recruitment + recording | **TODO**: user testing phase |
+| Real-speaker recall with proper N>100 per condition | user testing | **TODO**: CRITICAL for thesis |
 
 ## Notes
 

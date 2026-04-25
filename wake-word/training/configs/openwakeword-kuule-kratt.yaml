@@ -1,6 +1,22 @@
 # openWakeWord training config for "Kuule Kratt"
-# Uses our own pre-recorded WAV files (no Piper TTS generation)
-# Run: python -m openwakeword.train --training_config THIS_FILE --augment_clips --train_model
+# Uses our own pre-recorded WAV files (no Piper TTS generation).
+#
+# IMPORTANT: use wake-word/training/scripts/train_openwakeword.py, the local
+# patched entrypoint that avoids the unconditional Piper import and adds extra
+# validation/preflight checks for our HPC workflow.
+#
+# Pre-requisites:
+#   1. Pre-populate positive_train/, positive_test/, negative_train/, negative_test/
+#      under {output_dir}/{model_name}/ with 16kHz mono WAV files
+#   2. Download feature models into the openwakeword resources/models/ directory:
+#      melspectrogram.onnx, embedding_model.onnx
+#   3. Download validation_set_features.npy from HuggingFace:
+#      https://huggingface.co/datasets/davidscripka/openwakeword_features
+#   4. (Optional but recommended) Download ACAV100M negative features:
+#      openwakeword_features_ACAV100M_2000_hrs_16bit.npy (~14 GB)
+#
+# Run:
+#   python train_openwakeword.py --training_config THIS_FILE --augment_clips --train_model
 
 target_phrase:
   - "kuule kratt"
@@ -8,7 +24,8 @@ target_phrase:
 model_name: "kuule_kratt"
 output_dir: "/gpfs/mariana/smbhome/malinh/kratt-data/training/openwakeword"
 
-# Not used (we skip --generate_clips) but required by config parser
+# Not used when skipping --generate_clips. The patched train.py only reads
+# this key inside the --generate_clips branch.
 piper_sample_generator_path: "/dev/null"
 n_samples: 2000
 n_samples_val: 500
@@ -20,9 +37,15 @@ custom_negative_phrases:
   - "hei kratt"
   - "tere kratt"
 
-# Augmentation settings
+# --- Augmentation settings ---
+# augmentation_rounds: how many times each WAV is reused with different random
+# augmentations. More rounds = more training data variety without needing more WAVs.
 augmentation_rounds: 5
-augmentation_batch_size: 500
+
+# augmentation_batch_size: number of clips augmented at once. The entire batch is
+# loaded onto GPU for torch_audiomentations, so large values cause OOM.
+# Example config uses 16. Values of 16-64 are safe for most GPUs.
+augmentation_batch_size: 32
 
 # Background audio for mixing (MUSAN noise + music)
 background_paths:
@@ -32,22 +55,48 @@ background_paths_duplication_rate:
   - 1
   - 1
 
-# Room impulse responses (MIT IR survey - check if downloaded)
+# Room impulse responses (MIT IR survey)
 rir_paths:
   - "/gpfs/mariana/smbhome/malinh/kratt-data/datasets/benchmarks/mit-impulse-responses/16khz"
 
-# Training
+# --- Training hyperparameters ---
 model_type: "dnn"
 layer_size: 64
 steps: 50000
-batch_n_per_class: 512
-max_negative_weight: 100
+max_negative_weight: 1500
 target_false_positives_per_hour: 0.2
 
-# Validation data for false positive tracking during training
-false_positive_validation_data_path: "/gpfs/mariana/smbhome/malinh/kratt-data/processed/faph_test_cv_et"
+# batch_n_per_class: MUST be a dict, not an integer!
+# Keys must include "positive", "adversarial_negative", and any keys from
+# feature_data_files. Values = number of examples per class per training batch.
+# Total batch size = sum of all values. Recommended: 1024-4096 total.
+#
+# If you have the ACAV100M dataset, uncomment the ACAV line and adjust.
+batch_n_per_class:
+  "positive": 50
+  "adversarial_negative": 50
+  # "ACAV100M_sample": 1024
 
-# Feature files (auto-set by augment_clips, but needed for train_model)
+# Validation data for false positive tracking during training.
+# MUST be a .npy file (not a directory!). Contains pre-computed openWakeWord
+# embedding features of shape (N_frames, 96). The reference dataset from
+# HuggingFace (validation_set_features.npy) is ~11.3 hours.
+false_positive_validation_data_path: "/gpfs/mariana/smbhome/malinh/kratt-data/training/openwakeword/validation_set_features.npy"
+
+# feature_data_files: dict of additional negative feature .npy files.
+# "positive" and "adversarial_negative" keys are REQUIRED (they get overwritten
+# by the augment step with the generated feature files). Any additional keys
+# (e.g., ACAV100M) add extra negative training data.
+#
+# Without a large negative dataset, the model will have high false positive rates.
+# Download from: https://huggingface.co/datasets/davidscripka/openwakeword_features
 feature_data_files:
   positive: null
   adversarial_negative: null
+  # "ACAV100M_sample": "/gpfs/mariana/smbhome/malinh/kratt-data/training/openwakeword/openwakeword_features_ACAV100M_2000_hrs_16bit.npy"
+
+# Optional sanity hints for humans running the job:
+# - positive_train/positive_test/negative_train/negative_test must all exist
+#   under {output_dir}/{model_name}/ before --augment_clips
+# - the submit script rebuilds those dirs with explicit 16kHz mono copies and
+#   now defaults to overwriting stale feature caches on rerun
