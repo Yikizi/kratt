@@ -1,0 +1,158 @@
+{
+  "timestamp": "2026-04-20_000916",
+  "project_name": "Kratt",
+  "project_root": "/Users/mattias/kratt",
+  "review_kind": "baseline",
+  "criteria_source": [
+    "TalTech Academic Policies: https://oigusaktid.taltech.ee/en/academic-policies/",
+    "TalTech graduation thesis publication/preservation rules: https://oigusaktid.taltech.ee/loputoode-avalikustamise-ja-sailitamise-eeskiri/",
+    "TalTech Digikogu graduation thesis information: https://digikogu.taltech.ee/et/Info/About/loputood",
+    "TalTech Library thesis/user training guidance: https://taltech.ee/en/user-training",
+    "MIT Specifications for Thesis Preparation: https://libraries.mit.edu/distinctive-collections/thesis-specs/",
+    "General academic best practice for technical bachelor theses synthesized from the above"
+  ],
+  "inputs_reviewed": [
+    "README.md",
+    "docs/PROJECT_TODO.md",
+    "docs/thesis/thesis-tex-estonian/chapters/chapters_main.tex",
+    "docs/thesis/thesis-tex-estonian/chapters/introduction.tex",
+    "docs/thesis/thesis-tex-estonian/chapters/first_chapter.tex",
+    "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
+    "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
+    "docs/thesis/thesis-tex-estonian/chapters/summary.tex",
+    "docs/thesis/thesis-tex-estonian/misc/abstract-estonian.tex",
+    "docs/thesis/thesis-tex-estonian/misc/abstract-english.tex"
+  ],
+  "scores": {
+    "problem_framing": {
+      "score_0_to_5": 4,
+      "rationale": "The core problem is clear, relevant, and technically meaningful: Estonian wake-word detection on constrained hardware with realistic evaluation concerns."
+    },
+    "research_questions_and_scope": {
+      "score_0_to_5": 3,
+      "rationale": "The thesis questions are visible, but the scope still drifts between methodology, system-building, framework comparison, multi-model exploration, and user-study ambitions."
+    },
+    "related_work_and_positioning": {
+      "score_0_to_5": 4,
+      "rationale": "The draft positions itself against microWakeWord, openWakeWord, benchmark limitations, and selected literature in a way that is already stronger than many bachelor theses."
+    },
+    "methodology_rigor": {
+      "score_0_to_5": 4,
+      "rationale": "Methodological rigor is a clear strength because the work surfaces data leakage, switches to disjoint hold-out evaluation, and emphasizes streaming FAPH over misleading clip-level metrics."
+    },
+    "implementation_or_artifact_clarity": {
+      "score_0_to_5": 4,
+      "rationale": "The technical artifact is substantial and grounded: training pipeline, Android false-trigger logger, ESP32 context, and evaluation tooling are all concrete."
+    },
+    "evaluation_and_evidence": {
+      "score_0_to_5": 3,
+      "rationale": "The evidence is interesting and nontrivial, but still incomplete as a final thesis package because user testing is not yet done and the evaluation story is not fully frozen."
+    },
+    "discussion_and_limitations": {
+      "score_0_to_5": 4,
+      "rationale": "The discussion is unusually honest about benchmark gaps, domain shift, and methodological failure modes, which strengthens academic maturity."
+    },
+    "ethics_privacy_reproducibility": {
+      "score_0_to_5": 2,
+      "rationale": "Reproducibility instincts are present, but ethics/privacy handling for user testing and recordings is still pending and result traceability is not yet packaged as a final thesis artifact."
+    },
+    "structure_and_coherence": {
+      "score_0_to_5": 3,
+      "rationale": "The chapter arc is understandable, but the document still reads as an advanced interim draft because some pieces are thin or unresolved and the contribution framing is not fully stabilized."
+    },
+    "language_and_academic_style": {
+      "score_0_to_5": 4,
+      "rationale": "The language is generally analytical and serious, though terminology drift, anglicism density, and a few visible typos/draft-like phrasings remain."
+    },
+    "formal_compliance": {
+      "score_0_to_5": 1,
+      "rationale": "Formal readiness is currently weak because both abstract files still contain template placeholders and the summary is too thin for a finished submission."
+    },
+    "defense_readiness": {
+      "score_0_to_5": 2,
+      "rationale": "There is a defendable methodological core, but the thesis package is not yet defense-ready due to open formal gaps, unfinished user-testing status, and incomplete closure of the final evidence set."
+    }
+  },
+  "overall_readiness_0_to_10": 5.8,
+  "hard_findings": [
+    {
+      "severity": "blocker",
+      "finding": "Both abstract files still contain untouched template placeholders.",
+      "evidence": "misc/abstract-estonian.tex line 2: [ANNOTATSIOONI TEKST LÄHEB SIIA]; misc/abstract-english.tex line 2: [YOUR TEXT GOES HERE]"
+    },
+    {
+      "severity": "major",
+      "finding": "The summary chapter is too thin for a final thesis conclusion.",
+      "evidence": "docs/thesis/thesis-tex-estonian/chapters/summary.tex contains only a short 5-line summary and does not yet function as a full thesis closeout."
+    },
+    {
+      "severity": "major",
+      "finding": "Visible draft markers remain inside the thesis text.",
+      "evidence": "second_chapter.tex line 44 contains 'lisatakse hiljem'; line 145 contains unresolved cross-reference 'vt §2.X'."
+    },
+    {
+      "severity": "major",
+      "finding": "User testing is still not conducted despite being marked as a critical path in project planning.",
+      "evidence": "docs/PROJECT_TODO.md lines 114-123 mark user testing as critical path and note a 20-30 participant requirement, but the tasks remain pending."
+    },
+    {
+      "severity": "major",
+      "finding": "Formal ethics/privacy handling for user testing is still pending.",
+      "evidence": "docs/PROJECT_TODO.md lines 118-123 list consent form, possible ethics committee application, and actual testing as undone."
+    },
+    {
+      "severity": "minor",
+      "finding": "Language consistency and typo-level cleanup are still needed.",
+      "evidence": "Examples include 'tuumasydamiku' in first_chapter.tex line 67 and 'corpus'tel' in second_chapter.tex line 233."
+    },
+    {
+      "severity": "minor",
+      "finding": "Repository hygiene remains noisy, which weakens reproducibility optics.",
+      "evidence": "Current git state shows 27 modified/staged files, 1 deleted file, and 90 untracked files."
+    }
+  ],
+  "strengths": [
+    "The thesis has a strong and credible methodological contribution: it documents how misleading wake-word evaluation can be and how to correct it.",
+    "The project is grounded in real technical artifacts and deployment constraints rather than staying at toy-example level.",
+    "The discussion sections already show unusual honesty and maturity about failure modes, benchmark gaps, and limitations."
+  ],
+  "risks": [
+    "The thesis may still read as an interim research report rather than a closed bachelor thesis if formal and summary sections are not completed soon.",
+    "The practical scope may still be too wide unless the final contribution is frozen around the methodology/evaluation story.",
+    "If user testing is a hard requirement, its unfinished state is currently the largest schedule and defense risk."
+  ],
+  "defense_risks": {
+    "probable_questions": [
+      "What is the single main contribution of this thesis: a wake-word system, an evaluation methodology study, or a broader smart-home prototype?",
+      "How can you justify practical conclusions if user testing has not yet been completed?",
+      "Why should the committee trust the final model claims after the earlier evaluation leakage issue?",
+      "What exactly is your own contribution relative to existing frameworks like microWakeWord and openWakeWord?"
+    ],
+    "weak_answers_if_unfixed": [
+      "A scattered answer that tries to claim all contributions equally will make the work feel unfocused.",
+      "Saying user testing will happen later without a clear scope decision will sound like an unfinished requirement rather than a limitation.",
+      "If the final evidence set is not frozen, the committee can question which results are actually authoritative.",
+      "If formal abstract/summary issues remain, they signal lack of completion even if the technical content is strong."
+    ],
+    "suggested_preparation": [
+      "Prepare a 2-3 sentence thesis claim centered on realistic evaluation methodology for low-resource Estonian wake-word detection.",
+      "Be ready to explain the leakage discovery as a strength of scientific correction, not as an embarrassment to hide.",
+      "Decide and rehearse a clear statement about user testing: completed, reduced to pilot, or explicitly out of final core claim.",
+      "Prepare a claim-to-evidence map so each major conclusion points to one stable table, figure, or measurement source."
+    ]
+  },
+  "next_actions": [
+    "Replace both abstract placeholders and write a real Estonian and English abstract that states problem, method, main contribution, and current conclusion clearly.",
+    "Freeze the final thesis framing around the strongest proven contribution and remove or demote side stories that are not fully evidenced.",
+    "Resolve the user-testing decision immediately: finish a realistic minimal study, reframe it as pilot/future work, or get explicit supervisor agreement on scope."
+  ],
+  "comparison_to_previous": {
+    "previous_review_found": false,
+    "previous_timestamp": null,
+    "score_deltas": null,
+    "resolved_issues": null,
+    "new_issues": null,
+    "summary": "Baseline review: no previous structured thesis-quality review found in .hermes/thesis-quality-reviews/."
+  },
+  "reviewer_notes": "Strongest current contribution: methodological correction of wake-word evaluation via disjoint hold-out sets and streaming FAPH. Biggest risk: unfinished thesis package and unresolved user-testing role. Most likely overclaim risk: implying near-final practical usability before evidence and formal closeout are complete."
+}

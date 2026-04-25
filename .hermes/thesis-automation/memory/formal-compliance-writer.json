@@ -1,0 +1,20 @@
+{
+  "lane": "formal-compliance-writer",
+  "updated": "2026-04-23T03:46:47",
+  "guidance": [
+    "Before italicizing foreign lexemes, check whether the terminology lane is replacing the phrase with an Estonian form; let the term swap land first.",
+    "Respect terminology lane: use äratussõna as primary term; gloss 'wake word' only once at first introduction."
+  ],
+  "rejected_refs": [
+    {
+      "sha": "64e2e05b20a61935933887986ed6af2edf14f76f",
+      "reason": "Conflicts with terminology lane normalizing wake word → äratussõna; emphasizing foreign term re-introduces it",
+      "distilled": "Respect terminology lane: use äratussõna as primary term; gloss 'wake word' only once at first introduction."
+    },
+    {
+      "sha": "d82b94148cdfe2694fc32843c5b6bba062a3c06b",
+      "reason": "Terminology lane replaces the same phrase with taustahelisalvestuse (ambient audio); italicizing ambient-signaali becomes obsolete and would fight the accepted Estonian-first term",
+      "distilled": "Before italicizing foreign lexemes, check whether the terminology lane is replacing the phrase with an Estonian form; let the term swap land first."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "lane": "literature-gap",
+  "updated": "2026-04-24T03:46:01",
+  "guidance": [
+    "When adding positioning paragraphs, avoid forward-references to sections that don't yet exist; cite only sections already in the chapter."
+  ],
+  "rejected_refs": [
+    {
+      "sha": "a7c6f9372ea8a4e2962787d15941e28109a176a3",
+      "reason": "forward-references a subsection 'Andmestiku skaleerimisvõimalused' that isn't demonstrated to exist; risks dangling \\ref and opens a new side thread",
+      "distilled": "When adding positioning paragraphs, avoid forward-references to sections that don't yet exist; cite only sections already in the chapter."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "project_name": "Kratt",
+  "project_root": "/Users/mattias/kratt",
+  "reviews": [
+    {
+      "timestamp": "2026-04-20_000916",
+      "kind": "baseline",
+      "overall_readiness_0_to_10": 5.8,
+      "json_path": ".hermes/thesis-quality-reviews/2026-04-20_000916-review.json",
+      "markdown_path": ".hermes/thesis-quality-reviews/2026-04-20_000916-review.md"
+    }
+  ]
+}

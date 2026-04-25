@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "worktree_root": ".claude/worktrees",
+  "branch_prefix": "cron/",
+  "chapters_root": "docs/thesis/thesis-tex-estonian/chapters",
+  "lanes": [
+    {
+      "id": "terminology",
+      "title": "Terminology normalization",
+      "active": true,
+      "branch": "cron/terminology",
+      "worktree": ".claude/worktrees/cron-terminology",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/introduction.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/first_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
+      ],
+      "focus": "Normalize Estonian technical vocabulary, model/version names, acronyms. Preserve meaning.",
+      "reviewer_extra": "Identify at most one term whose usage is inconsistent or non-idiomatic in Estonian technical writing within the target file.",
+      "writer_extra": "Apply a surgical rename or rewording in the target file only. If no clear win, push back and commit nothing."
+    },
+    {
+      "id": "chapter-readiness",
+      "title": "Chapter readiness polish",
+      "active": true,
+      "branch": "cron/chapter-readiness",
+      "worktree": ".claude/worktrees/cron-chapter-readiness",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/introduction.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/first_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
+      ],
+      "focus": "Flow, signposting, paragraph coherence inside one chapter.",
+      "reviewer_extra": "Identify the single weakest transition or paragraph in the target chapter.",
+      "writer_extra": "Rewrite at most that paragraph or transition. No new claims. No new references."
+    },
+    {
+      "id": "committee-questions",
+      "title": "Committee-facing explanation",
+      "active": true,
+      "branch": "cron/committee-questions",
+      "worktree": ".claude/worktrees/cron-committee-questions",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/introduction.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
+      ],
+      "focus": "Anticipate a likely defense committee question and tighten the passage that already tries to answer it.",
+      "reviewer_extra": "Pose one committee-style question and point to the passage meant to pre-empt it.",
+      "writer_extra": "Tighten that passage so a skeptical committee member cannot easily push on it. Do not introduce new claims."
+    },
+    {
+      "id": "claim-evidence",
+      "title": "Claim\u2013evidence alignment",
+      "active": true,
+      "branch": "cron/claim-evidence",
+      "worktree": ".claude/worktrees/cron-claim-evidence",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/introduction.tex"
+      ],
+      "focus": "Each claim must be backed by a concrete number, table, figure, or cited source.",
+      "reviewer_extra": "Find one claim whose evidence is vague or missing in the target file.",
+      "writer_extra": "Either attach the existing evidence in-text, or soften the claim to what is defensible. No fabricated numbers."
+    },
+    {
+      "id": "literature-gap",
+      "title": "Literature gap framing",
+      "active": true,
+      "branch": "cron/literature-gap",
+      "worktree": ".claude/worktrees/cron-literature-gap",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/introduction.tex"
+      ],
+      "focus": "How the Kratt work positions against existing Estonian NLP / wake-word literature.",
+      "reviewer_extra": "Identify one place where the literature gap or positioning is weak or missing.",
+      "writer_extra": "Strengthen that positioning using sources already in references.bib. Do not invent citations."
+    },
+    {
+      "id": "formal-compliance-writer",
+      "title": "Formal LaTeX compliance",
+      "active": true,
+      "branch": "cron/formal-compliance-writer",
+      "worktree": ".claude/worktrees/cron-formal-compliance-writer",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/introduction.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/first_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
+      ],
+      "focus": "TalTech/Estonian thesis formal style: quotes, dashes, units, cross-references, figure/table captions.",
+      "reviewer_extra": "Identify one concrete formal-style issue in the target file (e.g., straight quotes, missing non-breaking space, broken \\ref).",
+      "writer_extra": "Fix only that one issue. No stylistic rewriting."
+    },
+    {
+      "id": "summary-tightening",
+      "title": "Summary tightening",
+      "active": true,
+      "branch": "cron/summary-tightening",
+      "worktree": ".claude/worktrees/cron-summary-tightening",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
+      ],
+      "focus": "Keep summary crisp, self-contained, aligned with actual contributions.",
+      "reviewer_extra": "Find the single sentence in the summary that overclaims, underclaims, or drifts from the thesis contributions.",
+      "writer_extra": "Rewrite that one sentence only."
+    },
+    {
+      "id": "methodology-tightening",
+      "title": "Methodology tightening",
+      "active": true,
+      "branch": "cron/methodology-tightening",
+      "worktree": ".claude/worktrees/cron-methodology-tightening",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex"
+      ],
+      "focus": "Reproducibility of wake-word methodology: data, augmentation, training, evaluation.",
+      "reviewer_extra": "Identify one methodology detail that a reader could not reproduce from the current text.",
+      "writer_extra": "Add the missing detail concisely in-place. Do not expand scope."
+    }
+  ]
+}
