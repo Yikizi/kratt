@@ -41,6 +41,15 @@ Et negatiivse klassi tekitamine oleks samaväärselt reprodutseeritav ja mikrofo
     \item holdout: 15 Mac-mikrofoniga salvestatud reaalset hard-negatiivset fraasi hoitakse iga mudeli treeningust eraldi (\texttt{hard\_neg\_mac\_holdout}) foneetilise eristusvõime sõltumatuks hindamiseks.
 \end{itemize}
 
+\subsection{Treeningaja augmenteerimise parameetrid}
+Et augmenteerimispoliitika oleks reprodutseeritav ilma koodi inspekteerimata, fikseeritakse signaalitasandi ja spektrogrammi-tasandi sammud järgmiselt (vastab v12 mudeli treeningule, vt \texttt{wake-word/training/scripts/generate\_microwakeword\_mmaps.py} ja \texttt{microwakeword-kratt.yaml}):
+\begin{itemize}
+    \item signaalitasandi augmenteerimine (\texttt{microwakeword.audio.augmentation.Augmentation}, klipp 1500~ms, 16~kHz mono): \texttt{Gain} $p{=}1{,}0$, \texttt{GainTransition} $p{=}0{,}25$, \texttt{AddColorNoise} $p{=}0{,}15$, \texttt{SevenBandParametricEQ} $p{=}0{,}05$, \texttt{TanhDistortion} $p{=}0{,}05$, \texttt{PitchShift} $p{=}0{,}05$, \texttt{BandStopFilter} $p{=}0{,}05$;
+    \item taustamüra segamine ja ruumiimpulss-vastus: \texttt{AddBackgroundNoise} $p{=}0{,}0$ (taustaklippide nimekiri tühi) ja \texttt{RIR} $p{=}0{,}0$ (impulss-vastuste nimekiri tühi) — st praeguses pipeline'is taustahelide segamist ega järelkaja konvolutsiooni ei rakendata, akustilise mitmekesisuse kannab \texttt{AddColorNoise} ja TTS-laiendus;
+    \item SpecAugment (rakendatud spektrogrammile treeningu ajal): \texttt{freq\_mask\_count}${=}2$, \texttt{freq\_mask\_max\_size}${=}3$ mel-binni, \texttt{time\_mask\_count}${=}2$, \texttt{time\_mask\_max\_size}${=}10$ freimi (10~ms freimi sammul $\approx 100$~ms);
+    \item juhusliku splittimise seeme: \texttt{random\_split\_seed}${=}10$ (positiivne, negatiivne ja hard-negatiivne komplekt jaotatakse sama seemnega train/valid/test osadeks, jaotussuhe $0{,}8/0{,}1/0{,}1$).
+\end{itemize}
+
 \subsection{Voogedastushindamise parameetrid}
 Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna (a) ühik on kasutajakogemusele otseselt tõlgendatav — valed aktiveeringud tunnis pideva kuulamise režiimis, (b) see ei sõltu positiivsete klippide hulgast ega klassijaotusest ning (c) on otse võrreldav microWakeWordi ja openWakeWordi avaldatud tulemustega. Et ambient-hindamine oleks reprodutseeritav, fikseeritakse järgmine protokoll:
 \begin{itemize}
