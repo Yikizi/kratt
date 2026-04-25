@@ -16,12 +16,14 @@ build/
 .mypy_cache/
 .ruff_cache/
 
-# Data files (too large for git)
+# Data files (too large/private/generated for git)
 wake-word/data/raw/
 wake-word/data/augmented/
 wake-word/data/processed/
 wake-word/data/external/
 wake-word/data/_quarantine_duplicates/
+wake-word/data/confusable_filter_training/
+!wake-word/data/confusable_filter_training/README.md
 stt-integration/kiirkirjutaja-source/models/
 *.wav
 *.mp3
@@ -34,6 +36,7 @@ wake-word/models/production/*.tflite
 wake-word/models/production/*.onnx
 wake-word/models/production/*.h5
 wake-word/models/kiirkirjutaja-int8/
+wake-word/models/kiirkirjutaja-large-int8/
 # Per-version training artifacts (keep only .tflite + analysis/*.json)
 wake-word/models/kuule-kratt-*/logs/
 wake-word/models/kuule-kratt-*/restore/
@@ -108,8 +111,10 @@ hardware/esp32/esphome/**/*.onnx
 # microWakeWord model manifests are text and can be committed if desired.
 # Keep actual trained model binaries out of git.
 
-# Evaluation fuzzing runs (generated, large)
+# Evaluation outputs (generated, large or privacy-sensitive)
 wake-word/evaluation/fuzz_runs/
+wake-word/evaluation/det_curves*.json
+output/
 
 # Audio test samples
 *.m4a
