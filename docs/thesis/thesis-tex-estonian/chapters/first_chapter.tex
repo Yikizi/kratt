@@ -73,7 +73,7 @@ Kogu mudeli parameetrite arv on ${\sim}22\,000$, mis on piisavalt väike, et mah
 \subsection{Voogedastusrežiim}
 \label{subsec:streaming}
 
-MixedNet on projekteeritud voogedastusrežiimis (\emph{streaming inference}) töötamiseks. Treenimise ajal töödeldakse kogu sisendklipp korraga (mõõtmetega $194 \times 40$), kuid pärast TFLite eksporti töötab mudel ühe spektrogrammikaadri kaupa. Iga uue 10-millisekundilise akna saabumisel uuendab mudel sisemist olekut (\emph{internal state}), kus hoitakse eelmiste kaadrite osalisi konvolutsiooni\-tulemusi. Väljundina antakse üks tõenäosuse väärtus, mis näitab, kas viimase ${\sim}1{,}5$ sekundi jooksul esines äratussõna.
+MixedNet on projekteeritud voogedastusrežiimis (\emph{streaming inference}) töötamiseks. Treenimise ajal töödeldakse kogu sisendklipp korraga (mõõtmetega $194 \times 40$), kuid pärast TFLite eksporti töötab mudel ühe spektrogrammikaadri kaupa. Iga uue 10-millisekundilise akna saabumisel uuendab mudel sisemist olekut (\emph{internal state}), kus hoitakse eelmiste kaadrite osalisi konvolutsiooni\-tulemusi. Väljundina antakse üks tõenäosuse väärtus, mis näitab, kas viimase ${\sim}1{,}5$~sekundi jooksul esines äratussõna.
 
 See lähenemine on praktiline põhjusel, et mikrokontroller ei pea puhverdama mitut sekundit heli, vaid töötleb seda reaalajas kaaderhaaval. Lisaks on voogedastusrežiimi arvutuslik kulu konstantne --- iga kaader nõuab sama palju tööd sõltumata sellest, kui kaua seade on kuulanud.
 
@@ -82,7 +82,7 @@ See lähenemine on praktiline põhjusel, et mikrokontroller ei pea puhverdama mi
 
 Residuaalühendused (\emph{residual connections}) on lühisühendused, mis liidavad ploki sisendi otse ploki väljundile, minnes mööda ploki sisemistest teisenduskihtidest \cite{he2016resnet}. Selline ühendus võimaldab gradientidel tagasilevimise ajal voolata otse läbi lühisühenduse, vältides sügavamates võrkudes esinevat gradientide kadumise probleemi (\emph{vanishing gradients}).
 
-Residuaalühenduste tõhusust väikestes äratussõna mudelites on näidanud Choi~et~al., kelle BC-ResNet arhitektuur saavutab \texttt{Speech Commands} andmestikul 96,9\% täpsuse vaid ${\sim}9200$ parameetriga \cite{choi2021bcresnet}. See tulemus viitab sellele, et residuaalõpe võimaldab väga kompaktsetes mudelites iga parameetrit tõhusamalt ära kasutada.
+Residuaalühenduste tõhusust väikestes äratussõna mudelites on näidanud Choi~et~al., kelle BC-ResNet arhitektuur saavutab \texttt{Speech Commands} andmestikul 96,9\% täpsuse vaid ${\sim}9200$~parameetriga \cite{choi2021bcresnet}. See tulemus viitab sellele, et residuaalõpe võimaldab väga kompaktsetes mudelites iga parameetrit tõhusamalt ära kasutada.
 
 \texttt{microWakeWord} raamistik toetab residuaalühenduste lubamist plokipõhiselt parameetri \texttt{residual\_connection} kaudu. Käesolevas töös on kõikide mudeliversioonide (v1--v8) konfiguratsioonis seatud \texttt{residual\_connection\,=\,0,0,0,0}, st residuaalühendused on välja lülitatud. Selle põhjuseks oli soov fikseerida arhitektuurimuutuja ja keskenduda esmalt andmestiku mõju uurimisele. Residuaalühenduste mõju on planeeritud ablatsioonieksperimendina.
 
