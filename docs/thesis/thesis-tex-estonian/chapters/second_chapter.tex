@@ -216,7 +216,7 @@ See tulemus andis \emph{esialgse} kinnituse hüpoteesile H2: mudel on õppinud �
 
 Pikema reaalajas testimise käigus ilmnes aga oluline nüanss. Kui v6 mudelit jooksutati MacBook~Pro mikrofoni peal 40-minutilise tavakõne ajal (kus äratussõna kordagi ei öeldud), registreeriti umbes 50 valevallandumist tunnis (FAPH~$\approx$~50). Samas tuvastas mudel päris äratussõna ütlusi usaldusväärselt.
 
-See tulemus viitab \textbf{generaliseerumise asümmeetriale}:
+See tulemus viitab \textbf{generaliseerumise asümmeetriale}. Suuremõõtmeliste süsteemide (nt Apple \enquote{Hey Siri}) puhul on domeeni\-spetsiifiliste ja mitmekeelsete negatiivide vajalikkust kaudselt tunnistatud --- treeningusse kaasatakse \enquote{tuhandeid tunde} sihtdomeeni ja sihtkeelte mitte-äratus\-kõnet \cite{apple-heysiri2017} ---, kuid asümmeetriat ennast ei ole autorile teadaolevalt üheski avaldatud eesti\-keelses ega võrreldavas väikese mahuga KWS-uuringus eraldi raporteeritud:
 \begin{itemize}
     \item \textbf{Recall generaliseerub}: mudel tunneb \enquote{Kuule Kratt} foneetilise struktuuri ära sõltumata mikrofonist. Positiivne tuvastus toimib ristseadmel.
     \item \textbf{FPR ei generaliseeru}: mudel ei oska tõrjuda MacBooki mikrofoni kaudu kuuldavat tavakõnet, sest negatiivne treeningmaterjal pärineb teisest akustilisest domeenist (Korvo-2 ja Common~Voice).
