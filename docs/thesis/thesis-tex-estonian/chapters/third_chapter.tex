@@ -72,6 +72,22 @@ Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna
     \item hindamise toru on kapseldatud skripti \texttt{wake-word/evaluation/compare\_models.py}, mis kutsub \texttt{microwakeword.test} kanoonilist FAPH-funktsiooni.
 \end{itemize}
 
+\subsection{Reaalajas seadme-testi protokoll}
+\label{subsec:live-device-protocol}
+Et §-s~\ref{sec:benchmark-gap} viidatud reaalajas testimise numbrid (v6-residual ja v15 recall, foneetiliselt sarnaste fraaside aktiveerumismäärad ning mittekõnelistele stiimulitele reageerimine) oleksid samaväärsel reprodutseeritavuse tasemel kui klipi- ja voogedastushindamine, fikseeritakse seadmel toimunud testi protokoll järgmiselt:
+\begin{itemize}
+    \item riistvara ja toru: hostarvuti (MacBook) sisemine mikrofon, TFLite mudel jooksutatud skriptiga \texttt{wake-word/evaluation/live\_test\_tflite.py}; sama siseruum kui §3.3.1 positiivsete kogumisel, lauapealne kasutusasend;
+    \item kõnelejad: kaks (autor ja autori õde), kumbki ühe sessiooniga; kaugus mikrofonist ${\sim}0{,}3$--$1{,}0$~m, kõneleja räägib normaalse hääletugevusega;
+    \item positiivsed ütlused: $11$ käsitsi öeldud \enquote{Kuule Kratt} ütlust kõneleja kohta, raporteeritud kujul $k/11$ (nt v15 puhul $9/11$);
+    \item foneetiliselt sarnaste fraaside test: $15$ Mac-mikrofoni hold-out fraasi (\texttt{hard\_neg\_mac\_holdout}, vt §3.3.2), igaüks öeldud üks kord; raporteeritud $27\%$ on aktiveerumiste osakaal selles komplektis ($4/15$ v15 puhul), $100\%$ tähistab kõikidel fraasidel aktiveerumist (v6-residual);
+    \item mittekõneliste stiimulite test: klaviatuuriklõpsud, ninakahin ja taustamuusika esitatud lühikeste lõikudena reaalajas hostarvutil; aktiveerumised loendatakse käsitsi alarmi ja konsoolilogi põhjal, mitte koondatud FAPH-väärtusena;
+    \item otsustusparameetrid: aktivatsioonilävi $0{,}97$ ja $2$~s refraktoorperiood (vt §3.3.4); aktiveering loetakse silutud tõenäosuse esimesel üle-läve freimil pärast refraktoorperioodi lõppu;
+    \item hindamise viis: vahetu reaalajas kuulamine (mitte salvestatud raja taasesitus), ütlused ja stiimulid logitakse \texttt{live\_test\_tflite.py} aktiveerumise sündmustena, millest tuletatakse $k/n$-loendid.
+\end{itemize}
+
+\noindent
+Selle protokolli statistilist piiratust ($n{=}11$ ütlust kõneleja kohta, $n{=}15$ hard-negatiivset fraasi) käsitletakse §-s~\ref{sec:benchmark-gap} ja ptk~\ref{chapter:results}; siinne alampeatükk fikseerib protokolli üksnes selleks, et tsiteeritud numbrid oleksid kontrollitavad.
+
 \section{Standardsete võrdlusaluste ebapiisavus reaalse kasutuse ennustamisel}
 \label{sec:benchmark-gap}
 
