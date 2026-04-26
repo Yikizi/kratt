@@ -144,7 +144,7 @@ Need esialgsed tulemused olid aga \emph{eksitavad} --- ja nende ümberlükkamine
 
 Pärast vahekaitsmist alustati v6 mudeli reaalajas testimist MacBook~Pro sisemikrofoniga (vt §\ref{sec:cross-mic-asymmetry}). 40-minutilise tavakõne testi jooksul registreeriti umbes 50 valevallandumist tunnis (FAPH~$\approx$~50). See tulemus oli teravas vastuolus tabelis~\ref{tab:full-comparison} esitatud CV FPR\,=\,0,4\% väärtusega, mis ennustanuks kordades vähem valeaktiveerimisi.
 
-Anomaalia uurimisel selgus, et lokaalne hindamisskript \texttt{compare\_models.py} kasutas negatiivse testikomplektina kataloogi \texttt{data/processed/negative\_samples}, mis sisaldas \emph{täpselt samu} 5000 Common~Voice eestikeelset klippi, mida kasutati mudeli treenimiseks. Klipi-taseme FPR mõõtis seega seda, kui hästi mudel oli oma treeningkomplekti pähe õppinud, mitte seda, kui hästi ta üldistub uutele kõnenäidetele. Sama probleem kehtis ka KORVO-2 negatiivsete kohta: kõik kogutud klipid olid treeningusse võetud ning sõltumatut hold-out komplekti polnud kunagi loodud.
+Anomaalia uurimisel selgus, et lokaalne hindamisskript \texttt{compare\_models.py} kasutas negatiivse testikomplektina kataloogi \texttt{data/processed/negative\_samples}, mis sisaldas \emph{täpselt samu} 5000 Common~Voice eestikeelset klippi, mida kasutati mudeli treenimiseks. Klipi-taseme FPR mõõtis seega seda, kui hästi mudel oli oma treeningkomplekti pähe õppinud, mitte seda, kui hästi ta üldistub uutele kõnenäidetele. Sama probleem kehtis ka Korvo-2 negatiivsete kohta: kõik kogutud klipid olid treeningusse võetud ning sõltumatut hold-out komplekti polnud kunagi loodud.
 
 \subsubsection{Hold-out hindamiskomplektide ehitamine}
 
@@ -222,7 +222,7 @@ See tulemus viitab \textbf{generaliseerumise asümmeetriale}. Suuremõõtmeliste
     \item \textbf{FPR ei generaliseeru}: mudel ei oska tõrjuda MacBooki mikrofoni kaudu kuuldavat tavakõnet, sest negatiivne treeningmaterjal pärineb teisest akustilisest domeenist (Korvo-2 ja Common~Voice).
 \end{itemize}
 
-See leid on kooskõlas H1 tulemustega: sama-seadme negatiivsed parandasid KORVO-2 FPR-i, sest mudel õppis tõrjuma spetsiifiliselt selle mikrofoni tavakõnet. Korrigeeritud hindamise (vt §\ref{sec:data-leakage}) järgi langes FAPH Common~Voice ET hold-out komplektil v1 367-lt v6 154-le ja v7 96-ni, mis ka kvantitatiivselt kinnitab paranemist. MacBooki mikrofon on aga kolmas domeen, mille negatiivseid mudel pole näinud --- ja see pole ainus puudujääk: sama probleem kehtib ka uute kõnelejate suhtes (vt allpool).
+See leid on kooskõlas H1 tulemustega: sama-seadme negatiivsed parandasid Korvo-2 FPR-i, sest mudel õppis tõrjuma spetsiifiliselt selle mikrofoni tavakõnet. Korrigeeritud hindamise (vt §\ref{sec:data-leakage}) järgi langes FAPH Common~Voice ET hold-out komplektil v1 367-lt v6 154-le ja v7 96-ni, mis ka kvantitatiivselt kinnitab paranemist. MacBooki mikrofon on aga kolmas domeen, mille negatiivseid mudel pole näinud --- ja see pole ainus puudujääk: sama probleem kehtib ka uute kõnelejate suhtes (vt allpool).
 
 Praktilisest seisukohast ei ole see kriitiline puudus, sest lõppseade on ESP32-S3-Korvo-2, mitte sülearvuti. Kuid teaduslikult on tegemist olulise tähelepanekuga: \textbf{sisutunnuste õppimine on piisav positiivseks tuvastuseks ristseadmel, kuid valepositiivsete tõrjumine nõuab domeenispetsiifilist negatiivset treeningmaterjali}. See täpsustab hüpoteesi H2 ja annab selge suunise tulevasteks arendusteks: iga uue sihtseadme puhul tuleb lisada vastav negatiivne treeningmaterjal.
 
