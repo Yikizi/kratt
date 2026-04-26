@@ -50,6 +50,14 @@ Et augmenteerimispoliitika oleks reprodutseeritav ilma koodi inspekteerimata, fi
     \item juhusliku splittimise seeme: \texttt{random\_split\_seed}${=}10$ (positiivne, negatiivne ja hard-negatiivne komplekt jaotatakse sama seemnega train/valid/test osadeks, jaotussuhe $0{,}8/0{,}1/0{,}1$).
 \end{itemize}
 
+\noindent
+Ülal pinitud parameetrid vastavad v12 mudeli treeningule. Peatüki empiirilised väited tuginevad lisaks mudelitele v6-residual, v15 ja v16c, mille treeningu­konfiguratsioon erineb v12 vaikejoonest ainult järgmistes sammudes; ülejäänud osa (treeningu­sammude arv, partii suurus, õpisamm, klassi­kaalud, hard-negatiivide eraldi $3{\times}$ kaalutud klassi puudumine, ambient maht ja juurutamislävi $0{,}97$) kehtib muutumatult:
+\begin{itemize}
+    \item \textbf{v6-residual}: \texttt{residual\_connection}${=}1$ kõigis MixConv-blokkides (v12 baasis \texttt{0}); SpecAugment välja lülitatud (\texttt{freq\_mask\_count}${=}\texttt{time\_mask\_count}${=}0$); treeningu­komplekt $2241$ pos / $10228$ neg (v6 andmestik, ilma Mac- ja XTTS-laienduseta);
+    \item \textbf{v15}: \texttt{residual\_connection}${=}1$, SpecAugment OFF; treeningu­komplekt $2241$ pos / $11728$ neg;
+    \item \textbf{v16c}: \texttt{residual\_connection}${=}1$, SpecAugment OFF; MixConv-blokkide punkt­mõõtmelise väljundi laius $48 \to 96$ filtrit (laiem variant, ülejäänud arhitektuur sama); treeningu­komplekt $2241$ pos / $10228$ neg.
+\end{itemize}
+
 \subsection{Voogedastushindamise parameetrid}
 Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna (a) ühik on kasutajakogemusele otseselt tõlgendatav — valed aktiveeringud tunnis pideva kuulamise režiimis, (b) see ei sõltu positiivsete klippide hulgast ega klassijaotusest ning (c) on otse võrreldav microWakeWordi ja openWakeWordi avaldatud tulemustega. Et ambient-hindamine oleks reprodutseeritav, fikseeritakse järgmine protokoll:
 \begin{itemize}
