@@ -353,7 +353,7 @@ Need süsteemid on treenitud kümnete tuhandete tundide negatiivsete andmetega j
 
 \subsubsection{Recall'i kompromiss ja ESP32 teostatavus}
 
-Konsensuse hind on recall'i langus: 5/11 (45\%) unseen kõneleja klippidest tuvastatakse. See on fundamentaalne kapatsiteedi piirang: kaks ${\sim}22\,000$-parameetrilist mudelit konsensuses on selektiivsemad, kuid ka tõenäolisemalt eriarvamusel piirjuhtudel. Kõrgema läve (0,997) juures piisab ühe mudeli ebakindlusest, et kogu süsteem loobub aktiveerimisest.
+Konsensuse hind on recall'i langus: 5/11 (45\%) õe sõsar-klippidest tuvastatakse. Samale Isa~XTTS hold-out komplektile (48 klippi), mida kasutati v1--v8 võrdluses tabelis~\ref{tab:fair-comparison-holdout}, rakendades langeb sama Ekspert~A+B~v2 @ 0,997/0,997 konfiguratsiooni recall 15/48-le (31\%) --- see number on otse võrreldav §\ref{sec:data-leakage} unseen-kõneleja tulemustega. See on fundamentaalne kapatsiteedi piirang: kaks ${\sim}22\,000$-parameetrilist mudelit konsensuses on selektiivsemad, kuid ka tõenäolisemalt eriarvamusel piirjuhtudel. Kõrgema läve (0,997) juures piisab ühe mudeli ebakindlusest, et kogu süsteem loobub aktiveerimisest.
 
 Madalama läve (0,90/0,90) kasutamine tõstab recall'i 6/11-le, kuid FAPH kasvab 11,0-ni. See kompromiss on reguleeritav ja sõltub rakenduse nõuetest: koduses keskkonnas, kus kasutaja saab äratussõna vajaduse korral korrata, on madalam recall aktsepteeritav, kui valevallandumised on peaaegu elimineeritud.
 
@@ -366,5 +366,5 @@ Sihipäraselt projekteeritud ekspertmudelite konsensus valideerib kaskaadse spet
 \begin{enumerate}
     \item \textbf{Hard negatiivide kalibreerimine}: puhtalt hard negatiividel treenitud mudel (Ekspert~B~v1) on kasutamiskõlbmatu, sest tal puudub diskrimineerimise baastase. Juba 20\% üldiste negatiivide lisamine taastab mudeli eristusvõime, langetades HN~FPR 100\%-lt 13\%-le.
     \item \textbf{Sub-1 FAPH on saavutatav}: kahe kompaktse ekspertmudeli (kokku ${\sim}44\,000$ parameetrit, 203\,KB flash) konsensus saavutab 0,8 FAPH tihedal eestikeelsel kõnel, mis on sama suurusjärgu tulemus kui tööstuslikud süsteemid kümnete tuhandete kordade suurema treeningandmestikuga.
-    \item \textbf{Recall on järgmine pudelikael}: 45\% recall unseen kõnelejal on praeguse süsteemi peamine piirang. Selle parandamine nõuab tõenäoliselt suuremat treeningandmestikku (rohkem kõnelejaid), madalamat konsensusläve (recall'i ja FAPH kompromiss) või kolmandat ekspertmudelit, mis on spetsialiseerunud erinevate kõnelejate äratundmisele.
+    \item \textbf{Recall on järgmine pudelikael}: 31\% recall (15/48) Isa~XTTS unseen-kõneleja hold-out komplektil --- sama mõõdupuu, mida kasutati v1--v8 võrdluses (§\ref{sec:data-leakage}) --- on praeguse süsteemi peamine piirang. Selle parandamine nõuab tõenäoliselt suuremat treeningandmestikku (rohkem kõnelejaid), madalamat konsensusläve (recall'i ja FAPH kompromiss) või kolmandat ekspertmudelit, mis on spetsialiseerunud erinevate kõnelejate äratundmisele.
 \end{enumerate}
