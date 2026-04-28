@@ -41,6 +41,16 @@ Et negatiivse klassi tekitamine oleks samaväärselt reprodutseeritav ja mikrofo
     \item holdout: 15 Mac-mikrofoniga salvestatud reaalset hard-negatiivset fraasi hoitakse iga mudeli treeningust eraldi (\texttt{hard\_neg\_mac\_holdout}) foneetilise eristusvõime sõltumatuks hindamiseks.
 \end{itemize}
 
+\subsection{Androidi valevallandumiste logija}
+Et eelpool mainitud Androidi rakenduse poolt kogutud negatiivsed näited oleksid samaväärselt reprodutseeritavad ja eristatavad Korvo-2 sessioonidest, fikseeritakse logija konfiguratsioon järgmiselt (vt \texttt{android/app/src/main/java/ee/taltech/kratt/falselog/}):
+\begin{itemize}
+    \item seade ja vallandumismudel: Pixel~8a, pidev taustateenus, mis jooksutab seadmes \texttt{microWakeWord} TFLite-mudeli vaikimisi \texttt{kuule\_kratt\_v12.tflite} (vt \texttt{Settings.kt}, \texttt{DEFAULT\_MODEL}); rakendus toetab ka mitme mudeli paralleelset jooksutamist režiimides \emph{any} ja \emph{consensus};
+    \item helivorming: 16~kHz mono PCM16, allikas \texttt{MediaRecorder.AudioSource.VOICE\_RECOGNITION}, 20-ms freimid (vt \texttt{audio/AudioCapture.kt});
+    \item klipiaken: vaike-FAPH-eelseadistuses 4-sekundiline eelrull ja 1-sekundiline järelrull, lävi $0{,}85$, refraktoorperiood 2~s; \emph{COLLECTION}-eelseadistuses (positiivsete kogumiseks reaalkasutusest) lävi $0{,}6$, eelrull $1{,}0$~s, järelrull $0{,}3$~s, refraktoorperiood $0{,}5$~s (vt \texttt{Settings.kt}, \texttt{DetectorConfig});
+    \item sündmuse metaandmed: iga vallandumise kohta lisatakse \texttt{events.jsonl} faili UTC ISO-ajatempel, vallandumismudeli nimi ja skoor, kõikide aktiivsete mudelite skoorid (hõre kodeering, ainult nullist suuremad), vallandumisrežiim, lävi, refraktoor- ja rullide kestused, salvestatud WAV-faili suhteline tee, seadme mudel (\texttt{Build.MODEL}) ja rakenduse versioon (vt \texttt{log/EventLogger.kt}, struktuur \texttt{DetectionEvent}); sessiooni algus ja lõpp logitakse eraldi kirjetena;
+    \item ekspordivorming: \texttt{events.jsonl} koos WAV-snippiidega rakenduse välises failipuus (\texttt{logs/}); negatiivsesse klassi liidetakse vaid need klipid, mille käsitsi kuulamine kinnitab, et \enquote{Kuule Kratt} ei kõlanud, ülejäänud jäävad eraldi positiivsete kogumiseks (\emph{COLLECTION}-eelseadistuses).
+\end{itemize}
+
 \subsection{Treeningaja augmenteerimise parameetrid}
 Et augmenteerimispoliitika oleks reprodutseeritav ilma koodi inspekteerimata, fikseeritakse signaalitasandi ja spektrogrammi-tasandi sammud järgmiselt (vastab v12 mudeli treeningule, vt \texttt{wake-word/training/scripts/generate\_microwakeword\_mmaps.py} ja \texttt{microwakeword-kratt.yaml}):
 \begin{itemize}
