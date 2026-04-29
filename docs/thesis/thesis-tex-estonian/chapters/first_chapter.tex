@@ -1,4 +1,4 @@
-Metoodika eesmärk on kirjeldada sellist tööprotsessi, mille abil on võimalik äratussõna mudeli arenduses eristada töötlustoru (ingl \emph{pipeline}) tehnilisi vigu andmestikust või mudeli üldistusvõimest tulenevatest probleemidest. See on oluline, sest vastasel juhul võib ebaõnnestunud tulemus jääda valesti kas andmete, deploy või treeningukoodi arvele. Just seetõttu kirjeldatakse järgnevalt esmalt toru tehnilised komponendid, seejärel nende võrdlusraam, seejärel andme- ja hindamiskiht ning lõpuks mudeli arhitektuur ja selle konfigureerimine.
+Metoodika eesmärk on kirjeldada sellist tööprotsessi, mille abil on võimalik äratussõna mudeli arenduses eristada töötlustoru (ingl \emph{pipeline}) tehnilisi vigu andmestikust või mudeli üldistusvõimest tulenevatest probleemidest. See on oluline, sest vastasel juhul võib ebaõnnestunud tulemus jääda valesti kas andmete, juurutamise (ingl \emph{deployment}) või treeningukoodi arvele. Just seetõttu kirjeldatakse järgnevalt esmalt toru tehnilised komponendid, seejärel nende võrdlusraam, seejärel andme- ja hindamiskiht ning lõpuks mudeli arhitektuur ja selle konfigureerimine.
 
 \section{Kasutatud tehnoloogiad}
 Töö praktiline baas koosneb neljast peamisest komponendist. Esmaseks mikrokontrolleri-suunaliseks treeninguraamistikuks kasutatakse \texttt{microWakeWord} projekti \cite{microwakeword2026}, mille all töötab TensorFlow \cite{tensorflow2015}. Võrdlusraamistikuna kaasatakse \texttt{openWakeWord} \cite{openwakeword2026}, mis on suunatud kiiremale äratussõna prototüüpimisele ja mille ümber on aktiivne kasutuspraktika Home Assistanti ökosüsteemis. Mudeli sihtformaadiks on TensorFlow Lite ning sihtseadmeks ESP32-S3 põhine arendusplaat. Seadmel käitamiseks ja Home Assistantiga sidumiseks kasutatakse ESPHome'i \cite{esphome2026}. Nutikodu automaatikakihi ja sündmuste orkestreerimise eest vastutab Home Assistant \cite{homeassistant2026}.
@@ -12,7 +12,7 @@ Võrdlus viiakse läbi neljal teljel:
 \begin{itemize}
     \item treenimise praktiline keerukus, sealhulgas andmete ettevalmistuse maht, hüperparameetrite tundlikkus ja tööriistade kasutusmugavus;
     \item mudeli kvaliteet, sealhulgas äratussõna tabamine ja valevallandumiste käitumine positiivsete, negatiivsete ja ambient-andmete peal;
-    \item deploy sobivus, sealhulgas mudeli suurus, inference'i praktiline teostatavus ja sobivus ESP32-S3 klassi seadmele;
+    \item juurutamise sobivus, sealhulgas mudeli suurus, inference'i praktiline teostatavus ja sobivus ESP32-S3 klassi seadmele;
     \item laiendatavus eesti keelele, sealhulgas sõltuvus ingliskeelsetest eeldustest ja sünteetilise andmestiku roll.
 \end{itemize}
 
