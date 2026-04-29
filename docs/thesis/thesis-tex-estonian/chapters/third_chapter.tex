@@ -167,6 +167,8 @@ Praeguse töö seisu juures saab põhjendatult väita järgmist:
 \begin{itemize}
     \item kohalik äratussõna treeningu- ja hindamistoru on \texttt{Speech Commands} korpuse \texttt{marvin} sihtsõna sanity-check eksperimendi kaudu \cite{speechcommands2018} otsast lõpuni valideeritud (treenitud mudel, kvantiseeritud TFLite artefakt ja ROC-analüüs) ning annab korrigeerituna reprodutseeritavad streaming FAPH väärtused eestikeelsetel mudelitel (vt ptk~\ref{chapter:results}, tabel~\ref{tab:fair-comparison-holdout});
     \item evaluatsioon peab sisaldama eraldi ambient-komponenti, vastasel juhul on osa mõõdikuid eksitavad;
+    \item v16c koos Expert~A + Expert~B2 MoE konsensushindamisel saavutab streaming FAPH${<}1$ (konkreetselt $0{,}79$) operatiivlävedel ${\sim}0{,}996$, mis on senise mudeliseeria esimene tulemus alla ühe valeaktiveeringu tunnis;
+    \item jääkpiiranguna jääb recall reaalsetel \enquote{Kule}-hääldustel juurutuslävel madalamaks kui TTS-positiivsetel klippidel, mistõttu juurutusotsus sõltub veel käimasolevast kasutajatestist (ptk~\ref{chapter:results} / kasutajatesti raamistik);
     \item eestikeelse mudeli järgmine peamine risk ei ole enam toru tehniline katkiolek, vaid andmestiku kvaliteet ja sobivus päris kasutuskeskkonnaga.
 \end{itemize}
 
