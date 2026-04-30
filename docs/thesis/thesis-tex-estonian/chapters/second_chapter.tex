@@ -357,7 +357,7 @@ Konsensuse hind on recall'i langus: 5/11 (45\%) unseen kõneleja klippidest tuva
 
 Madalama läve (0,90/0,90) kasutamine tõstab recall'i 6/11-le, kuid FAPH kasvab 11,0-ni. See kompromiss on reguleeritav ja sõltub rakenduse nõuetest: koduses keskkonnas, kus kasutaja saab äratussõna vajaduse korral korrata, on madalam recall aktsepteeritav, kui valevallandumised on peaaegu elimineeritud.
 
-ESP32-S3 teostatavuse seisukohast on tulemus paljulubav. Ekspert~A (148\,KB) ja Ekspert~B~v2 (55\,KB) nõuavad kokku 203\,KB flash-mälu ja hinnanguliselt ${\sim}120$\,KB töömälu vahelduvaks inference'iks. See mahub ESP32-S3 piirangutesse (4\,MB flash, 512\,KB SRAM), jättes piisavalt ruumi ESPHome püsivarale ja WiFi-pinule.
+ESP32-S3 teostatavuse seisukohast on tulemus paljulubav. Ekspert~A (148\,KB) ja Ekspert~B~v2 (55\,KB) nõuavad kokku 203\,KB flash-mälu, mis mahub ESP32-S3 piirangutesse (4\,MB flash, 512\,KB SRAM). Tensor-arena tegelik töömälu vahelduvaks inference'iks on veel mõõtmata ja jääb tulevase tööna kontrollida microWakeWord/TFLite-Micro interpretaatori raportiga; siinkohal piirdume flash-mälu mahutavuse kinnitusega.
 
 \subsubsection{Järeldused}
 
