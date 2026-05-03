@@ -30,8 +30,8 @@ hardware/
 
 - Primary board: ESP32-S3 Korvo-2 (dual mic, onboard codec)
 - Framework: ESPHome for voice satellites, ESP-IDF for custom firmware
-- Model format: TFLite INT8 via microWakeWord (~56KB per model)
-- Flash: `esphome run voice-satellite-esp32-s3-korvo2.yaml`
+- Model format: TFLite INT8 via microWakeWord (~55KB-148KB for current models)
+- Flash: `esphome run voice-satellite-esp32-s3-korvo2.yaml` or `./cli/kratt flash <model>`
 - Wyoming protocol on port 10400
 
 ## Dev workflow

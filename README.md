@@ -15,12 +15,12 @@ uurimis- ja tööjaam, kus koos elavad:
 ## Praegune seis
 
 - Canonical evaluatsioon on **streaming FAPH**, mitte clip-level FPR.
-- Mudeleid võrreldakse **FAPH + recall + hard-negative FPR** kombinatsioonina,
-  samal deployment thresholdil.
-- Suund on nihkunud ühe "parima universaalse mudeli" otsimiselt
-  **multi-model consensus** lahenduste poole.
-- Päris seadme ja päris maailma mõõtmine toimub peamiselt
-  **Android false-loggeri** ja **ESP32-S3 Korvo-2** peal.
+- Mudeleid võrreldakse **FAPH + recall + hard/prefix/confusable FPR** kombinatsioonina,
+  samal külmutatud deployment thresholdil.
+- `v16c` on stabiilne single-model baseline / demo kandidaat, mitte production-ready väide.
+- v17/v18/checkpoint-FAPH katsed on praegu **diagnostic evidence**: need näitasid positive-label purity, exact phrase selectivity ja checkpoint objective probleeme.
+- Suund on nihkunud ühe "parima universaalse mudeli" otsimiselt konservatiivse thesis-evidence suunas: user-test + threshold-frozen replay.
+- Päris seadme ja päris maailma mõõtmine toimub Android false-loggeri, ESP32-S3 Korvo-2 ning nüüd ka `kratt user-test` protokolli kaudu.
 - `home-assistant/` on praegu pigem plaan / blueprint; päris deploy tee käib
   peamiselt `hardware/esp32/esphome/` ja demo tooling'u kaudu.
 
@@ -132,8 +132,11 @@ Andmeradade loogika:
 # Live test MacBooki mikrofoniga
 ./cli/kratt live v16c 0.997
 
-# Saada uus treening HPC-sse
-./cli/kratt train v17 --steps 15000 --mem 64G
+# Saada uus treening HPC-sse ainult siis, kui thesis schedule lubab
+./cli/kratt train v19a --dataset-preset recall-cv --dry-run
+
+# Salvesta labelled user-test session
+./cli/kratt user-test P01 --active-model v16c --new-session-subdir
 
 # Build + install Android false-logger
 ./cli/kratt android install

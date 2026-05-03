@@ -16,10 +16,11 @@ docs/
 │   └── decision-records/       # ADRs (e.g. 0001-ekspressiivne-tts-markup)
 │
 ├── research/                   # Evaluation methodology, MVP plans
-├── user-testing/               # Test plan, questionnaire, portable setup
+├── user-testing/               # Current protocol, questionnaire, portable setup, historical plans
 ├── notebooklm-pack/            # Exported briefs for NotebookLM
 ├── stitch-taltech-pack/        # TalTech brand assets for slide generation
 ├── PROJECT_TODO.md             # Master task tracker (source of truth)
+├── documentation-maintenance.md # Docs freshness policy
 ├── GIT_STRATEGY.md             # Branching and workflow decisions
 └── projekti_kirjeldus.md       # Thesis proposal (Estonian)
 ```

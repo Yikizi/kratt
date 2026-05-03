@@ -1,45 +1,51 @@
 # wake-word/
 
-Core contribution: "Kuule Kratt" wake word model training and evaluation.
+Core contribution: "Kuule Kratt" wake-word model training and evaluation.
 
 ## Structure
 
 ```
 wake-word/
 ├── data/collection/            # Recording scripts, TTS generation, augmentation
+├── data/validation/            # Positive/source audits, strict-positive and regression builders
 ├── training/
 │   ├── scripts/                # Train, generate mmaps, HPC submit scripts
-│   └── configs/                # Training YAML configs (openwakeword, microwakeword)
+│   └── configs/                # Training YAML configs (openWakeWord, microwakeword)
 ├── models/                     # Versioned trained models
-│   ├── kuule-kratt-v1..v16c/    # Each: .tflite + analysis/dataset_summary.json
-│   └── hpc-smoke-marvin*/      # Smoke test models (marvin keyword)
-├── evaluation/                 # Benchmarks, live testing, fuzzer
-│   ├── live_test_tflite.py     # Real-time mic evaluation with sliding-window
-│   ├── compare_models.py       # Side-by-side model comparison
-│   ├── deterministic_trigger_fuzzer.py  # Reproducible threshold fuzzing
-│   ├── test_sets.py            # Held-out test set definitions
+│   ├── kuule-kratt-v1..v18*/    # Historical + diagnostic microWakeWord models
+│   ├── kuule-kratt-checkpoint-* # checkpoint-FAPH diagnostic exports
+│   └── openwakeword/            # openWakeWord experiments
+├── evaluation/                 # Benchmarks, live testing, fuzzer, reports
+│   ├── benchmark_all_models.py  # Main multi-model benchmark runner
+│   ├── test_sets.py            # Held-out / diagnostic test set registry
+│   ├── multi_model_live_test.py # Parallel multi-model live/shadow testing
 │   └── fpr_logs/               # Historical false-positive rate logs
-├── docs/                       # Bibliography tracker, sanity check notes
-├── DATA_STRATEGY.md            # Data sourcing decisions
+├── docs/                       # Model lineage, data timeline, audit reports
+├── DATA_STRATEGY.md            # Current data sourcing / quality policy
 └── README.md                   # Setup and usage instructions
 ```
 
-## Key facts
+## Key facts (updated 2026-04-29)
 
-- Wake word: "Kuule Kratt" (two words, not just "Kratt")
-- Framework: microWakeWord (TFLite INT8 for ESP32)
-- Current best: **v16c** (148KB, 100% recall, 100% hard neg rejection, FAPH 75) + MoE consensus (Expert A + Expert B2) achieves sub-1 FAPH (0.79) at 0.996/0.996
-- Training: TalTech HPC cluster (SLURM), scripts in training/scripts/
-- Evaluation metric: FAPH (False Accepts Per Hour) at fixed threshold
-- Positive data: real recordings + Neurokone TTS + XTTS voice clones
-- Negative data: Riigikogu speech, Google Speech Commands, ambient recordings
+- Wake word: **"Kuule Kratt"** / practical variant **"Kule Kratt"** — exact two-word phrase, not just `kuule`, `kule`, or `kratt`.
+- Framework: microWakeWord (TFLite INT8 for ESP32); openWakeWord remains experimental/comparative.
+- Current stable single-model baseline / active demo candidate: **`v16c`**.
+- v17/v18/checkpoint runs are **diagnostic**, not final deploy candidates:
+  - v17 exposed positive-label corruption.
+  - v18 showed clean positives are necessary but not sufficient.
+  - checkpoint-FAPH showed ambient-FAPH checkpointing can collapse recall.
+- Final evaluation must report **FAPH + real/unseen-speaker recall + hard/prefix/confusable FPR** together at frozen thresholds.
+- User-test audio collection is now the critical path; use `kratt user-test` and `docs/user-testing/ten-minute-shadow-demo-protocol.md`.
 
 ## Critical rules
 
-- Same mic must appear in BOTH positive and negative classes (mic symmetry)
-- Only "Kuule Kratt" is a valid positive label (not just "Kratt")
-- Neurokone is deterministic — always dedup generated samples
-- Never rm -rf data dirs; generate alongside, let user decide
+- Same mic should appear in BOTH positive and negative classes (mic symmetry).
+- Only exact `kuule/kule kratt` phrase variants are valid positive labels.
+- Neurokõne is deterministic — always dedup generated samples.
+- Known-bad SSML/XML and full-command XTTS positive sources are quarantined by default.
+- Prefix-only, single-word, reversed-order, and confusable phrases are negatives / regression controls.
+- Never rm -rf data dirs; generate alongside, let the user decide.
+- Do not train on user-test audio before final evaluation unless the thesis explicitly separates train/test usage.
 
 ## Dev workflow
 
@@ -47,15 +53,19 @@ wake-word/
 # Environment
 (cd wake-word && uv sync)
 
-# Live model test (v16c as example)
-(cd wake-word && uv run python evaluation/live_test_tflite.py models/kuule-kratt-v16c/kuule_kratt_v16c.tflite)
+# Live model test (v16c as stable baseline example)
+./cli/kratt live v16c 0.997
 
-# MoE consensus test
+# Multi-model / consensus live test
 (cd wake-word && uv run python evaluation/multi_model_live_test.py --models expert-a expert-b2 --thresholds 0.996 0.996)
 
-# Generate training features
-(cd wake-word && uv run python training/scripts/generate_microwakeword_mmaps.py)
+# Full benchmark subset
+(cd wake-word && uv run python evaluation/benchmark_all_models.py --models v16c expert-a expert-b2)
 
-# Submit HPC job
-(cd wake-word/training/scripts && bash submit_hpc_kuule_kratt.sh)
+# Generate training features / submit HPC job (only if thesis schedule allows)
+(cd wake-word && uv run python training/scripts/generate_microwakeword_mmaps.py)
+./cli/kratt train v19a --dataset-preset recall-cv --dry-run
+
+# User-test labelled recorder
+./cli/kratt user-test P01 --active-model v16c --new-session-subdir
 ```

@@ -1,46 +1,80 @@
 # Data Strategy
 
-**Status:** Ülevaatekaart. Kronoloogiline ajalugu ja per-mudel kasutus on eraldi failides.
+**Status:** Ülevaatekaart. Kronoloogiline ajalugu ja per-mudel kasutus on eraldi failides.  
+**Last updated:** 2026-04-29
 
 ## Allikad (autoritatiivsed)
 
-- **`wake-word/docs/DATA_TIMELINE.md`** — millal mis andmeallikas projekti tekkis (chronological)
-- **`wake-word/evaluation/training_data_manifest.md`** — millised andmed igasse mudelisse treeningusse läksid
-- **`wake-word/docs/MODEL_LINEAGE.md`** — mudelite evolutsioon ja miks igal sammul andmeid muudeti
-- **`wake-word/data/collection/`** — skriptid mis genereerivad/laadivad allikaid
+- **`wake-word/docs/DATA_TIMELINE.md`** — millal mis andmeallikas projekti tekkis.
+- **`wake-word/evaluation/training_data_manifest.md`** — millised andmed igasse mudelisse treeningusse läksid.
+- **`wake-word/docs/MODEL_LINEAGE.md`** — mudelite evolutsioon ja miks igal sammul andmeid muudeti.
+- **`wake-word/docs/POSITIVE_DATA_QUALITY_AUDIT_20260427.md`** — v17 positive-label incident ja guard rails.
+- **`wake-word/docs/V18_CLEAN_POSITIVE_EXPERIMENTS_20260427.md`** — v18 strict-positive matrix ja tulemused.
 
-## Praegune strateegia (2026-04-14)
+## Praegune strateegia (2026-04-29)
 
-### Treening
-- **Positives:** 915 päris K-2 + 1560 Neurokõne TTS + 970 SSML TTS + 40 Mac Mattias + augmented Mac + XTTS 3 pereliiget (v8 baseline, ~3343 train + 589 test)
-- **Negatives:** paradigma vahetatud v8-l — dropsi TTS hard negs, kasutab päris + voice-cloned hard negs eraldi `hard_negative` feature setis penalty_weight=3.0
-- **Ambient:** 930 MUSAN + 72 K-2 = 1002 segmenti (12.2h kokku)
+### Thesis-first policy
 
-### Eval (alates 2026-04-07)
-- **Canonical streaming FAPH** (sliding_window=5, cooldown=25 slices)
-- **3 FAPH test setti:** `faph_cv_et` (3.65h), `faph_librispeech` (5.4h), `faph_dipco` (5.5h)
-- **Recall test setid:** `pos_isa_xtts` (48, expanding to ~200 stochastic variants), `pos_mac_mattias` (30, v1-v7 only), `ode_kuule_kratt` (11, expanding to ~200 stochastic variants)
-- **Hard neg test setid:** `hard_neg_mac_holdout` (15), `hard_neg_isa_xtts` (60), `hard_neg_v10_false_accept_canary` (5)
-- **Disjointness check:** `test_sets.py::assert_disjoint_from_training()`
+User testing + thesis writing are now higher priority than new data expansion. New training data work is allowed only if it directly supports the submitted thesis and does not threaten the 2026-05-18 deadline.
 
-### XTTS recall expansion
+### Positives
 
-- Use `wake-word/data/collection/generate_xtts_clones.py --positive-target 200 --skip-negatives` for speaker-specific stochastic recall-set growth.
-- The generated plan is resumable and idempotent: reruns skip existing 16 kHz outputs and reuse `generation_manifest.json`.
-- Recommended targets right now: `isa` and `ode`, about 200 additional positives each.
+- Valid future positives must be exactly the wake phrase: `kuule/kule kratt` (elongation/pronunciation variants allowed only if still the same two words).
+- Exclude by default:
+  - SSML/XML readout clips,
+  - full-command XTTS positives,
+  - prefix-only / too-short clips,
+  - filler/context phrases,
+  - reversed order (`kratt kuule`),
+  - random positive crops that can create partial-phrase labels.
+- Known-bad SSML and XTTS sources are quarantined by default. Use `--allow-known-bad-positives` only for historical reproduction.
+- Future deploy-candidate runs should use the positive audit tooling and record all exclusions in manifests.
+
+### Negatives / exact-phrase controls
+
+The main open modelling problem is no longer only “more negative hours”. It is **exact two-word phrase selectivity**.
+
+Current negative-control categories:
+
+- general long-form speech/audio for FAPH: CV ET, LibriSpeech, DiPCo, MacBook background;
+- hard negatives: Mac holdout, Isa XTTS hard negatives, v10 false-accept canary;
+- prefix/confusable regression: `kuule/kule`-only, `kratt`-only, reversed order, `kuule/kule <not kratt>`.
+
+If a v19-style run is attempted, partial and confusable phrases should be first-class negatives at a controlled ratio, with a separate holdout regression set.
+
+### Current model implication
+
+- `v16c` remains the stable single-model baseline / demo candidate.
+- v17 showed that corrupted positives can break the model.
+- v18 showed that clean positives alone do not solve exact phrase selectivity.
+- checkpoint-FAPH showed that ambient-FAPH checkpointing alone can collapse recall.
+
+## Eval policy
+
+- Canonical metric: **streaming FAPH**, not clip-level FPR.
+- Final model tables must report the trio together:
+  - FAPH,
+  - real/unseen-speaker recall,
+  - hard-negative / prefix / confusable FPR.
+- Thresholds for final claims must be frozen on validation/dev before final reporting.
+- Prefix/confusable sets that overlap with training for a model family are useful diagnostics, but not final independent holdouts.
 
 ## Kriitilised reeglid (aktiivsed)
 
-1. **Mic sümmeetria:** sama mikrofon peab olema nii positiivses kui negatiivses klassis — muidu mudel õpib mic'i fingerprinti
-2. **Test setid peavad olema disjunct** treeningandmetest — igal test setil `held_out_for` list, tööriist kontrollib
-3. **Dedup on kohustuslik** — Neurokõne on deterministlik, genereerib identseid väljundeid → peab dedupima
-4. **Andmeid ei kustutata** regenereerimiseks — luua juurde, lasta kasutajal otsustada
+1. **Mic sümmeetria:** sama mikrofon peab olema nii positiivses kui negatiivses klassis — muidu mudel õpib mic'i fingerprinti.
+2. **Test setid peavad olema disjunct** treeningandmetest; kui pole kindel, märgi tulemus diagnostic-only.
+3. **Dedup on kohustuslik** — Neurokõne on deterministlik, genereerib identseid väljundeid.
+4. **Andmeid ei kustutata** regenereerimiseks — luua juurde, lasta kasutajal otsustada.
+5. **Positive quality gate** enne uut deploy-kandidaati.
+6. **User-test audio** ei lähe treeningusse enne final-eval väiteid, kui thesis ei dokumenteeri eraldi train/test jaotust.
 
-## Avatud probleemid (TODO)
+## Avatud probleemid
 
-- **Recall test setid liiga väikesed** — 11 õde clippi annab CI ±27pp. Vaja kas (a) rohkem päris speakereid (3-5 × 30 clippi) või (b) metoodiliselt piiratud playback testimine
-- **training_data_manifest.md seisab v8-l** — v9+ pole lisatud
-- **v10 orphan** — analysis/ puudub täielikult
-- **Android mined captures (1230 failid)** — pole veel STT labelitud positive/hard_neg/garbage'iks
+- 🎯 Real-speaker user-test data: 20-30 participants, labelled trials + optional audio consent.
+- 🎯 Threshold freeze for final reporting.
+- ⏳ Exact manifests for v17/v18/checkpoint runs should be archived when available.
+- ⏳ Wilson CI / small-N uncertainty should be included in final tables.
+- 🧊 Large negative-pool expansion (MUSAN/CV/VOiCES/podcasts) is deferred unless thesis schedule is safe.
+- 🧊 v19 phrase-selectivity training is optional and should not displace user testing/writing.
 
 Vaata ka: `docs/PROJECT_TODO.md` operatiivseks taskide järjekorraks.

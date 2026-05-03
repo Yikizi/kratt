@@ -6,6 +6,8 @@
 **Timeline**: February 2025 - June 2026
 **Language**: Estonian (thesis), English (code/docs)
 
+> ⚠️ **HARD DEADLINE: 2026-05-18** — thesis document must be submitted to TalTech by this date. All scope decisions and new experiments after early May must be weighed against remaining writing time. Chapters 3–5 are the critical path.
+
 ## 🎯 Project Overview
 
 Building the **first Estonian wake word model** "Kratt" and integrating it with Home Assistant as a complete, privacy-first voice satellite system.
@@ -58,14 +60,14 @@ kratt/                          # Monorepo root
 └── external-repos/             # Vendored mirrors (gitignored)
 ```
 
-## 📋 Current Phase: Evaluation & Thesis Writing (April 2026)
+## 📋 Current Phase: User Testing & Thesis Writing (late April 2026)
 
 **Priority Order**:
-1. 🎯 Wake word model evaluation (v16c ready, MoE consensus validated — sub-1 FAPH achieved)
-2. ✅ User testing (20-30 participants, CRITICAL for thesis)
-3. 📝 Thesis writing (chapters 1-2 drafted, 3-5 pending)
-4. 🔌 Home Assistant integration polish
-5. 📚 Comparative analysis (EuroEval LLM benchmarks done)
+1. 🎯 User testing (20-30 participants, CRITICAL for thesis; `kratt user-test` recorder exists)
+2. 📝 Thesis writing (chapters 3-5 are critical path before 2026-05-18)
+3. 📊 Freeze model thresholds and replay user-test audio across the fixed shadow set
+4. 🔌 Deployment/demo polish only as needed for the user-test setup
+5. 🧊 New model training only if it directly supports the thesis and does not threaten writing time
 
 **Status**: See `docs/PROJECT_TODO.md` for detailed task breakdown.
 
@@ -85,8 +87,9 @@ kratt/                          # Monorepo root
 **"Kuule Kratt"** — two-word Estonian wake phrase.
 - Estonian mythology reference (kratt creature)
 - Distinctive phonetics, not in everyday speech
-- Current best model: **v16c** (148KB, 100% recall + 100% hard neg rejection + FAPH 75)
-- MoE consensus (Expert A + Expert B2) achieves **0.79 FAPH** @ 0.996/0.996
+- Stable single-model baseline / active demo candidate: **v16c**
+- Historical MoE milestone: Expert A + Expert B2 achieved **0.79 FAPH** @ 0.996/0.996
+- Current caveat: v17/v18/checkpoint experiments show that clean labels and low ambient FAPH are not enough; exact phrase selectivity and real-speaker recall remain thesis-critical metrics
 
 ## Key References
 
