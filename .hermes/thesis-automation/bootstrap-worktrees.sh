@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bootstrap / repair the 8 lane branches and their persistent worktrees.
+# Bootstrap / repair all active lane branches and their persistent worktrees.
 # Idempotent. Safe to re-run.
 set -euo pipefail
 

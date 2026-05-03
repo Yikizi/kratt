@@ -39,6 +39,7 @@ PROMPTS_DIR = AUTO / "prompts"
 REVIEWS_DIR = REPO / ".hermes" / "thesis-quality-reviews"
 
 CLAUDE_BIN = os.environ.get("CLAUDE_BIN", "/opt/homebrew/bin/claude")
+CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL")
 
 
 # ---------- helpers ----------
@@ -139,25 +140,52 @@ def fmt_guidance(lines: list[str]) -> str:
     return "\n".join(f"- {l}" for l in lines)
 
 
-def run_claude(prompt: str, cwd: Path, *, allowed_tools: str | None = None,
-               permission_mode: str = "default", dangerously: bool = False,
-               max_budget_usd: float | None = None, timeout: int = 900,
-               output_format: str = "text") -> dict:
-    """Call claude -p. Returns {'stdout', 'stderr', 'returncode', 'text'}."""
+def _dependency_check(st: dict, lane: dict, lane_id: str) -> str | None:
+    dep = lane.get("depends_on")
+    if not dep:
+        return None
+    dep_lane = dep["lane"] if isinstance(dep, dict) else str(dep)
+    dep_head = st.get("lane_progress", {}).get(dep_lane)
+    dep_consumed = st.get("lane_dependency_consumed", {}).get(lane_id)
+    if not dep_head or dep_head == dep_consumed:
+        dep_name = dep_lane
+        if not dep_head:
+            return f"Dependency {dep_name} has no committed output yet."
+        return f"Waiting for new work in {dep_name}: no new committed note since last consume."
+    return None
+
+
+def run_claude(prompt: str, cwd: Path, *, permission_mode: str = "default",
+               dangerously: bool = False, model: str | None = None,
+               tools: str = "default", max_budget_usd: float | None = None,
+               timeout: int = 900, output_format: str = "text") -> dict:
+    """Call claude -p. Returns {'stdout', 'stderr', 'returncode', 'text', 'model', 'tools'}."""
+    active_model = model or CLAUDE_MODEL
+    active_tools = tools
+
     cmd = [CLAUDE_BIN, "--print", "--output-format", output_format]
     if dangerously:
         cmd.append("--dangerously-skip-permissions")
     else:
         cmd += ["--permission-mode", permission_mode]
-    if allowed_tools:
-        cmd += ["--allowed-tools", allowed_tools]
+    if active_model:
+        cmd += ["--model", active_model]
+    if active_tools:
+        cmd += ["--tools", active_tools]
     if max_budget_usd is not None:
         cmd += ["--max-budget-usd", str(max_budget_usd)]
 
     try:
+        env = os.environ.copy()
+        # Thesis automation is intended to use Claude Code's first-party OAuth
+        # login. Stale provider/API-key variables from a parent shell can
+        # override OAuth and cause every scheduled run to fail with 401.
+        if os.environ.get("KRATT_CLAUDE_KEEP_API_ENV") != "1":
+            env.pop("CLAUDE_API_KEY", None)
+            env.pop("CLAUDE_CODE_USE_OPENAI", None)
         proc = subprocess.run(
             cmd, cwd=str(cwd), input=prompt, text=True, capture_output=True,
-            timeout=timeout, env=os.environ.copy(),
+            timeout=timeout, env=env,
         )
     except subprocess.TimeoutExpired as e:
         return {"stdout": e.stdout or "", "stderr": f"timeout after {timeout}s",
@@ -171,8 +199,12 @@ def run_claude(prompt: str, cwd: Path, *, allowed_tools: str | None = None,
             text = data.get("result") or data.get("text") or stdout
         except Exception:
             pass
-    return {"stdout": stdout, "stderr": proc.stderr or "",
-            "returncode": proc.returncode, "text": text}
+    return {
+        "stdout": stdout, "stderr": proc.stderr or "",
+        "returncode": proc.returncode, "text": text,
+        "model": active_model or "default",
+        "tools": active_tools or "default",
+    }
 
 
 # ---------- hourly ----------
@@ -248,11 +280,26 @@ def hourly_run(force_lane: str | None = None) -> int:
         "result": None,
     }
 
+    dep_error = _dependency_check(st, lane, lane_id)
+    if dep_error:
+        log_entry["result"] = "pushback"
+        log_entry["reviewer"] = {
+            "rc": 0,
+            "stderr_tail": "",
+            "text": f"Dependency gate not ready: {dep_error}",
+        }
+        log_entry["writer"] = {
+            "rc": 0,
+            "stderr_tail": "",
+            "text": f"PUSHBACK: {dep_error}",
+        }
+        _finish_hourly(lane_id, log_entry)
+        return 0
+
     # --- Reviewer ---
     reviewer_prompt = render_prompt(reviewer_tmpl, **subs)
     rev = run_claude(
         reviewer_prompt, cwd=worktree,
-        allowed_tools="Read Grep Glob",
         permission_mode="default",
         max_budget_usd=0.5,
         timeout=600,
@@ -269,10 +316,8 @@ def hourly_run(force_lane: str | None = None) -> int:
 
     # --- Writer ---
     writer_prompt = render_prompt(writer_tmpl, REVIEWER_OUTPUT=rev["text"], **subs)
-    # Writer needs Edit + Bash(git *) to commit. Bypass prompts; tools still constrained.
     wri = run_claude(
         writer_prompt, cwd=worktree,
-        allowed_tools="Read Grep Glob Edit Write Bash(git *)",
         dangerously=True,
         max_budget_usd=1.0,
         timeout=900,
@@ -288,6 +333,11 @@ def hourly_run(force_lane: str | None = None) -> int:
         subject = git(worktree, "log", "-1", "--pretty=%s", check=False)
         log_entry["commit"] = {"sha": head_after, "subject": subject}
         log_entry["result"] = "committed"
+        st.setdefault("lane_progress", {})[lane_id] = head_after
+        if lane.get("depends_on"):
+            dep = lane.get("depends_on")
+            dep_lane = dep["lane"] if isinstance(dep, dict) else str(dep)
+            st.setdefault("lane_dependency_consumed", {})[lane_id] = st.get("lane_progress", {}).get(dep_lane)
     else:
         # Detect pushback marker in writer output.
         if re.search(r"(?mi)^PUSHBACK:", wri["text"] or ""):
@@ -295,6 +345,7 @@ def hourly_run(force_lane: str | None = None) -> int:
         else:
             log_entry["result"] = "no_change"
 
+    save_state(st)
     _finish_hourly(lane_id, log_entry)
     return 0
 
@@ -378,7 +429,6 @@ def daily_run() -> int:
 
         result = run_claude(
             prompt, cwd=REPO,
-            allowed_tools="Read Grep Glob",
             permission_mode="default",
             max_budget_usd=2.0,
             timeout=1200,
@@ -660,7 +710,6 @@ def _cherry_pick_one(sha: str, lane_id: str, subject: str, report: dict) -> bool
         report["fixer_invocations"] += 1
         fx = run_claude(
             prompt, cwd=REPO,
-            allowed_tools="Read Grep Glob Edit Write Bash(git *)",
             dangerously=True,
             max_budget_usd=1.0,
             timeout=900,
@@ -704,7 +753,6 @@ def _pop_stash_with_reconciler(report: dict) -> None:
     )
     rc = run_claude(
         prompt, cwd=REPO,
-        allowed_tools="Read Grep Glob Edit Write Bash(git *)",
         dangerously=True,
         max_budget_usd=1.0,
         timeout=900,
@@ -785,7 +833,6 @@ def weekly_run() -> int:
     )
     rv = run_claude(
         review_prompt, cwd=REPO,
-        allowed_tools=None,
         dangerously=True,
         max_budget_usd=3.0,
         timeout=1800,
@@ -830,7 +877,6 @@ def weekly_run() -> int:
 
     meta = run_claude(
         prompt, cwd=REPO,
-        allowed_tools="Read Grep Glob",
         permission_mode="default",
         max_budget_usd=1.5,
         timeout=900,

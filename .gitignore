@@ -85,7 +85,7 @@ external-repos/openWakeWord/
 
 # Thesis automation runtime state (per-lane memory and scheduler state)
 .hermes/thesis-automation/memory/
-.hermes/thesis-automation/state/
+.hermes/thesis-automation/state/*
 !.hermes/thesis-automation/state/.gitignore
 *.swp
 *.swo

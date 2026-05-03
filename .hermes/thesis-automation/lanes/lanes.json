@@ -124,6 +124,92 @@
       "focus": "Reproducibility of wake-word methodology: data, augmentation, training, evaluation.",
       "reviewer_extra": "Identify one methodology detail that a reader could not reproduce from the current text.",
       "writer_extra": "Add the missing detail concisely in-place. Do not expand scope."
+    },
+    {
+      "id": "intro-builder",
+      "title": "Introduction builder",
+      "active": true,
+      "branch": "cron/intro-builder",
+      "worktree": ".claude/worktrees/cron-intro-builder",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/introduction.tex"
+      ],
+      "focus": "Build the thin introduction into a complete thesis opening: problem, scope, research questions, contribution, and limits.",
+      "reviewer_extra": "Identify the single highest-value missing introduction sentence or short paragraph that would clarify the thesis scope or contribution.",
+      "writer_extra": "Add or rewrite at most one short paragraph in the introduction. Use only claims already supported by repo evidence or existing citations. No broad reframing."
+    },
+    {
+      "id": "implementation-narrative",
+      "title": "Implementation narrative",
+      "active": true,
+      "branch": "cron/implementation-narrative",
+      "worktree": ".claude/worktrees/cron-implementation-narrative",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex"
+      ],
+      "focus": "Turn repo implementation evidence into thesis prose: Android logger, ESP32-S3/Korvo-2, ESPHome voice_assistant, demo pipeline, packaging, and configuration choices.",
+      "reviewer_extra": "Identify one missing implementation detail that is already evidenced in the repo and belongs in the current discussion/implementation prose.",
+      "writer_extra": "Add at most one evidence-backed implementation paragraph. Prefer concrete file-backed facts over architecture wishes. Do not claim unvalidated deployment status."
+    },
+    {
+      "id": "evaluation-closeout",
+      "title": "Evaluation closeout",
+      "active": true,
+      "branch": "cron/evaluation-closeout",
+      "worktree": ".claude/worktrees/cron-evaluation-closeout",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex"
+      ],
+      "focus": "Close evaluation gaps in small pieces: v16c, expert-a, MoE consensus, field evidence, user-test framing, and limits.",
+      "reviewer_extra": "Identify one missing evaluation result, limitation, or bridge that is already supported by tracked artifacts or current thesis TODO/source-of-truth docs.",
+      "writer_extra": "Add or tighten at most one short result/limitation paragraph. Keep benchmark, field, and planned user-test evidence clearly separated."
+    },
+    {
+      "id": "alternatives-comparison",
+      "title": "Alternatives and comparison",
+      "active": true,
+      "branch": "cron/alternatives-comparison",
+      "worktree": ".claude/worktrees/cron-alternatives-comparison",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/first_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/introduction.tex"
+      ],
+      "focus": "Incrementally build the background comparison against existing wake-word and voice-assistant alternatives.",
+      "reviewer_extra": "Identify one missing comparison point against an already cited or repo-documented alternative such as microWakeWord, openWakeWord, Picovoice, commercial assistants, or Estonian ASR.",
+      "writer_extra": "Add at most one comparison sentence or paragraph using existing references.bib entries or repo-documented evidence only. If new external research is needed, push back instead of inventing citations."
+    },
+    {
+      "id": "research-note",
+      "title": "Research note",
+      "active": true,
+      "branch": "cron/research-note",
+      "worktree": ".claude/worktrees/cron-research-note",
+      "rotation": [
+        "docs/research/thesis-writing-research-queue.md"
+      ],
+      "focus": "Draft one small, evidence-backed research note that will be distilled into thesis prose next.",
+      "reviewer_extra": "Identify the single most useful unresolved comparative/evidence gap for the next thesis sentence.",
+      "writer_extra": "Append exactly one concise research note item with source file references and what sentence it should inform."
+    },
+    {
+      "id": "distill-sentence",
+      "title": "Distill sentence",
+      "active": true,
+      "branch": "cron/distill-sentence",
+      "worktree": ".claude/worktrees/cron-distill-sentence",
+      "depends_on": {
+        "lane": "research-note"
+      },
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/introduction.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/first_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex"
+      ],
+      "focus": "Turn the newest research note into exactly one thesis sentence/mini-paragraph, without adding unsupported claims.",
+      "reviewer_extra": "Identify the target sentence location that directly maps to the latest research note and can be added in one edit.",
+      "writer_extra": "Add or refine one sentence/mini-paragraph based on the latest research-note queue item. No extra restructuring."
     }
   ]
 }
