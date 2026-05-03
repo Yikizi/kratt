@@ -162,8 +162,9 @@ docs/thesis/**/*.lot
 docs/thesis/**/*.fdb_latexmk
 docs/thesis/**/*.fls
 
-# Keep thesis template assets even with global output ignores
+# Keep thesis template assets and generated thesis figures even with global output ignores
 !docs/thesis/thesis-tex-estonian/figures/**
+!docs/thesis/thesis-tex-estonian/figures/**/*.pdf
 
 # Jupyter
 .ipynb_checkpoints/

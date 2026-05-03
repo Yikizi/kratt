@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# DESC: Generate the three Results-chapter PDF figures into docs/thesis/.../figures/
+# USAGE: kratt thesis-figures
+set -euo pipefail
+
+(cd "$KRATT_WW" && uv run python evaluation/generate_thesis_figures.py "$@")

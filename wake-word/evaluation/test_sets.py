@@ -50,7 +50,7 @@ class TestSet:
 
 # All known model versions, in chronological order
 ALL_MODELS = (
-    "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11",
+    "v1", "v2", "v3", "v4", "v5", "v6", "v6-residual", "v7", "v8", "v9", "v10", "v11",
     "v12", "v13a", "v13b", "v14", "v15", "v16a", "v16b", "v16c",
     "v17a", "v17b",
     "v18a-clean48", "v18b-clean48-sa", "v18c-clean48-hn", "v18d-clean96",

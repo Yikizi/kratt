@@ -102,6 +102,15 @@ Negatiivsed (Korvo-2) & 13,8\% & 24,8\% & FPR \\
 
 Tabelist ilmneb, et v3 recall paranes (+6\%), kuid Common~Voice negatiivsete FPR tõusis 8\%-lt 98\%-le. See tähendab, et v3 mudel annab peaaegu igale sisendile kõrge aktivatsiooniskoori. Mudel ei ole mitte täpsem, vaid ülevallandunud: ta aktiveerub liiga kergesti.
 
+Sama \enquote{õiglase võrdluse} loogika laiendab Joonis~\ref{fig:faph-recall-pareto} kõigile käesoleva töö raames hinnatud üksikmudelitele, kuid mitte enam treeningu poolt mõjutatud klipi-tasemel, vaid sõltumatutel hold-out komplektidel (FAPH on \texttt{faph\_cv\_et}, recall on \texttt{pos\_isa\_xtts}, lävi 0,995). Iga punkt vastab ühele mudeliversioonile; punane joon märgib operatsioonipunkti mähist ($\theta=0{,}995$) --- mudelite alamhulka, kelle kohta ei ole sellel lävel ühtegi teist mudelit, mis oleks samaaegselt madalama FAPH-i ja kõrgema recall'iga. Tegemist ei ole läve-sõltumatu Pareto-rinde (\emph{Pareto frontier}) konstruktsiooniga, vaid alumise-vasakpoolse mähisega ühe konkreetse läve juures. Joonis~\ref{fig:faph-recall-pareto} näitab, et mähisel on enamasti väike hulk kompromissipunkte (sh \texttt{v16a}, \texttt{v16c} ning \texttt{expert-a}); enamik versioone jääb mähisest sissepoole, st nende kompromiss on dominantselt halvem. Eraldi tähelepanu väärib see, et mähis ei ole sile: kõrge recall'i (Isa $=$ 100\%) saavutab mitu mudelit, kuid nende FAPH erineb suurusjärgu võrra, mis tähendab, et recall ise ei ole piisav mudeli valiku kriteerium.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/faph_recall_pareto.pdf}
+\caption{Üksiku läve ($\theta=0{,}995$) operatsioonipunktide hajuvusgraafik üle kõikide mudeliversioonide; punase joonega märgitud mudelid moodustavad alumise-vasakpoolse mähise (madalaim FAPH iga recall-taseme jaoks). Mähis sõltub läve valikust ja ei ole läve-sõltumatu Pareto-rinne. FAPH on mõõdetud \texttt{faph\_cv\_et} hold-out komplektil (3,82\,h), recall \texttt{pos\_isa\_xtts}-l ($N=48$); mudelid FAPH${>}1000$ on välja jäetud loetavuse huvides. Operatsioonipunkt erineb tabelist~\ref{tab:fair-comparison-holdout}, mis raporteerib lävel $\theta=0{,}97$.}
+\label{fig:faph-recall-pareto}
+\end{figure}
+
 \subsection{Degradatsiooni org}
 
 See tulemus on kooskõlas Park~et~al. \cite{park2024adversarial} leiuga, mille kohaselt tekib märksõnatuvastuse (\emph{keyword spotting}, KWS) mudelites \emph{degradatsiooni org} (\emph{valley of degradation}): kui domeeni\-siseste andmete osakaal jääb vahemikku 2--10\% koguandmestikust, halveneb mudeli kvaliteet võrreldes nii puhta domeenivälise kui ka piisavalt suure domeenisisese andmehulgaga.
@@ -165,28 +174,33 @@ Tabel~\ref{tab:fair-comparison-holdout} esitab kõigi kaheksa mudeliversiooni t�
 
 \begin{table}[H]
 \centering
-\caption{Mudeliversioonide korrigeeritud võrdlus tõeselt hold-out hindamiskomplektidel (cutoff\,=\,0,97). Parim tulemus igas reas on \textbf{paksus kirjas}. v8 puhul on \texttt{pos\_mac\_mattias} treeningusse võetud, mistõttu mõõtmine puudub.}
+\caption{Mudeliversioonide korrigeeritud võrdlus tõeselt hold-out hindamiskomplektidel (cutoff\,=\,0,97). Parim tulemus igas reas on \textbf{paksus kirjas}. v8 puhul on \texttt{pos\_mac\_mattias} treeningusse võetud, mistõttu mõõtmine puudub. Wilsoni 95\% usaldusvahemik (UV) on arvutatud iga recall-rea valimi suuruse alusel ($N$ on toodud rea pealkirjas).}
 \label{tab:fair-comparison-holdout}
-\small
+\setlength{\tabcolsep}{3pt}
+\scriptsize
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{l r r r r r r r r}
 \hline
 \textbf{Hindamiskomplekt} & \textbf{v1} & \textbf{v2} & \textbf{v3} & \textbf{v4} & \textbf{v5} & \textbf{v6} & \textbf{v7} & \textbf{v8} \\
 \hline
-Recall (Isa XTTS, unseen) & 77,1 & \textbf{100,0} & 97,9 & 75,0 & \textbf{100,0} & \textbf{100,0} & 43,8 & 68,8 \\
-Recall (Mac mic, unseen seade) & 86,7 & \textbf{100,0} & \textbf{100,0} & 86,7 & \textbf{100,0} & \textbf{100,0} & \textbf{100,0} & --- \\
+Recall Isa XTTS, $N=48$ [95\% UV] & 77,1 [63,5--86,7] & \textbf{100,0} [92,6--100,0] & 97,9 [89,1--99,6] & 75,0 [61,2--85,1] & \textbf{100,0} [92,6--100,0] & \textbf{100,0} [92,6--100,0] & 43,8 [30,7--57,7] & 68,8 [54,7--80,1] \\
+Recall Mac mic, $N=30$ [95\% UV] & 86,7 [70,3--94,7] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & 86,7 [70,3--94,7] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & --- \\
 FPR hard neg (Mac, real) $\downarrow$ & \textbf{33,3} & 93,3 & 73,3 & 73,3 & 100,0 & 100,0 & 80,0 & \textbf{33,3} \\
 FPR hard neg (Isa XTTS) $\downarrow$ & 80,0 & 100,0 & 100,0 & 71,7 & 86,7 & 63,3 & 25,0 & \textbf{21,7} \\
 \textbf{FAPH} (CV ET, 3,82\,h) $\downarrow$ & 367 & 472 & 542 & 373 & 228 & 154 & \textbf{96} & 141 \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
+
+Wilsoni 95\% UV-d Isa XTTS real ($N=48$) on laiad: täiusliku 100\% recall'i alumine piir on 92,6\%, mistõttu mudeleid v2, v5 ja v6 ei saa nende klippide järgi statistiliselt eristada. Samuti kattuvad v1 (77,1\% [63,5--86,7]) ja v4 (75,0\% [61,2--85,1]) UV-d täielikult, mis tähendab, et nende kahe mudeli järjekord Isa XTTS recall'i järgi pole sellel valimisuurusel usaldusväärselt määratav.
 
 Korrigeeritud tulemused muudavad varasemate alapeatükkide järeldusi mitmes olulises punktis:
 
 \begin{enumerate}
     \item \textbf{v6 ei ole üheselt parim mudel.} Selle FAPH on 154, mis on v7 (96) tulemusest 60\% halvem. v6 on tugev recall'i osas, kuid seda tulemust tuleb tõlgendada koos hard-negatiivsete FPR-i ja FAPH-i kompromissiga.
     \item \textbf{Degradatsiooni org \emph{on} olemas, kuid teises mõõdikus.} Esialgne CV FPR-i tabel näitas v3-l 98\%, mis oli treeningandmete pähe õppimise artefakt. Tegelikkuses näitab FAPH selget V-kuju: v1\,=\,367, v2\,=\,472, v3\,=\,542 (madalpunkt), v4\,=\,373. Park~et~al. \cite{park2024adversarial} hüpotees kehtib endiselt, lihtsalt mõõdetuna teise mõõdikuga.
-    \item \textbf{v7 annab parima FAPH-i.} TTS hard negatiivide v2 lisamine ja SpecAugment koos andsid suurima ühe sammu paranemise: v6\,154 $\rightarrow$ v7\,96. Seda saavutust lokaalne hindamine ei näidanud, sest klipi-tasemel olid mõlema mudeli skoorid treeningandmetel võrdsed.
+    \item \textbf{v7 annab madalaima FAPH-i, kuid recall'i hinnaga, mistõttu ta jääb operatsioonipunkti mähisest välja (vt joonis~\ref{fig:faph-recall-pareto}).} TTS hard negatiivide v2 lisamine ja SpecAugment koos andsid suurima ühe sammu paranemise: v6\,154 $\rightarrow$ v7\,96. Seda saavutust lokaalne hindamine ei näidanud, sest klipi-tasemel olid mõlema mudeli skoorid treeningandmetel võrdsed.
     \item \textbf{v7-l on tõsine recall puudus uue kõneleja peal.} Isa hääle peal (XTTS unseen) on v7 recall vaid 43,8\%, samas kui v6 ja v5 saavutavad 100\%. v7 konservatiivsus tuli recall'i hinnaga.
     \item \textbf{v8 toetab reaalse foneetilise eristuse jaoks olulist käitumist.} Mac hard neg FPR langes 100\%-lt 33,3\%-le ja Isa XTTS hard neg FPR 63,3\%-lt 21,7\%-le. v8 ei hoia aga v7 FAPH taset (141 vs 96), mis viitab, et kaks parandust (real hard neg ja SpecAugment) tuleb kombineerida tulevikus.
 \end{enumerate}
@@ -204,7 +218,7 @@ Hüpotees H2 väitis, et kui mudel õpib foneetilise sisu tunnuseid, peaks ta ge
 
 Testimise käigus ilmnes, et mudel:
 \begin{itemize}
-    \item tuvastas \enquote{Kuule Kratt} erinevate hääldusvariatsioonidega (Mac-mikrofoni hold-out recall 100,0\%, vt Tabel~\ref{tab:fair-comparison-holdout}, rida \enquote{Recall (Mac mic, unseen seade)});
+    \item tuvastas \enquote{Kuule Kratt} erinevate hääldusvariatsioonidega (Mac-mikrofoni hold-out recall 100,0\%, vt Mac-mikrofoni recall-rida tabelis~\ref{tab:fair-comparison-holdout});
     \item ei vallandunud vaikuse, taustamüra ega üksiku sõna \enquote{kuule} või \enquote{kratt} peale selle informaalse sessiooni jooksul;
     \item ei vallandunud sarnaste fraaside peale nagu \enquote{Hei Kratt} või \enquote{Tere Kratt} sama sessiooni piires.
 \end{itemize}
@@ -322,22 +336,34 @@ Tabel~\ref{tab:expert-consensus} esitab ekspertmudelite konsensustulemused võrd
 
 \begin{table}[H]
 \centering
-\caption{Mitme mudeli konsensustulemused erinevatel lävedel. FAPH~CV = Common~Voice ET hold-out (3,82\,h). FAPH~Mac = MacBook taustamonitor (70\,min). HN~Mac = hard negatiivide FPR MacBook mikrofoni peal. Android = Android seadme hard negatiivide FPR. Parimad tulemused \textbf{paksus kirjas}.}
+\caption{Mitme mudeli konsensustulemused erinevatel lävedel. FAPH~CV = Common~Voice ET hold-out (3,82\,h). FAPH~Mac = MacBook taustamonitor (70\,min). HN~Mac = hard negatiivide FPR MacBook mikrofoni peal. Android = Android seadme hard negatiivide FPR. Parimad tulemused \textbf{paksus kirjas}. Recall'i veerus on punkthinnang ja Wilsoni 95\% usaldusvahemik (UV); valimi suurus on $N=11$ \texttt{pos\_ode} klippi.}
 \label{tab:expert-consensus}
+\scriptsize
 \begin{tabular}{l r r r r r}
 \hline
-\textbf{Konfiguratsioon} & \textbf{FAPH CV} & \textbf{FAPH Mac} & \textbf{Recall} & \textbf{HN Mac} & \textbf{Android} \\
+\textbf{Konfiguratsioon} & \textbf{FAPH CV} & \textbf{FAPH Mac} & \textbf{Recall [95\% UV]} & \textbf{HN Mac} & \textbf{Android} \\
 \hline
-v10 + v15 @ 0,997/0,997 & 6,8 & 0,0 & 7/11 & 7\% & 8\% \\
-Ekspert A+B v2 @ 0,90/0,90 & 11,0 & 1,7 & 6/11 & 33\% & 4\% \\
-Ekspert A+B v2 @ 0,997/0,997 & \textbf{0,8} & \textbf{0,0} & 5/11 & \textbf{7\%} & \textbf{4\%} \\
+v10 + v15 @ 0,997/0,997 & 6,8 & 0,0 & 7/11 = 63,6\% [35,4--84,8] & 7\% & 8\% \\
+Ekspert A+B v2 @ 0,90/0,90 & 11,0 & 1,7 & 6/11 = 54,5\% [28,0--78,7] & 33\% & 4\% \\
+Ekspert A+B v2 @ 0,997/0,997 & \textbf{0,8} & \textbf{0,0} & 5/11 = 45,5\% [21,3--72,0] & \textbf{7\%} & \textbf{4\%} \\
 \hline
 \end{tabular}
 \end{table}
 
+$N=11$ on liiga väike, et eristada konsensuskonfiguratsioonide recall'i statistiliselt: kõigi kolme rea UV-d kattuvad ulatuslikult (näiteks v10+v15 [35,4--84,8] ja Ekspert A+B v2 @\,0,997 [21,3--72,0]). Recall'i järjestus selles tabelis on indikatiivne; suurema reaalsete kõnelejate komplektiga (vt §\ref{sec:phrase-selectivity-metrics} kirjeldatud \texttt{pos\_friend1}, $N=145$) saab erinevusi usaldusväärselt mõõta. Tabeli \enquote{parimad} märkimine vastab ühele lävele; DET-kõvera (\emph{detection error tradeoff}) põhjal (joonis~\ref{fig:det-v6-v15-v16c-experta}) ei domineeri ükski perekond kogu töövahemikus.
+
 Ekspert~A ja B~v2 konsensus lävega 0,997/0,997 saavutab \textbf{FAPH\,=\,0,8} Common~Voice ET hold-out komplektil. See tähendab, et 3,82 tunni pideva tiheda eestikeelse kõne jooksul registreeritakse keskmiselt vähem kui üks valevallandmine tunnis. MacBook taustamonitori 70-minutilise seansi jooksul ei registreeritud ühtegi valevallandumist (FAPH\,=\,0,0).
 
 Tulemust tuleb tõlgendada kontekstis. Common~Voice ET koosneb lühikestest ettelloetud lausetest, mis moodustavad tiheda ja katkematu kõnevoolu --- see on äratussõna detektori jaoks oluliselt raskem keskkond kui tüüpiline kodune olukord, kus kõne on vahelduv ja pausidega. Reaalne FAPH koduses keskkonnas on tõenäoliselt madalam, mida MacBook taustamonitori 0,0 FAPH ka kaudselt kinnitab.
+
+Konsensuse põhjendus jääb aga ühe lävitabeli järgi peidetuks: eelnev tabel võrdleb mudeleid kindla läve juures, kuid mudeliperekondade tegelik kompromissikäitumine sõltub kogu lävede vahemikust. Joonis~\ref{fig:det-v6-v15-v16c-experta} esitab DET-tüüpi (FA/h vs FRR, log-log) kõverad nelja perekonna kohta --- \texttt{v6-residual}, \texttt{v15}, \texttt{v16c} ja \texttt{expert-a} ---, mis on käesoleva töö konsensuse aluseks valitud. Joonise põhisõnum on, et üksikmudelite kompromissikõverad jooksevad enamjaolt paralleelselt: ühe mudeli FRR-i langetamine teatud FA/h juures ei muuda samaaegselt teiste mudelite kompromissi. See õigustab konjunktsiooni-konsensuse loogikat --- kahe sõltumatu mudeli samaaegse aktiveerumise nõue valib kõverate ühisosa, mitte ühe konkreetse läve. Samas tuleb tõdeda, et joonisel toodud FRR on agregeeritud unseen-positiivide üle (\texttt{pos\_isa\_xtts} ja \texttt{pos\_ode}) --- ehk see ei eralda recall'i põrandat, mille väikeste $N$-iga osade peal UV-d (vt eelmist tabelit) jäävad laiaks.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/det_v6_v15_v16c_expertA.pdf}
+\caption{DET-tüüpi (\emph{detection error tradeoff}, FA/h vs FRR, log-log) kõverad nelja mudeliperekonna kohta \texttt{faph\_cv\_et} hold-out komplektil; FRR on agregeeritud üle disjointsete unseen-positiivide \texttt{pos\_isa\_xtts} ($N=48$) ja \texttt{pos\_ode} ($N=11$).}
+\label{fig:det-v6-v15-v16c-experta}
+\end{figure}
 
 \subsubsection{Võrdlus avaldatud süsteemidega}
 
@@ -484,24 +510,29 @@ Pere koosneb kuuest variandist, mis erinevad arhitektuuri laiuse, SpecAugment-i 
 
 \begin{table}[H]
 \centering
-\caption{V18 perekonna tulemused puhastatud positiivsete andmetega (lävi\,=\,0,995). \textbf{Pre-FPR} = prefiksi-only FPR, \textbf{1K-FPR} = üksiku Krati FPR, \textbf{Rev-FPR} = pööratud järjekord, \textbf{Conf-FPR} = kuule/kule segiajamine. Recall'i veerud: Isa XTTS unseen-kõneleja ($N=48$) ja Friend1 reaalne unseen-kõneleja ($N=145$).}
+\caption{V18 perekonna tulemused puhastatud positiivsete andmetega (lävi\,=\,0,995). \textbf{Pre-FPR} = prefiksi-only FPR, \textbf{1K-FPR} = üksiku Krati FPR, \textbf{Rev-FPR} = pööratud järjekord, \textbf{Conf-FPR} = kuule/kule segiajamine. Recall'i veerud: Isa XTTS unseen-kõneleja ($N=48$) ja Friend1 reaalne unseen-kõneleja ($N=145$); UV = Wilsoni 95\% usaldusvahemik.}
 \label{tab:v18-family-results}
 \scriptsize
-\begin{tabular}{l r r r r r r r r r}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l r l r l r r r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Rec Isa} & \textbf{Rec Fr1} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Isa} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{1K-FPR} $\downarrow$ & \textbf{Rev-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
+\textbf{Mudel} & \textbf{Rec Isa} & \textbf{Isa [95\% UV]} & \textbf{Rec Fr1} & \textbf{Fr1 [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Isa} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{1K-FPR} $\downarrow$ & \textbf{Rev-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
 \hline
-v18a-clean48 & 100,0 & 93,1 & 86,7 & 71,7 & 97,1 & 99,5 & 98,4 & 99,3 & 515 \\
-v18b-clean48-sa & 95,8 & 92,4 & 93,3 & 56,7 & 100,0 & 98,4 & 98,4 & 99,0 & 132 \\
-v18c-clean48-hn & 31,2 & 84,1 & 40,0 & 13,3 & 82,3 & 100,0 & 93,8 & 94,3 & 85 \\
-v18d-clean96 & 97,9 & 97,9 & 80,0 & 76,7 & 100,0 & 100,0 & 93,8 & 99,8 & 536 \\
-v18e-clean48-tts-hn & 75,0 & 90,3 & 33,3 & 45,0 & 85,3 & 99,5 & 89,1 & 88,5 & 356 \\
-v18f-clean48-tts-hn-fast & 52,1 & 66,2 & 46,7 & 36,7 & 88,2 & 76,9 & 79,7 & 78,8 & 250 \\
+v18a-clean48 & 100,0 & [92,6--100,0] & 93,1 & [87,8--96,2] & 86,7 & 71,7 & 97,1 & 99,5 & 98,4 & 99,3 & 515 \\
+v18b-clean48-sa & 95,8 & [86,0--98,8] & 92,4 & [86,9--95,7] & 93,3 & 56,7 & 100,0 & 98,4 & 98,4 & 99,0 & 132 \\
+v18c-clean48-hn & 31,2 & [19,9--45,3] & 84,1 & [77,3--89,2] & 40,0 & 13,3 & 82,3 & 100,0 & 93,8 & 94,3 & 85 \\
+v18d-clean96 & 97,9 & [89,1--99,6] & 97,9 & [94,1--99,3] & 80,0 & 76,7 & 100,0 & 100,0 & 93,8 & 99,8 & 536 \\
+v18e-clean48-tts-hn & 75,0 & [61,2--85,1] & 90,3 & [84,4--94,2] & 33,3 & 45,0 & 85,3 & 99,5 & 89,1 & 88,5 & 356 \\
+v18f-clean48-tts-hn-fast & 52,1 & [38,3--65,5] & 66,2 & [58,2--73,4] & 46,7 & 36,7 & 88,2 & 76,9 & 79,7 & 78,8 & 250 \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-V18-pere keskmine järeldus on, et \emph{positiivsete puhastamine üksi ei lahendanud prefiks- ega segiajamis-vallandumist}. Recall reaalsete kõnelejate peal jäi kõrgeks (Friend1 92--98\% mudelitel v18a, v18b, v18d), mis tähendab, et kvarantiinitud andmehulga eemaldamine ei rikkunud mudeli võimet täisfraasi tuvastada. Samas on prefiksi-FPR endiselt 97--100\% kõigil mudelitel, mis säilitavad kasuliku recall'i. v18d-clean96 saavutab kõige parema recall-tasakaalu (Isa 98\%, Friend1 98\%, Ode 100\%, Mattias 100\%), kuid samaaegselt on ta prefiksi-FPR 100\% ja segiajamis-FPR 99,8\% --- mudel vallandub praktiliselt iga sobiva esimese silbi peale.
+Friend1 valimi $N=145$ kitsendab UV-d 5--10 protsendipunkti laiusele, mistõttu v18a (93,1\% [87,8--96,2]) ja v18b (92,4\% [86,9--95,7]) ei ole reaalsete kõnelejate recall'i järgi statistiliselt usaldusväärselt eristatavad, samas kui v18d (97,9\% [94,1--99,3]) ja v18f (66,2\% [58,2--73,4]) on selgelt erinevad. Isa XTTS real ($N=48$) on UV-d laiemad ja sama recall-järjestus kannab vaid osaliselt: v18d (97,9\% [89,1--99,6]) ja v18a (100,0\% [92,6--100,0]) UV-d kattuvad, mistõttu Isa-rea baasil neid kahte mudelit eristada ei saa.
+
+V18-pere keskmine järeldus on, et \emph{positiivsete puhastamine üksi ei lahendanud prefiks- ega segiajamis-vallandumist}. Recall reaalsete kõnelejate peal jäi kõrgeks (Friend1 92--98\% mudelitel v18a, v18b, v18d), mis tähendab, et kvarantiinitud andmehulga eemaldamine ei rikkunud mudeli võimet täisfraasi tuvastada. Samas on prefiksi-FPR endiselt 97--100\% kõigil mudelitel, mis säilitavad kasuliku recall'i. v18a, v18b ja v18d ei ole Friend1 recall'i järgi statistiliselt usaldusväärselt eristatavad. v18d-clean96 säilitab kõrge recall'i kõigil komplektidel (Isa 98\%, Friend1 98\%, Ode 100\%, Mattias 100\%), kuid samaaegselt on ta prefiksi-FPR 100\% ja segiajamis-FPR 99,8\% --- mudel vallandub praktiliselt iga sobiva esimese silbi peale.
 
 Ainsad variandid, mis prefiksi-FPR-i mõõdetavalt langetavad, on need, kus kasutatakse hard-negatiive (\texttt{v18c}, \texttt{v18e}, \texttt{v18f}). Need toovad prefiksi-FPR-i tasemele 82--88\%, mis on parem, kuid endiselt deploy-kõlbmatu, ja teevad seda kõrge hinnaga: \texttt{v18c} kaotab Isa recall'i 31\%-le, \texttt{v18e} 75\%-le. Tegemist on otsese kompromissiga --- praeguses pooltes saab fraasi-selektiivsust tõsta ainult recall'i hinnaga.
 
@@ -544,23 +575,26 @@ Tabel~\ref{tab:checkpoint-headline} esitab kontrollpunkti-eksperimentide võrdlu
 
 \begin{table}[H]
 \centering
-\caption{Kontrollpunkti-FAPH eksperimentide tulemused võrdluses v16c ja v6-residual mudelitega (lävi\,=\,0,995). \enquote{Pre-FPR} = prefiksi-only FPR, \enquote{Conf-FPR} = kuule/kule segiajamis-FPR. Kõik FAPH-i veerud allpool on streaming-FAPH eraldi korpustel.}
+\caption{Kontrollpunkti-FAPH eksperimentide tulemused võrdluses v16c ja v6-residual mudelitega (lävi\,=\,0,995). \enquote{Pre-FPR} = prefiksi-only FPR, \enquote{Conf-FPR} = kuule/kule segiajamis-FPR. Kõik FAPH-i veerud allpool on streaming-FAPH eraldi korpustel. Recall'i Wilsoni 95\% usaldusvahemikud (UV) on Isa XTTS real ($N=48$) ja Friend1 real ($N=145$).}
 \label{tab:checkpoint-headline}
 \scriptsize
+\setlength{\tabcolsep}{3pt}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{l r r r r r r r r r}
+\begin{tabular}{l r l r l r r r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Rec Isa} & \textbf{Rec Fr1} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Isa} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ & \textbf{FAPH LS} $\downarrow$ & \textbf{FAPH Mac} $\downarrow$ \\
+\textbf{Mudel} & \textbf{Rec Isa} & \textbf{Isa [95\% UV]} & \textbf{Rec Fr1} & \textbf{Fr1 [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Isa} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ & \textbf{FAPH LS} $\downarrow$ & \textbf{FAPH Mac} $\downarrow$ \\
 \hline
-checkpoint-faph (tm=2) & 4,2 & 0,7 & 20,0 & 0,0 & 67,3 & 24,5 & 1,31 & 0,89 & 0,86 \\
-checkpoint-faph10 (tm=10) & 72,9 & 22,1 & 80,0 & 35,0 & 58,6 & 85,8 & 4,19 & 3,02 & 9,42 \\
-checkpoint-faph20 (tm=20) & 72,9 & 42,1 & 46,7 & 61,7 & 73,2 & 78,3 & 23,29 & 8,00 & 52,24 \\
-v16c (võrdlus) & 100,0 & 87,6 & 100,0 & 90,0 & 90,5 & 99,8 & 75,12 & 11,21 & 16,27 \\
-v6-residual (võrdlus) & 100,0 & 95,2 & 100,0 & 75,0 & 82,3 & 99,5 & 14,40 & \phantom{0}4,09 & \phantom{0}3,43 \\
+checkpoint-faph (tm=2) & 4,2 & [1,2--14,0] & 0,7 & [0,1--3,8] & 20,0 & 0,0 & 67,3 & 24,5 & 1,31 & 0,89 & 0,86 \\
+checkpoint-faph10 (tm=10) & 72,9 & [59,0--83,4] & 22,1 & [16,1--29,5] & 80,0 & 35,0 & 58,6 & 85,8 & 4,19 & 3,02 & 9,42 \\
+checkpoint-faph20 (tm=20) & 72,9 & [59,0--83,4] & 42,1 & [34,3--50,2] & 46,7 & 61,7 & 73,2 & 78,3 & 23,29 & 8,00 & 52,24 \\
+v16c (võrdlus) & 100,0 & [92,6--100,0] & 87,6 & [81,2--92,0] & 100,0 & 90,0 & 90,5 & 99,8 & 75,12 & 11,21 & 16,27 \\
+v6-residual (võrdlus) & 100,0 & [92,6--100,0] & 95,2 & [90,4--97,6] & 100,0 & 75,0 & 82,3 & 99,5 & 14,40 & \phantom{0}4,09 & \phantom{0}3,43 \\
 \hline
 \end{tabular}%
 }
 \end{table}
+
+Wilsoni 95\% UV-d teevad recall'i järjekorra statistilise tõlgenduse läbipaistvaks. \texttt{checkpoint-faph10} ja \texttt{checkpoint-faph20} Isa XTTS recall on numeriliselt sama (72,9\%), nende UV-d kattuvad täielikult [59,0--83,4], st neid kahte mudelit selle 48-klipilise komplekti järgi eristada ei saa. Friend1 real ($N=145$) on UV-d kitsamad ja erinevus 22,1\% [16,1--29,5] vs 42,1\% [34,3--50,2] on statistiliselt usaldusväärne. Üldine järeldus: \texttt{checkpoint-faph10} ja \texttt{checkpoint-faph20} jäävad reaalsete kõnelejate recall'i poolest oluliselt nõrgemaks kui \texttt{v6-residual} (95,2\% [90,4--97,6]) või \texttt{v16c} (87,6\% [81,2--92,0]).
 
 Tulemused jagunevad kaheks selgelt eristuvaks pildiks. \texttt{checkpoint-faph} (sihtväärtus 2,0) saavutas FAPH-i ambient-mõõdikutel taseme, mida ükski varasem ühe-mudeli mudel polnud saavutanud (CV 1,31; LS 0,89; Mac 0,86; DiPCo 0,60). Sama mudel kaotas aga peaaegu täielikult välise positiivse recall'i: Isa XTTS unseen-kõneleja peal vaid 4,2\%, Friend1 reaalsete kõnelejate peal 0,7\%. Manuaalne hindamine (positive recall probe, allikas: \texttt{evaluation/positive\_recall\_probe\_checkpoint\_20260429.md}) näitas, et mudel suudab endiselt vastata Mattiase MacBook-i salvestustele (63,3\%) ja TTS-laadsetele puhastatud allikatele (86\%), aga ülejäänud kõnelejate peal on ta sisuliselt vait. Tegemist on ülikonservatiivse kontrollpunktiga, mis on optimeerinud sihtväärtust nii agressiivselt, et \enquote{kõik kahtlane} klassifitseeritakse mitte-äratuseks.
 
@@ -607,6 +641,8 @@ Et mõista, miks \texttt{checkpoint-faph10} käitub MacBook-taustal halvemini ku
 
 See viitab, et \texttt{checkpoint-faph10} on (osaliselt) säilitanud Mattiase ja MacBook-i akustilise \emph{lühitee} (\emph{shortcut}): mudel toetub konkreetsele kõneleja-mikrofon-kombinatsiooni akustikale, mis treeningandmetes oli üle-esindatud, ning suppresseerib kõik muu. See on klassikaline akustiline ülesobitumine, ainult et seekord soositud kontrollpunkti valikukriteeriumi poolt --- kontrollpunkt, mis maksimaalselt langetab ambient-FAPH-i, valib paratamatult mudeli, mis on \enquote{vaikseim} just selliste tausta-segmentide peal, mille ta on treeningus juba näinud.
 
+\texttt{v16c} klipi-tasemel skoorijaotus jääb käesoleva töö ulatusest välja, sest INT8-kvantiseeritud väljund (väärtused $k/255$) tekitab visuaalse jaotuse, mis on osaliselt kvantiseerimisartefakt; bimodaalsuse tõlgendus kuuluks suurema N-iga deploy-uuringusse.
+
 \subsection{Metoodikaline järeldus: optimeerimine vale eesmärgi suunas}
 \label{sec:checkpoint-conclusion}
 
@@ -619,4 +655,4 @@ Kontrollpunkti-FAPH eksperiment on selge \emph{kontrollitud läbikukkumine}: par
     \item \textbf{Madala ambient-FAPH-i põhjus võib olla lühitee, mitte parem fraasi-eristus.} Kuulamiskontroll näitas, et \texttt{checkpoint-faph10}-i madal FAPH on osaliselt kunstlik: mudel on vaikne treeningu-domeeni Mac-taustal, kuid see ei tähenda, et ta on õppinud eristama äratusfraasi muust kõnest. Kui sama mudel viia uuele Mac-mikrofonile teises akustilises ruumis, võib FAPH oluliselt erineda.
 \end{enumerate}
 
-Üldisem järeldus on, et treeningu-aegne kontrollpunkti valik peab kasutama \emph{komposiitset} valideerimissihti, mis sisaldab kõiki kolme deploy-objektiivi (ambient-FAPH, reaalsete kõnelejate recall, hard-/prefiksi-/segiajamis-FPR). Ühe mõõdiku optimeerimine teiste arvelt on optimeerimine vale eesmärgi suunas. See järeldus tugevdab §\ref{sec:metric-iteration-conclusion}-s sõnastatud üldist väidet: iga hindamise täpsustuse ring paljastab uue ebaõnnestumis-režiimi, ning kolmas ring (kontrollpunkti valikukriteerium) näitab, et mõõdik, mis paistab \enquote{õige} suuna seeskinas, võib treeningu sees mängituna anda mudeli, mis sellele mõõdikule liiga ühepoolselt vastab. Selle leiu sisuline tähendus ja tulevased lahenduskäigud (mitme-mõõdikuline kontrollpunkti-valik, sõltumatu hold-out komplekti regressioonkontroll, või uue treeningu-objektiivi disain mis kodeerib fraasi täielikkust) on käsitletud peatükis~\ref{chapter:discussion}.
+Üldisem järeldus on, et treeningu-aegne kontrollpunkti valik peab kasutama \emph{komposiitset} valideerimissihti, mis sisaldab kõiki kolme deploy-objektiivi (ambient-FAPH, reaalsete kõnelejate recall, hard-/prefiksi-/segiajamis-FPR). Ühe mõõdiku optimeerimine teiste arvelt on optimeerimine vale eesmärgi suunas. See järeldus tugevdab §\ref{sec:metric-iteration-conclusion}-s sõnastatud üldist väidet: iga hindamise täpsustuse ring paljastab uue ebaõnnestumis-režiimi, ning kolmas ring (kontrollpunkti valikukriteerium) näitab, et mõõdik, mis paistab \enquote{õige} suuna seestpoolt, võib treeningu sees mängituna anda mudeli, mis sellele mõõdikule liiga ühepoolselt vastab. Selle leiu sisuline tähendus ja tulevased lahenduskäigud (mitme-mõõdikuline kontrollpunkti-valik, sõltumatu hold-out komplekti regressioonkontroll, või uue treeningu-objektiivi disain mis kodeerib fraasi täielikkust) on käsitletud peatükis~\ref{chapter:discussion}.
