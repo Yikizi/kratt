@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # DESC: Submit wake word training to HPC
-# USAGE: kratt train <tag> [--steps N] [--mem N]
+# USAGE: kratt train <tag> [--steps N] [--mem N] [submit_hpc_kuule_kratt flags...]
 # ARGS: tag        Version tag (v8, v9...). Required.
 # ARGS: --steps N  Training steps. Default: 10000.
 # ARGS: --mem N    Slurm memory. Default: 48G.
+# ARGS: --dataset-preset PRESET Dataset preset passed to submit script.
+# ARGS: --target-minimization FAPH Checkpoint FAPH target for best_weights selection.
+# ARGS: --dry-run  Print HPC submit plan without sbatch.
 # EXAMPLES: kratt train v8
-# EXAMPLES: kratt train v8 --steps 15000
-# EXAMPLES: kratt train v8 --steps 20000 --mem 64G
+# EXAMPLES: kratt train v17a --steps 15000,5000 --dataset-preset recall-cv --recall-profile
+# EXAMPLES: kratt train v17b --steps 15000,5000 --dataset-preset recall-cv --recall-profile --spec-augment
+# EXAMPLES: kratt train checkpoint-faph20-v18d-clean96-pw96x4 --steps 15000,5000 --dataset-preset recall-cv --recall-profile --spec-augment --pointwise-filters 96,96,96,96 --target-minimization 20 --time 08:00:00
+# EXAMPLES: kratt train v17a --dataset-preset recall-cv --dry-run
 set -euo pipefail
 
 TAG="${1:?Usage: kratt train <tag> [--steps N] [--mem N]}"
@@ -14,17 +19,20 @@ shift
 
 STEPS="10000"
 MEM="48G"
+EXTRA_ARGS=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --steps) STEPS="$2"; shift 2 ;;
     --mem)   MEM="$2";   shift 2 ;;
-    *)       echo "Unknown: $1"; exit 1 ;;
+    *)       EXTRA_ARGS+=("$1"); shift 1 ;;
   esac
 done
 
-echo "Submitting ${TAG}: ${STEPS} steps, ${MEM} RAM"
+printf -v EXTRA_Q ' %q' "${EXTRA_ARGS[@]}"
+
+echo "Submitting ${TAG}: ${STEPS} steps, ${MEM} RAM${EXTRA_Q}"
 ssh malinh@base.hpc.taltech.ee \
   "export KRATT_ROOT=~/kratt KRATT_DATA=/gpfs/mariana/smbhome/malinh/kratt-data && \
    bash ~/kratt/wake-word/training/scripts/submit_hpc_kuule_kratt.sh \
-   --tag ${TAG} --training-steps ${STEPS} --mem ${MEM}"
+   --tag ${TAG} --training-steps ${STEPS} --mem ${MEM}${EXTRA_Q}"

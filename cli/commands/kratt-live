@@ -1,24 +1,69 @@
 #!/usr/bin/env bash
-# DESC: Live wake word test with MacBook microphone (single or multi-model)
+# DESC: Live wake word test with MacBook microphone (microWakeWord TFLite or openWakeWord ONNX)
 # USAGE: kratt live <version(s)> [threshold(s)]
-# ARGS: version     One or more model versions (v6-residual v10 v15). Default: latest.
-# ARGS: threshold   One threshold for all, or one per model. Default: 0.997.
+# ARGS: version     One or more model versions (v6-residual v10 v15, or oww-v17-smoke2). Default: latest.
+# ARGS: threshold   One threshold for all, or one per model. Default: 0.997 for microWakeWord, 0.5 for openWakeWord.
 # EXAMPLES: kratt live v15
 # EXAMPLES: kratt live v15 0.97
+# EXAMPLES: kratt live oww-v17-smoke2 0.5
 # EXAMPLES: kratt live v6-residual v10 v15
 # EXAMPLES: kratt live v6-residual v10 v15 0.997
 # EXAMPLES: kratt live v6-residual v10 0.997 0.99
 set -euo pipefail
 
-# Parse args: split into versions and thresholds
+# Parse args: split into versions and thresholds, keep extra flags passthrough.
 VERSIONS=()
 THRESHOLDS=()
-for arg in "$@"; do
-  if [[ "$arg" =~ ^0\.[0-9]+$ ]] || [[ "$arg" =~ ^1\.0*$ ]]; then
-    THRESHOLDS+=("$arg")
-  else
-    VERSIONS+=("$arg")
+EXTRA_ARGS=()
+
+parse_opts_with_value() {
+  local flag="$1"; local val="$2"
+  if [[ -z "$val" ]]; then
+    echo "Missing value for $flag" >&2
+    exit 1
   fi
+  EXTRA_ARGS+=("$flag" "$val")
+}
+
+while [[ "$#" -gt 0 ]]; do
+  arg="$1"; shift || true
+
+  case "$arg" in
+    --threshold)
+      while [[ "$#" -gt 0 && ! "$1" =~ ^-- ]]; do
+        THRESHOLDS+=("$1")
+        shift
+      done
+      if [[ ${#THRESHOLDS[@]} -eq 0 ]]; then
+        echo "--threshold requires at least one value" >&2
+        exit 1
+      fi
+      ;;
+    --mode|--consensus-window-ms|--cooldown|--ma-window|--device|--alert-sound|--name|--capture-dir|--pre-roll-seconds|--post-roll-seconds|--log)
+      parse_opts_with_value "$arg" "${1:-}"
+      shift || true
+      ;;
+    --)
+      # Pass through remaining args unmodified
+      EXTRA_ARGS+=("$@")
+      break
+      ;;
+    --*)
+      # Unknown flag: pass through as-is
+      EXTRA_ARGS+=("$arg")
+      if [[ "$#" -gt 0 && ! "$1" =~ ^-- ]]; then
+        EXTRA_ARGS+=("$1")
+        shift
+      fi
+      ;;
+    *)
+      if [[ "$arg" =~ ^0\.[0-9]+$ ]] || [[ "$arg" =~ ^1\.0*$ ]]; then
+        THRESHOLDS+=("$arg")
+      else
+        VERSIONS+=("$arg")
+      fi
+      ;;
+  esac
 done
 
 # Defaults
@@ -30,6 +75,8 @@ fi
 
 if [[ ${#VERSIONS[@]} -gt 1 ]]; then
   DEFAULT_THRESHOLD="0.95"  # product mode: prob*prob, so lower threshold
+elif [[ "${VERSIONS[0]}" == oww-* ]]; then
+  DEFAULT_THRESHOLD="0.5"
 else
   DEFAULT_THRESHOLD="0.997"
 fi
@@ -75,22 +122,50 @@ fi
 if [[ ${#VERSIONS[@]} -eq 1 ]]; then
   VERSION="${VERSIONS[0]}"
   THRESHOLD="${THRESHOLDS[0]}"
-  MODEL="${KRATT_WW}/models/kuule-kratt-${VERSION}/kuule_kratt_${VERSION}.tflite"
+  if [[ "$VERSION" == oww-* ]]; then
+    MODEL="${KRATT_WW}/models/openwakeword/${VERSION}/kuule_kratt_${VERSION//-/_}.onnx"
+    if [[ ! -f "$MODEL" ]]; then
+      # fallback for current naming: oww-v17-smoke2 -> kuule_kratt_oww_v17_smoke2.onnx
+      MODEL="${KRATT_WW}/models/openwakeword/${VERSION}/kuule_kratt_${VERSION//-/_}.onnx"
+    fi
+    if [[ ! -f "$MODEL" ]]; then
+      echo "openWakeWord model not found under: ${KRATT_WW}/models/openwakeword/${VERSION}/"
+      exit 1
+    fi
+    OWW_PY="${KRATT_WW}/.venv-openwakeword/bin/python"
+    if [[ ! -x "$OWW_PY" ]]; then
+      echo "Missing openWakeWord venv: $OWW_PY"
+      echo "Create it with: cd ${KRATT_WW} && uv venv .venv-openwakeword --python python3.11 && uv pip install -p .venv-openwakeword/bin/python openwakeword onnxruntime onnx sounddevice soundfile numpy"
+      exit 1
+    fi
+    echo "openWakeWord model: $VERSION ($(du -h "$MODEL" | cut -f1)), threshold: $THRESHOLD"
+    echo "Log: ${log_file}"
+    PYTHONUNBUFFERED=1 "$OWW_PY" \
+      "${KRATT_WW}/evaluation/live_test_openwakeword.py" \
+      --model "$MODEL" --threshold "$THRESHOLD" --name "kuule kratt $VERSION" \
+      --capture-dir "${CAPTURE_DIR}" --pre-roll-seconds 5 --post-roll-seconds 1 \
+      --alert-sound ping \
+      "${EXTRA_ARGS[@]}" \
+      2>&1 | tee -a "${log_file}"
+  else
+    MODEL="${KRATT_WW}/models/kuule-kratt-${VERSION}/kuule_kratt_${VERSION}.tflite"
 
-  if [[ ! -f "$MODEL" ]]; then
-    echo "Model not found: $MODEL"
-    echo "Available:" && kratt models
-    exit 1
+    if [[ ! -f "$MODEL" ]]; then
+      echo "Model not found: $MODEL"
+      echo "Available:" && kratt models
+      exit 1
+    fi
+
+    echo "Model: $VERSION ($(du -h "$MODEL" | cut -f1)), threshold: $THRESHOLD"
+    echo "Log: ${log_file}"
+    PYTHONUNBUFFERED=1 "${KRATT_WW}/.venv-microwakeword/bin/python" \
+      "${KRATT_WW}/evaluation/live_test_tflite.py" \
+      --model "$MODEL" --threshold "$THRESHOLD" --name "kuule kratt $VERSION" \
+      --capture-dir "${CAPTURE_DIR}" --pre-roll-seconds 5 --post-roll-seconds 1 \
+      --alert-sound ping \
+      "${EXTRA_ARGS[@]}" \
+      2>&1 | tee -a "${log_file}"
   fi
-
-  echo "Model: $VERSION ($(du -h "$MODEL" | cut -f1)), threshold: $THRESHOLD"
-  echo "Log: ${log_file}"
-  PYTHONUNBUFFERED=1 "${KRATT_WW}/.venv-microwakeword/bin/python" \
-    "${KRATT_WW}/evaluation/live_test_tflite.py" \
-    --model "$MODEL" --threshold "$THRESHOLD" --name "kuule kratt $VERSION" \
-    --capture-dir "${CAPTURE_DIR}" --pre-roll-seconds 5 --post-roll-seconds 1 \
-    --alert-sound ping \
-    2>&1 | tee -a "${log_file}"
 
 # Multi-model mode
 else
@@ -112,6 +187,7 @@ else
   PYTHONUNBUFFERED=1 "${KRATT_WW}/.venv-microwakeword/bin/python" \
     "${KRATT_WW}/evaluation/multi_model_live_test.py" \
     "${VERSIONS[@]}" --threshold "${THRESHOLDS[@]}" \
+    "${EXTRA_ARGS[@]}" \
     --log "${log_file}" \
     2>&1 | tee -a "${log_file}"
 fi

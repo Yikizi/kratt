@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# DESC: Materialize disjoint large negative/ambient data splits on HPC
+# USAGE: kratt prepare-negative-splits <tag> [prepare_negative_data_splits.py flags...]
+# ARGS: tag Split tag, e.g. scaled-v1
+# ARGS: --force Replace existing split output
+# ARGS: --dry-run Write manifest/counts without symlinking/converting
+# ARGS: --voices-root Override VOiCES dataset root
+# ARGS: --podcast-root Add normalized Estonian podcast/radio root
+# EXAMPLES: kratt prepare-negative-splits scaled-v1 --dry-run
+# EXAMPLES: kratt prepare-negative-splits scaled-v1 --force --convert-lossy --podcast-root /gpfs/mariana/smbhome/malinh/kratt-data/datasets/estonian-podcasts
+set -euo pipefail
+
+TAG="${1:?Usage: kratt prepare-negative-splits <tag> [flags...]}"
+shift
+
+EXTRA_ARGS=("$@")
+printf -v EXTRA_Q ' %q' "${EXTRA_ARGS[@]}"
+
+REMOTE='export KRATT_ROOT=~/kratt KRATT_DATA=/gpfs/mariana/smbhome/malinh/kratt-data DATASETS_DIR=/gpfs/mariana/smbhome/malinh/kratt-data/datasets &&
+"$KRATT_ROOT/wake-word/.venv/bin/python" "$KRATT_ROOT/wake-word/training/scripts/prepare_negative_data_splits.py" \
+  --out-root "$KRATT_DATA/processed/external_negative_splits/'"${TAG}"'" \
+  --cv-root "$DATASETS_DIR/common-voice-et/cv-corpus-24.0-2025-12-05/et" \
+  --cv-wav-dir "$DATASETS_DIR/common-voice-et-wav" \
+  --musan-root "$DATASETS_DIR/musan/musan" \
+  --voices-root "$DATASETS_DIR/voices" \
+  --riigikogu-dir "$DATASETS_DIR/riigikogu-stenograms/audio"'"${EXTRA_Q}"
+
+echo "Preparing external negative splits on HPC: ${TAG}${EXTRA_Q}"
+ssh malinh@base.hpc.taltech.ee "${REMOTE}"

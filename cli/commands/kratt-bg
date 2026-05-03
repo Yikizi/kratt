@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# DESC: Run a long command in local tmux with log file; optional macOS notification
+# USAGE: kratt bg <name> [--notify] -- <command...>
+# ARGS: name Session/window name, e.g. v17-prep
+# ARGS: -- Separator before command to run
+# EXAMPLES: kratt bg v17-prep -- ssh malinh@base.hpc.taltech.ee 'cd ~/kratt && bash script.sh'
+# EXAMPLES: kratt bg local-test -- bash -lc 'sleep 5 && echo done'
+set -euo pipefail
+
+NAME="${1:-}"
+if [[ -z "$NAME" || "$NAME" == "-h" || "$NAME" == "--help" ]]; then
+  grep '^# ' "$0" | sed 's/^# //'
+  exit 0
+fi
+shift
+NOTIFY="${KRATT_BG_NOTIFY:-0}"
+if [[ "${1:-}" == "--notify" ]]; then
+  NOTIFY=1
+  shift
+fi
+if [[ "${1:-}" != "--" ]]; then
+  echo "Usage: kratt bg <name> [--notify] -- <command...>" >&2
+  exit 2
+fi
+shift
+if [[ $# -eq 0 ]]; then
+  echo "No command provided" >&2
+  exit 2
+fi
+
+if ! command -v tmux >/dev/null 2>&1; then
+  echo "tmux not found" >&2
+  exit 2
+fi
+
+SAFE_NAME="$(printf '%s' "$NAME" | tr -c 'A-Za-z0-9_.-' '_')"
+TS="$(date +%Y%m%d-%H%M%S)"
+LOG_DIR="${KRATT_ROOT}/output/bg-logs"
+LOG="${LOG_DIR}/${SAFE_NAME}-${TS}.log"
+STATUS="${LOG_DIR}/${SAFE_NAME}-${TS}.status"
+SCRIPT="${LOG_DIR}/${SAFE_NAME}-${TS}.sh"
+mkdir -p "$LOG_DIR"
+
+printf -v CMD_Q '%q ' "$@"
+cat > "$SCRIPT" <<EOF
+#!/usr/bin/env bash
+set -o pipefail
+cd "${KRATT_ROOT}"
+echo "[kratt-bg] start: \$(date)" | tee -a "${LOG}"
+echo "[kratt-bg] command: ${CMD_Q}" | tee -a "${LOG}"
+${CMD_Q} 2>&1 | tee -a "${LOG}"
+rc=\${PIPESTATUS[0]}
+echo "[kratt-bg] exit=\${rc} end: \$(date)" | tee -a "${LOG}"
+echo "\${rc}" > "${STATUS}"
+if [[ "${NOTIFY}" == "1" ]] && command -v osascript >/dev/null 2>&1; then
+  if [[ "\${rc}" == "0" ]]; then
+    osascript -e 'display notification "'"${NAME}"' finished successfully" with title "Kratt background job" sound name "Glass"' >/dev/null 2>&1 || true
+  else
+    osascript -e 'display notification "'"${NAME}"' failed (exit '"\${rc}"')" with title "Kratt background job" sound name "Basso"' >/dev/null 2>&1 || true
+  fi
+fi
+printf '\\a'
+exit "\${rc}"
+EOF
+chmod +x "$SCRIPT"
+
+SESSION="kratt-bg"
+if tmux has-session -t "$SESSION" 2>/dev/null; then
+  tmux new-window -t "$SESSION" -n "$SAFE_NAME" "$SCRIPT"
+else
+  tmux new-session -d -s "$SESSION" -n "$SAFE_NAME" "$SCRIPT"
+fi
+
+echo "Started: tmux ${SESSION}:${SAFE_NAME}"
+echo "Log:     ${LOG}"
+echo "Status:  ${STATUS}"
+echo "Attach:  tmux attach -t ${SESSION}"
+echo "Tail:    tail -f ${LOG}"

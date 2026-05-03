@@ -1,25 +1,35 @@
 #!/usr/bin/env bash
 # DESC: Full voice demo pipeline: wake word → STT → LLM → smart home
 # USAGE: kratt demo [options] [model(s)]
-# ARGS: --models       One or more wake word model tags. Default: latest
-# ARGS: --threshold    Detection threshold(s). Default: 0.97
+# ARGS: --profile      Optional preset: demo, wiz-claude, wiz-claude-safe, wiz-manual
+# ARGS: --models       One or more wake word model tags. Default: v16c
+# ARGS: --threshold    Detection threshold(s). Default: 0.996
 # ARGS: --consensus    Min models that must agree. Default: all
+# ARGS: --wake-hold-frames Consecutive above-threshold frames required. Default: 3
+# ARGS: --wake-model-cooldown Per-model trigger cooldown seconds. Default: 4
+# ARGS: --post-trigger-cooldown Cooldown before listening again. Default: 4
 # ARGS: --no-wakeword  Manual trigger mode (press Enter)
-# ARGS: --wiz          Control real WiZ bulbs instead of mock HA
+# ARGS: --wiz/--no-wiz Auto-enable real WiZ bulbs when cached/discovered. Use --no-wiz for mock HA
 # ARGS: --wiz-bash     Use WiZ bash-agent mode via local wiz CLI
-# ARGS: --bulbs        Comma-separated WiZ bulb IPs (skip discovery)
-# ARGS: --llm          Ollama model name. Default: gemma3:12b
+# ARGS: --bulbs        Comma-separated WiZ bulb IPs (default: KRATT_WIZ_BULBS or /tmp cache)
+# ARGS: --llm          Ollama model name when using --no-claude-code. Default: gemma3:4b
+# ARGS: --claude-code/--no-claude-code Use Claude Code by default; --no-claude-code uses Ollama
+# ARGS: --claude-session-id Reuse a specific Claude Code session UUID
 # ARGS: --log          Enable per-interaction JSONL telemetry
 # ARGS: --participant  Participant ID for log naming
 # ARGS: --task         Initial task ID tag for telemetry logs
 # ARGS: --no-tts       Disable voice output
 # ARGS: --no-tts-effects Disable sox voice effects
+# EXAMPLES: kratt demo
+# EXAMPLES: kratt demo --no-wakeword
+# EXAMPLES: kratt demo --profile wiz-claude-safe
 # EXAMPLES: kratt demo --wiz --no-wakeword
 # EXAMPLES: kratt demo --wiz-bash --no-wakeword
 # EXAMPLES: kratt demo --wiz --models v15
 # EXAMPLES: kratt demo --wiz --models v10 v15 --consensus 2
 # EXAMPLES: kratt demo --wiz --bulbs 192.168.68.56,192.168.68.57 --models v15
 # EXAMPLES: kratt demo --wiz-bash --models v15 --llm qwen3:8b
+# EXAMPLES: kratt demo --claude-code --wiz --models v16c
 # EXAMPLES: kratt demo --log --participant P01 --task T1_turn_on
 set -euo pipefail
 

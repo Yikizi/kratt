@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# DESC: Serve live HTML dashboard for Hermes thesis-automation logs
+# USAGE: kratt thesis-dashboard [--host 127.0.0.1] [--port 8765] [--dump-json]
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+exec /usr/bin/env python3 "$ROOT/.hermes/thesis-automation/bin/dashboard.py" "$@"

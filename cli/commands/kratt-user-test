@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# DESC: Run 10-minute labelled user-test recorder (WAV + trials.jsonl)
+# USAGE: kratt user-test <participant_id> [options]
+# ARGS: participant_id Participant ID, e.g. P01
+# ARGS: --active-model Active/user-visible wake model tag. Default: v16c
+# ARGS: --audio-consent yes|no. If no, raw WAV files are not retained
+# ARGS: --output-dir Base output directory. Default: output/user-tests
+# ARGS: --device sounddevice input device id
+# ARGS: --list-devices List available audio input/output devices
+# ARGS: --dry-run Create silent WAVs for harness testing
+# ARGS: --new-session-subdir Create participant/timestamp_session subdir
+# EXAMPLES: kratt user-test P01
+# EXAMPLES: kratt user-test P01 --active-model expert-a
+# EXAMPLES: kratt user-test P01 --list-devices
+# EXAMPLES: kratt user-test TEST --dry-run --new-session-subdir
+set -euo pipefail
+
+SCRIPT="${KRATT_ROOT}/tools/user-testing/run_user_test.py"
+PYTHON="${KRATT_ROOT}/.venv/bin/python"
+
+if [[ ! -f "$SCRIPT" ]]; then
+  echo "user-test runner not found: $SCRIPT" >&2
+  exit 1
+fi
+if [[ ! -x "$PYTHON" ]]; then
+  echo "Python venv not found: $PYTHON" >&2
+  echo "Run setup first (wake-word uv sync / project venv)." >&2
+  exit 1
+fi
+
+exec "$PYTHON" "$SCRIPT" "$@"
