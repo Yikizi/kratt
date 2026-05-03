@@ -1,9 +1,11 @@
 """
 Central registry of held-out evaluation test sets for the Kratt wake-word models.
 
-CRITICAL: every test set listed here must be guaranteed disjoint from the
-training data of every model it is used to evaluate. The training data for
-each model version is documented in `training_data_manifest.md`.
+CRITICAL: every final held-out test set listed here must be guaranteed disjoint
+from the training data of every model it is used to evaluate. Some newer
+prefix/confusable sets are regression diagnostics for model families that may
+have seen related sources; those caveats must be documented in `notes` and in
+`training_data_manifest.md`.
 
 Use `assert_disjoint_from_training()` to verify a candidate test set does
 not contain any file paths that appear in training source directories.
@@ -50,6 +52,11 @@ class TestSet:
 ALL_MODELS = (
     "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11",
     "v12", "v13a", "v13b", "v14", "v15", "v16a", "v16b", "v16c",
+    "v17a", "v17b",
+    "v18a-clean48", "v18b-clean48-sa", "v18c-clean48-hn", "v18d-clean96",
+    "v18e-clean48-tts-hn", "v18f-clean48-tts-hn-fast",
+    "checkpoint-faph-v18d-clean96-pw96x4",
+    "checkpoint-faph10-v18d-clean96-pw96x4",
     "expert-a", "expert-b", "expert-b2", "ex2a", "ex3a", "ex3b",
 )
 
@@ -89,6 +96,22 @@ TEST_SETS: dict[str, TestSet] = {
         held_out_for=("v1", "v2", "v3", "v4", "v5", "v6", "v7"),
         notes="Cross-device recall benchmark for pre-Mac models.",
     ),
+    "pos_ode_real": TestSet(
+        name="pos_ode_real",
+        path=DATA / "raw" / "ode_kuule_kratt",
+        kind=TestSetKind.POSITIVE,
+        description="11 real-speaker positive clips from Ode.",
+        held_out_for=ALL_MODELS,
+        notes="Useful real-speaker anchor but small-N; report uncertainty.",
+    ),
+    "pos_friend1_real": TestSet(
+        name="pos_friend1_real",
+        path=DATA / "raw" / "friend1_20260414",
+        kind=TestSetKind.POSITIVE,
+        description="Real-speaker positive clips from Friend1 collected in April 2026.",
+        held_out_for=ALL_MODELS,
+        notes="Strong real-speaker recall warning set used in v18/checkpoint analysis.",
+    ),
 
     # ── Hard negatives ───────────────────────────────────────────────────────
     "hard_neg_mac_holdout": TestSet(
@@ -126,18 +149,55 @@ TEST_SETS: dict[str, TestSet] = {
         notes="Canary set for regression testing deterministic false-trigger patterns.",
     ),
 
+    # ── Prefix / exact-phrase regression diagnostics ────────────────────────
+    "neg_prefix_only_mattias_short": TestSet(
+        name="neg_prefix_only_mattias_short",
+        path=DATA / "processed" / "prefix_regression_test" / "prefix_only_mattias_short_lt0p80",
+        kind=TestSetKind.NEGATIVE_HARD,
+        description="Prefix/tail/empty candidates from the Mattias-short audit; should not trigger.",
+        held_out_for=ALL_MODELS,
+        notes="Diagnostic regression set. Related Mattias-short sources were present in some v17/v18-era presets; check manifests before treating as final independent holdout.",
+    ),
+    "neg_single_kratt_neurokone": TestSet(
+        name="neg_single_kratt_neurokone",
+        path=DATA / "processed" / "prefix_regression_test" / "single_kratt_neurokone_phase1",
+        kind=TestSetKind.NEGATIVE_HARD,
+        description="Single-word 'kratt' clips from Neurokõne; should not trigger the two-word wake phrase.",
+        held_out_for=ALL_MODELS,
+        notes="Exact-phrase regression diagnostic.",
+    ),
+    "neg_reversed_kratt_kuule": TestSet(
+        name="neg_reversed_kratt_kuule",
+        path=DATA / "processed" / "prefix_regression_test" / "reversed_kratt_kuule_phase1",
+        kind=TestSetKind.NEGATIVE_HARD,
+        description="Reversed-order 'kratt kuule' clips; should not trigger.",
+        held_out_for=ALL_MODELS,
+        notes="Exact-order regression diagnostic.",
+    ),
+    "neg_kuule_kule_confusables": TestSet(
+        name="neg_kuule_kule_confusables",
+        path=DATA / "processed" / "prefix_regression_test" / "kuule_kule_confusables_neurokone_hard_neg_v2",
+        kind=TestSetKind.NEGATIVE_HARD,
+        description="'kuule/kule <not kratt>' confusable clips; should not trigger.",
+        held_out_for=ALL_MODELS,
+        notes="Diagnostic for v18e/v18f because this overlaps with TTS hard-negative training sources.",
+    ),
+
     # ── Long-form FAPH (ambient) ─────────────────────────────────────────────
     "faph_cv_et": TestSet(
         name="faph_cv_et",
         path=DATA / "processed" / "faph_test_cv_et",
         kind=TestSetKind.AMBIENT,
         description=(
-            "2000 Common Voice Estonian clips (~3.65 hours) sampled with the "
-            "same RNG seed as training but indices 5000-7000 (training used "
-            "0-4999). Truly disjoint from every model's training set."
+            "Frozen legacy slice: 2000 Common Voice Estonian clips (~3.65 hours) "
+            "used as the final held-out FAPH benchmark (indices 5000-7000 from the "
+            "same seeded shuffle as legacy training; training used 0-4999)."
         ),
         held_out_for=ALL_MODELS,
-        notes="Primary FAPH benchmark for in-domain Estonian speech.",
+        notes=(
+            "Primary final FAPH benchmark for in-domain Estonian speech. Keep this set "
+            "frozen; do not mix it with training, mining, or validation."
+        ),
     ),
 
     # ── Standard FAPH benchmarks (cross-system comparable) ─────────────────
@@ -158,12 +218,17 @@ TEST_SETS: dict[str, TestSet] = {
         path=DATA / "processed" / "benchmarks" / "dipco",
         kind=TestSetKind.AMBIENT,
         description=(
-            "DiPCo Dinner Party Corpus: ~5.5 hours of far-field dinner "
-            "party conversations. Primary FAPH benchmark used by openWakeWord. "
-            "Contains natural pauses, overlapping speech, laughter, clinking."
+            "DiPCo Dinner Party Corpus: local subset (~3.32 h) from sessions "
+            "S01/S03/S06/S07/S08 only (openWakeWord baseline uses full 5.5h with "
+            "all sessions). Contains natural pauses, overlapping speech, "
+            "laughter, clinking."
         ),
         held_out_for=ALL_MODELS,
-        notes="Cross-language FAPH. Realistic multi-speaker ambient with intermittent speech.",
+        notes=(
+            "Cross-language FAPH. Open-ended policy: keep eval sessions S01/S03/S06/S07/"
+            "S08 frozen for final FAPH and use S02/S04/S05/S09/S10 only for mining/dev. "
+            "Do not mix session roles."
+        ),
     ),
 
     # ── KORVO-2 hold-out (to be recorded) ────────────────────────────────────
@@ -296,10 +361,14 @@ def summary() -> str:
 if __name__ == "__main__":
     print(summary())
     print()
-    print("Verifying disjointness for v8 ...")
+    model_version = "v8"
+    print(f"Verifying disjointness for {model_version} ...")
     for ts in TEST_SETS.values():
+        if not ts.is_held_out_for(model_version):
+            print(f"  SKIP {ts.name}: not declared held-out for {model_version}")
+            continue
         try:
-            assert_disjoint_from_training(ts, "v8")
+            assert_disjoint_from_training(ts, model_version)
             print(f"  OK   {ts.name}")
         except AssertionError as e:
             print(f"  FAIL {ts.name}: {e}")

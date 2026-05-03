@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 import time
 from collections import deque
@@ -115,6 +116,7 @@ def main():
                         help="Seconds after detection before next trigger")
     parser.add_argument("--ma-window", type=int, default=MA_WINDOW,
                         help="Moving average window size in frames")
+    parser.add_argument("--alert-sound", default="ping", help="Sound alias (ping|pop|tink|none) or path")
     args = parser.parse_args()
 
     # Load models
@@ -162,6 +164,30 @@ def main():
             "threshold": args.threshold,
             "timestamp": datetime.now().isoformat(),
         }) + "\n")
+
+    # Alert sound helper (reuse same alias semantics as single-model live test).
+    alert_sound = (args.alert_sound or "").strip().lower()
+    if alert_sound == "none":
+        alert_sound = ""
+
+    def play_alert():
+        if not alert_sound:
+            return
+
+        aliases = {
+            "ping": "/System/Library/Sounds/Ping.aiff",
+            "pop": "/System/Library/Sounds/Pop.aiff",
+            "tink": "/System/Library/Sounds/Tink.aiff",
+        }
+        sound_path = aliases.get(alert_sound, args.alert_sound)
+        try:
+            subprocess.Popen(
+                ["/usr/bin/afplay", sound_path],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except Exception:
+            pass
 
     # Audio setup
     frontend = MicroFrontend()
@@ -235,11 +261,15 @@ def main():
                                 f"{m.color}{m.name}={p:.3f}{RESET}"
                                 for m, p in zip(streaming_models, raw_probs)
                             )
+                            model_names = "+".join(m.name for m in streaming_models)
                             print(
-                                f"\n  {BOLD}\033[42m >>> KUULE KRATT #{detection_count} "
-                                f"(combined={ma_score:.4f}) <<< {RESET}"
+                                f"\n  {BOLD}\033[42m >>> DETECTED {model_names}! (prob={ma_score:.3f}, count={detection_count}) <<< {RESET}"
+                            )
+                            print(
+                                f"\n  {BOLD}\033[42m >>> CONSENSUS {n_models}/{n_models}: KUULE KRATT! (#{detection_count}) [{model_names}] <<< {RESET}"
                                 f"\n  {probs_str}\n"
                             )
+                            play_alert()
 
                             if log_file:
                                 log_file.write(json.dumps({

@@ -18,7 +18,8 @@ MODEL_ORDER = [
     "v6", "v6-specaug", "v6-residual",
     "v7", "v8", "v9", "v10", "v11", "v12",
     "v13a", "v13b", "v14", "v15",
-    "v16a", "v16b", "v16c",
+    "v16a", "v16b", "v16c", "v17a", "v17b",
+    "oww-v17-smoke2",
     "ex2a", "ex3a", "ex3b",
     "expert-a", "expert-b", "expert-b2",
     "v14 + expert-b",
@@ -29,6 +30,9 @@ MODEL_ORDER = [
     "ex3a + expert-a + expert-b",
     "ex3a + expert-b + expert-b2",
     "ex3b + expert-b2",
+    "v17a + v17b",
+    "v17a + expert-a",
+    "v17b + expert-a",
 ]
 
 # Default threshold for the main table view
@@ -131,15 +135,16 @@ def build_data(rows: list[dict]) -> dict:
     by_model: dict[str, dict] = defaultdict(lambda: defaultdict(dict))
     for r in rows:
         m = r["model"]
-        s = r["test_set"]
+        s = r.get("test_set") or r.get("set")
+        if not s:
+            continue
         t = float(r["threshold"])
         metric = r["metric"]
         value = float(r["value"])
         by_model[m][s][f"{metric}@{t:.3f}"] = value
         by_model[m][s]["_n"] = int(r["n"])
-        by_model[m][s]["_hours"] = (
-            float(r["duration_h"]) if r["duration_h"] else None
-        )
+        hours_raw = r.get("duration_h", r.get("hours", ""))
+        by_model[m][s]["_hours"] = float(hours_raw) if hours_raw else None
         by_model[m][s]["_kind"] = r["kind"]
     return dict(by_model)
 
@@ -271,7 +276,7 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
 <h1>Kuule Kratt — mudelite benchmark</h1>
 <div class="sub">
   Generated from <code>__SOURCE__</code> at <code>__TIMESTAMP__</code>.
-  34 mudelit × 10 test-seti × 5 threshold'i = __ROWS__ mõõdet.
+  __MODEL_COUNT__ mudelit × __SET_COUNT__ test-seti × threshold-sweep = __ROWS__ mõõdet.
 </div>
 
 <div class="section">
@@ -521,7 +526,7 @@ document.getElementById('color-heat').addEventListener('change', (e) => {
 
 // ── DET chart ──
 const DET_MODELS = [
-  'v6-residual', 'v11', 'v16a', 'v16b',
+  'v6-residual', 'v11', 'v16a', 'v16b', 'oww-v17-smoke2',
   'ex3a', 'expert-a',
   'v6-residual + expert-a', 'ex3a + expert-a',
   'ex3a + expert-a + expert-b2', 'ex3a + expert-a + expert-b',
@@ -531,6 +536,7 @@ const COLORS = {
   'v11': '#d4a64a',
   'v16a': '#3f7fbf',
   'v16b': '#2c5aa0',
+  'oww-v17-smoke2': '#111111',
   'ex3a': '#5fa84b',
   'expert-a': '#b5451a',
   'v6-residual + expert-a': '#7a4ea0',
@@ -721,6 +727,8 @@ def main() -> None:
         .replace("__SOURCE__", inp.name)
         .replace("__TIMESTAMP__", rows[0]["timestamp"] if rows else "")
         .replace("__ROWS__", str(len(rows)))
+        .replace("__MODEL_COUNT__", str(len(data)))
+        .replace("__SET_COUNT__", str(len({r.get("test_set") or r.get("set") for r in rows})))
     )
 
     out = Path(args.output) if args.output else inp.parent / "supervisor_report.html"

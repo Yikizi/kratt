@@ -4,7 +4,8 @@ Prepare a FAPH (False Activations Per Hour) test set from unused Common Voice ET
 
 Uses the same RNG seed and exclusion filter as prepare_kuule_kratt_experiment.py,
 then SKIPS the first --skip clips (those that went to training) and converts the
-next --limit clips from MP3 to WAV (16kHz mono).
+next --limit clips from MP3 to WAV (16kHz mono). To reproduce the legacy
+faph_cv_et split, pass: --exclude-words kratt kuule.
 
 Output: a directory of WAV files that can be fed to a streaming wake-word model
 to measure false-activations-per-hour on unseen Estonian speech.
@@ -41,7 +42,8 @@ def main() -> None:
                    help="Number of new clips to convert")
     p.add_argument("--seed", type=int, default=42,
                    help="RNG seed (must match training seed)")
-    p.add_argument("--exclude-words", nargs="*", default=["kratt", "kuule"])
+    p.add_argument("--exclude-words", nargs="*", default=["kratt"],
+                   help="Words to exclude from CV negatives. Default keeps 'kuule' as ordinary negative speech; use 'kratt kuule' to reproduce legacy faph_cv_et.")
     args = p.parse_args()
 
     cv_root = Path(args.cv_root)

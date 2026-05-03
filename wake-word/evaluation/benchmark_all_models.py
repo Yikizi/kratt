@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -26,6 +27,7 @@ STEP_MS = 10
 MA_WINDOW = 5
 COOLDOWN = 25
 BASE = Path(__file__).resolve().parent.parent
+DATA_ROOT = Path(os.environ.get("KRATT_DATA", BASE / "data"))
 
 
 def load_16k(path: Path) -> np.ndarray:
@@ -78,43 +80,80 @@ def build_track(files: list[Path], silence_ms: int = 300) -> np.ndarray:
 
 CLIP_SETS: dict[str, dict] = {
     "pos_isa_xtts": {
-        "path": BASE / "data/processed/test_pos_xtts_isa",
+        "path": DATA_ROOT / "processed/test_pos_xtts_isa",
         "kind": "positive",
         "metric": "recall",
     },
     "pos_ode": {
-        "path": BASE / "data/raw/ode_kuule_kratt",
+        "path": DATA_ROOT / "raw/ode_kuule_kratt",
         "kind": "positive",
         "metric": "recall",
     },
     "pos_mattias_short": {
-        "path": BASE / "data/raw/mattias-short/positive",
+        "path": DATA_ROOT / "raw/mattias-short/positive",
+        "kind": "positive",
+        "metric": "recall",
+        # v17/v18 recall-cv runs include mattias-short positives in training.
+        # Do not report this as held-out recall for those models/combos.
+        "leaked_for_prefixes": ("v17", "v18"),
+    },
+    "pos_friend1": {
+        "path": DATA_ROOT / "raw/friend1_20260414",
         "kind": "positive",
         "metric": "recall",
     },
     "hard_neg_mac_holdout": {
-        "path": BASE / "data/processed/hard_neg_test",
+        "path": DATA_ROOT / "processed/hard_neg_test",
         "kind": "hard_negative",
         "metric": "fpr",
     },
     "hard_neg_isa_xtts": {
-        "path": BASE / "data/processed/test_hard_neg_xtts_isa",
+        "path": DATA_ROOT / "processed/test_hard_neg_xtts_isa",
         "kind": "hard_negative",
         "metric": "fpr",
     },
     "hard_neg_canary": {
-        "path": BASE / "data/processed/test_neg_false_accepts_v10_canary",
+        "path": DATA_ROOT / "processed/test_neg_false_accepts_v10_canary",
+        "kind": "hard_negative",
+        "metric": "fpr",
+    },
+    # 2026-04-27 v17 incident regression sets: all must remain negative.
+    "neg_prefix_only_mattias_short": {
+        "path": DATA_ROOT / "processed/prefix_regression_test/prefix_only_mattias_short_lt0p80",
+        "kind": "hard_negative",
+        "metric": "fpr",
+    },
+    "neg_single_kratt_neurokone": {
+        "path": DATA_ROOT / "processed/prefix_regression_test/single_kratt_neurokone_phase1",
+        "kind": "hard_negative",
+        "metric": "fpr",
+    },
+    "neg_reversed_kratt_kuule": {
+        "path": DATA_ROOT / "processed/prefix_regression_test/reversed_kratt_kuule_phase1",
+        "kind": "hard_negative",
+        "metric": "fpr",
+    },
+    "neg_kuule_kule_confusables": {
+        "path": DATA_ROOT / "processed/prefix_regression_test/kuule_kule_confusables_neurokone_hard_neg_v2",
         "kind": "hard_negative",
         "metric": "fpr",
     },
 }
 
 FAPH_SETS: dict[str, Path] = {
-    "faph_cv_et": BASE / "data/processed/faph_test_cv_et",
-    "faph_librispeech": BASE / "data/processed/benchmarks/librispeech-test-clean",
-    "faph_macbook_bg": BASE / "data/raw/macbook_negatives",
-    "faph_dipco": BASE / "data/processed/benchmarks/dipco",
+    "faph_cv_et": DATA_ROOT / "processed/faph_test_cv_et",
+    "faph_librispeech": DATA_ROOT / "processed/benchmarks/librispeech-test-clean",
+    "faph_macbook_bg": DATA_ROOT / "raw/macbook_negatives",
+    "faph_dipco": DATA_ROOT / "processed/benchmarks/dipco",
 }
+
+def clip_set_leaked_for_model(info: dict, model_name: str) -> bool:
+    return any(model_name.startswith(prefix) for prefix in info.get("leaked_for_prefixes", ()))
+
+
+def clip_set_leaked_for_combo(info: dict, combo: tuple[str, ...]) -> bool:
+    return any(clip_set_leaked_for_model(info, model_name) for model_name in combo)
+
 
 CONSENSUS_COMBOS = [
     ("ex3a", "expert-a"),
@@ -124,6 +163,34 @@ CONSENSUS_COMBOS = [
     ("ex3a", "expert-b", "expert-b2"),
     ("v6-residual", "expert-a"),
     ("ex3b", "expert-b2"),
+    ("v17a", "v17b"),
+    ("v17a", "expert-a"),
+    ("v17b", "expert-a"),
+    # v18 clean-positive overnight follow-up: test whether the new models are
+    # useful as conservative consensus partners even though single-model FAPH is high.
+    ("v18a-clean48", "expert-a"),
+    ("v18b-clean48-sa", "expert-a"),
+    ("v18c-clean48-hn", "expert-a"),
+    ("v18d-clean96", "expert-a"),
+    ("v18e-clean48-tts-hn", "expert-a"),
+    ("v18f-clean48-tts-hn-fast", "expert-a"),
+    ("v18a-clean48", "v16c"),
+    ("v18b-clean48-sa", "v16c"),
+    ("v18c-clean48-hn", "v16c"),
+    ("v18d-clean96", "v16c"),
+    ("v18e-clean48-tts-hn", "v16c"),
+    ("v18f-clean48-tts-hn-fast", "v16c"),
+    ("v18a-clean48", "v18b-clean48-sa"),
+    ("v18e-clean48-tts-hn", "v18f-clean48-tts-hn-fast"),
+    # Checkpoint-FAPH family diagnostics: do FAPH-oriented checkpoints work as
+    # conservative ambient gates when paired with broader-recall models?
+    ("checkpoint-faph10-v18d-clean96-pw96x4", "v16c"),
+    ("checkpoint-faph10-v18d-clean96-pw96x4", "expert-a"),
+    ("checkpoint-faph10-v18d-clean96-pw96x4", "v6-residual"),
+    ("checkpoint-faph20-v18d-clean96-pw96x4", "v16c"),
+    ("checkpoint-faph20-v18d-clean96-pw96x4", "expert-a"),
+    ("checkpoint-faph20-v18d-clean96-pw96x4", "v6-residual"),
+    ("checkpoint-faph20-v18d-clean96-pw96x4", "checkpoint-faph10-v18d-clean96-pw96x4"),
 ]
 
 
@@ -169,6 +236,9 @@ def main() -> None:
             continue
         print(f"  {sn}: {len(clips)} clips")
         for mn in model_names:
+            if clip_set_leaked_for_model(info, mn):
+                print(f"    skip {mn}: not held out")
+                continue
             for i, clip in enumerate(clips):
                 pcm = load_16k(clip)
                 raw = np.array(
@@ -214,6 +284,8 @@ def main() -> None:
     def add_single(mn: str) -> None:
         # Recall / FPR
         for sn, info in CLIP_SETS.items():
+            if clip_set_leaked_for_model(info, mn):
+                continue
             clips = sorted(info["path"].rglob("*.wav")) if info["path"].exists() else []
             if not clips:
                 continue
@@ -250,6 +322,8 @@ def main() -> None:
             return
         # Recall / FPR
         for sn, info in CLIP_SETS.items():
+            if clip_set_leaked_for_combo(info, combo):
+                continue
             clips = sorted(info["path"].rglob("*.wav")) if info["path"].exists() else []
             if not clips:
                 continue
