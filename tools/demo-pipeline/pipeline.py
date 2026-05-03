@@ -51,6 +51,9 @@ LOG_DIR = PROJECT_ROOT / "output/demo-logs"
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
 LLM_MODEL = "gemma3:4b"
+USE_CLAUDE_CODE = False
+CLAUDE_SESSION_ID = str(uuid.uuid4())
+CLAUDE_SESSION_STARTED = False
 TTS_URL = "http://127.0.0.1:5380/synthesize"
 TTS_SPEAKER = "meelis"
 TTS_SPEED = 1.0
@@ -119,7 +122,71 @@ Reeglid:
 - Kui käsk ebaselge, jäta `command` tühjaks ja vasta lühikese seletusega `response`
 """
 
+
+def build_wiz_system_prompt(bulb_count: int | None = None) -> str:
+    """Return WiZ prompt with the actual number of configured bulbs when known."""
+    if not bulb_count or bulb_count <= 0:
+        return SYSTEM_PROMPT_WIZ
+    devices = "\n".join(
+        f"- light.wiz_{i} — WiZ pirn {i} (heledus, värvitemperatuur)"
+        for i in range(1, bulb_count + 1)
+    )
+    default_rule = (
+        "Kui pirn pole täpsustatud, kasuta light.wiz_1."
+        if bulb_count == 1
+        else "Kui pirn pole täpsustatud, mõjuta kõiki loetletud pirne."
+    )
+    return re.sub(
+        r"Seadmed \(päris WiZ lambid\):\n(?:- light\.wiz_\d+.*\n)+",
+        f"Seadmed (päris WiZ lambid):\n{devices}\n",
+        SYSTEM_PROMPT_WIZ,
+    ).replace("Kui pirn pole täpsustatud, mõjuta mõlemat.", default_rule)
+
 DISALLOWED_BASH_RE = re.compile(r"(^|[;|&()\s])(rm|cp|mv)(?=($|[;|&()\s]))")
+
+
+def _cached_wiz_bulbs() -> str | None:
+    """Return comma-separated WiZ IPs from KRATT_WIZ_BULBS or wiz-cli cache."""
+    if os.getenv("KRATT_WIZ_BULBS"):
+        return os.getenv("KRATT_WIZ_BULBS")
+    try:
+        with open("/tmp/wiz_bulbs.json") as f:
+            bulbs = json.load(f)
+        ips = [b.get("ip") for b in bulbs if b.get("ip")]
+        return ",".join(ips) if ips else None
+    except Exception:
+        return None
+
+
+def apply_demo_profile(args) -> None:
+    """Collapse long demo command lines into named profiles."""
+    if not args.profile:
+        return
+
+    if args.profile in ("wiz-claude", "demo"):
+        args.claude_code = True
+        args.wiz = True
+        args.models = args.models or ["v16c"]
+        if args.threshold == [0.97]:
+            args.threshold = [0.996]
+        args.bulbs = args.bulbs or _cached_wiz_bulbs()
+
+    elif args.profile == "wiz-claude-safe":
+        args.claude_code = True
+        args.wiz = True
+        args.models = args.models or ["v16c"]
+        if args.threshold == [0.97]:
+            args.threshold = [0.997]
+        args.wake_hold_frames = max(args.wake_hold_frames, 5)
+        args.wake_model_cooldown = max(args.wake_model_cooldown, 6.0)
+        args.post_trigger_cooldown = max(args.post_trigger_cooldown, 6.0)
+        args.bulbs = args.bulbs or _cached_wiz_bulbs()
+
+    elif args.profile == "wiz-manual":
+        args.claude_code = True
+        args.wiz = True
+        args.no_wakeword = True
+        args.bulbs = args.bulbs or _cached_wiz_bulbs()
 
 
 def _sanitize_wiz_bash_command(raw: str) -> str:
@@ -133,20 +200,23 @@ def _sanitize_wiz_bash_command(raw: str) -> str:
 
 
 def llm_plan_wiz_command(user_text: str) -> dict:
-    resp = requests.post(
-        OLLAMA_URL,
-        json={
-            "model": LLM_MODEL,
-            "stream": False,
-            "format": "json",
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT_WIZ_BASH},
-                {"role": "user", "content": user_text},
-            ],
-        },
-    )
-    resp.raise_for_status()
-    data = json.loads(resp.json()["message"]["content"])
+    if USE_CLAUDE_CODE:
+        data = claude_code_json(SYSTEM_PROMPT_WIZ_BASH, user_text)
+    else:
+        resp = requests.post(
+            OLLAMA_URL,
+            json={
+                "model": LLM_MODEL,
+                "stream": False,
+                "format": "json",
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT_WIZ_BASH},
+                    {"role": "user", "content": user_text},
+                ],
+            },
+        )
+        resp.raise_for_status()
+        data = json.loads(resp.json()["message"]["content"])
     command = _sanitize_wiz_bash_command(data.get("command", ""))
     return {"command": command, "response": data.get("response", "")}
 
@@ -224,6 +294,8 @@ class StreamingModel:
         self.last_detection_time = 0.0
         self.cooldown_s = 2.0
         self.warmup_frames = 50
+        self.required_consecutive = 1
+        self.consecutive_hits = 0
         self.frame_count = 0
         self.scores: list[float] = []
 
@@ -242,6 +314,7 @@ class StreamingModel:
                 np.zeros(detail["shape"], dtype=detail["dtype"]),
             )
         self.frame_count = 0
+        self.consecutive_hits = 0
         self.scores.clear()
 
     def process_features(self, features: np.ndarray) -> float | None:
@@ -280,9 +353,17 @@ class StreamingModel:
             score = prob
 
         now = time.monotonic()
-        if score >= self.threshold and (now - self.last_detection_time) > self.cooldown_s:
+        if score >= self.threshold:
+            self.consecutive_hits += 1
+        else:
+            self.consecutive_hits = 0
+        if (
+            self.consecutive_hits >= self.required_consecutive
+            and (now - self.last_detection_time) > self.cooldown_s
+        ):
             self.last_detection_time = now
             self.detection_count += 1
+            self.consecutive_hits = 0
             return score
 
         return None
@@ -375,9 +456,13 @@ def _obsolete_run_pipeline_early(args):
     else:
         mode = "WiZ bulbs" if args.wiz else "Mock HA"
     print(f"  Backend: {mode}")
+    llm_backend = f"Claude Code session={CLAUDE_SESSION_ID}" if USE_CLAUDE_CODE else LLM_MODEL
+    print(f"  LLM: {llm_backend}")
     print("=" * 60)
 
     system_prompt = SYSTEM_PROMPT_WIZ if args.wiz else SYSTEM_PROMPT_MOCK
+    if args.wiz and args.bulbs:
+        system_prompt = build_wiz_system_prompt(len([b for b in args.bulbs.split(",") if b.strip()]))
     if args.wiz_bash:
         system_prompt = SYSTEM_PROMPT_WIZ_BASH
 
@@ -411,6 +496,8 @@ def _obsolete_run_pipeline_early(args):
         for i, (tag, path) in enumerate(resolved):
             color = COLORS[i % len(COLORS)]
             m = StreamingModel(tag, str(path), thresholds[i], color, use_ma=use_ma)
+            m.required_consecutive = args.wake_hold_frames
+            m.cooldown_s = args.wake_model_cooldown
             models.append(m)
             size_kb = path.stat().st_size // 1024
             print(f"  {color}■{RESET} {tag} ({size_kb}KB) threshold={thresholds[i]}")
@@ -442,7 +529,7 @@ def _obsolete_run_pipeline_early(args):
         enabled=args.log,
         participant_id=args.participant,
         log_dir=LOG_DIR,
-        llm_model=LLM_MODEL,
+        llm_model=f"claude-code:{CLAUDE_SESSION_ID}" if USE_CLAUDE_CODE else LLM_MODEL,
         wake_models=model_tags,
         wake_threshold=args.threshold[0] if args.threshold else 0,
     )
@@ -479,7 +566,7 @@ def _obsolete_run_pipeline_early(args):
         print(f"  TTS: not available (start tts-server/server.py for voice output)")
 
     # --- LLM warmup ---
-    print(f"  Warming up {LLM_MODEL}...")
+    print(f"  Warming up {'Claude Code' if USE_CLAUDE_CODE else LLM_MODEL}...")
     try:
         if args.wiz_bash:
             llm_plan_wiz_command("pane tuli põlema")
@@ -517,7 +604,7 @@ def _obsolete_run_pipeline_early(args):
     # Consensus state
     consensus_count = 0
     last_consensus_time = 0.0
-    consensus_cooldown_s = 2.0
+    consensus_cooldown_s = args.post_trigger_cooldown
     recent_detections: dict[str, float] = {}
 
     try:
@@ -767,21 +854,21 @@ def _obsolete_run_pipeline_early(args):
 
 
 def _obsolete_main_early():
-    global LLM_MODEL
+    global LLM_MODEL, USE_CLAUDE_CODE, CLAUDE_SESSION_ID, CLAUDE_SESSION_STARTED
 
     parser = argparse.ArgumentParser(description="Kratt full voice pipeline")
     parser.add_argument(
         "--models",
         nargs="*",
         default=None,
-        help="Model version tags (e.g. v10 v15). Default: latest.",
+        help="Model version tags (e.g. v10 v15). Default: v16c for live demo.",
     )
     parser.add_argument(
         "--threshold",
         type=float,
         nargs="+",
-        default=[0.97],
-        help="One threshold for all, or one per model. Default: 0.97.",
+        default=[0.996],
+        help="One threshold for all, or one per model. Default: 0.996.",
     )
     parser.add_argument(
         "--consensus",
@@ -796,10 +883,31 @@ def _obsolete_main_early():
         help="Time window for consensus agreement (ms). Default: 1000.",
     )
     parser.add_argument(
+        "--wake-hold-frames",
+        type=int,
+        default=3,
+        help="Require N consecutive above-threshold frames before wake trigger. Default: 3.",
+    )
+    parser.add_argument(
+        "--wake-model-cooldown",
+        type=float,
+        default=4.0,
+        help="Per-model wake refractory period in seconds. Default: 4.0.",
+    )
+    parser.add_argument(
+        "--post-trigger-cooldown",
+        type=float,
+        default=4.0,
+        help="Cooldown after a trigger/turn before listening again. Default: 4.0.",
+    )
+    parser.add_argument(
         "--no-wakeword", action="store_true", help="Skip wake word, manual trigger"
     )
     parser.add_argument(
-        "--wiz", action="store_true", help="Use real WiZ bulbs instead of mock HA"
+        "--wiz",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Use real WiZ bulbs. Default: auto-enable when cached/discovered bulbs exist.",
     )
     parser.add_argument(
         "--wiz-bash",
@@ -817,6 +925,18 @@ def _obsolete_main_early():
         type=str,
         default=LLM_MODEL,
         help=f"Ollama model name. Default: {LLM_MODEL}",
+    )
+    parser.add_argument(
+        "--claude-code",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Use Claude Code instead of Ollama/Gemma. Default: true. Use --no-claude-code for Ollama.",
+    )
+    parser.add_argument(
+        "--claude-session-id",
+        type=str,
+        default=None,
+        help="Claude Code session UUID to reuse. Default: one UUID reused for this demo run.",
     )
     parser.add_argument(
         "--log",
@@ -881,6 +1001,8 @@ class StreamingModel:
         self.last_detection_time = 0.0
         self.cooldown_s = 2.0
         self.warmup_frames = 50
+        self.required_consecutive = 1
+        self.consecutive_hits = 0
         self.frame_count = 0
         self.scores: list[float] = []
 
@@ -899,6 +1021,7 @@ class StreamingModel:
                 np.zeros(detail["shape"], dtype=detail["dtype"]),
             )
         self.frame_count = 0
+        self.consecutive_hits = 0
         self.scores.clear()
 
     def process_features(self, features: np.ndarray) -> float | None:
@@ -935,12 +1058,18 @@ class StreamingModel:
         check_prob = sum(self.scores) / len(self.scores) if self.use_ma else prob
 
         now = time.monotonic()
+        if check_prob >= self.threshold:
+            self.consecutive_hits += 1
+        else:
+            self.consecutive_hits = 0
+
         if (
-            check_prob >= self.threshold
+            self.consecutive_hits >= self.required_consecutive
             and (now - self.last_detection_time) >= self.cooldown_s
         ):
             self.detection_count += 1
             self.last_detection_time = now
+            self.consecutive_hits = 0
             return check_prob
 
         return None
@@ -1223,11 +1352,56 @@ class MCPClient:
 
 
 # ============================================================
-# LLM (Ollama)
+# LLM (Ollama / Claude Code)
 # ============================================================
 
 
+def claude_code_json(system_prompt: str, user_prompt: str) -> dict:
+    """Call Claude Code in print mode and parse a JSON object from stdout.
+
+    First call creates the session with --session-id; later calls must use
+    --resume <session-id>. Reusing --session-id after creation makes Claude Code
+    return "Session ID ... is already in use".
+    """
+    global CLAUDE_SESSION_STARTED
+
+    prompt = (
+        "Vasta AINULT ühe korrektse JSON objektiga. Ära lisa markdowni ega selgitusi.\n\n"
+        f"Kasutaja sisend:\n{user_prompt}"
+    )
+    session_args = ["--resume", CLAUDE_SESSION_ID] if CLAUDE_SESSION_STARTED else ["--session-id", CLAUDE_SESSION_ID]
+    proc = subprocess.run(
+        [
+            "claude",
+            "--print",
+            "--system-prompt",
+            system_prompt,
+            "--permission-mode",
+            "bypassPermissions",
+            "--dangerously-skip-permissions",
+            *session_args,
+            prompt,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError((proc.stderr or proc.stdout).strip())
+    CLAUDE_SESSION_STARTED = True
+    text = (proc.stdout or "").strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        match = re.search(r"\{.*\}", text, flags=re.S)
+        if not match:
+            raise
+        return json.loads(match.group(0))
+
+
 def llm_parse_intent(user_text: str, system_prompt: str) -> dict:
+    if USE_CLAUDE_CODE:
+        return claude_code_json(system_prompt, user_text)
     resp = requests.post(
         OLLAMA_URL,
         json={
@@ -1245,6 +1419,9 @@ def llm_parse_intent(user_text: str, system_prompt: str) -> dict:
 
 
 def llm_respond(user_text: str, tool_results: str, system_prompt: str) -> str:
+    followup = f"{user_text}\n\nTööriistade tulemused: {tool_results}\nVasta kasutajale."
+    if USE_CLAUDE_CODE:
+        return claude_code_json(system_prompt, followup).get("response", "")
     resp = requests.post(
         OLLAMA_URL,
         json={
@@ -1365,9 +1542,13 @@ def run_pipeline(args):
     else:
         mode = "WiZ bulbs" if args.wiz else "Mock HA"
     print(f"  Backend: {mode}")
+    llm_backend = f"Claude Code session={CLAUDE_SESSION_ID}" if USE_CLAUDE_CODE else LLM_MODEL
+    print(f"  LLM: {llm_backend}")
     print("=" * 60)
 
     system_prompt = SYSTEM_PROMPT_WIZ if args.wiz else SYSTEM_PROMPT_MOCK
+    if args.wiz and args.bulbs:
+        system_prompt = build_wiz_system_prompt(len([b for b in args.bulbs.split(",") if b.strip()]))
     if args.wiz_bash:
         system_prompt = SYSTEM_PROMPT_WIZ_BASH
 
@@ -1401,6 +1582,8 @@ def run_pipeline(args):
         for i, (tag, path) in enumerate(resolved):
             color = COLORS[i % len(COLORS)]
             m = StreamingModel(tag, str(path), thresholds[i], color, use_ma=use_ma)
+            m.required_consecutive = args.wake_hold_frames
+            m.cooldown_s = args.wake_model_cooldown
             models.append(m)
             size_kb = path.stat().st_size // 1024
             print(f"  {color}■{RESET} {tag} ({size_kb}KB) threshold={thresholds[i]}")
@@ -1428,7 +1611,7 @@ def run_pipeline(args):
         enabled=args.log,
         participant_id=args.participant,
         log_dir=LOG_DIR,
-        llm_model=LLM_MODEL,
+        llm_model=f"claude-code:{CLAUDE_SESSION_ID}" if USE_CLAUDE_CODE else LLM_MODEL,
         wake_models=model_tags,
         wake_threshold=args.threshold[0] if args.threshold else 0,
     )
@@ -1465,7 +1648,7 @@ def run_pipeline(args):
         print(f"  TTS: not available (start tts-server/server.py for voice output)")
 
     # --- LLM warmup ---
-    print(f"  Warming up {LLM_MODEL}...")
+    print(f"  Warming up {'Claude Code' if USE_CLAUDE_CODE else LLM_MODEL}...")
     try:
         llm_parse_intent("tere", system_prompt)
         print(f"  LLM ready")
@@ -1500,7 +1683,7 @@ def run_pipeline(args):
     # Consensus state
     consensus_count = 0
     last_consensus_time = 0.0
-    consensus_cooldown_s = 2.0
+    consensus_cooldown_s = args.post_trigger_cooldown
     recent_detections: dict[str, float] = {}
 
     try:
@@ -1625,50 +1808,80 @@ def run_pipeline(args):
                     print(f'  Listening for "Kuule Kratt"...\n')
                 continue
 
-            # --- LLM: parse intent ---
-            print("  Parsing intent...")
+            # --- LLM / execute ---
             t2 = time.monotonic()
             llm1_error = None
-            try:
-                parsed = llm_parse_intent(transcript, system_prompt)
-                actions = parsed.get("actions", [])
-            except Exception as e:
-                parsed = {}
-                actions = []
-                llm1_error = str(e)
-            t_llm1 = time.monotonic() - t2
-            print(f"  LLM ({t_llm1:.1f}s): {json.dumps(actions, ensure_ascii=False)}")
-
-            # --- Execute actions ---
+            llm2_error = None
+            t_llm2 = 0.0
+            actions = []
             tool_results = []
             executed_actions = []
-            for action in actions:
-                if not isinstance(action, dict):
-                    print(f"  Skipping malformed action: {action}")
-                    continue
-                action_name = action.pop("action", "")
-                try:
-                    result = ha.execute(action_name, action)
-                except RuntimeError as e:
-                    result = f"MCP error: {e}"
-                tool_results.append(result)
-                executed_actions.append(
-                    {"action": action_name, "args": action, "result": result}
-                )
-                print(f"  -> {action_name}: {result}")
+            response = ""
 
-            # --- LLM: generate response ---
-            print("  Generating response...")
-            t3 = time.monotonic()
-            llm2_error = None
-            try:
-                response = llm_respond(
-                    transcript, "\n".join(tool_results), system_prompt
-                )
-            except Exception as e:
-                response = ""
-                llm2_error = str(e)
-            t_llm2 = time.monotonic() - t3
+            if args.wiz_bash:
+                print("  Planning WiZ bash command...")
+                try:
+                    command, cli_result, response, ok = execute_wiz_bash_mode(transcript)
+                    actions = [{"command": command}] if command else []
+                    print(f"  LLM ({time.monotonic() - t2:.1f}s): {command or '<no command>'}")
+                    if cli_result:
+                        print(f"  -> {cli_result}")
+                    if command:
+                        executed_actions.append(
+                            {"action": "bash", "args": {"command": command}, "result": cli_result}
+                        )
+                        tool_results.append(cli_result)
+                    if not ok:
+                        llm1_error = "bash_command_failed_or_rejected"
+                except Exception as e:
+                    llm1_error = str(e)
+                    response = "Vabandust, käsu täitmine ebaõnnestus."
+                t_llm1 = time.monotonic() - t2
+                if llm1_error:
+                    print(f"  LLM/tool error: {llm1_error}")
+            else:
+                print("  Parsing intent...")
+                try:
+                    parsed = llm_parse_intent(transcript, system_prompt)
+                    actions = parsed.get("actions", [])
+                except Exception as e:
+                    parsed = {}
+                    actions = []
+                    llm1_error = str(e)
+                t_llm1 = time.monotonic() - t2
+                print(f"  LLM ({t_llm1:.1f}s): {json.dumps(actions, ensure_ascii=False)}")
+                if llm1_error:
+                    print(f"  LLM error: {llm1_error}")
+
+                # --- Execute actions ---
+                for action in actions:
+                    if not isinstance(action, dict):
+                        print(f"  Skipping malformed action: {action}")
+                        continue
+                    action_name = action.pop("action", "")
+                    try:
+                        result = ha.execute(action_name, action)
+                    except RuntimeError as e:
+                        result = f"MCP error: {e}"
+                    tool_results.append(result)
+                    executed_actions.append(
+                        {"action": action_name, "args": action, "result": result}
+                    )
+                    print(f"  -> {action_name}: {result}")
+
+                # --- LLM: generate response ---
+                print("  Generating response...")
+                t3 = time.monotonic()
+                try:
+                    response = llm_respond(
+                        transcript, "\n".join(tool_results), system_prompt
+                    )
+                except Exception as e:
+                    response = ""
+                    llm2_error = str(e)
+                t_llm2 = time.monotonic() - t3
+                if llm2_error:
+                    print(f"  Response LLM error: {llm2_error}")
 
             t_total = time.monotonic() - t0
             print(f"\n  KRATT: {BOLD}{response}{RESET}")
@@ -1707,6 +1920,10 @@ def run_pipeline(args):
                 }
             )
 
+            if models and args.post_trigger_cooldown > 0:
+                print(f"  Cooldown {args.post_trigger_cooldown:.1f}s before listening again...")
+                time.sleep(args.post_trigger_cooldown)
+
             print()
             if models:
                 print(f'  Listening for "Kuule Kratt"...\n')
@@ -1724,21 +1941,27 @@ def run_pipeline(args):
 
 
 def main():
-    global LLM_MODEL
+    global LLM_MODEL, USE_CLAUDE_CODE, CLAUDE_SESSION_ID, CLAUDE_SESSION_STARTED
 
     parser = argparse.ArgumentParser(description="Kratt full voice pipeline")
+    parser.add_argument(
+        "--profile",
+        choices=["demo", "wiz-claude", "wiz-claude-safe", "wiz-manual"],
+        default=None,
+        help="Optional preset override; bare `kratt demo` has sane live-demo defaults.",
+    )
     parser.add_argument(
         "--models",
         nargs="*",
         default=None,
-        help="Model version tags (e.g. v10 v15). Default: latest.",
+        help="Model version tags (e.g. v10 v15). Default: v16c for live demo.",
     )
     parser.add_argument(
         "--threshold",
         type=float,
         nargs="+",
-        default=[0.97],
-        help="One threshold for all, or one per model. Default: 0.97.",
+        default=[0.996],
+        help="One threshold for all, or one per model. Default: 0.996.",
     )
     parser.add_argument(
         "--consensus",
@@ -1753,10 +1976,31 @@ def main():
         help="Time window for consensus agreement (ms). Default: 1000.",
     )
     parser.add_argument(
+        "--wake-hold-frames",
+        type=int,
+        default=3,
+        help="Require N consecutive above-threshold frames before wake trigger. Default: 3.",
+    )
+    parser.add_argument(
+        "--wake-model-cooldown",
+        type=float,
+        default=4.0,
+        help="Per-model wake refractory period in seconds. Default: 4.0.",
+    )
+    parser.add_argument(
+        "--post-trigger-cooldown",
+        type=float,
+        default=4.0,
+        help="Cooldown after a trigger/turn before listening again. Default: 4.0.",
+    )
+    parser.add_argument(
         "--no-wakeword", action="store_true", help="Skip wake word, manual trigger"
     )
     parser.add_argument(
-        "--wiz", action="store_true", help="Use real WiZ bulbs instead of mock HA"
+        "--wiz",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Use real WiZ bulbs. Default: auto-enable when cached/discovered bulbs exist.",
     )
     parser.add_argument(
         "--wiz-bash",
@@ -1774,6 +2018,18 @@ def main():
         type=str,
         default=LLM_MODEL,
         help=f"Ollama model name. Default: {LLM_MODEL}",
+    )
+    parser.add_argument(
+        "--claude-code",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Use Claude Code instead of Ollama/Gemma. Default: true. Use --no-claude-code for Ollama.",
+    )
+    parser.add_argument(
+        "--claude-session-id",
+        type=str,
+        default=None,
+        help="Claude Code session UUID to reuse. Default: one UUID reused for this demo run.",
     )
     parser.add_argument(
         "--log",
@@ -1796,10 +2052,25 @@ def main():
     )
     args = parser.parse_args()
 
+    apply_demo_profile(args)
+
+    # Sane demo defaults: `kratt demo` should run the normal live demo.
+    # Explicit flags still override these defaults.
+    if args.models is None and not args.no_wakeword:
+        args.models = ["v16c"]
+    if args.bulbs is None:
+        args.bulbs = _cached_wiz_bulbs()
+    if args.wiz is None:
+        args.wiz = bool(args.bulbs)
+
     if args.wiz_bash:
         args.wiz = True
 
     LLM_MODEL = args.llm
+    USE_CLAUDE_CODE = args.claude_code
+    if args.claude_session_id:
+        CLAUDE_SESSION_ID = args.claude_session_id
+        CLAUDE_SESSION_STARTED = True
 
     run_pipeline(args)
 
