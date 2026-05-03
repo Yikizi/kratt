@@ -1,0 +1,17 @@
+{
+  "model": "/Users/mattias/kratt/wake-word/models/kuule-kratt-v17b/kuule_kratt_v17b.tflite",
+  "candidates": 500,
+  "thresholds": [
+    0.97,
+    0.99,
+    0.995,
+    0.996,
+    0.999
+  ],
+  "cooldown_s": 2.0,
+  "max_prob_best": 0.99609375,
+  "max_prob_median": 0.9140625,
+  "top_k_exported": 20,
+  "csv": "/Users/mattias/kratt/wake-word/evaluation/fuzz_runs/v17b_20260426/fuzzer_results.csv",
+  "top_dir": "/Users/mattias/kratt/wake-word/evaluation/fuzz_runs/v17b_20260426/top_triggers"
+}
