@@ -42,7 +42,8 @@ source "${ROOT_DIR}/wake-word/.venv-microwakeword/bin/activate"
 
 POS_COUNT="$(find "${POS_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
 NEG_COUNT="$(find "${NEG_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
-STAMP="pos_wavs=${POS_COUNT} neg_wavs=${NEG_COUNT} clip_ms=1500"
+CLIP_DURATION_MS=2000
+STAMP="pos_wavs=${POS_COUNT} neg_wavs=${NEG_COUNT} clip_ms=${CLIP_DURATION_MS}"
 
 NEED_MMAPS=1
 if [[ "${REGEN_MMAPS:-0}" != "1" ]]; then
@@ -62,7 +63,7 @@ else
     --positive-dir "${POS_DIR}" \
     --negative-dir "${NEG_DIR}" \
     --out-dir "${FEATURES_DIR}" \
-    --clip-duration-ms 1500
+    --clip-duration-ms "${CLIP_DURATION_MS}"
   echo "${STAMP}" > "${MMAP_STAMP_PATH}"
 fi
 
@@ -92,10 +93,10 @@ time_mask_count: [0]
 freq_mask_max_size: [0]
 freq_mask_count: [0]
 eval_step_interval: 250
-clip_duration_ms: 1500
-target_minimization: 0.0
-minimization_metric: null
-maximization_metric: accuracy
+clip_duration_ms: ${CLIP_DURATION_MS}
+minimization_metric: ambient_false_positives_per_hour
+maximization_metric: average_viable_recall
+target_minimization: 10.0
 EOF
 
 python -m microwakeword.model_train_eval \

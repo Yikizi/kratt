@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
-"""Generate "Kule Kratt" SSML mirror of existing "Kuule Kratt" SSML positives.
+"""DEPRECATED: legacy "Kule Kratt" SSML mirror generator.
 
-Mirrors every SSML variation from generate_neurokone_ssml_positives.py but with
-"Kule" instead of "Kuule". Deduplicates against existing Kuule clips by SHA-256
-hash — if Neurokõne produces identical audio for both spellings (e.g. mari),
-the duplicate is removed.
-
-Usage:
-    python generate_kule_ssml_mirror.py --output ../raw/neurokone_ssml_kule
-    python generate_kule_ssml_mirror.py --output ../raw/neurokone_ssml_kule \
-        --kuule-dir ../raw/neurokone_ssml_positives --dedup
+2026-04-27 audit: the corresponding Kuule/Kule SSML datasets are corrupt because
+Neurokõne read XML/SSML tags aloud when they were sent via the plain ``text``
+field. The generated 5-14s clips must NOT be used for wake-word training. This
+script now refuses to run unless ``--allow-legacy-xml-text`` is supplied for
+forensic reproduction only.
 """
 from __future__ import annotations
 
@@ -103,7 +99,19 @@ def main():
                     help="Remove files identical to Kuule versions")
     ap.add_argument("--delay", type=float, default=0.12)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument(
+        "--allow-legacy-xml-text",
+        action="store_true",
+        help="For forensic reproduction only. Generated audio is known-bad for training.",
+    )
     args = ap.parse_args()
+
+    if not args.allow_legacy_xml_text:
+        raise SystemExit(
+            "Refusing to generate known-bad Kule SSML positives. 2026-04-27 "
+            "audit confirmed Neurokõne reads tags aloud via the text field. "
+            "Pass --allow-legacy-xml-text only for forensic reproduction."
+        )
 
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)

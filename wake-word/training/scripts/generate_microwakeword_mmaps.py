@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import random
+import time
 from pathlib import Path
 
 import numpy as np
@@ -70,7 +71,19 @@ def vtlp_generator(
 
 
 def load_16k_mono(path: Path) -> np.ndarray:
-    audio, sr = sf.read(str(path), always_2d=False)
+    last_error: Exception | None = None
+    for attempt in range(5):
+        try:
+            audio, sr = sf.read(str(path), always_2d=False)
+            break
+        except Exception as e:
+            last_error = e
+            if attempt == 4:
+                resolved = path.resolve(strict=False)
+                raise RuntimeError(
+                    f"Failed to read audio after 5 attempts: {path} -> {resolved}"
+                ) from last_error
+            time.sleep(0.5 * (attempt + 1))
     if isinstance(audio, np.ndarray) and audio.ndim > 1:
         audio = audio[:, 0]
     audio = audio.astype(np.float32, copy=False)
@@ -187,6 +200,7 @@ def build_augmenter(
     background_paths: list[str] | None = None,
     impulse_paths: list[str] | None = None,
     aug_profile: str = "aggressive",
+    truncate_randomly: bool = True,
 ) -> Augmentation:
     """Build an Augmentation instance.
 
@@ -195,6 +209,7 @@ def build_augmenter(
         background_paths: Directories containing background noise WAVs.
         impulse_paths: Directories containing room impulse response WAVs.
         aug_profile: One of 'gentle', 'moderate', 'aggressive'.
+        truncate_randomly: If true, random-crop overlong clips. Keep false for positives.
     """
     bg = background_paths or []
     ir = impulse_paths or []
@@ -209,13 +224,20 @@ def build_augmenter(
         background_max_snr_db=10,
         min_jitter_s=0.0,
         max_jitter_s=0.0,
-        truncate_randomly=True,
+        truncate_randomly=truncate_randomly,
     )
 
 
-def build_identity_augmenter() -> Augmentation:
+def build_identity_augmenter(clip_duration_ms: int | None = None) -> Augmentation:
+    """Build a deterministic no-transform augmenter.
+
+    If clip_duration_ms is provided, clips are still padded/truncated to the
+    model window length, but without acoustic transforms. This is important for
+    validation/testing mmaps: checkpoint selection should not depend on random
+    augmentation noise, yet feature shapes must match training.
+    """
     return Augmentation(
-        augmentation_duration_s=None,
+        augmentation_duration_s=(clip_duration_ms / 1000.0) if clip_duration_ms is not None else None,
         augmentation_probabilities={
             "SevenBandParametricEQ": 0.0,
             "TanhDistortion": 0.0,
@@ -248,6 +270,7 @@ def generate_one(
     vtlp_alpha_min: float = 0.85,
     vtlp_alpha_max: float = 1.15,
     aug_profile: str = "aggressive",
+    truncate_randomly: bool = True,
 ) -> None:
     ensure_dirs(out_dir)
 
@@ -257,12 +280,14 @@ def generate_one(
         random_split_seed=seed,
         split_count=split_count,
     )
-    augmenter = build_augmenter(
+    train_augmenter = build_augmenter(
         clip_duration_ms=clip_duration_ms,
         background_paths=background_paths,
         impulse_paths=impulse_paths,
         aug_profile=aug_profile,
+        truncate_randomly=truncate_randomly,
     )
+    eval_augmenter = build_identity_augmenter(clip_duration_ms=clip_duration_ms)
 
     for split in ("training", "validation", "testing"):
         split_name = "train"
@@ -279,9 +304,12 @@ def generate_one(
             # Testing uses streaming model, no artificial repetition.
             slide_frames = 1
 
+        # Only the training split gets stochastic acoustic augmentation.
+        # Validation/testing remain deterministic so best-weight selection is
+        # not driven by random augmentation artifacts.
         spectrograms = SpectrogramGeneration(
             clips=clips,
-            augmenter=augmenter,
+            augmenter=train_augmenter if split == "training" else eval_augmenter,
             slide_frames=slide_frames,
             step_ms=10,
         )
@@ -371,7 +399,8 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=10)
     parser.add_argument("--split-count", type=float, default=0.1)
     parser.add_argument("--ambient-split-count", type=float, default=0.5)
-    parser.add_argument("--clip-duration-ms", type=int, default=1500)
+    parser.add_argument("--clip-duration-ms", type=int, default=2000,
+                        help="Training window duration in ms (default: 2000, long enough for the full two-word wake phrase plus natural leading silence).")
     parser.add_argument(
         "--vtlp-prob", type=float, default=0.5,
         help="Probability of applying VTLP warp per spectrogram (0=off). Default: 0.5",
@@ -388,6 +417,11 @@ def main() -> None:
         "--aug-profile", default="aggressive",
         choices=list(AUG_PROFILES.keys()),
         help="Augmentation intensity profile (default: aggressive)",
+    )
+    parser.add_argument(
+        "--positive-truncate-randomly",
+        action="store_true",
+        help="Historical behavior: random-crop overlong positive clips. Default is false to avoid prefix-only positive labels.",
     )
 
     args = parser.parse_args()
@@ -454,6 +488,7 @@ def main() -> None:
     else:
         print("VTLP: disabled")
     print(f"Aug profile: {args.aug_profile}")
+    print(f"Positive truncate randomly: {args.positive_truncate_randomly}")
     print(f"Output: {out_dir}")
 
     common_kwargs = dict(
@@ -472,6 +507,7 @@ def main() -> None:
         clip_duration_ms=args.clip_duration_ms,
         background_paths=background_paths,
         impulse_paths=impulse_paths,
+        truncate_randomly=args.positive_truncate_randomly,
         **common_kwargs,
     )
     generate_one(

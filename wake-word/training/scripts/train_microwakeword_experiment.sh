@@ -24,6 +24,7 @@ Usage:
     [--learning-rates CSV] \
     [--neg-class-weight N] \
     [--recall-profile] \
+    [--target-minimization FAPH] \
     [--vtlp-prob P] \
     [--vtlp-alpha-min A] \
     [--vtlp-alpha-max A] \
@@ -42,9 +43,12 @@ AMBIENT_DIR=""
 BACKGROUND_NOISE_DIRS=()
 IMPULSE_RESPONSE_DIRS=()
 TRAINING_STEPS="15000, 5000"
-CLIP_DURATION_MS=1500
+# 2s default avoids turning natural leading silence + "kuule kratt" into
+# prefix-only positive windows. Use --clip-duration-ms 1500 only for ablations.
+CLIP_DURATION_MS=2000
 NEGATIVE_CLASS_WEIGHT="5"
 LEARNING_RATES="0.001, 0.0001"
+TARGET_MINIMIZATION="10.0"
 TIME_MASK_SIZE=0
 TIME_MASK_COUNT=0
 FREQ_MASK_SIZE=0
@@ -56,6 +60,7 @@ VTLP_PROB="0.5"
 VTLP_ALPHA_MIN="0.85"
 VTLP_ALPHA_MAX="1.15"
 AUG_PROFILE="aggressive"
+POSITIVE_TRUNCATE_RANDOMLY=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -100,6 +105,10 @@ while [[ $# -gt 0 ]]; do
       VTLP_ALPHA_MIN="0.85"
       VTLP_ALPHA_MAX="1.15"
       shift 1
+      ;;
+    --target-minimization)
+      TARGET_MINIMIZATION="$2"
+      shift 2
       ;;
     --clip-duration-ms)
       CLIP_DURATION_MS="$2"
@@ -152,6 +161,10 @@ while [[ $# -gt 0 ]]; do
       AUG_PROFILE="$2"
       shift 2
       ;;
+    --positive-truncate-randomly)
+      POSITIVE_TRUNCATE_RANDOMLY=1
+      shift 1
+      ;;
     -h|--help)
       usage
       exit 0
@@ -180,16 +193,18 @@ if [[ "${PHASE_COUNT}" != "${LR_PHASE_COUNT}" ]]; then
   exit 2
 fi
 
-if ! python3 - "${VTLP_PROB}" "${VTLP_ALPHA_MIN}" "${VTLP_ALPHA_MAX}" <<'PY'
+if ! python3 - "${VTLP_PROB}" "${VTLP_ALPHA_MIN}" "${VTLP_ALPHA_MAX}" "${TARGET_MINIMIZATION}" <<'PY'
 import sys
-prob, alpha_min, alpha_max = map(float, sys.argv[1:])
+prob, alpha_min, alpha_max, target = map(float, sys.argv[1:])
 if not (0.0 <= prob <= 1.0):
     raise SystemExit(1)
 if alpha_min <= 0 or alpha_max <= 0 or alpha_min > alpha_max:
     raise SystemExit(1)
+if target <= 0:
+    raise SystemExit(1)
 PY
 then
-  echo "Invalid VTLP parameters: prob=${VTLP_PROB} alpha_min=${VTLP_ALPHA_MIN} alpha_max=${VTLP_ALPHA_MAX}" >&2
+  echo "Invalid VTLP/target parameters: prob=${VTLP_PROB} alpha_min=${VTLP_ALPHA_MIN} alpha_max=${VTLP_ALPHA_MAX} target_minimization=${TARGET_MINIMIZATION}" >&2
   exit 2
 fi
 
@@ -220,22 +235,69 @@ if [[ -n "${AMBIENT_DIR}" && ! -d "${AMBIENT_DIR}" ]]; then
   exit 2
 fi
 
-"${SCRIPT_DIR}/setup_microwakeword_env.sh"
+# The microWakeWord venv is shared by concurrent SLURM jobs. Protect setup/pip
+# install so two v17 variants cannot uninstall/reinstall the editable package at
+# the same time and corrupt each other.
+VENV_LOCK="${ROOT_DIR}/wake-word/.venv-microwakeword.setup.lock"
+(
+  flock -x 9
+  "${SCRIPT_DIR}/setup_microwakeword_env.sh"
+) 9>"${VENV_LOCK}"
 # shellcheck disable=SC1091
 source "${ROOT_DIR}/wake-word/.venv-microwakeword/bin/activate"
 
-POS_COUNT="$(find "${POS_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
-NEG_COUNT="$(find "${NEG_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
+count_audio_flat() {
+  find "$1" -maxdepth 1 \( -name '*.wav' -o -name '*.flac' \) | wc -l | tr -d ' '
+}
+
+fingerprint_audio_dir() {
+  local dir="$1"
+  python3 - "${dir}" <<'PY'
+import hashlib
+import os
+import sys
+from pathlib import Path
+
+dir_path = Path(sys.argv[1])
+h = hashlib.sha1()
+if dir_path.exists():
+    for p in sorted([x for x in dir_path.iterdir() if x.suffix.lower() in {".wav", ".flac"}]):
+        try:
+            resolved = p.resolve(strict=False)
+            st = p.stat()
+            payload = f"{p.name}\t{resolved}\t{st.st_size}\n"
+        except OSError:
+            payload = f"{p.name}\tBROKEN\t0\n"
+        h.update(payload.encode("utf-8", errors="replace"))
+print(h.hexdigest())
+PY
+}
+
+POS_COUNT="$(count_audio_flat "${POS_DIR}")"
+NEG_COUNT="$(count_audio_flat "${NEG_DIR}")"
 HARD_NEG_COUNT="0"
 if [[ -n "${HARD_NEG_DIR}" ]]; then
-  HARD_NEG_COUNT="$(find "${HARD_NEG_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
+  HARD_NEG_COUNT="$(count_audio_flat "${HARD_NEG_DIR}")"
 fi
 AMBIENT_COUNT="0"
 if [[ -n "${AMBIENT_DIR}" ]]; then
-  AMBIENT_COUNT="$(find "${AMBIENT_DIR}" -maxdepth 1 -name '*.wav' | wc -l | tr -d ' ')"
+  AMBIENT_COUNT="$(count_audio_flat "${AMBIENT_DIR}")"
 fi
 
-STAMP="pos_wavs=${POS_COUNT} neg_wavs=${NEG_COUNT} hard_neg_wavs=${HARD_NEG_COUNT} ambient_wavs=${AMBIENT_COUNT} clip_ms=${CLIP_DURATION_MS} train_steps=${TRAINING_STEPS} lrs=${LEARNING_RATES} neg_w=${NEGATIVE_CLASS_WEIGHT} vtlp=${VTLP_PROB}:${VTLP_ALPHA_MIN}-${VTLP_ALPHA_MAX}"
+POS_FINGERPRINT="$(fingerprint_audio_dir "${POS_DIR}")"
+NEG_FINGERPRINT="$(fingerprint_audio_dir "${NEG_DIR}")"
+HARD_NEG_FINGERPRINT=""
+if [[ -n "${HARD_NEG_DIR}" ]]; then
+  HARD_NEG_FINGERPRINT="$(fingerprint_audio_dir "${HARD_NEG_DIR}")"
+fi
+AMBIENT_FINGERPRINT=""
+if [[ -n "${AMBIENT_DIR}" ]]; then
+  AMBIENT_FINGERPRINT="$(fingerprint_audio_dir "${AMBIENT_DIR}")"
+fi
+BG_DIRS_STAMP="${BACKGROUND_NOISE_DIRS[*]}"
+IR_DIRS_STAMP="${IMPULSE_RESPONSE_DIRS[*]}"
+
+STAMP="mmap_schema=20260427_clean_positive_v1 pos_wavs=${POS_COUNT} pos_fp=${POS_FINGERPRINT} neg_wavs=${NEG_COUNT} neg_fp=${NEG_FINGERPRINT} hard_neg_wavs=${HARD_NEG_COUNT} hard_neg_fp=${HARD_NEG_FINGERPRINT} ambient_wavs=${AMBIENT_COUNT} ambient_fp=${AMBIENT_FINGERPRINT} clip_ms=${CLIP_DURATION_MS} train_steps=${TRAINING_STEPS} lrs=${LEARNING_RATES} neg_w=${NEGATIVE_CLASS_WEIGHT} vtlp=${VTLP_PROB}:${VTLP_ALPHA_MIN}-${VTLP_ALPHA_MAX} aug=${AUG_PROFILE} positive_truncate_randomly=${POSITIVE_TRUNCATE_RANDOMLY} bg=${BG_DIRS_STAMP} ir=${IR_DIRS_STAMP}"
 
 NEED_MMAPS=1
 if [[ "${REGEN_MMAPS:-0}" != "1" ]]; then
@@ -285,6 +347,9 @@ else
   MMAP_CMD+=(--vtlp-prob "${VTLP_PROB}")
   MMAP_CMD+=(--vtlp-alpha-min "${VTLP_ALPHA_MIN}" --vtlp-alpha-max "${VTLP_ALPHA_MAX}")
   MMAP_CMD+=(--aug-profile "${AUG_PROFILE}")
+  if [[ "${POSITIVE_TRUNCATE_RANDOMLY}" == "1" ]]; then
+    MMAP_CMD+=(--positive-truncate-randomly)
+  fi
   "${MMAP_CMD[@]}"
   echo "${STAMP}" > "${MMAP_STAMP_PATH}"
 fi
@@ -313,9 +378,11 @@ echo "  experiment      ${EXPERIMENT_NAME}"
 echo "  training_steps  [${TRAINING_STEPS}]"
 echo "  learning_rates  [${LEARNING_RATES}]"
 echo "  neg_class_w     [${NEG_WEIGHTS}]"
+echo "  target_min      ${TARGET_MINIMIZATION}"
 echo "  residual        ${RESIDUAL_CONNECTION}"
 echo "  pointwise       ${POINTWISE_FILTERS}"
 echo "  VTLP            prob=${VTLP_PROB} alpha=[${VTLP_ALPHA_MIN}, ${VTLP_ALPHA_MAX}]"
+echo "  pos random crop ${POSITIVE_TRUNCATE_RANDOMLY}"
 
 cat > "${CFG_PATH}" <<EOF
 window_step_ms: 10
@@ -345,9 +412,9 @@ freq_mask_max_size: [${FREQ_MASK_SIZE}]
 freq_mask_count: [${FREQ_MASK_COUNT}]
 eval_step_interval: 250
 clip_duration_ms: ${CLIP_DURATION_MS}
-target_minimization: 0.0
-minimization_metric: null
-maximization_metric: accuracy
+target_minimization: ${TARGET_MINIMIZATION}
+minimization_metric: ambient_false_positives_per_hour
+maximization_metric: average_viable_recall
 EOF
 
 python -m microwakeword.model_train_eval \

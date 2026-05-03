@@ -82,6 +82,12 @@ batch_n_per_class:
 # embedding features of shape (N_frames, 96). The reference dataset from
 # HuggingFace (validation_set_features.npy) is ~11.3 hours.
 false_positive_validation_data_path: "/gpfs/mariana/smbhome/malinh/kratt-data/training/openwakeword/validation_set_features.npy"
+false_positive_validation_batch_size: 4096
+
+# Keep DataLoader worker usage conservative on HPC. Higher defaults can fail with
+# "Too many open files" when openWakeWord uses multiprocessing shared handles.
+training_num_workers: 4
+training_prefetch_factor: 2
 
 # feature_data_files: dict of additional negative feature .npy files.
 # "positive" and "adversarial_negative" keys are REQUIRED (they get overwritten

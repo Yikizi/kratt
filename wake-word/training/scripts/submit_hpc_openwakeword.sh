@@ -23,6 +23,12 @@ TIME_LIMIT="04:00:00"
 MEMORY="48G"
 GRES="gpu:1"
 OVERWRITE_FEATURES=1
+DATASET_PRESET="legacy-hard-neg"
+EXPERIMENT_DIR="${PROCESSED_DIR}/experiments/kuule_kratt_v17dry"
+DRY_RUN=0
+ALLOW_KNOWN_BAD_POSITIVES=0
+MAX_NEGATIVE_WEIGHT=""
+TARGET_FP_PER_HOUR=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -33,12 +39,19 @@ while [[ $# -gt 0 ]]; do
     --mem)            MEMORY="$2"; shift 2 ;;
     --gres)           GRES="$2"; shift 2 ;;
     --reuse-features) OVERWRITE_FEATURES=0; shift ;;
+    --dataset-preset) DATASET_PRESET="$2"; shift 2 ;;
+    --experiment-dir) EXPERIMENT_DIR="$2"; shift 2 ;;
+    --allow-known-bad-positives) ALLOW_KNOWN_BAD_POSITIVES=1; shift ;;
+    --max-negative-weight) MAX_NEGATIVE_WEIGHT="$2"; shift 2 ;;
+    --target-fp-per-hour) TARGET_FP_PER_HOUR="$2"; shift 2 ;;
+    --dry-run)        DRY_RUN=1; shift ;;
     *)                echo "Unknown: $1" >&2; exit 2 ;;
   esac
 done
 
 OWW_OUTPUT="${DATA_ROOT}/training/openwakeword"
-OWW_MODEL_DIR="${OWW_OUTPUT}/kuule_kratt"
+MODEL_NAME="kuule_kratt_$(printf '%s' "${TAG}" | tr -c 'A-Za-z0-9_' '_')"
+OWW_MODEL_DIR="${OWW_OUTPUT}/${MODEL_NAME}"
 VAL_FEATURES="${OWW_OUTPUT}/validation_set_features.npy"
 RUNS_DIR="${DATA_ROOT}/training/runs"
 
@@ -50,26 +63,41 @@ require_cmd() {
   fi
 }
 
-count_wavs() {
+count_audio() {
   local dir="$1"
-  find "${dir}" -type f -name "*.wav" | wc -l | tr -d ' '
+  find -L "${dir}" -type f \( -name "*.wav" -o -name "*.flac" \) | wc -l | tr -d ' '
+}
+
+stage_audio_dir() {
+  local src_dir="$1" dst_dir="$2" prefix="$3" start_idx="$4"
+  local idx="${start_idx}"
+  [[ -d "${src_dir}" ]] || { echo "${idx}"; return 0; }
+  while IFS= read -r -d '' f; do
+    resample_to_16k "$f" "${dst_dir}/${prefix}_$(printf '%05d' "${idx}").wav"
+    idx=$((idx + 1))
+  done < <(find -L "${src_dir}" -type f \( -name "*.wav" -o -name "*.flac" \) -print0 | sort -z)
+  echo "${idx}"
 }
 
 echo "=== Preparing openWakeWord data ==="
 
-require_cmd sbatch
+if (( DRY_RUN != 1 )); then
+  require_cmd sbatch
+fi
 require_cmd find
 require_cmd mv
 require_cmd sed
 require_cmd wget
-[[ -x "${OWW_VENV}/bin/python" ]] || {
-  echo "ERROR: openWakeWord venv python not found: ${OWW_VENV}/bin/python" >&2
-  exit 2
-}
-[[ -f "${CONFIG}" ]] || {
-  echo "ERROR: config not found: ${CONFIG}" >&2
-  exit 2
-}
+if (( DRY_RUN != 1 )); then
+  [[ -x "${OWW_VENV}/bin/python" ]] || {
+    echo "ERROR: openWakeWord venv python not found: ${OWW_VENV}/bin/python" >&2
+    exit 2
+  }
+  [[ -f "${CONFIG}" ]] || {
+    echo "ERROR: config not found: ${CONFIG}" >&2
+    exit 2
+  }
+fi
 
 # Resample a WAV to 16kHz mono s16le if not already 16kHz.
 # Uses COPIES (not symlinks) so the training script always sees 16kHz files,
@@ -101,87 +129,182 @@ mkdir -p "${OWW_MODEL_DIR}/positive_train" \
          "${OWW_MODEL_DIR}/negative_train" \
          "${OWW_MODEL_DIR}/negative_test"
 
-# Positive train: KORVO-2 mic1+mic2 + TTS + SSML + XTTS (same as microWakeWord v6+ positives)
 POS_TRAIN="${OWW_MODEL_DIR}/positive_train"
 POS_TEST="${OWW_MODEL_DIR}/positive_test"
 NEG_TRAIN="${OWW_MODEL_DIR}/negative_train"
 NEG_TEST="${OWW_MODEL_DIR}/negative_test"
 
-POSITIVE_SOURCES=(
-  "${DATASETS_DIR}/kuule-kratt/positive/mic1"
-  "${DATASETS_DIR}/kuule-kratt/positive/mic2"
-  "${PROCESSED_DIR}/positive_tts"
+POSITIVE_TRAIN_SOURCES=()
+POSITIVE_TEST_SOURCES=()
+NEGATIVE_TRAIN_SOURCES=()
+NEGATIVE_TEST_SOURCES=()
+SPLIT_POSITIVES=1
+
+case "${DATASET_PRESET}" in
+  legacy-hard-neg)
+    # Original openWakeWord attempt: many synthetic hard negatives. Kept for reproducibility.
+    POSITIVE_TRAIN_SOURCES=(
+      "${DATASETS_DIR}/kuule-kratt/positive/mic1"
+      "${DATASETS_DIR}/kuule-kratt/positive/mic2"
+      "${PROCESSED_DIR}/positive_tts"
+      "${PROCESSED_DIR}/positive_tts_ssml"
+      "${DATA_ROOT}/raw/xtts_clones/marta/positive"
+      "${DATA_ROOT}/raw/xtts_clones/annam/positive"
+      "${DATA_ROOT}/raw/xtts_clones/ema/positive"
+    )
+    NEGATIVE_TRAIN_SOURCES=(
+      "${PROCESSED_DIR}/negative_tts_hard"
+      "${PROCESSED_DIR}/negative_tts_hard_v2"
+      "${DATA_ROOT}/augmented/hard_neg_mattias_mac_train"
+      "${DATA_ROOT}/raw/xtts_clones/marta/negative"
+      "${DATA_ROOT}/raw/xtts_clones/annam/negative"
+      "${DATA_ROOT}/raw/xtts_clones/ema/negative"
+    )
+    NEGATIVE_TEST_SOURCES=(
+      "${PROCESSED_DIR}/test_hard_neg_xtts_isa"
+      "${DATA_ROOT}/raw/xtts_clones/isa/negative"
+    )
+    ;;
+  recall-cv)
+    # Reuse the already validated v17 recall-cv experiment manifest/split.
+    # This avoids maintaining two divergent dataset recipes.
+    SPLIT_POSITIVES=0
+    POSITIVE_TRAIN_SOURCES=("${EXPERIMENT_DIR}/positive_samples")
+    POSITIVE_TEST_SOURCES=("${EXPERIMENT_DIR}/test_positive_samples")
+    NEGATIVE_TRAIN_SOURCES=("${EXPERIMENT_DIR}/negative_samples")
+    NEGATIVE_TEST_SOURCES=("${DATA_ROOT}/raw/xtts_clones/isa/negative")
+    ;;
+  *)
+    echo "ERROR: unknown dataset preset: ${DATASET_PRESET}" >&2
+    exit 2
+    ;;
+esac
+
+KNOWN_BAD_POSITIVE_DIRS=(
   "${PROCESSED_DIR}/positive_tts_ssml"
+  "${DATA_ROOT}/raw/neurokone_ssml_positives"
+  "${DATA_ROOT}/raw/neurokone_ssml_kule"
   "${DATA_ROOT}/raw/xtts_clones/marta/positive"
   "${DATA_ROOT}/raw/xtts_clones/annam/positive"
   "${DATA_ROOT}/raw/xtts_clones/ema/positive"
+  "${DATA_ROOT}/raw/xtts_clones/marta/positive_16k"
+  "${DATA_ROOT}/raw/xtts_clones/annam/positive_16k"
+  "${DATA_ROOT}/raw/xtts_clones/ema/positive_16k"
 )
 
-NEGATIVE_SOURCES=(
-  "${PROCESSED_DIR}/negative_tts_hard"
-  "${PROCESSED_DIR}/negative_tts_hard_v2"
-  "${DATA_ROOT}/augmented/hard_neg_mattias_mac_train"
-  "${DATA_ROOT}/raw/xtts_clones/marta/negative"
-  "${DATA_ROOT}/raw/xtts_clones/annam/negative"
-  "${DATA_ROOT}/raw/xtts_clones/ema/negative"
-)
+is_known_bad_positive_dir() {
+  local candidate="$1"
+  local bad
+  for bad in "${KNOWN_BAD_POSITIVE_DIRS[@]}"; do
+    if [[ "${candidate}" == "${bad}" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
 
-NEGATIVE_TEST_SOURCE="${PROCESSED_DIR}/test_hard_neg_xtts_isa"
+if [[ "${ALLOW_KNOWN_BAD_POSITIVES}" != "1" ]]; then
+  FILTERED_POSITIVE_TRAIN_SOURCES=()
+  for src in "${POSITIVE_TRAIN_SOURCES[@]}"; do
+    if is_known_bad_positive_dir "${src}"; then
+      echo "SKIPPING known-bad openWakeWord positive source (2026-04-27 audit): ${src}"
+      continue
+    fi
+    FILTERED_POSITIVE_TRAIN_SOURCES+=("${src}")
+  done
+  POSITIVE_TRAIN_SOURCES=("${FILTERED_POSITIVE_TRAIN_SOURCES[@]}")
+fi
 
 echo "=== Preflight ==="
-for src in "${POSITIVE_SOURCES[@]}"; do
+echo "  tag: ${TAG}"
+echo "  model_name: ${MODEL_NAME}"
+echo "  dataset_preset: ${DATASET_PRESET}"
+echo "  experiment_dir: ${EXPERIMENT_DIR}"
+echo "  allow_known_bad_positives: ${ALLOW_KNOWN_BAD_POSITIVES}"
+echo "  max_negative_weight: ${MAX_NEGATIVE_WEIGHT:-config default}"
+echo "  target_fp_per_hour: ${TARGET_FP_PER_HOUR:-config default}"
+for src in "${POSITIVE_TRAIN_SOURCES[@]}"; do
   if [[ -d "${src}" ]]; then
-    echo "  positive source: ${src} ($(count_wavs "${src}") wavs)"
+    echo "  positive train source: ${src} ($(count_audio "${src}") audio files)"
   else
-    echo "  WARN missing positive source: ${src}"
+    echo "  WARN missing positive train source: ${src}"
   fi
 done
-for src in "${NEGATIVE_SOURCES[@]}"; do
+if (( ${#POSITIVE_TEST_SOURCES[@]} > 0 )); then
+  for src in "${POSITIVE_TEST_SOURCES[@]}"; do
+    if [[ -d "${src}" ]]; then
+      echo "  positive test source: ${src} ($(count_audio "${src}") audio files)"
+    else
+      echo "  WARN missing positive test source: ${src}"
+    fi
+  done
+fi
+for src in "${NEGATIVE_TRAIN_SOURCES[@]}"; do
   if [[ -d "${src}" ]]; then
-    echo "  negative source: ${src} ($(count_wavs "${src}") wavs)"
+    echo "  negative train source: ${src} ($(count_audio "${src}") audio files)"
   else
-    echo "  WARN missing negative source: ${src}"
+    echo "  WARN missing negative train source: ${src}"
   fi
 done
-if [[ ! -d "${NEGATIVE_TEST_SOURCE}" ]]; then
-  echo "ERROR: negative test source missing: ${NEGATIVE_TEST_SOURCE}" >&2
+neg_test_available=0
+for src in "${NEGATIVE_TEST_SOURCES[@]}"; do
+  if [[ -d "${src}" ]]; then
+    c=$(count_audio "${src}")
+    echo "  negative test source: ${src} (${c} audio files)"
+    (( c > 0 )) && neg_test_available=1
+  else
+    echo "  WARN missing negative test source: ${src}"
+  fi
+done
+if (( neg_test_available == 0 )); then
+  echo "ERROR: no usable negative test source found." >&2
   exit 2
 fi
 
-# Clear old symlinks AND old copies (full idempotent rebuild)
-# Use find to avoid "argument list too long" with thousands of WAVs
+if (( DRY_RUN == 1 )); then
+  echo "DRY RUN: not staging data or submitting sbatch."
+  exit 0
+fi
+
+# Clear old copies (full idempotent rebuild)
 find "${POS_TRAIN}" -maxdepth 1 -name "*.wav" -delete 2>/dev/null || true
 find "${POS_TEST}" -maxdepth 1 -name "*.wav" -delete 2>/dev/null || true
 find "${NEG_TRAIN}" -maxdepth 1 -name "*.wav" -delete 2>/dev/null || true
 find "${NEG_TEST}" -maxdepth 1 -name "*.wav" -delete 2>/dev/null || true
 
 # Positive sources -- resample to 16kHz copies
-echo "  Resampling positive WAVs to 16kHz (this may take a few minutes)..."
+echo "  Resampling positive train audio to 16kHz..."
 idx=0
-for src_dir in "${POSITIVE_SOURCES[@]}"; do
-  if [[ -d "${src_dir}" ]]; then
-    for f in "${src_dir}"/*.wav; do
-      [[ -f "$f" ]] || continue
-      resample_to_16k "$f" "${POS_TRAIN}/pos_$(printf '%05d' $idx).wav"
-      idx=$((idx + 1))
-    done
-    echo "  Positive train: ${src_dir} (running total: ${idx})"
-  fi
+for src_dir in "${POSITIVE_TRAIN_SOURCES[@]}"; do
+  before=${idx}
+  idx=$(stage_audio_dir "${src_dir}" "${POS_TRAIN}" "pos" "${idx}")
+  echo "  Positive train: ${src_dir} (+$((idx - before)), running total: ${idx})"
 done
 if (( idx == 0 )); then
-  echo "ERROR: no positive training WAVs were staged." >&2
+  echo "ERROR: no positive training audio was staged." >&2
   exit 2
 fi
 
-# Hold out ~15% for test (deterministic: every 7th file)
-test_idx=0
-for f in "${POS_TRAIN}"/pos_*.wav; do
-  i=$(basename "$f" | sed 's/pos_0*//;s/\.wav//')
-  if (( i % 7 == 0 )); then
-    mv "$f" "${POS_TEST}/pos_test_$(printf '%05d' $test_idx).wav"
-    test_idx=$((test_idx + 1))
-  fi
-done
+if (( SPLIT_POSITIVES == 1 )); then
+  # Hold out ~15% for test (deterministic: every 7th file)
+  test_idx=0
+  for f in "${POS_TRAIN}"/pos_*.wav; do
+    [[ -f "$f" ]] || continue
+    i=$(basename "$f" | sed 's/pos_0*//;s/\.wav//')
+    if (( i % 7 == 0 )); then
+      mv "$f" "${POS_TEST}/pos_test_$(printf '%05d' $test_idx).wav"
+      test_idx=$((test_idx + 1))
+    fi
+  done
+else
+  echo "  Resampling positive test audio to 16kHz..."
+  test_idx=0
+  for src_dir in "${POSITIVE_TEST_SOURCES[@]}"; do
+    before=${test_idx}
+    test_idx=$(stage_audio_dir "${src_dir}" "${POS_TEST}" "pos_test" "${test_idx}")
+    echo "  Positive test: ${src_dir} (+$((test_idx - before)), running total: ${test_idx})"
+  done
+fi
 pos_train_count=$(find "${POS_TRAIN}" -name "*.wav" | wc -l)
 pos_test_count=$(find "${POS_TEST}" -name "*.wav" | wc -l)
 if (( pos_train_count == 0 || pos_test_count == 0 )); then
@@ -191,27 +314,23 @@ fi
 echo "  Positive: ${pos_train_count} train, ${pos_test_count} test"
 
 # Negative sources -- resample to 16kHz copies
-echo "  Resampling negative WAVs to 16kHz..."
+echo "  Resampling negative train audio to 16kHz..."
 neg_idx=0
-for src_dir in "${NEGATIVE_SOURCES[@]}"; do
-  if [[ -d "${src_dir}" ]]; then
-    for f in "${src_dir}"/*.wav; do
-      [[ -f "$f" ]] || continue
-      resample_to_16k "$f" "${NEG_TRAIN}/neg_$(printf '%05d' $neg_idx).wav"
-      neg_idx=$((neg_idx + 1))
-    done
-    echo "  Negative train: ${src_dir} (running total: ${neg_idx})"
-  fi
+for src_dir in "${NEGATIVE_TRAIN_SOURCES[@]}"; do
+  before=${neg_idx}
+  neg_idx=$(stage_audio_dir "${src_dir}" "${NEG_TRAIN}" "neg" "${neg_idx}")
+  echo "  Negative train: ${src_dir} (+$((neg_idx - before)), running total: ${neg_idx})"
 done
 if (( neg_idx == 0 )); then
-  echo "ERROR: no negative training WAVs were staged." >&2
+  echo "ERROR: no negative training audio was staged." >&2
   exit 2
 fi
 
-# Negative test: held-out XTTS isa -- resample to 16kHz copies
-for f in "${NEGATIVE_TEST_SOURCE}"/*.wav; do
-  [[ -f "$f" ]] || continue
-  resample_to_16k "$f" "${NEG_TEST}/$(basename "$f")"
+neg_test_idx=0
+for src_dir in "${NEGATIVE_TEST_SOURCES[@]}"; do
+  before=${neg_test_idx}
+  neg_test_idx=$(stage_audio_dir "${src_dir}" "${NEG_TEST}" "neg_test" "${neg_test_idx}")
+  echo "  Negative test: ${src_dir} (+$((neg_test_idx - before)), running total: ${neg_test_idx})"
 done
 neg_train_count=$(find "${NEG_TRAIN}" -name "*.wav" | wc -l)
 neg_test_count=$(find "${NEG_TEST}" -name "*.wav" | wc -l)
@@ -245,6 +364,8 @@ JOB_ID="$(
 set -euo pipefail
 
 echo "openWakeWord training: ${TAG}"
+ulimit -n 65535 || true
+echo "ulimit -n: $(ulimit -n)"
 echo "GPU: \$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)"
 echo "Positive: ${pos_train_count} train, ${pos_test_count} test"
 echo "Negative: ${neg_train_count} train, ${neg_test_count} test"
@@ -261,16 +382,32 @@ for model_file in melspectrogram.onnx embedding_model.onnx melspectrogram.tflite
 done
 
 # Download validation features if not present
-if [[ ! -f "\${VAL_FEATURES}" ]]; then
+if [[ ! -f "${VAL_FEATURES}" ]]; then
   echo "Downloading validation_set_features.npy from HuggingFace (~280MB)..."
-  wget --tries=3 --timeout=30 --waitretry=5 -q -O "\${VAL_FEATURES}" \
+  wget --tries=3 --timeout=30 --waitretry=5 -q -O "${VAL_FEATURES}" \
     "https://huggingface.co/datasets/davidscripka/openwakeword_features/resolve/main/validation_set_features.npy"
 fi
 
-# Patch steps in config
+# Patch tag-specific model name and steps in config
 TMP_CONFIG=\$(mktemp /tmp/oww_config_${TAG}.XXXXXX.yaml)
 trap 'rm -f "\${TMP_CONFIG}"' EXIT
-sed "s/^steps: .*/steps: ${STEPS}/" "${CONFIG}" > "\${TMP_CONFIG}"
+${OWW_VENV}/bin/python - "${CONFIG}" "\${TMP_CONFIG}" <<'PYCONFIG'
+import sys
+from pathlib import Path
+import yaml
+src = Path(sys.argv[1])
+dst = Path(sys.argv[2])
+config = yaml.safe_load(src.read_text())
+config["model_name"] = "${MODEL_NAME}"
+config["steps"] = int("${STEPS}")
+max_negative_weight = "${MAX_NEGATIVE_WEIGHT}"
+target_fp_per_hour = "${TARGET_FP_PER_HOUR}"
+if max_negative_weight:
+    config["max_negative_weight"] = int(max_negative_weight)
+if target_fp_per_hour:
+    config["target_false_positives_per_hour"] = float(target_fp_per_hour)
+dst.write_text(yaml.safe_dump(config, sort_keys=False))
+PYCONFIG
 
 if [[ ${OVERWRITE_FEATURES} -eq 1 ]]; then
   echo "Removing stale feature caches before rerun..."
@@ -290,7 +427,7 @@ ${OWW_VENV}/bin/python \
   $([[ ${OVERWRITE_FEATURES} -eq 1 ]] && echo --overwrite) \
   --train_model
 
-echo "Training complete. Model at: ${OWW_OUTPUT}/kuule_kratt/"
+echo "Training complete. Model at: ${OWW_OUTPUT}/${MODEL_NAME}.onnx"
 EOF
 )"
 

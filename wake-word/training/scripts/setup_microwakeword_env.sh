@@ -28,6 +28,24 @@ fi
 # shellcheck disable=SC1091
 source "${VENV_DIR}/bin/activate"
 
+# Fast path for already-prepared HPC environments. Multiple SLURM jobs may call
+# this script concurrently; avoid repeated editable uninstall/reinstall cycles
+# because they can corrupt the shared .venv-microwakeword while another job is
+# importing/training.
+if python - <<'PY' >/dev/null 2>&1
+import microwakeword
+import tensorflow
+import pandas
+import matplotlib
+PY
+then
+  echo "microwakeword environment already ready: ${VENV_DIR}"
+  exit 0
+fi
+
+# Repair pip if a previous interrupted/concurrent setup left the venv half
+# upgraded. ensurepip is idempotent and keeps recovery local to this venv.
+python -m ensurepip --upgrade || true
 python -m pip install --upgrade pip wheel setuptools
 
 # microWakeWord depends on pymicro-features; on macOS this often needs a fork that

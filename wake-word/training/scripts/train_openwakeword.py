@@ -18,6 +18,11 @@ Pre-requisites:
 """
 
 import torch
+try:
+    torch.multiprocessing.set_sharing_strategy("file_system")
+except RuntimeError as exc:
+    # Best-effort guard for HPC DataLoader "too many open files" failures.
+    logging.warning("Could not set torch multiprocessing sharing strategy: %s", exc)
 import numpy as np
 import scipy
 import os
@@ -332,13 +337,26 @@ def run_train_model(config, feature_save_dir):
         def __iter__(self):
             return self.generator
 
-    n_cpus = os.cpu_count() or 1
-    n_cpus = max(1, n_cpus // 2)
+    default_workers = min(4, max(1, os.cpu_count() or 1))
+    n_workers = int(config.get("training_num_workers", default_workers))
+    n_workers = max(0, n_workers)
+    prefetch_factor = int(config.get("training_prefetch_factor", 2))
+    prefetch_factor = max(1, prefetch_factor)
+    logging.info(
+        "Training DataLoader: num_workers=%s, prefetch_factor=%s, sharing_strategy=%s",
+        n_workers,
+        prefetch_factor,
+        torch.multiprocessing.get_sharing_strategy(),
+    )
+    dataloader_kwargs = {
+        "batch_size": None,
+        "num_workers": n_workers,
+    }
+    if n_workers > 0:
+        dataloader_kwargs["prefetch_factor"] = prefetch_factor
     X_train = torch.utils.data.DataLoader(
         IterDataset(batch_generator),
-        batch_size=None,
-        num_workers=n_cpus,
-        prefetch_factor=16
+        **dataloader_kwargs,
     )
 
     # Load false positive validation data
@@ -351,14 +369,16 @@ def run_train_model(config, feature_save_dir):
         fp_data = np.array([fp_data[i:i+input_shape[0]]
                             for i in range(0, fp_data.shape[0]-input_shape[0], 1)])
         fp_labels = np.zeros(fp_data.shape[0]).astype(np.float32)
+        fp_batch_size = int(config.get("false_positive_validation_batch_size", 4096))
+        fp_batch_size = max(1, min(fp_batch_size, len(fp_labels)))
         X_val_fp = torch.utils.data.DataLoader(
             torch.utils.data.TensorDataset(
                 torch.from_numpy(fp_data),
                 torch.from_numpy(fp_labels)
             ),
-            batch_size=len(fp_labels)
+            batch_size=fp_batch_size
         )
-        logging.info(f"  Reshaped to {fp_data.shape[0]} windows")
+        logging.info(f"  Reshaped to {fp_data.shape[0]} windows, batch_size={fp_batch_size}")
     else:
         logging.warning(
             f"false_positive_validation_data_path not found or empty: '{fp_val_path}'. "
@@ -449,7 +469,9 @@ def main():
     )
 
     # --- Step 0: Validate WAV directories ---
-    if args.augment_clips or (not args.generate_clips):
+    # Full WAV validation is required for augmentation/preflight, but not when
+    # resuming from existing .npy feature caches with --train_model only.
+    if args.augment_clips or args.preflight_only:
         logging.info("Validating WAV directories...")
         for d, name in [
             (positive_train_dir, "positive_train"),

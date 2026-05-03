@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Generate SSML-enriched positive "Kuule Kratt" samples with prosody variations.
+"""DEPRECATED: legacy SSML generator that produced corrupt positive data.
 
-Uses Neurokõne SSML support for pitch, rate, volume, emphasis and pause variations.
+2026-04-27 audit: Neurokõne read the XML/SSML tags aloud when they were sent
+through the plain ``text`` field. The generated clips were 5-14s long and must
+NOT be used for wake-word training. This script now refuses to run unless
+``--allow-legacy-xml-text`` is supplied for forensic reproduction only.
 
-Usage:
-    python generate_neurokone_ssml_positives.py --output ../raw/neurokone_ssml_positives
+Do not use this to create deploy-candidate positives. Use plain text, manually
+validated audio, or a future generator that targets a proven SSML API field.
 """
 
 from __future__ import annotations
@@ -92,7 +95,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="../raw/neurokone_ssml_positives")
     parser.add_argument("--delay", type=float, default=0.12)
+    parser.add_argument(
+        "--allow-legacy-xml-text",
+        action="store_true",
+        help="For forensic reproduction only. Generated audio is known-bad for training.",
+    )
     args = parser.parse_args()
+
+    if not args.allow_legacy_xml_text:
+        raise SystemExit(
+            "Refusing to generate known-bad SSML positives. 2026-04-27 audit "
+            "confirmed Neurokõne reads tags aloud via the text field. Pass "
+            "--allow-legacy-xml-text only for forensic reproduction."
+        )
 
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)

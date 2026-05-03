@@ -29,16 +29,25 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import random
 from pathlib import Path
 import shutil
+
+import soundfile as sf
 
 
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--positive-dirs", required=True, nargs="+",
                    help="Directories containing positive WAV clips")
+    p.add_argument("--exclude-positive-wav-dirs", default="",
+                   help="Comma-separated WAV dirs to exclude from positives. Used to quarantine known-bad/generated-corrupt sources.")
+    p.add_argument("--positive-min-duration-s", type=float, default=0.0,
+                   help="Drop positive WAVs shorter than this duration (0 disables).")
+    p.add_argument("--positive-max-duration-s", type=float, default=0.0,
+                   help="Drop positive WAVs longer than this duration (0 disables).")
     p.add_argument("--cv-root", required=True,
                    help="Common Voice ET root (contains validated.tsv)")
     p.add_argument("--cv-wav-dir", required=True,
@@ -58,9 +67,98 @@ def parse_args():
     p.add_argument("--test-split", type=float, default=0.15)
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--force", action="store_true")
-    p.add_argument("--exclude-words", nargs="*", default=["kratt", "kuule"],
-                   help="Exclude CV clips whose transcript contains these words")
+    p.add_argument("--exclude-words", nargs="*", default=["kratt"],
+                   help="Exclude CV clips whose transcript contains these words. Default keeps 'kuule' as ordinary negative speech so the model does not learn prefix-only activation.")
+    p.add_argument("--exclude-negative-wav-dirs", default="",
+                   help="Comma-separated WAV dirs to exclude from CV/general negatives, "
+                        "e.g. held-out FAPH sets. Compared by resolved real path.")
+    p.add_argument("--exclude-negative-fingerprints", action="store_true",
+                   help="Also exclude exact audio-content matches from --exclude-negative-wav-dirs. "
+                        "Slow on large corpora; use as an audit, not default prep.")
+    p.add_argument("--exclude-cv-split-skip", type=int, default=None,
+                   help="Exclude a deterministic shuffled CV split by source path, e.g. 5000 for faph_cv_et.")
+    p.add_argument("--exclude-cv-split-limit", type=int, default=0,
+                   help="Number of shuffled CV rows to exclude after --exclude-cv-split-skip.")
+    p.add_argument("--exclude-cv-split-exclude-words", nargs="*", default=["kratt", "kuule"],
+                   help="Exclude words used when reconstructing the held-out CV split.")
     return p.parse_args()
+
+
+def list_audio_files(path: Path) -> list[Path]:
+    """Return all supported audio files recursively.
+
+    Earlier training prep used top-level glob() for extra negatives, which missed
+    nested MUSAN/Riigikogu-style corpora. Use one helper everywhere so v17-style
+    runs cannot silently drop data.
+    """
+    candidates = list(path.rglob("*.wav")) + list(path.rglob("*.flac"))
+    # Broken symlinks can happen when local mined clips point to absolute paths
+    # not present on HPC. Do not let them enter training manifests.
+    return sorted(p for p in candidates if p.exists() and p.is_file())
+
+
+def audio_fingerprint(path: Path) -> tuple[int, str]:
+    """Return a stable fingerprint for copied/renamed audio files.
+
+    The canonical faph_cv_et set contains renamed WAV files, so real-path checks
+    are not enough to prevent leakage. Size + SHA1 catches exact audio copies.
+    """
+    h = hashlib.sha1()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return (path.stat().st_size, h.hexdigest())
+
+
+def audio_duration_s(path: Path) -> float:
+    """Return audio duration in seconds using libsndfile metadata."""
+    info = sf.info(str(path))
+    return float(info.frames) / float(info.samplerate)
+
+
+def load_excluded_audio(
+    dirs_csv: str,
+    *,
+    include_fingerprints: bool = False,
+) -> tuple[set[Path], set[tuple[int, str]]]:
+    excluded_paths: set[Path] = set()
+    excluded_fingerprints: set[tuple[int, str]] = set()
+    for d in [p.strip() for p in dirs_csv.split(",") if p.strip()]:
+        path = Path(d)
+        if not path.exists():
+            raise SystemExit(f"Exclude audio dir not found: {path}")
+        for audio in list_audio_files(path):
+            excluded_paths.add(audio.resolve())
+            if include_fingerprints:
+                excluded_fingerprints.add(audio_fingerprint(audio))
+    return excluded_paths, excluded_fingerprints
+
+
+def reconstruct_excluded_cv_split_paths(
+    rows: list[dict],
+    *,
+    seed: int,
+    skip: int | None,
+    limit: int,
+    exclude_words: list[str],
+) -> set[str]:
+    """Reconstruct a deterministic held-out CV split by source path.
+
+    This is the fast alternative to hashing renamed FAPH WAV files. For
+    faph_cv_et, use the original split recipe: filter with ["kratt", "kuule"],
+    shuffle seed=42, skip=5000, limit=2000.
+    """
+    if skip is None or limit <= 0:
+        return set()
+    exclude_lower = [w.lower() for w in (exclude_words or [])]
+    filtered = [
+        r for r in rows
+        if not any(w in r["sentence"].lower() for w in exclude_lower)
+    ]
+    rnd = random.Random(seed)
+    rnd.shuffle(filtered)
+    split = filtered[skip:skip + limit]
+    return {r["path"] for r in split}
 
 
 def read_cv_validated(cv_root: Path) -> list[dict]:
@@ -80,6 +178,14 @@ def main():
     cv_root = Path(args.cv_root)
     cv_wav_dir = Path(args.cv_wav_dir)
     rnd = random.Random(args.seed)
+    excluded_negative_paths, excluded_negative_fingerprints = load_excluded_audio(
+        args.exclude_negative_wav_dirs,
+        include_fingerprints=args.exclude_negative_fingerprints,
+    )
+    excluded_positive_paths, _ = load_excluded_audio(
+        args.exclude_positive_wav_dirs,
+        include_fingerprints=False,
+    )
 
     if output_dir.exists():
         if not args.force:
@@ -88,14 +194,44 @@ def main():
 
     # --- Positive samples ---
     pos_files: list[Path] = []
+    positive_candidate_count = 0
+    positive_excluded_by_path_count = 0
+    positive_excluded_by_duration_count = 0
+    positive_duration_reject_examples: list[dict[str, str | float]] = []
     for d in args.positive_dirs:
         d = Path(d)
         if not d.exists():
             raise SystemExit(f"Positive dir not found: {d}")
-        pos_files.extend(sorted(d.glob("*.wav")))
+        # Positive sources may be flat (mic recordings) or nested by speaker
+        # (Neurokõne/XTTS). Keep this recursive so all raw recordings actually
+        # enter the candidate pool. Known-bad sources are excluded by real path
+        # before split, and duration gates catch truncated single-word clips or
+        # malformed long clips (e.g. literal SSML tags read aloud).
+        for p in [p for p in list_audio_files(d) if p.suffix.lower() == ".wav"]:
+            positive_candidate_count += 1
+            if p.resolve() in excluded_positive_paths:
+                positive_excluded_by_path_count += 1
+                continue
+            if args.positive_min_duration_s > 0 or args.positive_max_duration_s > 0:
+                duration_s = audio_duration_s(p)
+                too_short = args.positive_min_duration_s > 0 and duration_s < args.positive_min_duration_s
+                too_long = args.positive_max_duration_s > 0 and duration_s > args.positive_max_duration_s
+                if too_short or too_long:
+                    positive_excluded_by_duration_count += 1
+                    if len(positive_duration_reject_examples) < 20:
+                        positive_duration_reject_examples.append(
+                            {"file": str(p), "duration_s": round(duration_s, 3)}
+                        )
+                    continue
+            pos_files.append(p)
 
     if not pos_files:
-        raise SystemExit("No positive WAV files found")
+        raise SystemExit("No positive WAV files found after quality filters")
+
+    print(f"Positive candidates: {positive_candidate_count}")
+    print(f"  Excluded by known-bad path: {positive_excluded_by_path_count}")
+    print(f"  Excluded by duration gate: {positive_excluded_by_duration_count}")
+    print(f"  Kept positives: {len(pos_files)}")
 
     rnd.shuffle(pos_files)
     test_count = max(1, int(len(pos_files) * args.test_split))
@@ -120,6 +256,9 @@ def main():
     neg_idx = 0
     filtered: list[Path] = []
     excluded_count = 0
+    excluded_by_path_count = 0
+    excluded_by_fingerprint_count = 0
+    excluded_by_cv_split_count = 0
 
     if args.negative_limit < 0:
         print("CV negatives: SKIPPED (negative_limit < 0)")
@@ -127,20 +266,38 @@ def main():
         print("Reading Common Voice validated.tsv...")
         cv_clips = read_cv_validated(cv_root)
         exclude_lower = [w.lower() for w in (args.exclude_words or [])]
-
+        excluded_cv_source_paths = reconstruct_excluded_cv_split_paths(
+            cv_clips,
+            seed=args.seed,
+            skip=args.exclude_cv_split_skip,
+            limit=args.exclude_cv_split_limit,
+            exclude_words=args.exclude_cv_split_exclude_words,
+        )
         for clip in cv_clips:
             sentence_lower = clip["sentence"].lower()
             if any(w in sentence_lower for w in exclude_lower):
                 excluded_count += 1
                 continue
+            if clip["path"] in excluded_cv_source_paths:
+                excluded_by_cv_split_count += 1
+                continue
             # Check if pre-converted WAV exists
             stem = Path(clip["path"]).stem
             wav_path = cv_wav_dir / f"{stem}.wav"
             if wav_path.exists():
+                if wav_path.resolve() in excluded_negative_paths:
+                    excluded_by_path_count += 1
+                    continue
+                if excluded_negative_fingerprints and audio_fingerprint(wav_path) in excluded_negative_fingerprints:
+                    excluded_by_fingerprint_count += 1
+                    continue
                 filtered.append(wav_path)
 
         print(f"  Total validated: {len(cv_clips)}")
         print(f"  Excluded (contains {exclude_lower}): {excluded_count}")
+        print(f"  Excluded by held-out path: {excluded_by_path_count}")
+        print(f"  Excluded by held-out fingerprint: {excluded_by_fingerprint_count}")
+        print(f"  Excluded by CV split: {excluded_by_cv_split_count}")
         print(f"  Available WAVs: {len(filtered)}")
 
         rnd.shuffle(filtered)
@@ -160,11 +317,15 @@ def main():
         if not extra_dir.exists():
             raise SystemExit(f"Extra negative dir not found: {extra_dir}")
         extra_wavs = sorted(
-            list(extra_dir.glob("*.wav")) + list(extra_dir.glob("*.flac"))
+            p for p in list_audio_files(extra_dir)
+            if p.resolve() not in excluded_negative_paths
+            and (not excluded_negative_fingerprints or audio_fingerprint(p) not in excluded_negative_fingerprints)
         )
-        print(f"  Extra negatives from {extra_dir.name}: {len(extra_wavs)}")
+        skipped_extra = len(list_audio_files(extra_dir)) - len(extra_wavs)
+        print(f"  Extra negatives from {extra_dir.name}: {len(extra_wavs)} (excluded by path: {skipped_extra})")
         for src in extra_wavs:
-            dst = neg_out / f"extra_negative_{neg_idx:04d}.wav"
+            suffix = src.suffix.lower()
+            dst = neg_out / f"extra_negative_{neg_idx:04d}{suffix}"
             dst.symlink_to(src.resolve())
             neg_idx += 1
             extra_neg_count += 1
@@ -207,7 +368,7 @@ def main():
         extra_dir = Path(extra_dir)
         if not extra_dir.exists():
             raise SystemExit(f"Extra ambient dir not found: {extra_dir}")
-        extra_wavs = sorted(extra_dir.glob("*.wav"))
+        extra_wavs = [p for p in list_audio_files(extra_dir) if p.suffix.lower() == ".wav"]
         print(f"  Extra ambient from {extra_dir.name}: {len(extra_wavs)}")
         for src in extra_wavs:
             dst = amb_out / f"extra_ambient_{amb_idx:04d}.wav"
@@ -220,6 +381,14 @@ def main():
         "wake_word": "kuule_kratt",
         "positive_train": len(train_files),
         "positive_test": len(test_files),
+        "positive_candidate_count": positive_candidate_count,
+        "positive_source_dirs": [str(Path(d)) for d in args.positive_dirs],
+        "positive_min_duration_s": args.positive_min_duration_s,
+        "positive_max_duration_s": args.positive_max_duration_s,
+        "positive_excluded_by_path": positive_excluded_by_path_count,
+        "positive_excluded_by_duration": positive_excluded_by_duration_count,
+        "positive_duration_reject_examples": positive_duration_reject_examples,
+        "excluded_positive_wav_dirs": [d.strip() for d in args.exclude_positive_wav_dirs.split(",") if d.strip()],
         "negative_cv_count": len(filtered),
         "negative_extra_count": extra_neg_count,
         "negative_total": len(filtered) + extra_neg_count,
@@ -235,6 +404,13 @@ def main():
         "ambient_extra_sources": extra_amb_dirs,
         "exclude_words": args.exclude_words,
         "excluded_cv_clips": excluded_count,
+        "excluded_negative_by_path": excluded_by_path_count,
+        "excluded_negative_by_fingerprint": excluded_by_fingerprint_count,
+        "excluded_negative_by_cv_split": excluded_by_cv_split_count,
+        "excluded_negative_wav_dirs": [d.strip() for d in args.exclude_negative_wav_dirs.split(",") if d.strip()],
+        "exclude_cv_split_skip": args.exclude_cv_split_skip,
+        "exclude_cv_split_limit": args.exclude_cv_split_limit,
+        "exclude_cv_split_exclude_words": args.exclude_cv_split_exclude_words,
         "seed": args.seed,
         "test_split": args.test_split,
     }
@@ -243,6 +419,9 @@ def main():
     )
 
     print(f"\nExperiment ready: {output_dir}")
+    print(f"  Positive candidates: {positive_candidate_count}")
+    print(f"  Positive excluded by path:     {positive_excluded_by_path_count}")
+    print(f"  Positive excluded by duration: {positive_excluded_by_duration_count}")
     print(f"  Positive (train): {len(train_files)}")
     print(f"  Positive (test):  {len(test_files)}")
     print(f"  Negative (CV):    {len(filtered)}")

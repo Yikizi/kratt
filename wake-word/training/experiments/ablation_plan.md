@@ -1,5 +1,7 @@
 # Ablatsioonikatse: foneetilise eristuse parandamine
 
+> **Historical plan:** this was an early v6-era ablation plan. Current model/evaluation status lives in `docs/PROJECT_TODO.md`, `wake-word/docs/MODEL_LINEAGE.md`, and `wake-word/DATA_STRATEGY.md`.
+
 ## Baseline: v6 (parim senine mudel)
 - clip_duration_ms: 1500
 - pointwise_filters: 48,48,48,48
