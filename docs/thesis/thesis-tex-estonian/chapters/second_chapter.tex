@@ -174,7 +174,7 @@ Tabel~\ref{tab:fair-comparison-holdout} esitab kõigi kaheksa mudeliversiooni t�
 
 \begin{table}[H]
 \centering
-\caption{Mudeliversioonide korrigeeritud võrdlus tõeselt hold-out hindamiskomplektidel (cutoff\,=\,0,97). Parim tulemus igas reas on \textbf{paksus kirjas}. v8 puhul on \texttt{pos\_mac\_mattias} treeningusse võetud, mistõttu mõõtmine puudub. Wilsoni 95\% usaldusvahemik (UV) on arvutatud iga recall-rea valimi suuruse alusel ($N$ on toodud rea pealkirjas).}
+\caption{Mudeliversioonide korrigeeritud võrdlus tõeselt hold-out hindamiskomplektidel (cutoff\,=\,0,97). Parim tulemus igas reas on \textbf{paksus kirjas}. v8 puhul on \texttt{pos\_mac\_mattias} treeningusse võetud, mistõttu mõõtmine puudub. Wilsoni 95\% usaldusvahemik (UV) on arvutatud iga recall-rea valimi suuruse alusel ($N$ on toodud rea pealkirjas). FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. FAPH on raporteeritud skriptitud offline-variandina (vt §\ref{subsec:faph-variants}).}
 \label{tab:fair-comparison-holdout}
 \setlength{\tabcolsep}{3pt}
 \scriptsize
@@ -187,7 +187,7 @@ Recall Isa XTTS, $N=48$ [95\% UV] & 77,1 [63,5--86,7] & \textbf{100,0} [92,6--10
 Recall Mac mic, $N=30$ [95\% UV] & 86,7 [70,3--94,7] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & 86,7 [70,3--94,7] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & --- \\
 FPR hard neg (Mac, real) $\downarrow$ & \textbf{33,3} & 93,3 & 73,3 & 73,3 & 100,0 & 100,0 & 80,0 & \textbf{33,3} \\
 FPR hard neg (Isa XTTS) $\downarrow$ & 80,0 & 100,0 & 100,0 & 71,7 & 86,7 & 63,3 & 25,0 & \textbf{21,7} \\
-\textbf{FAPH} (CV ET, 3,82\,h) $\downarrow$ & 367 & 472 & 542 & 373 & 228 & 154 & \textbf{96} & 141 \\
+\textbf{FAPH} (CV ET, 3,82\,h)\,\emph{(scripted offline)} $\downarrow$ & 367 & 472 & 542 & 373 & 228 & 154 & \textbf{96} & 141 \\
 \hline
 \end{tabular}%
 }
@@ -258,7 +258,7 @@ LibriSpeech test-clean & Inglise & 5,40 & 6,6 & \cite{librispeech2015} \\
 \end{tabular}
 \end{table}
 
-Mudel vallandub ingliskeelsel kõnel \textbf{6,7 korda harvem} kui eestikeelsel. See erinevus tuleneb foneetilisest kattuvusest: eesti keeles on /k/+tagavokaal ja /t:/ mustrid (\enquote{kuidas}, \enquote{küsimus}, \enquote{kõik}, \enquote{kott}) sagedased, inglise keeles aga \enquote{Kuule Kratt}-i spetsiifiline foneetiline muster esineb harvem. Ristkeelne FAPH kinnitab, et negatiivne treeningmaterjal peab pärinema \textbf{sihtkeel\-est}, mitte suvalises keeles --- domeeni\-väline (ingliskeelne) kõne ei sisalda foneetilisi mustreid, mille eristamist mudel peab õppima.
+Mudel vallandub ingliskeelsel kõnel \textbf{6,7 korda harvem} kui eestikeelsel. See suhe kehtib praegusel mudelil praeguste korpuste konkreetsel operatsioonipunktil ega ole stabiilne süsteemiomadus \cite{lopezespejo2021deepkws}. See erinevus tuleneb foneetilisest kattuvusest: eesti keeles on /k/+tagavokaal ja /t:/ mustrid (\enquote{kuidas}, \enquote{küsimus}, \enquote{kõik}, \enquote{kott}) sagedased, inglise keeles aga \enquote{Kuule Kratt}-i spetsiifiline foneetiline muster esineb harvem. Ristkeelne FAPH kinnitab, et negatiivne treeningmaterjal peab pärinema \textbf{sihtkeel\-est}, mitte suvalises keeles --- domeeni\-väline (ingliskeelne) kõne ei sisalda foneetilisi mustreid, mille eristamist mudel peab õppima.
 
 See leid on kooskõlas ka kirjanduses toodud soovitusega: Apple kasutab \enquote{Hey Siri} hindamiseks \enquote{tuhandeid tunde} negatiive, sh \enquote{non-Hey-Siri Siri inputs in many languages} \cite{apple-heysiri2017}. Samas on Apple'i mudelid miljonite parameetritega ning piisava kapatsiteediga mitmekeelseks diskrimineerimiseks. Käesoleva töö 22\,000-parameetriline mudel on piiratud ressursiga, mistõttu iga gradient-uuendus peab kuluma sihtkeele foneetiliste eristuste õppimisele, mitte \enquote{kerge} ingliskeelse kõne tõrjumisele, mille mudel juba valdab.
 
@@ -336,16 +336,16 @@ Tabel~\ref{tab:expert-consensus} esitab ekspertmudelite konsensustulemused võrd
 
 \begin{table}[H]
 \centering
-\caption{Mitme mudeli konsensustulemused erinevatel lävedel. FAPH~CV = Common~Voice ET hold-out (3,82\,h). FAPH~Mac = MacBook taustamonitor (70\,min). HN~Mac = hard negatiivide FPR MacBook mikrofoni peal. Android = Android seadme hard negatiivide FPR. Parimad tulemused \textbf{paksus kirjas}. Recall'i veerus on punkthinnang ja Wilsoni 95\% usaldusvahemik (UV); valimi suurus on $N=11$ \texttt{pos\_ode} klippi.}
+\caption{Mitme mudeli konsensustulemused erinevatel lävedel. FAPH~CV = Common~Voice ET hold-out (3,82\,h)\,\emph{(scripted offline)}. FAPH~Mac = MacBook taustamonitor (70\,min)\,\emph{(scripted offline)}. HN~Mac = hard negatiivide FPR MacBook mikrofoni peal. Android = Android seadme hard negatiivide FPR. Parimad tulemused \textbf{paksus kirjas}. Recall'i veerus on punkthinnang ja Wilsoni 95\% usaldusvahemik (UV); valimi suurus on $N=11$ \texttt{pos\_ode} klippi. FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. Tähistus $u_{95}$ tähistab Poissoni 95\%\ ühepoolset ülemist piiri reegli \enquote{kolm} järgi ($u_{95}\!=\!3/T$): MacBook tausta ($T\!\approx\!1{,}17$~h) korral $u_{95}\!\approx\!2{,}57$/h, LibriSpeech ($T\!=\!5{,}62$~h) $\approx\!0{,}53$/h, Common~Voice ET ($T\!=\!3{,}82$~h) $\approx\!0{,}78$/h, DiPCo ($T\!\approx\!5{,}5$~h) $\approx\!0{,}55$/h. FAPH on raporteeritud skriptitud offline-variandina (vt §\ref{subsec:faph-variants}).}
 \label{tab:expert-consensus}
 \scriptsize
 \begin{tabular}{l r r r r r}
 \hline
 \textbf{Konfiguratsioon} & \textbf{FAPH CV} & \textbf{FAPH Mac} & \textbf{Recall [95\% UV]} & \textbf{HN Mac} & \textbf{Android} \\
 \hline
-v10 + v15 @ 0,997/0,997 & 6,8 & 0,0 & 7/11 = 63,6\% [35,4--84,8] & 7\% & 8\% \\
+v10 + v15 @ 0,997/0,997 & 6,8 & 0,00\,$[<{\,}u_{95}]$ & 7/11 = 63,6\% [35,4--84,8] & 7\% & 8\% \\
 Ekspert A+B v2 @ 0,90/0,90 & 11,0 & 1,7 & 6/11 = 54,5\% [28,0--78,7] & 33\% & 4\% \\
-Ekspert A+B v2 @ 0,997/0,997 & \textbf{0,8} & \textbf{0,0} & 5/11 = 45,5\% [21,3--72,0] & \textbf{7\%} & \textbf{4\%} \\
+Ekspert A+B v2 @ 0,997/0,997 & \textbf{0,8\,[0,16,~2,30]} & \textbf{0,00\,$[<{\,}u_{95}]$} & 5/11 = 45,5\% [21,3--72,0] & \textbf{7\%} & \textbf{4\%} \\
 \hline
 \end{tabular}
 \end{table}
@@ -375,7 +375,7 @@ Otsene võrdlus avaldatud süsteemidega on piiratud, sest eri tööd kasutavad e
     \item Picovoice \enquote{alexa}: ${\sim}0{,}1$ FAPH LibriSpeech korpusel \cite{picovoice-benchmark2026}.
 \end{itemize}
 
-Need süsteemid on treenitud kümnete tuhandete tundide negatiivsete andmetega ja kasutavad ingliskeelseid äratussõnu, mille foneetiline eristuvus on pikemaajaliselt optimeeritud. Käesoleva töö 0,8 FAPH on saavutatud ${\sim}5$ tunni eestikeelsete negatiividega ning Common~Voice ET korpusel, mis on tihedam kõnekeskkond kui DiPCo vestluskorpus. Kuigi korpuste erinevus ei võimalda otsest võrdlust, näitab tulemus, et sihipäraselt projekteeritud ekspertmudelite konsensus viib FAPH sama suurusjärgu piirkonda, mille tööstuslikud süsteemid on saavutanud oluliselt suuremate ressurssidega.
+Need süsteemid on treenitud kümnete tuhandete tundide negatiivsete andmetega ja kasutavad ingliskeelseid äratussõnu, mille foneetiline eristuvus on pikemaajaliselt optimeeritud. Käesoleva töö 0,8 FAPH on saavutatud ${\sim}5$ tunni eestikeelsete negatiividega ning Common~Voice ET korpusel, mis on tihedam kõnekeskkond kui DiPCo vestluskorpus. Kuigi korpuste erinevus ei võimalda otsest võrdlust, näitab tulemus, et sihipäraselt projekteeritud ekspertmudelite konsensus annab FAPH-i sama suurusjärgu tulemuse oma korpusel ja oma operatsioonipunktil; need numbrid ei ole otseselt võrreldavad tööstuslikult avaldatud DiPCo või LibriSpeech tulemustega, sest counting-rule, smoothing-window ja korpuse heli koostis erinevad \cite{lopezespejo2021deepkws,microwakeword2026}.
 
 \subsubsection{Recall'i kompromiss ja ESP32 teostatavus}
 
@@ -446,7 +446,7 @@ Teine reostuskategooria oli XTTS täiskäskude positiivsed. Kataloogid \texttt{d
 
 Kolmas reostuskategooria oli liiga lühikesed positiivsed. Kataloogis \texttt{data/raw/mattias-short/positive} osa klippe oli ${\sim}0{,}42$\,s pikkused ning sisaldasid kas ainult eesliidet (\enquote{kuule}) või katkist heli, mitte täisfraasi. 2026-04-28 STT-auditi käigus tuvastati, et alla 0,80~sekundilised \texttt{mattias-short} klipid olid süstemaatiliselt kas eesliide, sabaots või tühi --- mitte täisfraas.
 
-Tulemus on metoodiliselt oluline: tegemist on \emph{teist järku andmelekkega}. Esimese auditiringi (§\ref{sec:data-leakage}) lekkemehhanism oli see, et hindamiskomplekt ja treeningkomplekt kattusid; teise auditiringi lekkemehhanism on see, et positiivne silt oli formaalselt korrektne, kuid heli sisu ei vastanud sildi semantikale. \texttt{microWakeWord} kasutab fikseeritud akna pikkust (ajalooliselt 1500\,ms): kui positiivne klipp on äratusfraasist oluliselt pikem, valitakse treeningu käigus juhuslik aken, mis võib langeda kohale, kus ei kõla \enquote{Kuule Kratt}, vaid ainult eesliide, ainult sõna \enquote{kratt}, käsusaba pärast äratusfraasi või XML-märgendi väljaloetud tekst. Binaarne klassifikaator saab sel juhul positiivse gradiendi siis, kui ta tuvastab eesliite, mitte täisfraasi.
+Tulemus on metoodiliselt oluline: tegemist on \emph{teist järku andmelekkega}. Esimese auditiringi (§\ref{sec:data-leakage}) lekkemehhanism oli see, et hindamiskomplekt ja treeningkomplekt kattusid; teise auditiringi lekkemehhanism on see, et positiivne silt oli formaalselt korrektne, kuid heli sisu ei vastanud sildi semantikale. \texttt{microWakeWord} kasutab fikseeritud akna pikkust (ajalooliselt 1500\,ms): kui positiivne klipp on äratusfraasist oluliselt pikem, valitakse treeningu käigus juhuslik aken, mis võib langeda kohale, kus ei kõla \enquote{Kuule Kratt}, vaid ainult eesliide, ainult sõna \enquote{kratt}, käsusaba pärast äratusfraasi või XML-märgendi väljaloetud tekst. Binaarne klassifikaator saab sel juhul positiivse gradiendi siis, kui ta tuvastab eesliite, mitte täisfraasi. See järeldus on kooskõlas Apple'i DNN-HMM treeningu õppetundidega \cite{shrivastava2021optimize}: täisfraasi piiri eristamine prefiksist nõuab eksplitsiitselt osa- ja vale-järjekorra negatiive treeningu negatiivses klassis.
 
 Tabel~\ref{tab:positive-pollution} võtab kokku reostunud positiivsed allikad ja nende mõju.
 
@@ -487,7 +487,7 @@ Viiendaks tugevdati \texttt{train\_microwakeword\_experiment.sh} skriptis tunnus
 \subsection{Uued hindamiskomplektid: fraasi täielikkuse mõõdikud}
 \label{sec:phrase-selectivity-metrics}
 
-V17 ebaõnnestumine paljastas, et siiani kasutatud kolm peamist mõõdikut --- recall, hard-negatiivide FPR ja FAPH --- ei katnud mudeli fraasi-täielikkuse selektiivsust. Mudel võis korraga saavutada 100\% recall'i, 100\% hard-negatiivide tõrjumise ja madala ambient-FAPH-i ning ometi vallanduda iga \enquote{kuule}-prefiksi peale. Lahenduseks ehitati neli uut sõltumatut hindamiskomplekti, mille kõik mudelid läbivad alates v18-st.
+V17 ebaõnnestumine paljastas, et siiani kasutatud kolm peamist mõõdikut --- recall, hard-negatiivide FPR ja FAPH --- ei katnud mudeli fraasi-täielikkuse selektiivsust. Mudel võis korraga saavutada 100\% recall'i, 100\% hard-negatiivide tõrjumise ja madala ambient-FAPH-i ning ometi vallanduda iga \enquote{kuule}-prefiksi peale. Lahenduseks ehitati neli uut sõltumatut hindamiskomplekti, mille kõik mudelid läbivad alates v18-st \cite{shrivastava2021optimize,chen2021fakewake,zhang2025graphemeaug}.
 
 Esiteks \emph{prefiksi-FPR-i komplekt} (\texttt{neg\_prefix\_only\_mattias\_short}, $N=34$) sisaldab Mattiase reaalseid salvestusi, kus on öeldud ainult sõna \enquote{kuule} või \enquote{kule}, ilma \enquote{kratt}-iks jätkamata. Mudel, mis on õppinud nõudma kahesõnalist fraasi, peab need lõigud tõrjuma; mudel, mis on õppinud eesliite, vallandub kõigil.
 
@@ -510,14 +510,14 @@ Pere koosneb kuuest variandist, mis erinevad arhitektuuri laiuse, SpecAugment-i 
 
 \begin{table}[H]
 \centering
-\caption{V18 perekonna tulemused puhastatud positiivsete andmetega (lävi\,=\,0,995). \textbf{Pre-FPR} = prefiksi-only FPR, \textbf{1K-FPR} = üksiku Krati FPR, \textbf{Rev-FPR} = pööratud järjekord, \textbf{Conf-FPR} = kuule/kule segiajamine. Recall'i veerud: Isa XTTS unseen-kõneleja ($N=48$) ja Friend1 reaalne unseen-kõneleja ($N=145$); UV = Wilsoni 95\% usaldusvahemik.}
+\caption{V18 perekonna tulemused puhastatud positiivsete andmetega (lävi\,=\,0,995). \textbf{Pre-FPR} = prefiksi-only FPR, \textbf{1K-FPR} = üksiku Krati FPR, \textbf{Rev-FPR} = pööratud järjekord, \textbf{Conf-FPR} = kuule/kule segiajamine. Recall'i veerud: Isa XTTS unseen-kõneleja ($N=48$) ja Friend1 reaalne unseen-kõneleja ($N=145$); UV = Wilsoni 95\% usaldusvahemik. FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. FAPH on raporteeritud skriptitud offline-variandina (vt §\ref{subsec:faph-variants}).}
 \label{tab:v18-family-results}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l r l r l r r r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Rec Isa} & \textbf{Isa [95\% UV]} & \textbf{Rec Fr1} & \textbf{Fr1 [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Isa} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{1K-FPR} $\downarrow$ & \textbf{Rev-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
+\textbf{Mudel} & \textbf{Rec Isa} & \textbf{Isa [95\% UV]} & \textbf{Rec Fr1} & \textbf{Fr1 [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Isa} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{1K-FPR} $\downarrow$ & \textbf{Rev-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(scripted offline)} $\downarrow$ \\
 \hline
 v18a-clean48 & 100,0 & [92,6--100,0] & 93,1 & [87,8--96,2] & 86,7 & 71,7 & 97,1 & 99,5 & 98,4 & 99,3 & 515 \\
 v18b-clean48-sa & 95,8 & [86,0--98,8] & 92,4 & [86,9--95,7] & 93,3 & 56,7 & 100,0 & 98,4 & 98,4 & 99,0 & 132 \\
@@ -532,7 +532,7 @@ v18f-clean48-tts-hn-fast & 52,1 & [38,3--65,5] & 66,2 & [58,2--73,4] & 46,7 & 36
 
 Friend1 valimi $N=145$ kitsendab UV-d 5--10 protsendipunkti laiusele, mistõttu v18a (93,1\% [87,8--96,2]) ja v18b (92,4\% [86,9--95,7]) ei ole reaalsete kõnelejate recall'i järgi statistiliselt usaldusväärselt eristatavad, samas kui v18d (97,9\% [94,1--99,3]) ja v18f (66,2\% [58,2--73,4]) on selgelt erinevad. Isa XTTS real ($N=48$) on UV-d laiemad ja sama recall-järjestus kannab vaid osaliselt: v18d (97,9\% [89,1--99,6]) ja v18a (100,0\% [92,6--100,0]) UV-d kattuvad, mistõttu Isa-rea baasil neid kahte mudelit eristada ei saa.
 
-V18-pere keskmine järeldus on, et \emph{positiivsete puhastamine üksi ei lahendanud prefiks- ega segiajamis-vallandumist}. Recall reaalsete kõnelejate peal jäi kõrgeks (Friend1 92--98\% mudelitel v18a, v18b, v18d), mis tähendab, et kvarantiinitud andmehulga eemaldamine ei rikkunud mudeli võimet täisfraasi tuvastada. Samas on prefiksi-FPR endiselt 97--100\% kõigil mudelitel, mis säilitavad kasuliku recall'i. v18a, v18b ja v18d ei ole Friend1 recall'i järgi statistiliselt usaldusväärselt eristatavad. v18d-clean96 säilitab kõrge recall'i kõigil komplektidel (Isa 98\%, Friend1 98\%, Ode 100\%, Mattias 100\%), kuid samaaegselt on ta prefiksi-FPR 100\% ja segiajamis-FPR 99,8\% --- mudel vallandub praktiliselt iga sobiva esimese silbi peale.
+V18-pere keskmine järeldus on, et \emph{positiivsete puhastamine üksi ei lahendanud prefiks- ega segiajamis-vallandumist}. Recall reaalsete kõnelejate peal jäi kõrgeks (Friend1 92--98\% mudelitel v18a, v18b, v18d), mis tähendab, et kvarantiinitud andmehulga eemaldamine ei rikkunud mudeli võimet täisfraasi tuvastada. Samas on prefiksi-FPR endiselt 97--100\% kõigil mudelitel, mis säilitavad kasuliku recall'i. v18a, v18b ja v18d ei ole Friend1 recall'i järgi statistiliselt usaldusväärselt eristatavad. v18d-clean96 säilitab kõrge recall'i kõigil komplektidel (Isa 98\%, Friend1 98\%, Ode 100\%, Mattias 100\%), kuid samaaegselt on ta prefiksi-FPR 100\% ja segiajamis-FPR 99,8\% --- mudel vallandub praktiliselt iga sobiva esimese silbi peale. v18-pere tulemused näitavad, et puhtad positiivsed üksi ei sunni mudelit eristama täisfraasi prefiksist; sama järeldus on dokumenteeritud Apple'i DNN-HMM töös, kus partial-keyword negatiivid lisati selleks, et mudel ei vallanduks osafraasidel \cite{shrivastava2021optimize}.
 
 Ainsad variandid, mis prefiksi-FPR-i mõõdetavalt langetavad, on need, kus kasutatakse hard-negatiive (\texttt{v18c}, \texttt{v18e}, \texttt{v18f}). Need toovad prefiksi-FPR-i tasemele 82--88\%, mis on parem, kuid endiselt deploy-kõlbmatu, ja teevad seda kõrge hinnaga: \texttt{v18c} kaotab Isa recall'i 31\%-le, \texttt{v18e} 75\%-le. Tegemist on otsese kompromissiga --- praeguses pooltes saab fraasi-selektiivsust tõsta ainult recall'i hinnaga.
 
@@ -575,14 +575,14 @@ Tabel~\ref{tab:checkpoint-headline} esitab kontrollpunkti-eksperimentide võrdlu
 
 \begin{table}[H]
 \centering
-\caption{Kontrollpunkti-FAPH eksperimentide tulemused võrdluses v16c ja v6-residual mudelitega (lävi\,=\,0,995). \enquote{Pre-FPR} = prefiksi-only FPR, \enquote{Conf-FPR} = kuule/kule segiajamis-FPR. Kõik FAPH-i veerud allpool on streaming-FAPH eraldi korpustel. Recall'i Wilsoni 95\% usaldusvahemikud (UV) on Isa XTTS real ($N=48$) ja Friend1 real ($N=145$).}
+\caption{Kontrollpunkti-FAPH eksperimentide tulemused võrdluses v16c ja v6-residual mudelitega (lävi\,=\,0,995). \enquote{Pre-FPR} = prefiksi-only FPR, \enquote{Conf-FPR} = kuule/kule segiajamis-FPR. Kõik FAPH-i veerud allpool on streaming-FAPH eraldi korpustel. Recall'i Wilsoni 95\% usaldusvahemikud (UV) on Isa XTTS real ($N=48$) ja Friend1 real ($N=145$). FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. FAPH on raporteeritud skriptitud offline-variandina (vt §\ref{subsec:faph-variants}).}
 \label{tab:checkpoint-headline}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l r l r l r r r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Rec Isa} & \textbf{Isa [95\% UV]} & \textbf{Rec Fr1} & \textbf{Fr1 [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Isa} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ & \textbf{FAPH LS} $\downarrow$ & \textbf{FAPH Mac} $\downarrow$ \\
+\textbf{Mudel} & \textbf{Rec Isa} & \textbf{Isa [95\% UV]} & \textbf{Rec Fr1} & \textbf{Fr1 [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Isa} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH LS}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH Mac}\,\emph{(scripted offline)} $\downarrow$ \\
 \hline
 checkpoint-faph (tm=2) & 4,2 & [1,2--14,0] & 0,7 & [0,1--3,8] & 20,0 & 0,0 & 67,3 & 24,5 & 1,31 & 0,89 & 0,86 \\
 checkpoint-faph10 (tm=10) & 72,9 & [59,0--83,4] & 22,1 & [16,1--29,5] & 80,0 & 35,0 & 58,6 & 85,8 & 4,19 & 3,02 & 9,42 \\
@@ -609,22 +609,22 @@ Eraldi huvi pakkus küsimus, kas \texttt{checkpoint-faph10} või \texttt{checkpo
 
 \begin{table}[H]
 \centering
-\caption{Kontrollpunkti-FAPH konsensus-kombinatsioonid muude mudelitega (lävi\,=\,0,995/0,995). FAPH 0,00 tähendab, et 3,82--5,62-tunnistel ambient-radadel ei registreeritud ühtegi valeaktiveeringut. Pre-FPR = prefiksi-only FPR, Conf-FPR = segiajamis-FPR.}
+\caption{Kontrollpunkti-FAPH konsensus-kombinatsioonid muude mudelitega (lävi\,=\,0,995/0,995). FAPH 0,00 tähendab, et 3,82--5,62-tunnistel ambient-radadel ei registreeritud ühtegi valeaktiveeringut. Pre-FPR = prefiksi-only FPR, Conf-FPR = segiajamis-FPR. FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. FAPH on raporteeritud skriptitud offline-variandina (vt §\ref{subsec:faph-variants}).}
 \label{tab:checkpoint-consensus}
 \scriptsize
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l r r r r r r r r}
 \hline
-\textbf{Konfiguratsioon} & \textbf{Rec Isa} & \textbf{Rec Fr1} & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ & \textbf{FAPH LS} $\downarrow$ & \textbf{FAPH Mac} $\downarrow$ & \textbf{FAPH DiPCo} $\downarrow$ \\
+\textbf{Konfiguratsioon} & \textbf{Rec Isa} & \textbf{Rec Fr1} & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH LS}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH Mac}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH DiPCo}\,\emph{(scripted offline)} $\downarrow$ \\
 \hline
-faph10 + v16c & 72,9 & 20,7 & 57,3 & 85,8 & \textbf{0,26} & 0,00 & 0,00 & 0,00 \\
-faph10 + expert-a & 66,7 & 21,4 & 57,3 & 85,8 & 0,26 & 0,00 & 0,00 & 0,00 \\
-faph10 + v6-residual & 72,9 & 21,4 & 53,2 & 85,5 & \textbf{0,00} & 0,00 & 0,00 & 0,00 \\
-faph20 + v16c & 72,9 & 40,0 & 68,2 & 78,2 & 0,52 & 0,00 & 0,00 & 0,00 \\
-faph20 + expert-a & 66,7 & 41,4 & 69,1 & 78,3 & 0,26 & 0,00 & 1,71 & 0,00 \\
-faph20 + v6-residual & 72,9 & 42,1 & 63,2 & 78,2 & 0,26 & 0,00 & 0,00 & 0,00 \\
+faph10 + v16c & 72,9 & 20,7 & 57,3 & 85,8 & \textbf{0,26} & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
+faph10 + expert-a & 66,7 & 21,4 & 57,3 & 85,8 & 0,26 & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
+faph10 + v6-residual & 72,9 & 21,4 & 53,2 & 85,5 & \textbf{0,00\,$[<{\,}0{,}78]$} & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
+faph20 + v16c & 72,9 & 40,0 & 68,2 & 78,2 & 0,52 & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
+faph20 + expert-a & 66,7 & 41,4 & 69,1 & 78,3 & 0,26 & 0,00\,$[<{\,}0{,}53]$ & 1,71 & 0,00\,$[<{\,}0{,}55]$ \\
+faph20 + v6-residual & 72,9 & 42,1 & 63,2 & 78,2 & 0,26 & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
 \hline
-Ekspert A + B v2 (võrdluseks) & --- & --- & --- & --- & 0,80 & --- & 0,00 & --- \\
+Ekspert A + B v2 (võrdluseks) & --- & --- & --- & --- & 0,80 & --- & 0,00\,$[<{\,}u_{95}]$ & --- \\
 \hline
 \end{tabular}%
 }

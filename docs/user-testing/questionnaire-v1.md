@@ -172,6 +172,10 @@ mitte valideeritud instrument selles vormis.
 - H1: sagedusjaotus (histogramm)
 - H2-H3: kvalitatiivne temaatiline analüüs
 
+### UMUX-Lite (I1-I2)
+- Valem: ((mean(I1, I2) − 1) / 6) × 100
+- Tulemus skaalal 0-100, võrreldav SUS-iga (Lewis, Utesch & Maher, 2013)
+
 ---
 
 ## Viited
@@ -184,3 +188,15 @@ mitte valideeritud instrument selles vormis.
 - Brooke, J. (1996). "SUS: A 'Quick and Dirty' Usability Scale." (võrdluseks)
 - Reichheld, F. F. (2003). "The One Number You Need to Grow." Harvard Business
   Review (NPS).
+
+---
+
+## I. Subjektiivne rahulolu (UMUX-Lite, valideeritud lühiskaala)
+
+Palun hinda iga väidet 7-punkti skaalal:
+1 = Ei nõustu üldse · 7 = Nõustun täielikult
+
+I1. Selle süsteemi võimekused vastavad mu nõudmistele.
+I2. Seda süsteemi on lihtne kasutada.
+
+(Lewis, Utesch & Maher, 2013)

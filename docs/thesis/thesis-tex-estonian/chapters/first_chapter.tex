@@ -21,7 +21,7 @@ Võrdlus viiakse läbi neljal teljel:
 Sellise võrdlusraami eesmärk ei ole leida abstraktselt \enquote{parimat} äratussõna raamistikku, vaid hinnata, milline lähenemine on sobivam eestikeelse ja piiratud ressursiga nutikodu kasutusjuhtumi jaoks. See võimaldab hiljem põhjendada nii lõpliku tehnoloogiavaliku kui ka selle käigus tehtud kompromisside loogikat.
 
 \section{Andmeliikide eristamine}
-Äratussõna mudeli arenduses ei piisa ainult tavalisest treeningu- ja testandmete jaotusest. Käesolevas töös eristatakse kolme andmeliiki:
+Äratussõna mudeli arenduses ei piisa ainult tavalisest treeningu- ja testandmete jaotusest \cite{lopezespejo2021deepkws,microwakeword2026}. Käesolevas töös eristatakse kolme andmeliiki:
 \begin{itemize}
     \item positiivsed klipid, kus äratussõna on olemas;
     \item negatiivsed klipid, kus äratussõna puudub, kuid heli võib sisaldada kõnet või muid segavaid mustreid;
@@ -56,6 +56,19 @@ Selline jaotus on vajalik, sest voogedastushindamine ei saa toetuda ainult lühi
     \item \texttt{FAPH} ehk false accepts per hour, mis näitab valevallandumiste arvu tunni kohta;
     \item ROC-laadne kõver, kus hinnatakse erinevate threshold'ide mõju \texttt{FRR} ja \texttt{FAPH} suhtele.
 \end{itemize}
+
+Iga raporteeritud mõõdiku juurde lisatakse 95\%~usaldusvahemik. Klipi-tasemel mõõdikutele (recall, FPR) kasutatakse Wilsoni skoorimeetodi vahemikku \cite{wilson1927probable,brown2001interval}, kuna see käitub paremini väikese valimi ja piiriläheduses olevate proportsioonide korral. Voogedastuse FAPH-ile kasutatakse täpset Poissoni-Garwoodi vahemikku \cite{garwood1936fiducial,ulm1990poisson}; kui $T$ tunni jooksul ei ole täheldatud ühtegi sündmust ($k=0$), raporteeritakse \enquote{kolmereegli} ühepoolne 95\%~ülemine piir $\sim 3/T$ \cite{hanley1983ruleofthree}. Lävi valitakse ainult valideerimisandmestikul; testi-komplekti pealt valitud lävi ei kajasta tegelikku ebakindlust \cite{cawley2010overfitting}.
+
+\subsection{FAPH-i variandid ja counting-rule}
+\label{subsec:faph-variants}
+Käesolevas töös eristatakse nelja FAPH-i mõõdiku varianti, mille counting-rule ja runtime-loogika erinevad ning mis ei ole otseselt vastastikku võrreldavad \cite{lopezespejo2021deepkws,microwakeword2026,openwakeword2026,esphome2026}:
+\begin{itemize}
+    \item \textbf{raamistiku-natiivne FAPH (framework-native)} --- ESPHome / microWakeWord vaikeloogika seadme peal: liuakna keskmine, valikuline VAD, järelreset pärast aktiveerimist;
+    \item \textbf{skriptitud offline FAPH (scripted offline)} --- offline replay omaette siluja ja eraldi 2-sekundilise jahtumisajaga; kasutatakse käesoleva töö kõikides Tulemuste peatüki tabelites;
+    \item \textbf{välitingimuste FAPH (field)} --- Androidi või seadme logija tulemused tegeliku runtime-läve, mikrofoni ja keskkonnaga;
+    \item \textbf{kasutajatesti taasmängu FAPH (user-study replay)} --- külmutatud läve juures osalejate sessioonide offline taasmäng (planeeritav).
+\end{itemize}
+Muutuv counting-rule on äratussõna kirjanduses üks levinumaid reprodutseeritavuse auke \cite{lopezespejo2021deepkws}, mistõttu iga käesoleva töö FAPH-tabel ja -joonis identifitseerib kasutatud variandi tabeli pealkirjas või veerus.
 
 Varasemate katsete põhjal selgus, et just \texttt{testing\_ambient} puudumine võib anda petlikke tulemusi. Kui ambient-andmed on tühjad, ei kirjelda saadud AUC enam mudeli tegelikku kvaliteeti, vaid katkist hindamisprotsessi. Seetõttu on andmeliikide korrektne eristamine käesoleva töö metoodikas keskse tähtsusega.
 
@@ -112,3 +125,7 @@ Käesoleva töö konfiguratsioonis kasutati SpecAugment'i versioonis v7 ja edasp
 Treenitud mudel kvantiseeritakse TensorFlow Lite täisarvulisse vormingusse (\emph{full integer quantization}), kus nii kaalud kui ka aktivatsioonid teisendatakse INT8 esitlusse \cite{tensorflow2015, jacob2018quantization}. See vähendab mudeli mahtu ja kiirendab inference'i, sest INT8 aritmeetika on mikrokontrolleri protsessoril kordades efektiivsem kui ujukomaarvutus.
 
 Kvantiseeritud mudeli maht on 57\,KB (TFLite vormingus), mis on piisavalt väike, et mahtuda ESP32-S3 flash-mällu. Inference ajal vajab mudel lisaks ${\sim}50$\,KB töömälu (\texttt{tensor\_arena}), kuhu paigutatakse vahetulemused. Kogu mäluvajadus on seega ${\sim}107$\,KB, mis jätab piisavalt ruumi ülejäänud ESPHome püsivarale ja WiFi-pinule.
+
+\section{Kasutajatesti metoodika ja subjektiivse rahulolu mõõtmine}
+\label{sec:user-test-methodology}
+Kasutajatest kasutab kahte tüüpi mõõtmisi. Esmasteks (objektiivseteks) tulemusteks on tabamuste arv, FAPH-i välitingimuste hinnang, ülesande sooritamise edukus ja latentsus. Subjektiivse rahulolu osas kasutatakse valideeritud lühiskaalat \emph{UMUX-Lite} \cite{lewis2013umuxlite}, kuna projektis kasutatav prototüüp läbitakse ühe lühikese sessiooni jooksul ja UMUX-Lite jälgib hästi traditsioonilise SUS-skaala usaldusväärsust väiksema osaleja-aja kuluga \cite{lewis2013umuxlite,sauro2009seq}. Olemasolevad uurija-välja töötatud küsimused (\texttt{questionnaire-v1.md}, sektsioonid A--E) säilitatakse, kuid neid käsitletakse \emph{diagnostiliste küsimustena}, mitte valideeritud koondskaalana --- see eristus on vajalik, et töö ei väidaks valideeritud-skaala-tasemel järeldusi vahenditest, mis pole sellisena valideeritud.

@@ -457,21 +457,12 @@
 }
 
 @inproceedings{amazon-twostage2020,
-    author    = {Yimeng Zhuang and Shuo-Yiin Chang and Duc Le and Ding Zhao and Hao Zhang and Yanzhang He},
+    author    = {Minhua Wu and Sankaran Panchapagesan and Ming Sun and Jiacheng Gu and Ian Thomas and Shiv Naga Prasad Vitaladevuni and Bj{\"o}rn Hoffmeister and Arindam Mandal},
     title     = {Monophone-Based Background Modeling for Two-Stage On-Device Wake Word Detection},
     booktitle = {IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
-    year      = {2020},
+    year      = {2018},
     url       = {https://www.amazon.science/publications/monophone-based-background-modeling-for-two-stage-on-device-wake-word-detection},
     note      = {Two-stage DNN-HMM cascade: 16\% FRR and 37\% FAR reduction. [Accessed: 10-04-2026]}
-}
-
-@inproceedings{wang2020mining,
-    author    = {Yiming Wang and Hang Lv and Daniel Povey and Lei Xie and Sanjeev Khudanpur},
-    title     = {Mining Effective Negative Training Samples for Keyword Spotting},
-    booktitle = {IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
-    year      = {2020},
-    doi       = {10.1109/ICASSP40776.2020.9053009},
-    note      = {Microsoft Research; Regional Hard-Example mining for KWS negatives. [Accessed: 10-04-2026]}
 }
 
 @misc{mazumder2021fewshot,
@@ -547,4 +538,185 @@
     year         = {2019},
     url          = {https://www.riigiteataja.ee/akt/104012019011},
     note         = {Estonian Personal Data Protection Act. \S~6: research exemption for special category data with ethics committee approval. [Accessed: 05-04-2026]}
+}
+
+% === Apple voice trigger and DNN-HMM training ===
+
+@online{apple_personalized_hey_siri_2018,
+  title        = {Personalized Hey Siri},
+  author       = {{Apple Machine Learning Research}},
+  year         = {2018},
+  url          = {https://machinelearning.apple.com/research/personalized-hey-siri},
+  note         = {[Accessed: 03-05-2026]}
+}
+
+@online{apple_voice_trigger_2023,
+  title        = {Voice Trigger System for Siri},
+  author       = {{Apple Machine Learning Research}},
+  year         = {2023},
+  url          = {https://machinelearning.apple.com/research/voice-trigger},
+  note         = {[Accessed: 03-05-2026]}
+}
+
+@inproceedings{shrivastava2021optimize,
+  author    = {Ashish Shrivastava and Arnav Kundu and Chandra Dhir and Devang Naik and Oncel Tuzel},
+  title     = {Optimize What Matters: Training {DNN-HMM} Keyword Spotting Model Using End Metric},
+  booktitle = {ICASSP},
+  year      = {2021},
+  doi       = {10.48550/arXiv.2011.01151}
+}
+
+@inproceedings{michaely2017googlekws,
+  author    = {Assaf Hurwitz Michaely and Xuedong Zhang and Gabor Simko and Carolina Parada and Petar Aleksic},
+  title     = {Keyword Spotting for {Google Assistant} Using Contextual Speech Recognition},
+  booktitle = {2017 IEEE Automatic Speech Recognition and Understanding Workshop (ASRU)},
+  year      = {2017},
+  doi       = {10.1109/ASRU.2017.8268946}
+}
+
+@inproceedings{gruenstein2017cascade,
+  author    = {Alexander Gruenstein and Raziel Alvarez and Chris Thornton and Mohammadali Ghodrat},
+  title     = {A Cascade Architecture for Keyword Spotting on Mobile Devices},
+  journal   = {arXiv preprint arXiv:1712.03603},
+  year      = {2017}
+}
+
+@inproceedings{sigtia2020multitask,
+  author    = {Siddharth Sigtia and Pascal Clark and Rob Haynes and Hywel Richards and John Bridle},
+  title     = {Multi-Task Learning for Voice Trigger Detection},
+  booktitle = {ICASSP},
+  year      = {2020},
+  doi       = {10.1109/ICASSP40776.2020.9053577}
+}
+
+@inproceedings{garg2021streaming,
+  author    = {Vineet Garg and Wonil Chang and Siddharth Sigtia and Saurabh Adya and Pramod Simha and Pranay Dighe and Chandra Dhir},
+  title     = {Streaming Transformer for Hardware Efficient Voice Trigger Detection and False Trigger Mitigation},
+  booktitle = {Interspeech},
+  year      = {2021},
+  doi       = {10.21437/Interspeech.2021-1428}
+}
+
+@inproceedings{kumar2020wakeword,
+  author    = {Rajath Kumar and Mike Rodehorst and Joe Wang and Jiacheng Gu and Brian Kulis},
+  title     = {Building a Robust Word-Level Wakeword Verification Network},
+  booktitle = {Interspeech},
+  year      = {2020},
+  doi       = {10.21437/Interspeech.2020-2018}
+}
+
+@inproceedings{wang2020lfmmi,
+  author    = {Yiming Wang and Hang Lv and Daniel Povey and Lei Xie and Sanjeev Khudanpur},
+  title     = {Wake Word Detection with Alignment-Free Lattice-Free {MMI}},
+  booktitle = {Interspeech},
+  year      = {2020},
+  doi       = {10.21437/Interspeech.2020-1811}
+}
+
+@inproceedings{rikhye2021personalized,
+  author    = {Rajeev Rikhye and Quan Wang and Qiao Liang and Yanzhang He and Ding Zhao and Yiteng Huang and Arun Narayanan and Ian McGraw},
+  title     = {Personalized Keyphrase Detection Using Speaker and Environment Information},
+  booktitle = {Interspeech},
+  year      = {2021},
+  doi       = {10.21437/Interspeech.2021-204}
+}
+
+@inproceedings{schoenherr2022accidental,
+  author    = {Lea Sch{\"o}nherr and Maximilian Golla and Thorsten Eisenhofer and Jan Wiele and Dorothea Kolossa and Thorsten Holz},
+  title     = {Exploring Accidental Triggers of Smart Speakers},
+  journal   = {Computer Speech \& Language},
+  volume    = {73},
+  pages     = {101328},
+  year      = {2022},
+  doi       = {10.1016/j.csl.2021.101328}
+}
+
+@inproceedings{chen2021fakewake,
+  author    = {Yanjiao Chen and Yijie Bai and Richard Mitev and Kaibo Wang and Ahmad-Reza Sadeghi and Wenyuan Xu},
+  title     = {{FakeWake}: Understanding and Mitigating Fake Wake-up Words of Voice Assistants},
+  booktitle = {ACM CCS},
+  year      = {2021},
+  doi       = {10.1145/3460120.3485365}
+}
+
+% === Statistics: confidence intervals and methodology ===
+
+@article{wilson1927probable,
+  author    = {Edwin B. Wilson},
+  title     = {Probable Inference, the Law of Succession, and Statistical Inference},
+  journal   = {Journal of the American Statistical Association},
+  volume    = {22},
+  number    = {158},
+  pages     = {209--212},
+  year      = {1927},
+  doi       = {10.1080/01621459.1927.10502953}
+}
+
+@article{brown2001interval,
+  author    = {Lawrence D. Brown and T. Tony Cai and Anirban DasGupta},
+  title     = {Interval Estimation for a Binomial Proportion},
+  journal   = {Statistical Science},
+  volume    = {16},
+  number    = {2},
+  pages     = {101--133},
+  year      = {2001},
+  doi       = {10.1214/ss/1009213286}
+}
+
+@article{garwood1936fiducial,
+  author    = {F. Garwood},
+  title     = {Fiducial Limits for the {Poisson} Distribution},
+  journal   = {Biometrika},
+  volume    = {28},
+  number    = {3--4},
+  pages     = {437--442},
+  year      = {1936},
+  doi       = {10.1093/biomet/28.3-4.437}
+}
+
+@article{hanley1983ruleofthree,
+  author    = {James A. Hanley and Andre Lippman-Hand},
+  title     = {If Nothing Goes Wrong, Is Everything All Right? Interpreting Zero Numerators},
+  journal   = {JAMA},
+  year      = {1983}
+}
+
+@article{ulm1990poisson,
+  author    = {Kurt Ulm},
+  title     = {A Simple Method to Calculate the Confidence Interval of a Standardized Mortality Ratio},
+  journal   = {American Journal of Epidemiology},
+  volume    = {131},
+  number    = {2},
+  pages     = {373--375},
+  year      = {1990},
+  doi       = {10.1093/oxfordjournals.aje.a115507}
+}
+
+@article{cawley2010overfitting,
+  author    = {Gavin C. Cawley and Nicola L. C. Talbot},
+  title     = {On Over-fitting in Model Selection and Subsequent Selection Bias in Performance Evaluation},
+  journal   = {Journal of Machine Learning Research},
+  volume    = {11},
+  pages     = {2079--2107},
+  year      = {2010}
+}
+
+% === Usability scales ===
+
+@inproceedings{lewis2013umuxlite,
+  author    = {James R. Lewis and Brian S. Utesch and Deborah E. Maher},
+  title     = {{UMUX-LITE}: When There's No Time for the {SUS}},
+  booktitle = {Proceedings of CHI 2013},
+  pages     = {2099--2102},
+  year      = {2013},
+  doi       = {10.1145/2470654.2481287}
+}
+
+@inproceedings{sauro2009seq,
+  author    = {Jeff Sauro and Joseph S. Dumas},
+  title     = {Comparison of Three One-Question, Post-Task Usability Questionnaires},
+  booktitle = {Proceedings of CHI 2009},
+  pages     = {1599--1608},
+  year      = {2009},
+  doi       = {10.1145/1518701.1518946}
 }
