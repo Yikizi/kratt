@@ -1,6 +1,6 @@
 # Git Workflow
 
-Last updated: 2026-04-23
+Last updated: 2026-04-29
 
 This file describes the current low-drama git workflow for the Kratt monorepo.
 It replaces older setup-era notes about remotes, milestones, and repo topology.

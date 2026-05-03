@@ -1,5 +1,7 @@
 # Git Repository Strategy
 
+> **Historical / superseded:** use `docs/GIT_WORKFLOW.md` for current git/process guidance. This file preserves the early repository-strategy plan.
+
 **Updated**: 2025-02-05
 
 ## Repository Architecture

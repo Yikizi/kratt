@@ -23,7 +23,7 @@ Main rules:
   branch is reset. Lessons survive, clutter does not.
 - One scoped improvement per run. One commit max per run.
 
-## The 8 lanes
+## The 14 lanes
 
 Defined in `.hermes/thesis-automation/lanes/lanes.json`.
 
@@ -37,6 +37,26 @@ Defined in `.hermes/thesis-automation/lanes/lanes.json`.
 | formal-compliance-writer     | all chapters (rotating)                   | TalTech formal style: quotes, dashes, refs, captions                   |
 | summary-tightening           | summary.tex                               | crisp self-contained summary aligned to contributions                  |
 | methodology-tightening       | third_chapter.tex                         | reproducibility of wake-word methodology                               |
+| intro-builder                | introduction.tex                          | build problem, scope, research questions, contribution, and limits      |
+| implementation-narrative     | third_chapter.tex                         | draft implementation prose from repo-backed Android/ESP32/demo evidence |
+| evaluation-closeout          | second, third                             | close result, field-evidence, MoE, and user-test framing gaps           |
+| alternatives-comparison      | first, intro                              | compare against existing wake-word / voice-assistant alternatives       |
+| research-note                | docs/research/thesis-writing-research-queue.md | distillable one-item research notes for thesis writing        |
+| distill-sentence            | intro, first, second, third                | inject one evidence-backed thesis sentence from latest research queue |
+
+The last four lanes are drafting lanes for known missing thesis mass. They are
+still constrained to one small edit per run and must push back if the sentence
+would require evidence or citations not already present in the repo.
+
+## Ordered two-phase lane cycle
+
+`run-research-distill-cycle.sh` runs two lanes in sequence:
+
+1. `research-note`
+2. `distill-sentence` (only if step 1 produced a committed update)
+
+This guarantees the sentence lane cannot apply a draft before the research note
+lane has written fresh input.
 
 Each lane has a persistent branch `cron/<lane>` and persistent worktree
 `.claude/worktrees/cron-<lane>`.
@@ -47,7 +67,7 @@ Each lane has a persistent branch `cron/<lane>` and persistent worktree
 
 1. Pick the next lane in a deterministic rotation (`state/rotation.json`).
 2. Pick the next target file in that lane's rotation.
-3. Run a **reviewer** call (`claude --print`, read-only tools) — proposes exactly one
+3. Run a **reviewer** call (`claude --print`) — proposes exactly one
    highest-value improvement.
 4. Run a **writer** call (`claude --print --dangerously-skip-permissions` inside
    the lane worktree) — either applies a surgical edit + commits on the lane
@@ -94,6 +114,17 @@ reason + distilled line live on in `memory/<lane>.json.rejected_refs` (rolling l
    stats, last-7-days daily-consolidation logs.
 3. Produce a short Markdown meta summary in `logs/weekly/<timestamp>-meta.md`
    (readiness delta, lane signal, guidance updates, next-week emphasis).
+
+## Runner model and budget
+
+`runner.py` calls `claude --print` with:
+
+- `--max-budget-usd` set per lane/task (0.5 reviewer, 1.0 writer and reconciler/fixer,
+  1.5/2.0 consolidation/meta, 3.0 weekly rerun),
+- `--tools default` (all built-in Claude tools),
+- `--model` only when `CLAUDE_MODEL` is set in environment.
+
+If `CLAUDE_MODEL` is not set, Claude uses its local default model.
 
 ## Layout
 
@@ -158,6 +189,7 @@ cp .hermes/thesis-automation/launchd/ee.taltech.kratt.*.plist ~/Library/LaunchAg
 launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-automation.hourly.plist
 launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-automation.daily.plist
 launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-automation.weekly.plist
+launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-automation-research-distill.plist
 ```
 
 Unload with `launchctl unload -w <plist>` to pause.
@@ -170,6 +202,7 @@ From an open `claude` REPL in this repo:
 CronCreate cron="7 * * * *" prompt="Run ./.hermes/thesis-automation/run-hourly.sh and report the JSON line it prints." recurring=true durable=true
 CronCreate cron="11 3 * * *" prompt="Run ./.hermes/thesis-automation/run-daily-consolidation.sh and report counts." recurring=true durable=true
 CronCreate cron="17 4 * * 1" prompt="Run ./.hermes/thesis-automation/run-weekly-review.sh and print the meta path." recurring=true durable=true
+CronCreate cron="15 * * * *" prompt="Run ./.hermes/thesis-automation/run-research-distill-cycle.sh research-note distill-sentence." recurring=true durable=true
 ```
 
 Session jobs auto-expire after 7 days — launchd is what you want for actual
@@ -213,7 +246,6 @@ Clear a lane's guidance memory: edit `memory/<lane>.json` and set
 ## Guardrails built into the system
 
 - Hourly writer must stay inside `TARGET_FILE` and produce ≤ 1 commit.
-- Reviewer is invoked with read-only tools (`Read Grep Glob`).
 - Consolidator will not cherry-pick onto `main` if the working tree is dirty.
 - Lane refresh uses a hard reset to the new `main`, with `git clean` that
   preserves `.claude/` so worktree machinery survives.

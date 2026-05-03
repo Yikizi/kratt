@@ -1,8 +1,7 @@
 # Kratt - Project TODO
 
-> **Persistent task list** - source of truth for ongoing work across Claude Code sessions.
-> When a task moves to `in_progress` or `completed`, update both this file and the session task list.
-> Last updated: 2026-04-23
+> **Persistent task list** - source of truth for ongoing work across coding-agent sessions.  
+> Last updated: 2026-04-29
 
 ## Status legend
 
@@ -11,179 +10,204 @@
 - ✅ completed
 - ❌ blocked / abandoned
 - 🎯 critical path
+- 🧊 frozen / do not expand unless explicitly decided
 
 ---
 
-## MODEL TRAINING (current state: v16c complete, MoE consensus breakthrough)
+## 0. Current thesis-critical state (2026-04-29)
+
+**Hard deadline:** thesis document submission **2026-05-18**. From now on, user testing + thesis writing outrank new training ideas unless they directly unblock the thesis.
+
+**Model state, in one sentence:** `v16c` remains the stable single-model demo/baseline candidate, but the v17/v18/checkpoint experiments showed that no current single model is a production-quality exact two-word detector; newer runs are diagnostic evidence, not replacements.
+
+### Current model roles
+
+| Role | Model / combo | Status |
+|---|---|---|
+| Stable active demo baseline | `v16c` | Best practical single-model baseline for user-test/demo unless pilot proves otherwise. Strong recall; weak prefix/confusable selectivity. |
+| Field/recall reference | `expert-a` | Useful baseline; good field balance, but not exact-phrase selective. |
+| Historical sub-1 FAPH milestone | `expert-a + expert-b2` | Important MoE result; recall/phrase-selectivity still block deployment claims. |
+| v18 low-FAPH MoE diagnostic | `v18b-clean48-sa + expert-a` | Very low ambient FAPH, but prefix/confusable failure remains. Diagnostic only. |
+| Checkpoint-FAPH gate diagnostic | `checkpoint-faph10 + v16c` | Extremely low ambient FAPH, but poor Friend1 recall and high confusable FPR. Diagnostic only. |
+| Deployment-packaged historical model | `v11` | Android packaging/deployment path evidence; not final model quality. |
+
+**Do not claim:** “v18 solved it”, “checkpoint-FAPH solved it”, or “production-ready Estonian wake word” without user-test + threshold-frozen evidence.
+
+---
+
+## 1. USER TESTING (critical path)
+
+Goal: collect real-speaker wake-word evidence + one-bulb UX data with 20-30 participants.
 
 ### Completed
 
-- ✅ v1-v9 training + evaluation (all have entries in MODEL_LINEAGE.md)
-- ✅ v10: residual ON + massive neg scale (MUSAN bug discovered post-training)
-- ✅ v11: deployed on Android + ESP32 (Riigikogu shuf bug discovered post-training)
-- ✅ v12: 16,853 neg pool, no hard neg, residual OFF
-- ✅ v13a: v10 data + residual ON + SpecAug OFF (SA ablation clean)
-- ✅ v13b: v10 data + residual ON + SpecAug ON (SA ablation paired)
-- ✅ v14: residual ON, no hard neg (0.8h MacBook background)
-- ✅ v15: residual ON + 1500 hard neg v2 (best IRL balance per session findings)
-- ✅ v16a/b/c: iterative refinements, v16c is latest production candidate
-- ✅ Expert A: gatekeeper model (96f, residual ON, no hard neg, mic-only positives) — 0.79 FAPH @ 0.996
-- ✅ Expert B v2: verifier model (48f, residual OFF, SA ON, 80% hard neg + 20% general) — 13% hard neg FPR @ 0.996
-- ✅ **MoE Consensus (Expert A + Expert B v2)**: sub-1 FAPH achieved (0.79 @ 0.996/0.996)
-- ✅ Canonical streaming FAPH methodology (commit 6e76e0a)
-- ✅ Unified benchmark on all models (benchmark_full_20260421.csv)
-- ✅ Evaluation methodology fix (held-out test sets, FAPH metric)
-- ✅ Augmentation settings fixed (PitchShift 0.4, BGNoise 0.5, RIR 0.3)
-- ✅ Training defaults updated (residual ON, neg_class_weight 5, LR schedule)
+- ✅ Short high-yield protocol drafted: `docs/user-testing/ten-minute-shadow-demo-protocol.md`
+- ✅ Questionnaire v1 drafted: `docs/user-testing/questionnaire-v1.md`
+- ✅ Labelled recorder implemented: `tools/user-testing/run_user_test.py`
+- ✅ CLI wrapper added: `kratt user-test`
+- ✅ Protocol supports two consent levels: metrics-only vs audio opt-in
 
-### Model ranking (benchmark 2026-04-21, threshold=0.995)
+### Next actions
 
-Best FAPH on CV ET (lower is better):
-
-| Rank | Model | FAPH CV | Recall Isa | HN Mac | Notes |
-|------|-------|---------|-----------|--------|-------|
-| 1 | v6-residual | 14.4 | 100% | 100% | Best single-model FAPH |
-| 2 | v16a | 16.0 | 100% | 100% | Current production candidate |
-| 3 | v16b | 21.7 | 100% | 93% | |
-| 4 | v10 | 22.8 | 65% | 53% | MUSAN bug, good IRL balance |
-| 5 | v5 | 24.3 | 100% | 100% | |
-| 6 | v6 | 25.4 | 98% | 100% | |
-| 7 | v8 | 27.7 | 58% | 20% | |
-| 8 | expert-a | 33.0 | 100% | 87% | MoE gatekeeper |
-| 9 | ex3a | 33.0 | 100% | 73% | |
-| 10 | v12 | 35.9 | 90% | 87% | |
-| ... | ... | ... | ... | ... | |
-| MoE | A+B2@0.996 | **0.79** | 100% | 13% | Consensus = best overall |
-
-**Key insight (session-findings-apr-2026.md):** Benchmark FAPH does NOT predict real-world performance. v15 was worst on bench (243) but best IRL (73% recall, 20% HN). Three-metric eval required: FAPH + Recall + Hard Neg FPR.
-
-### Pending
-
-- ⏳ Deploy v16c to ESP32 + Android
-- ⏳ Evaluate MoE consensus on real device (not just benchmark)
-- ⏳ Threshold tuning for v16c (dev vs test split)
-- ⏳ Fresh KORVO-2 hold-out negative session (~30 min recording)
+- 🎯 ⏳ Run self-pilot end-to-end with `kratt user-test TEST --dry-run --new-session-subdir`, then with real mic
+- 🎯 ⏳ Verify each trial creates one WAV + one `trials.jsonl` row
+- 🎯 ⏳ Freeze active model and thresholds before full data collection
+  - recommended active model for pilot: `v16c`
+  - shadow/replay set: `v16c`, `expert-a`, `expert-b2`, `v6-residual`, `v10`, `v15`
+- 🎯 ⏳ Run 2-3 participant pilot sessions
+- 🎯 ⏳ Full user testing: 20-30 participants
+- 🎯 ⏳ Analyze:
+  - wake recall on positive trials
+  - hard-negative FPR on human voices
+  - end-to-end task success / latency
+  - UX questionnaire results
+- 🎯 ⏳ Write user-study method + results into thesis §3/§5
 
 ---
 
-## EVALUATION METHODOLOGY
-
-### Completed
-
-- ✅ Audit what each model was trained on (`evaluation/training_data_manifest.md`)
-- ✅ Build `evaluation/test_sets.py` central registry with disjointness assertions
-- ✅ Add `pos_isa_xtts` (48 clips) - cross-version unseen-speaker recall
-- ✅ Add `pos_mac_mattias` (30 clips) - cross-device recall
-- ✅ Add `hard_neg_mac_holdout` (15 clips, real)
-- ✅ Add `hard_neg_isa_xtts` (60 clips)
-- ✅ Add `faph_cv_et` (3.82h, indices 5000-7000 of CV ET)
-- ✅ Rewrite `compare_models.py` to use only registry + skip leaked combinations
-- ✅ Sync v1-v8 models from HPC and re-evaluate all versions
-- ✅ Compile evaluation methodology research doc (`docs/research/wake-word-evaluation-methodology.md`)
-- ✅ Canonical streaming FAPH (sliding_window=5, cooldown=25, step_ms=10)
-- ✅ Wilson 95% CI for small test sets (methodology doc)
-- ✅ DET curve reporting (det_curves_20260422.json)
-
-### Pending
-
-- ⏳ Wilson 95% CI implementation in `compare_models.py` (code)
-- ⏳ ROC AUC reporting
-- ⏳ Proper threshold selection (validation vs test split)
-- ⏳ Real speaker diversity collection (root cause of recall limitation)
-
----
-
-## DATA EXPANSION (5h → 100h+ negative pool)
-
-### Completed
-
-- ✅ MUSAN speech (~16h) and music (~42h) identified but not yet ingested
-- ✅ 22,000 CV ET clips available (~30h additional)
-- ✅ VOiCES dataset (~20K clips) identified
-- ⚠️ MUSAN glob bug in v10 (non-recursive `glob("*.wav")` — fixed in code)
-
-### Pending
-
-- ⏳ Ingest MUSAN speech to negative pool
-- ⏳ Ingest MUSAN music to negative pool
-- ⏳ Convert more CV ET clips (current: 5K for train + 2K for FAPH test)
-- ⏳ Symlink VOiCES dataset into negative pool
-- ⏳ Find and download Estonian podcast feeds (Vikerraadio, Kuku Raadio)
-- ⏳ RIR augmentation for all negatives
-- ⏳ VTLP augmentation (speaker diversification — highest priority per Deka et al. 2025)
-
----
-
-## THESIS WRITING
+## 2. THESIS WRITING (critical path)
 
 ### Status by chapter
 
-| Chapter | Status | Notes |
+| Chapter | Status | Current focus |
 |---|---|---|
-| §1 Sissejuhatus | ⏳ visand | Põhjalikum kirjutamine vajalik |
-| §2 Taust ja eksperimendid | ✅ corrected | Andmelekke leid + methodology fix dokumenteeritud |
-| §3 Metoodika | 🔄 in_progress | "16 mistakes checklist" + FAPH kirjeldus + threshold selection |
-| §4 Implementatsioon | ⏳ visand | ESP32 + HA pipeline + MoE consensus kirjeldus |
-| §5 Evalueerimine | ⏳ visand | Vaja koondada v16c numbrid + kasutajatestid + MoE results |
-| §6 Kokkuvõte | ⏳ visand | |
+| §1 Sissejuhatus | 🔄 draft evolving | Tighten problem statement and contribution claims. |
+| §2 Taust ja eksperimendid | 🔄 partially corrected | Keep methodology-audit narrative; avoid obsolete “breakthrough” claims. |
+| §3 Metoodika | 🎯 🔄 in_progress | Evaluation protocol, user-test protocol, threshold policy, data quality gate. |
+| §4 Implementatsioon | ⏳ draft | ESP32/Android/demo pipeline + training/eval tooling. |
+| §5 Evalueerimine | 🎯 ⏳ pending data | v16/v17/v18/checkpoint results + user-test results. |
+| §6 Kokkuvõte | ⏳ draft | Conservative conclusion: feasible prototype + known limitations. |
 
 ### Specific TODO
 
-- 🎯 ⏳ Lisa "16 mistakes checklist" (§5 wake-word-evaluation-methodology.md §5) §3 metoodika peatükki
-- ⏳ Kirjuta korralik FAPH metoodika kirjeldus (sliding window, refractory, streaming inference)
-- ⏳ Kirjuta korralik threshold selection metoodika (val vs test split)
-- ⏳ Tunnista ausalt andmeskaala piirang (5h vs 31000h openWakeWord)
-- ⏳ Lisa võrdlev tabel teiste KWS süsteemidega (Apple, Google, Picovoice, microWakeWord okay_nabu)
-- ⏳ Update §2 H2 sektsiooni täielikult (andmelekkega seotud numbrid parandatud)
-- ⏳ Kirjuta MoE consensus osa (§4 või §5)
-- ⏳ Kasutajatestide tulemused pärast pilooti ja täistestimist
+- 🎯 ⏳ Write the corrected evaluation contract: report **FAPH + recall + hard-negative/confusable FPR** together at frozen thresholds.
+- 🎯 ⏳ Explain data leakage and the April methodology fix clearly, without overstating earlier results.
+- 🎯 ⏳ Add the positive-data quality incident (v17) as a methodological lesson.
+- 🎯 ⏳ Add v18 and checkpoint-FAPH as negative/diagnostic results: label purity and FAPH-only checkpointing are necessary but not sufficient.
+- 🎯 ⏳ Add user-test protocol + consent model.
+- ⏳ Add comparison table vs Apple/Google/Picovoice/openWakeWord/microWakeWord with conservative caveats.
+- ⏳ Implement or explicitly caveat Wilson CI / small-N uncertainty in final tables.
+- ⏳ Decide which metrics/figures are final vs exploratory threshold sweeps.
 
 ---
 
-## USER TESTING (CRITICAL PATH for thesis)
+## 3. MODEL TRAINING / MODEL SELECTION
 
-20-30 osalejat on lõputöö nõue, ~3-4 nädalat puhast tööd.
+### Completed major milestones
 
-- 🎯 ⏳ **Kasutajatestide planeerimine** - kes osalejad, ankeet, ajakava
-- ⏳ Eetikakomiteele kandideerimine kui vajalik (TalTech AEK)
-- ⏳ Valmista nõusolekuvorm (GDPR)
-- ⏳ Pilot 3-5 osalejat (esimesed bugid välja)
-- ⏳ Tegelik testimine 20-30 osalejaga
-- ⏳ Andmete analüüs ja tulemuste kirjutamine §5
+- ✅ v1-v16c historical model family trained and re-evaluated with canonical streaming FAPH.
+- ✅ MoE/consensus breakthrough: `expert-a + expert-b2` reached sub-1 benchmark FAPH, but recall remained a blocker.
+- ✅ v17 recall-cv sprint run.
+- ✅ v17 positive-data incident found: SSML/XML readout, full-command XTTS positives, and too-short/prefix clips contaminated the positive class.
+- ✅ Positive data audit completed: `wake-word/docs/POSITIVE_DATA_QUALITY_AUDIT_20260427.md`.
+- ✅ v18 clean-positive matrix trained and benchmarked.
+- ✅ Prefix/confusable regression sets built.
+- ✅ Checkpoint-FAPH v18d family exported and benchmarked.
+
+### Current interpretation
+
+- `v16c` remains the safest single-model **baseline/demo candidate**, not a proven production model.
+- v17 failed because expanded positives were partly corrupt and the model collapsed into permissive prefix/general-speech behavior.
+- v18 proved that clean positive labels are necessary but not sufficient: binary KWS still fires on partial/confusable phrases unless those are first-class negatives or the objective enforces phrase order.
+- FAPH-optimized checkpoint selection can produce very low ambient FAPH, but can destroy unseen-speaker recall and still fail exact phrase selectivity.
+
+### Pending / optional
+
+- 🎯 ⏳ Freeze the model/threshold set for user testing; avoid moving targets.
+- ⏳ Replay user-test audio across frozen shadow models.
+- 🧊 Optional only if time permits: `v19` controlled phrase-selectivity experiment:
+  - strict positives
+  - explicit `kuule/kule`-only, `kratt`-only, reversed-order, and `kuule/kule <confusable>` negatives
+  - independent holdout regression set
+  - controlled ratio, not hard-negative overdose
+- 🧊 Defer broad negative-pool expansion and new architecture searches until after thesis-critical writing/testing.
 
 ---
 
-## HARDWARE / DEPLOYMENT
+## 4. EVALUATION METHODOLOGY
 
-- ✅ ESP32-S3-Korvo-2 firmware (recorder)
-- ✅ ESP32-S3-Korvo-2 firmware (wake-word-logger / FAPH counter)
-- ✅ ESPHome integration with v6
-- ⏳ Update ESPHome config to v16c
-- ⏳ Test MoE consensus E2E on real hardware
-- ⏳ Document deployment in §4
-- ⏳ Android logger deployment with v16c
+### Completed
+
+- ✅ `evaluation/test_sets.py` registry for held-out sets and disjointness assertions.
+- ✅ Canonical streaming FAPH: sliding window + cooldown on continuous streams.
+- ✅ FAPH sets: CV ET, LibriSpeech, DiPCo, MacBook background.
+- ✅ Positive recall anchors: Isa XTTS, Ode real, Friend1 real, Mattias probes.
+- ✅ Hard-negative sets: Mac holdout, Isa XTTS, v10 canary.
+- ✅ Prefix/confusable regression sets after v17 incident.
+- ✅ Unified benchmark artifacts for v16/v17/v18/checkpoint families.
+- ✅ DET/threshold sweep tooling exists.
+
+### Pending
+
+- 🎯 ⏳ Freeze validation/dev thresholds before final user-test analysis.
+- ⏳ Implement Wilson 95% CI in final reporting code or compute separately for thesis tables.
+- ⏳ Add ROC AUC only if it helps the thesis; do not let it displace FAPH/recall/FPR.
+- ⏳ Clearly label prefix/confusable regression sets that overlap with training for some model families as **diagnostic**, not final independent holdout.
+- ⏳ Keep `wake-word/evaluation/training_data_manifest.md` aligned for v17/v18/checkpoint runs where exact manifests are available.
 
 ---
 
-## SCHEDULE OUTLOOK
+## 5. DATA / QUALITY GUARDS
 
+### Completed
+
+- ✅ Positive-data audit identified corrupt SSML/XML readout and full-command XTTS positives.
+- ✅ Known-bad positive sources quarantined by default in training scripts.
+- ✅ Strict positive policy documented: valid positives must be exactly `kuule/kule kratt` variants.
+- ✅ Duration gate raised toward 0.80s minimum for future positives unless manually whitelisted.
+- ✅ Prefix/confusable regression sets materialized.
+
+### Pending / deferred
+
+- 🎯 ⏳ Collect user-test real-speaker data with consent; this is now the highest-value data source.
+- ⏳ If new training happens, record positive exclusions in manifests and keep strict source policy.
+- 🧊 Defer large MUSAN/CV/VOiCES/podcast expansion unless thesis writing is safe.
+- 🧊 Do not ingest user-test audio into training before final evaluation unless the thesis explicitly separates training and held-out analysis.
+
+---
+
+## 6. HARDWARE / DEPLOYMENT / DEMO
+
+### Completed
+
+- ✅ ESP32-S3-Korvo-2 recorder and wake-word-logger firmware exist.
+- ✅ ESPHome integration path exists.
+- ✅ Android false-trigger logger exists and supports bundled/selectable models.
+- ✅ `kratt user-test` recorder exists for labelled trial capture.
+- ✅ Demo pipeline tooling exists.
+
+### Pending
+
+- 🎯 ⏳ Decide the active model for the user-test demo; default: `v16c` unless pilot proves worse than `expert-a`.
+- ⏳ Verify ESP32/Android/demo configs point to the intended active model and threshold before testing.
+- ⏳ Capture enough logs to separate wake-word failures from STT/intent/bulb failures.
+- ⏳ Document deployment path and limitations in thesis §4.
+
+---
+
+## 7. SCHEDULE OUTLOOK
+
+```text
+2026-04-29..30  │ docs/source-of-truth refresh │ self-pilot │ freeze protocol/model/thresholds │
+2026-05-01..05  │ 2-3 pilot users │ fix only blocking bugs │ start full user tests │
+2026-05-06..10  │ full user testing │ replay/shadow scoring │ thesis §3/§4 drafting │
+2026-05-11..15  │ analysis tables/figures │ thesis §5 │ intro/summary tighten │
+2026-05-16..18  │ final edits │ formatting │ submission │
 ```
-April:    │ MoE breakthrough ✓ │ v16c ready ✓ │ Eval methodology ✓ │ §3 writing │ User test planning │
-May:      │ User testing pilot │ Full user testing │ Data analysis │ §4-5 writing │
-June:     │ §1 §6 polish │ Juhendaja feedback │ Final corrections │ KAITSMINE │
-```
 
-**Time pressure**: ~2 months remaining. User testing is the biggest unknown. MoE consensus needs real-device validation before thesis claim.
+**Rule:** after 2026-05-01, reject new experiments that do not directly improve the submitted thesis.
 
 ---
 
-## EVENTS / DECISIONS LOG
+## 8. EVENTS / DECISIONS LOG
 
-- **2026-03-24**: Vahekaitsmine - presented v6 as breakthrough (numbers later found wrong due to data leakage)
-- **2026-04-07**: Evaluation methodology audit revealed data leakage in `compare_models.py` (test set was training data)
-- **2026-04-07**: Built `test_sets.py` with disjointness assertions; rewrote `compare_models.py`; added FAPH metric; corrected thesis §2
-- **2026-04-07**: Discovered v7 (which we deprecated) is actually the best FAPH model (96 vs v6 154)
-- **2026-04-12-13**: Session findings — v15 best IRL despite worst bench, augmentation bugs found, MoE consensus explored
-- **2026-04-13**: MoE sub-1 FAPH breakthrough (Expert A + Expert B v2 @ 0.996 = 0.79 FAPH)
-- **2026-04-21**: Unified benchmark on all models (v1-v16c, experts, consensus combos)
-- **2026-04-23**: Documentation audit — PROJECT_TODO.md, MODEL_LINEAGE.md, training_data_manifest.md, wake-word/CLAUDE.md updated to reflect v16c state
+- **2026-03-24**: Vahekaitsmine presented v6 as breakthrough; later corrected after data-leak audit.
+- **2026-04-07**: Evaluation methodology audit revealed test/train leakage; canonical held-out FAPH workflow created.
+- **2026-04-12-13**: Session findings: benchmark FAPH alone does not predict real-world performance; MoE explored.
+- **2026-04-13**: `expert-a + expert-b2` sub-1 FAPH benchmark milestone.
+- **2026-04-21**: Unified v1-v16c benchmark table produced.
+- **2026-04-26**: v17 recall-cv runs benchmarked; high recall but severe hard-negative/prefix collapse.
+- **2026-04-27**: Positive-data quality audit found corrupt SSML/XML and full-command positives; guard rails added.
+- **2026-04-28**: v18 clean-positive matrix showed label cleanup is necessary but not sufficient.
+- **2026-04-29**: Checkpoint-FAPH v18d family showed ambient-FAPH checkpointing alone can overfit / collapse recall.
+- **2026-04-29**: Project docs refreshed toward thesis/user-test critical path.
