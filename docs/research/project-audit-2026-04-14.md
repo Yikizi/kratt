@@ -1,5 +1,7 @@
 # Kratt Project Audit — 2026-04-14
 
+> **Historical snapshot:** current status after v17/v18/checkpoint work is in `docs/PROJECT_TODO.md` and `docs/research/source-of-truth-apr-2026.md`.
+
 Audit eesmärk: panna ühte kohta kokku projekti masinõppe areng, tegelik
 timeline, git ajalugu, GitLabi tööpakid, Clockify ajakulu, hiljutised otsused,
 aktiivsed töövood ja lahtised küsimused.

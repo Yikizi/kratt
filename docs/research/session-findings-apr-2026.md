@@ -1,5 +1,7 @@
 # Session Findings: April 5-13, 2026
 
+> **Historical snapshot:** this file preserves the April 5-13 session conclusions. Later v17/v18/checkpoint results changed the current framing; use `docs/research/source-of-truth-apr-2026.md` and `docs/PROJECT_TODO.md` for current status.
+
 Extracted from Claude Code session `a21420ac-d1eb-4574-b29e-68856290793c` (kratt-log).
 Covers sprint from April 5 (v8 planning) through April 13 (expert MoE breakthrough).
 
@@ -256,7 +258,7 @@ Sequential failures during openWakeWord training attempts:
 
 1. **v6-residual is best single model** for FAPH (3.4 MacBook) but unusable alone (100% hard neg FPR)
 2. **MoE consensus is the path forward** -- no single model can do all three metrics
-3. **Expert A+B2 @ 0.996 = 0.79 FAPH** is the current best deployment config
+3. **Expert A+B2 @ 0.996 = 0.79 FAPH** was the best deployment-config hypothesis in this April 5-13 snapshot
 4. **Recall 5/11 is not acceptable** for deployment, needs 5-10 real speakers
 5. **All future training must use fixed augmentation** (PitchShift 0.4, BGNoise 0.5, RIR 0.3)
 6. **negative_class_weight should be 5** (not 20)

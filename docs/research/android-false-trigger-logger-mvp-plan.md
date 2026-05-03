@@ -1,5 +1,7 @@
 # Android 24/7 False-Trigger Logger (MVP Plan)
 
+> **Historical / implemented:** the Android false-trigger logger exists. Use `android/CLAUDE.md` and `kratt android` for current operator guidance; keep this file as the MVP design record.
+
 ## 1) Goal
 Build a **minimal Android app** (Pixel 8a target) that runs continuously, listens for wake-word triggers, and stores only detection snippets for later false-accept analysis.
 

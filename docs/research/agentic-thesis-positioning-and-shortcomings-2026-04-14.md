@@ -1,5 +1,7 @@
 # Agentic thesis positioning and current shortcomings (2026-04-14)
 
+> **Historical but still required context:** methodological cautions remain relevant, but current model/user-test status is in `docs/research/source-of-truth-apr-2026.md` and `docs/PROJECT_TODO.md`.
+
 Purpose: give future agents a compact, explicit view of the main scientific/methodological weaknesses in the current Kratt project state, and how to frame them productively in the thesis.
 
 This is not a rejection of the project direction. It is a calibration note.

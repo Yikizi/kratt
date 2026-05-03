@@ -1,8 +1,19 @@
 # Wake Word Detection - Evaluation Methodology Best Practices
 
-**Status**: Reference document for thesis methodology chapter.
-**Compiled**: April 2026, from primary sources (Apple, Picovoice, Google, openWakeWord, microWakeWord, academic papers).
+**Status**: Reference document for thesis methodology chapter.  
+**Compiled**: April 2026, from primary sources (Apple, Picovoice, Google, openWakeWord, microWakeWord, academic papers).  
+Last updated: 2026-04-29  
 **Purpose**: Define what "correct" evaluation looks like for the Kratt wake-word system, contrast with what we initially did wrong, and lock in defensible practices going forward.
+
+## 0. 2026-04-29 addendum — current application to Kratt
+
+The current thesis evaluation must use the following framing:
+
+- `v16c` is a stable single-model baseline / active demo candidate, not a production-ready claim.
+- v17 exposed a positive-label corruption incident; v18 showed clean labels are necessary but not sufficient.
+- checkpoint-FAPH showed that optimizing ambient FAPH alone can collapse real-speaker recall.
+- Final tables must report **FAPH + recall + hard/prefix/confusable FPR** together at frozen thresholds.
+- Prefix/confusable regression sets are now part of the evaluation story; if a model family saw related sources during training, report that result as diagnostic rather than final independent holdout.
 
 ---
 
@@ -69,7 +80,10 @@ This rule sounds obvious but is **especially easy to violate** with wake word da
 **Mitigations**:
 - **Disjointness assertion in code** (we now have `assert_disjoint_from_training()` in `evaluation/test_sets.py`) — a tripwire that fails CI if test files appear in training source dirs
 - **Carve test sets at the FIRST step**, before splits or shuffles, so they cannot accidentally leak in
-- **Use index-based splits** when sampling from a large corpus: e.g. "training uses CV ET indices 0-4999, evaluation uses 5000-7000". This is what we do now for `faph_cv_et`.
+- **Use index-based splits** when sampling from a large corpus: e.g. legacy recipe
+  "training uses CV ET indices 0-4999, evaluation uses 5000-7000". `faph_cv_et`
+  stays a frozen legacy final-eval anchor from that recipe; CV ET 7000+ is a separate
+  pool for mining/dev only.
 
 ### 2.2 RULE: positive test data must reflect deployment conditions
 
@@ -99,9 +113,10 @@ For FAPH measurement to be statistically meaningful, you need **continuous audio
 | **openWakeWord (DiPCo)** | 5.5 hours | Far-field dinner-party conversations |
 | **openWakeWord (full validation)** | ~11 hours | DiPCo + Santa Barbara + MUSDB |
 | **Picovoice benchmark** | LibriSpeech test_clean | Hours of clean speech |
-| **Our `faph_cv_et`** | 3.82 hours | Common Voice ET, untrained portion |
+| **Our `faph_cv_et`** | ~3.65 hours | Common Voice ET, frozen legacy untrained subset (indices 5000-7000) |
+| **Our `faph_dipco` (local)** | 3.32 hours | DiPCo eval-session subset (S01/S03/S06/S07/S08), not full 5.5h |
 
-**Recommendation for thesis**: 3.82 hours is on the low end. Should add at least one more long-form source (e.g., 10+ hours of Estonian podcast or news audio) to make FAPH stable. Even better: include English (out-of-language) negatives to test cross-language false fires.
+**Recommendation for thesis**: ~3.65 hours is on the low end. Should add at least one more long-form source (e.g., 10+ hours of Estonian podcast or news audio) to make FAPH stable. Even better: include English (out-of-language) negatives to test cross-language false fires.
 
 ### 2.4 RULE: hard negatives are a separate dimension
 
@@ -218,6 +233,31 @@ Examples:
 
 **For our work**: this is a viable v10/v11 strategy. Stage 1 = small "kuule kr*" detector with cutoff 0.7. Stage 2 = "kratt vs kraam" discriminator with cutoff 0.97. Stage 2 only runs when stage 1 fires, so it doesn't add average compute.
 
+### 3.7 VAD gatekeeper check (pre-routing only)
+
+Silero VAD can be used as a *speech gate* in front of KWS, but it should be audited with hold-out data before we claim any recall/FAPH gains.
+
+- For recall sets, measure:
+  - speech coverage (% speech duration in each clip)
+  - first-speech latency (ms from clip start)
+  - how many clips have zero speech (hard recall floor for strict VAD gating)
+- For ambient/FAPH sets, measure:
+  - speech duty cycle (`speech_duration / total_duration`)
+- Upper-bound FAPH math:
+  - `faph_gated <= faph_raw × duty_cycle` (best case)
+  - if duty cycle is 20%, even perfect gating cannot reduce FAPH by more than 80%
+- Recall warning:
+  - report `%` clips with no detected speech and `%` with very late first speech (e.g. >250ms), because both are potential recall-loss boundaries when hard-gating KWS.
+
+Minimal script for this audit (no model scoring):
+
+```bash
+python wake-word/evaluation/benchmark_silero_vad_gate.py \
+  --baseline-faph-csv wake-word/evaluation/benchmark_openwakeword_<timestamp>.csv \
+  --baseline-model expert-a \
+  --baseline-threshold 0.97
+```
+
 ---
 
 ## 4. Threshold and probability cutoff
@@ -250,6 +290,20 @@ This is silently fitting to the test set.
 1. For each model, derive an operating point from a validation slice
 2. Report the chosen threshold AND its FRR/FAPH on the held-out test set
 3. Also report ROC AUC across all thresholds for fair comparison
+
+### 4.4 Final thesis reporting contract
+
+Final thesis claims must be conservative and explicit:
+
+- Report **one declared operating threshold** and show all headline numbers at that same threshold:
+  - streaming FAPH
+  - recall
+  - hard-negative FPR
+- Never choose that threshold on the test set. Use **validation/dev** only, then apply the fixed threshold on held-out test. This is the only valid way to avoid optimistic bias.
+- Treat small sample sizes as uncertainty, not precision:
+  - small recall denominators (few positive test utterances) => report confidence interval or explicit "small-N" warning
+  - short negative-hours or few false events for FAPH => report instability or CI rather than one-point certainty
+- Do not compare metrics across incomparable thresholds/platforms. Our Android field runs use a different deployment threshold (often around `0.90`) than offline offline sweeps (`0.97` / `0.995`), so direct numeric comparison is invalid unless a recalibration mapping is explicitly provided.
 
 ### 4.3 Sliding-window averaging
 
@@ -308,9 +362,11 @@ Three categories of disjoint hold-out sets:
    - **Add**: `hard_neg_korvo2_holdout` — record the same 100 phrases on KORVO-2 mic
    
 3. **Long-form FAPH sets** (each measured separately, never averaged):
-   - `faph_cv_et` (3.82h, in-domain Estonian) — primary
+   - `faph_cv_et` (~3.65h, in-domain Estonian) — primary
+   - `faph_dipco` (3.32h, DiPCo eval sessions S01/S03/S06/S07/S08 only) — primary frozen final-eval split
+   - `faph_dipco` mining/dev sessions (S02/S04/S05/S09/S10) are intentionally disjoint from final-eval sessions.
    - `faph_korvo2_holdout` (~30 min, same-device, fresh recording) — primary same-device
-   - **Add**: `faph_estonian_podcast` (10+ hours, free podcasts not in training)
+    - **Add**: `faph_estonian_podcast` (10+ hours, free podcasts not in training)
    - **Optionally**: `faph_voices` (English, cross-language test)
    - **Optionally**: `faph_musan_music` (music robustness test)
 
@@ -339,7 +395,9 @@ For each model version, report:
 
 ---
 
-## 7. What changes for v9 and beyond
+## 7. Historical planning notes for v9 and beyond
+
+> **Historical note (2026-04-29):** this section preserves the April planning logic that led to v9+ experiments. It is not current training guidance. Current guidance is in `docs/PROJECT_TODO.md`, `docs/research/source-of-truth-apr-2026.md`, `wake-word/DATA_STRATEGY.md`, and `wake-word/docs/MODEL_LINEAGE.md`.
 
 Based on the research, here's the specific recipe v9 should test:
 
