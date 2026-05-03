@@ -1,0 +1,361 @@
+{
+  "input_jsonl": "data/processed/_labeling/mattias_short_suspect_lt0p80_stt_20260428.jsonl",
+  "policy": "Suspect mattias-short positives under 0.80s transcribed with Kiirkirjutaja, no VAD; absence of full phrase suggests these should not be positive training/eval clips without manual whitelist.",
+  "total": 220,
+  "counts": {
+    "kratt_tail_like": 9,
+    "kuule_prefix_like": 34,
+    "empty": 168,
+    "other_stt_noise": 9
+  },
+  "examples": {
+    "kratt_tail_like": [
+      {
+        "file": "mattias_eval_20260414_0086.wav",
+        "duration_s": 0.744,
+        "transcript": "poole kra"
+      },
+      {
+        "file": "mattias_eval_20260414_0100.wav",
+        "duration_s": 0.648,
+        "transcript": "Kra"
+      },
+      {
+        "file": "mattias_eval_20260414_0111.wav",
+        "duration_s": 0.584,
+        "transcript": "Kurat"
+      },
+      {
+        "file": "mattias_eval_20260414_0120.wav",
+        "duration_s": 0.616,
+        "transcript": "Kura"
+      },
+      {
+        "file": "mattias_eval_20260414_0122.wav",
+        "duration_s": 0.744,
+        "transcript": "Pole Grete"
+      },
+      {
+        "file": "mattias_eval_20260414_0133.wav",
+        "duration_s": 0.68,
+        "transcript": "Kra"
+      },
+      {
+        "file": "mattias_eval_20260414_0150.wav",
+        "duration_s": 0.584,
+        "transcript": "It's a great"
+      },
+      {
+        "file": "mattias_eval_20260414_0237.wav",
+        "duration_s": 0.68,
+        "transcript": "The gre"
+      },
+      {
+        "file": "mattias_eval_20260414_0282.wav",
+        "duration_s": 0.648,
+        "transcript": "A great"
+      }
+    ],
+    "kuule_prefix_like": [
+      {
+        "file": "mattias_eval_20260414_0087.wav",
+        "duration_s": 0.744,
+        "transcript": "Kuule"
+      },
+      {
+        "file": "mattias_eval_20260414_0088.wav",
+        "duration_s": 0.744,
+        "transcript": "kuule"
+      },
+      {
+        "file": "mattias_eval_20260414_0089.wav",
+        "duration_s": 0.68,
+        "transcript": "Kuule,"
+      },
+      {
+        "file": "mattias_eval_20260414_0090.wav",
+        "duration_s": 0.68,
+        "transcript": "Kuule,"
+      },
+      {
+        "file": "mattias_eval_20260414_0091.wav",
+        "duration_s": 0.648,
+        "transcript": "Kuule,"
+      },
+      {
+        "file": "mattias_eval_20260414_0093.wav",
+        "duration_s": 0.648,
+        "transcript": "Kuule"
+      },
+      {
+        "file": "mattias_eval_20260414_0094.wav",
+        "duration_s": 0.616,
+        "transcript": "kuule"
+      },
+      {
+        "file": "mattias_eval_20260414_0095.wav",
+        "duration_s": 0.648,
+        "transcript": "Kuule"
+      },
+      {
+        "file": "mattias_eval_20260414_0096.wav",
+        "duration_s": 0.584,
+        "transcript": "Kuulit"
+      },
+      {
+        "file": "mattias_eval_20260414_0098.wav",
+        "duration_s": 0.616,
+        "transcript": "Kuule, Gra"
+      },
+      {
+        "file": "mattias_eval_20260414_0104.wav",
+        "duration_s": 0.616,
+        "transcript": "Kuule"
+      },
+      {
+        "file": "mattias_eval_20260414_0106.wav",
+        "duration_s": 0.648,
+        "transcript": "Kuulge"
+      },
+      {
+        "file": "mattias_eval_20260414_0107.wav",
+        "duration_s": 0.68,
+        "transcript": "Kuule,"
+      },
+      {
+        "file": "mattias_eval_20260414_0112.wav",
+        "duration_s": 0.648,
+        "transcript": "Kuule"
+      },
+      {
+        "file": "mattias_eval_20260414_0113.wav",
+        "duration_s": 0.584,
+        "transcript": "kuule kura"
+      },
+      {
+        "file": "mattias_eval_20260414_0114.wav",
+        "duration_s": 0.648,
+        "transcript": "Kuule,"
+      },
+      {
+        "file": "mattias_eval_20260414_0117.wav",
+        "duration_s": 0.712,
+        "transcript": "Kuule"
+      },
+      {
+        "file": "mattias_eval_20260414_0119.wav",
+        "duration_s": 0.616,
+        "transcript": "Kuul Ot"
+      },
+      {
+        "file": "mattias_eval_20260414_0124.wav",
+        "duration_s": 0.584,
+        "transcript": "kuule G"
+      },
+      {
+        "file": "mattias_eval_20260414_0130.wav",
+        "duration_s": 0.648,
+        "transcript": "Kuule,"
+      },
+      {
+        "file": "mattias_eval_20260414_0131.wav",
+        "duration_s": 0.712,
+        "transcript": "Kuule,"
+      },
+      {
+        "file": "mattias_eval_20260414_0134.wav",
+        "duration_s": 0.712,
+        "transcript": "Kuule, Krü"
+      },
+      {
+        "file": "mattias_eval_20260414_0135.wav",
+        "duration_s": 0.744,
+        "transcript": "Kuule, Gre"
+      },
+      {
+        "file": "mattias_eval_20260414_0190.wav",
+        "duration_s": 0.648,
+        "transcript": "Kuule,"
+      },
+      {
+        "file": "mattias_eval_20260414_0207.wav",
+        "duration_s": 0.68,
+        "transcript": "Kuule"
+      }
+    ],
+    "empty": [
+      {
+        "file": "mattias_eval_20260414_0092.wav",
+        "duration_s": 0.552,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0097.wav",
+        "duration_s": 0.488,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0101.wav",
+        "duration_s": 0.52,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0102.wav",
+        "duration_s": 0.552,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0103.wav",
+        "duration_s": 0.552,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0105.wav",
+        "duration_s": 0.488,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0108.wav",
+        "duration_s": 0.52,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0110.wav",
+        "duration_s": 0.456,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0115.wav",
+        "duration_s": 0.488,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0116.wav",
+        "duration_s": 0.52,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0118.wav",
+        "duration_s": 0.456,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0125.wav",
+        "duration_s": 0.52,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0126.wav",
+        "duration_s": 0.488,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0127.wav",
+        "duration_s": 0.52,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0128.wav",
+        "duration_s": 0.552,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0132.wav",
+        "duration_s": 0.552,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0136.wav",
+        "duration_s": 0.488,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0137.wav",
+        "duration_s": 0.584,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0138.wav",
+        "duration_s": 0.488,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0139.wav",
+        "duration_s": 0.552,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0140.wav",
+        "duration_s": 0.552,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0141.wav",
+        "duration_s": 0.456,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0142.wav",
+        "duration_s": 0.52,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0143.wav",
+        "duration_s": 0.488,
+        "transcript": ""
+      },
+      {
+        "file": "mattias_eval_20260414_0144.wav",
+        "duration_s": 0.52,
+        "transcript": ""
+      }
+    ],
+    "other_stt_noise": [
+      {
+        "file": "mattias_eval_20260414_0099.wav",
+        "duration_s": 0.584,
+        "transcript": "õppe"
+      },
+      {
+        "file": "mattias_eval_20260414_0109.wav",
+        "duration_s": 0.584,
+        "transcript": "Re"
+      },
+      {
+        "file": "mattias_eval_20260414_0121.wav",
+        "duration_s": 0.776,
+        "transcript": "Kui"
+      },
+      {
+        "file": "mattias_eval_20260414_0123.wav",
+        "duration_s": 0.68,
+        "transcript": "Kulla"
+      },
+      {
+        "file": "mattias_eval_20260414_0129.wav",
+        "duration_s": 0.744,
+        "transcript": "Poola"
+      },
+      {
+        "file": "mattias_eval_20260414_0197.wav",
+        "duration_s": 0.744,
+        "transcript": "All right"
+      },
+      {
+        "file": "mattias_eval_20260414_0212.wav",
+        "duration_s": 0.616,
+        "transcript": "What"
+      },
+      {
+        "file": "mattias_eval_20260414_0259.wav",
+        "duration_s": 0.584,
+        "transcript": "Ole"
+      },
+      {
+        "file": "mattias_eval_20260414_0260.wav",
+        "duration_s": 0.68,
+        "transcript": "Kuured"
+      }
+    ]
+  }
+}
