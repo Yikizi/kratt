@@ -24,6 +24,8 @@ wake-word/data/external/
 wake-word/data/_quarantine_duplicates/
 wake-word/data/confusable_filter_training/
 !wake-word/data/confusable_filter_training/README.md
+# OHEM mined hard-example exports (large WAV bundles)
+wake-word/data/mined/
 stt-integration/kiirkirjutaja-source/models/
 *.wav
 *.mp3
@@ -80,6 +82,11 @@ external-repos/openWakeWord/
 .idea/
 .serena/
 .claude/
+
+# Thesis automation runtime state (per-lane memory and scheduler state)
+.hermes/thesis-automation/memory/
+.hermes/thesis-automation/state/
+!.hermes/thesis-automation/state/.gitignore
 *.swp
 *.swo
 *~
