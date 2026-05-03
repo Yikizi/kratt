@@ -62,7 +62,7 @@ Tallinn \Year
 \section{Probleem}
 Lokaalse nutikodu hääljuhtimise kasutatavus sõltub suurel määral sellest, kas äratussõna tuvastus on stabiilne ja usaldusväärne. Eesti keele ja teiste väikeste keeleruumide kontekstis on tegemist olulise probleemiga, kuna spetsiifiliste treeningandmete vähesus takistab olemasolevate lahenduste otsekasutamist ja need ei taga samaaegselt piisavat mudeli kvaliteeti, süsteemi lihtsat lõimitavust ja reprodutseeritavat kasutuselevõttu.
 
-Käesoleva töö keskne uurimisküsimus on, kuidas töötada välja eestikeelse äratussõna lahendus, mis on ühtaegu tehniliselt täpne, süsteemselt lõimitav ja praktiliseks kasutuseks sobiv. Eesmärk ei ole üksnes näidata mudeli tööd isoleeritud testkeskkonnas, vaid luua standardsetele protokollidele, nagu Wyoming [4], toetuv terviklahendus, mis on kasutatav modulaarse nutikodu komponendina.
+Käesoleva töö keskne uurimisküsimus on, kuidas töötada välja eestikeelse äratussõna lahendus, mis on ühtaegu tehniliselt täpne, süsteemselt lõimitav ja praktiliseks kasutuseks sobiv. Eesmärk ei ole üksnes näidata mudeli tööd isoleeritud testkeskkonnas, vaid luua standardsetele protokollidele toetuv terviklahendus, mis on kasutatav modulaarse nutikodu komponendina. Reaalne integreerimisrada on siiani tõendatud ESPHome + \texttt{home\_assistant}/\texttt{voice\_assistant} liidesega.
 
 \section{Töö eesmärk}
 Töö eesmärk on töötada välja eestikeelne äratussõna mudel fraasile ,,Kuule Kratt'' ja hinnata selle sobivust Home Assistanti lokaalse hääljuhtimise osana.
@@ -83,7 +83,7 @@ Töös analüüsitakse olemasolevaid avatud lähtekoodiga äratussõna tuvastuse
 Töö käigus koostatakse eestikeelne treeningmaterjal. Andmepuuduse ületamiseks kombineeritakse inimeste häälenäidiseid lokaalsete kõnesünteesi lahendustega, kasutades muuhulgas Tartu Neurokõne mudelit, ning rakendatakse andmete rikastamise tehnikate abil nende sünteetilist paljundamist. Pärast genereeritud andmete kvaliteedikontrolli treenitakse mikrokontrolleritele optimeeritud ja reaalajas voogedastust toetav äratussõna mudel. Arenduses rakendatakse MixConv kihtidel põhinevat mixednet arhitektuuri, et saavutada mälupiirangutega seadmetel piisav tuvastustäpsus.
 
 \section{Tehniline teostus ja süsteemi lõimimine}
-Mudeli arenduse järel kvantiseeritakse mudeli kaalud, et muuta see käivitatavaks ESP32-S3-Korvo-2 arendusplaadil. Seejärel lõimitakse valminud mudel Wyoming protokolli abil Home Assistanti kõnetöötlusahelasse. Tehnilise teostuse eesmärk on tagada, et lahendus oleks rakendatav ilma erilahendusi nõudva käsitööta.
+Mudeli arenduse järel kvantiseeritakse mudeli kaalud, et muuta see käivitatavaks ESP32-S3-Korvo-2 arendusplaadil. Seejärel lõimitakse valminud mudel ESPHome'i \texttt{voice\_assistant} liidese abil Home Assistanti kõnetöötlusahelasse. Tehnilise teostuse eesmärk on tagada, et lahendus oleks rakendatav ilma erilahendusi nõudva käsitööta.
 
 \section{Tulemuste valideerimine}
 Valideerimine toimub kahel tasandil. Esimene tasand on tehniline valideerimine, mille käigus hinnatakse tuvastuse kvaliteeti, valekäivituste ja möödalaskmiste esinemissagedust, latentsust ning töökindlust erinevates tingimustes.

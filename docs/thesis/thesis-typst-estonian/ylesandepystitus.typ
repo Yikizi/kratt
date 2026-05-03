@@ -33,7 +33,7 @@
 <probleem>
 Lokaalse nutikodu hääljuhtimise kasutatavus sõltub suurel määral sellest, kas äratussõna tuvastus on stabiilne ja usaldusväärne. Eesti keele ja teiste väikeste keeleruumide kontekstis on tegemist olulise probleemiga, kuna spetsiifiliste treeningandmete vähesus takistab olemasolevate lahenduste otsekasutamist ja need ei taga samaaegselt piisavat mudeli kvaliteeti, süsteemi lihtsat lõimitavust ja reprodutseeritavat kasutuselevõttu.
 
-Käesoleva töö keskne uurimisküsimus on, kuidas töötada välja eestikeelse äratussõna lahendus, mis on ühtaegu tehniliselt täpne, süsteemselt lõimitav ja praktiliseks kasutuseks sobiv. Eesmärk ei ole üksnes näidata mudeli tööd isoleeritud testkeskkonnas, vaid luua standardsetele protokollidele, nagu Wyoming @nabucasa2024wyoming, toetuv terviklahendus, mis on kasutatav modulaarse nutikodu komponendina.
+Käesoleva töö keskne uurimisküsimus on, kuidas töötada välja eestikeelse äratussõna lahendus, mis on ühtaegu tehniliselt täpne, süsteemselt lõimitav ja praktiliseks kasutuseks sobiv. Eesmärk ei ole üksnes näidata mudeli tööd isoleeritud testkeskkonnas, vaid luua standardsetele protokollidele, nagu Wyoming @nabucasa2024wyoming, toetuv terviklahendus, mis kasutab ESPHome `voice_assistant` integratsiooni Home Assistantis.
 
 #heading(level: 2)[Töö eesmärk]
 <töö-eesmärk>
@@ -41,7 +41,7 @@ Töö eesmärk on töötada välja eestikeelne äratussõna mudel fraasile „Ku
 
 Eesmärgi saavutamiseks käsitletakse töös kolme omavahel seotud osa:
 - *mudeliarendus* – eestikeelse treeningandmestiku koostamine ja äratussõna mudeli treenimine,
-- *süsteemi lõimimine* – mudeli rakendamine demonstreerival riistvaral ja integreerimine Home Assistanti lokaalsesse kõnetöötlusahelasse standardiseeritud protokollide abil,
+- *süsteemi lõimimine* – mudeli rakendamine demonstreerival riistvaral ja integreerimine Home Assistanti lokaalsesse kõnetöötlusahelasse `voice_assistant`-i kaudu standardiseeritud protokollidel,
 - *empiiriline valideerimine* – lahenduse tehniline mõõtmine ja kasutajapõhine hindamine mudeli edukuse määramiseks erinevate kõnelejatega.
 
 #heading(level: 1)[Metoodika]
@@ -53,11 +53,11 @@ Töös analüüsitakse olemasolevaid avatud lähtekoodiga äratussõna tuvastuse
 
 #heading(level: 2)[Andmestiku koostamine ja mudeli arendamine]
 <andmestiku-koostamine-ja-mudeli-arendamine>
-Töö käigus koostatakse eestikeelne treeningmaterjal. Andmepuuduse ületamiseks kombineeritakse inimeste häälenäidiseid lokaalsete kõnesünteesi lahendustega, kasutades muuhulgas Tartu Neurokõne mudelit, ning rakendatakse andmete rikastamise (*data augmentation*) tehnikate abil nende sünteetilist paljundamist. Pärast genereeritud andmete kvaliteedikontrolli treenitakse mikrokontrolleritele optimeeritud ja reaalajas voogedastust toetav äratussõna mudel. Arenduses rakendatakse MixConv kihtidel põhinevat `mixednet` arhitektuuri, et saavutada mälupiirangutega seadmetel piisav tuvastustäpsus. Mudeli loomisel käsitletakse parameetrite valikut, tundlikkuse häälestamist ja tulemuste reprodutseeritavust.
+Töö käigus koostatakse eestikeelne treeningmaterjal. Andmepuuduse ületamiseks kombineeritakse inimeste häälenäidiseid lokaalsete kõnesünteesi lahendustega, kasutades muuhulgas Tartu Neurokõne mudelit, ning rakendatakse andmete rikastamise (*data augmentation*) tehnikate abil nende sünteetilist paljundamist. Pärast genereeritud andmete kvaliteedikontrolli treenitakse mikrokontrolleritele optimeeritud ja reaalajas voogedastust toetav äratussõna mudel. `v16c` käsitletakse hetkel kandidaatmudelina; seda ei esitata tootmistasandi valikuna enne reaalse seadme valideerimist. Arenduses rakendatakse MixConv kihtidel põhinevat `mixednet` arhitektuuri, et saavutada mälupiirangutega seadmetel piisav tuvastustäpsus. Mudeli loomisel käsitletakse parameetrite valikut, tundlikkuse häälestamist ja tulemuste reprodutseeritavust.
 
 #heading(level: 2)[Tehniline teostus ja süsteemi lõimimine]
 <tehniline-teostus-ja-süsteemi-lõimimine>
-Mudeli arenduse järel kvantiseeritakse mudeli kaalud, et muuta see käivitatavaks ESP32-S3-Korvo-2 arendusplaadi sarnasel madala ressursiga seadmel. Seejärel lõimitakse valminud mudel Wyoming protokolli abil Home Assistanti kõnetöötlusahelasse. Tehnilise teostuse eesmärk on tagada, et lahendus oleks rakendatav ilma erilahendusi nõudva käsitööta.
+Mudeli arenduse järel kvantiseeritakse mudeli kaalud, et muuta see käivitatavaks ESP32-S3-Korvo-2 arendusplaadi sarnasel madala ressursiga seadmel. Seejärel lõimitakse valminud mudel ESPHome'i `voice_assistant` mooduli kaudu Home Assistanti kõnetöötlusahelasse. Korvo-2 spetsiifiline korduskatse jääb eraldiseisvaks tõendusena ja seda ei võrrelda automaatselt üleüldise võrku- või andmekvaliteedi hinnanguga.
 
 #heading(level: 2)[Tulemuste valideerimine]
 <tulemuste-valideerimine>

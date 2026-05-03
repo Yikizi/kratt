@@ -2,7 +2,7 @@
 
 Nutikodu haaliidesed on liikunud aina vaiksemate, odavamate ja energiasaastlikumate seadmete poole, kuid eestikeelsete aratussonade tugi on endiselt killustatud. Praktikas tähendab see, et paljud valmis lahendused eeldavad pilveteenust, suuremat arvutusressurssi voi ingliskeelset kasutusmustrid. Kohaliku ja eestikeelse lahenduse loomine on seetottu korraga nii tehniline kui ka kasutajakogemuse probleem.
 
-Kaesoleva too eesmargiks on uurida, kas eestikeelset aratussona on voimalik tuvastada piiratud ressursiga nutikodu mikrokontrolleril nii, et lahendus oleks praktiliselt kasutatav. Too keskmes on ESP32-S3 pohine seade, ESPHome tarkvarakiht ja `microWakeWord` treeninguraamistik @esphome2026 @microwakeword2026. Eraldi fookuses on asjaolu, et wake word lahendus peab toimima pidevas voos, mitte ainult luhikeste eeltoodeldud heliklipi peal.
+Kaesoleva too eesmargiks on uurida, kas eestikeelset aratussona on voimalik tuvastada piiratud ressursiga nutikodu mikrokontrolleril nii, et lahendus oleks praktiliselt kasutatav. Too keskmes on ESP32-S3 pohine seade, ESPHome tarkvarakiht (`voice_assistant` kaudu live integraatsioonis) ja `microWakeWord` treeninguraamistik @esphome2026 @microwakeword2026. Eraldi fookuses on asjaolu, et wake word lahendus peab toimima pidevas voos, mitte ainult luhikeste eeltoodeldud heliklipi peal.
 
 Probleemi muudab keeruliseks kaks asjaolu. Esiteks on eestikeelseid valmis korpusi ja mudelitorusid selles valdkonnas vahe. Teiseks voib sama mudel anda hea tulemuse laborioludes, kuid hakata reaalses ruumis valesti vallanduma. Seetottu ei piisa ainult klassifikatsioonitapsusest; vaja on hinnata ka valepositiivseid trigger'eid pika ambient-signaali peal ning valida laevend `threshold`, mis tasakaalustab tabamuste ja valehairete suhte.
 

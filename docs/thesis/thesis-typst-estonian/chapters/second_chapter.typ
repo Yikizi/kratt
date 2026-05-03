@@ -23,6 +23,7 @@ See on oluline tulemus, sest sellega eraldati infrastruktuuriprobleemid eestikee
 
 == Hindamisprotsessi peamine oppetund
 Koige olulisem vahekokkuvote puudutab evaluatsiooni. Varasemas `Kratt` run'is oli ROC analuus sisuliselt degenerate, sest `testing_ambient` oli tuhi. Selle tulemusena saadud `AUC 0.00000` ei viidanud heale mudelile, vaid katkisele hindamisprotsessile. Hilisemad parandused kinnitasid, et ilma pika ambient-signaalita ei ole voimalik usaldusvaarset `FAPH` hinnangut anda.
+Edasi suunates ei võrrelda erinevaid mudeleid erinevatel threshold'idel: võrdlus saab olla loogiline vaid siis, kui `threshold`, `FAPH`- ja `recall`-andmed lisaks hard-negative `FPR`-iga on võetud sama mõõtesätte all.
 
 See tulemus on loputoo seisukohalt oluline, sest see muudab ka uurimiskusimust. Eesmargiks ei ole enam ainult "treenida mudel", vaid "ehitada selline pipeline, mis voimaldab mudelit ausalt hinnata". See metoodiline nihe on kaesoleva too üks keskseid leide.
 

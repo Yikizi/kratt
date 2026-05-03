@@ -1,5 +1,10 @@
-% Annotatsiooni tekst läheb siia (square brackets should be removed)
-[ANNOTATSIOONI TEKST LÄHEB SIIA]
+Käesoleva bakalaureusetöö eesmärk on uurida, kuidas luua ja hinnata eestikeelset äratussõna tuvastust piiratud ressursiga nutikodu mikrokontrolleril. Töö keskmes on projekt \enquote{Kratt}, mille sihiks on fraasi \enquote{Kuule Kratt} tuvastamine ESP32-S3 klassi seadmel lokaalselt, ilma pilveteenust kasutamata. Töö praktiline lähtekoht on see, et eestikeelse kõnetuvastuse jaoks leidub juba sobivaid mudeleid, kuid äratussõna tuvastus on seni olnud puuduolev lüli, mis määrab kogu hääljuhtimise kasutatavuse.
+
+Töös rekonstrueeriti ja parandati \texttt{microWakeWord} põhine treeningu- ja hindamistoru, valideeriti see avaliku \texttt{Speech Commands} andmestiku sanity-check eksperimendiga ning ehitati üles eestikeelse äratussõna mudelite treeningu- ja võrdlusprotsess. Tulemuste analüüs näitas, et esialgne klipi-tasemel hindamine andis eksitavalt optimistliku pildi, sest negatiivsete näidete hindamisel esines andmeleke. Selle vea kõrvaldamiseks koostati sõltumatud hold-out testikomplektid, lisati testikomplektide ja treeningandmete disjointsuskontroll ning võeti keskseks voogedastushindamise mõõdikuks FAPH (valevallandumiste arv tunnis).
+
+Korrigeeritud hindamine näitas, et üksiku mudeli kvaliteeti ei kirjelda piisavalt ei recall ega klipi-taseme valepositiivsete määr eraldi. Parimad üksikmudelid jagunesid eri mõõdikute lõikes: üks mudel saavutas madalaima FAPH väärtuse, teine parema hard-negatiivide eristuse ning kolmas tugevama unseen-speaker recall'i. Töö praktilise jätkuna katsetati ka spetsialiseeritud ekspertmudelite konsensust, millega saavutati Common Voice eesti keele hold-out kõnel FAPH 0,8, kuid seda recall'i arvelt.
+
+Töö peamine panus on näidata, et madala ressursiga eestikeelse äratussõna arenduses on keskne probleem mitte ainult mudeli treenimine, vaid metodoloogiliselt korrektne hindamine. Töö tulemuseks on reprodutseeritav toru, dokumenteeritud andmestiku- ja hindamisprotokoll ning empiiriline kirjeldus recall'i, hard-negatiivide eristuse ja valevallandumiste kompromissidest eestikeelse äratussõna \enquote{Kuule Kratt} näitel.
 
 
 

@@ -1,9 +1,9 @@
 #import "../style.typ": *
 
-Metoodika eesmargiks on kirjeldada selline arendus- ja hindamisprotsess, mille abil on voimalik eristada toru tehnilisi vigu andmestikust voi mudelist tulenevatest probleemidest. Praktikas on see oluline, sest vastasel juhul voib ebaonnestunud tulemus jaada valesti kas andmete, mudeli voi deploy taha.
+Metoodika eesmargiks on kirjeldada selline arendus- ja hindamisprotsess, mille abil on voimalik eristada toru tehnilisi vigu andmestikust voi mudelist tulenevatest probleemidest. Praktikas on see oluline, sest vastasel juhul voib ebaonnestunud tulemus jaada valesti kas andmete, mudeli voi integraerimise taha.
 
 == Kasutatud tehnoloogiad
-Katsetuste keskmes on `microWakeWord`, mis on TensorFlow peal ehitatud wake word treeninguraamistik mikrokontrollerite jaoks @tensorflow2015 @microwakeword2026. Mudeli kasutuselevott toimub ESP32-S3 pohisel seadmel ning deploy kanalina kasutatakse ESPHome'i @esphome2026. Nutikodu koostoime sihtplatvorm on Home Assistant @homeassistant2026.
+Katsetuste keskmes on `microWakeWord`, mis on TensorFlow peal ehitatud wake word treeninguraamistik mikrokontrollerite jaoks @tensorflow2015 @microwakeword2026. Mudeli kasutuselevott toimub ESP32-S3 pohisel seadmel ning live integreerimiseks kasutatakse ESPHome'i (`voice_assistant` liidest) @esphome2026. Nutikodu koostoime sihtplatvorm on Home Assistant @homeassistant2026.
 
 Selline valik ei ole juhuslik. `microWakeWord` annab kontrolli nii andmesisestuse, treeningu kui ka TFLite ekspordi ule. ESPHome omakorda lubab sama mudelit kasutada reaalsel seadmel ilma eraldi firmware't nullist kirjutamata. Seega on voimalik siduda kokku uurimuslik pool ja praktiline kasutus.
 
@@ -38,5 +38,6 @@ Wake word mudeli hindamine erineb tavalisest klassifikatsioonist selle poolest, 
 - `FRR` ehk false rejection rate, mis naitab kui suur osa tegelikest aratussona juhtudest jaab tabamata;
 - `FAPH` ehk false accepts per hour, mis naitab kui palju valevallandumisi tekib tunni kohta;
 - ROC-laadne kover, kus vaadeldakse `FRR` ja `FAPH` vahelist seost eri threshold'ide korral.
+- Mudelivõrdluste puhul hoitakse võrdlusfaasis threshold ühtsena ja raporteeritakse lisaks `FAPH`-le ning `recall`ile ka hard-negative `FPR`; väikesem valim või lühiajalised ambient-sektsioonid lisavad tulemuste juurde ebakindlust, mistõttu väärtused loetakse eelkõige võrdluslikult, mitte absoluutsete väidetena.
 
 Too kaigus selgus, et just ambient-andmete puudumine voi vigane moodustamine voib muuta kogu evaluatsiooni sisuliselt kasutuks. Kui `testing_ambient` on tuhi, ei kirjelda saadud AUC enam mudeli kvaliteeti, vaid peegeldab katkist hindamisprotsessi. Seetottu on andmestiku rollide korrektne eristamine selle too keskne metoodiline element.
