@@ -49,10 +49,11 @@ Tihe, aga mahub. Kui RAM lõppeb, kaaluda väiksemat LLM mudelit (8B → ~5GB).
 - [ ] Docker images pulled: HA, Kiirkirjutaja, Piper
 - [ ] Ollama mudel alla laetud (Gemma 3 12B)
 - [ ] macOS Internet Sharing konfigureeritud ja testitud
-- [ ] ESP32 firmware flashitud kuule-kratt-v7 mudeliga
+- [ ] ESP32/active demo path configured with the frozen active model (pilot default: `v16c`) and threshold
 - [ ] WiFi pirn seadistatud HA-s (testitud kodus enne)
 - [ ] Google Forms küsimustik loodud + QR-kood prinditud
-- [ ] Logging skript testitud
+- [ ] `kratt user-test` recorder tested (dry-run + real mic)
+- [ ] Logging/replay scripts tested
 
 ### Enne üritust testida
 - [ ] Kogu stack üles: AP → ESP32 ühendub → wake word → STT → LLM → pirn

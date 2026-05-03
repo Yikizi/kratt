@@ -1,5 +1,7 @@
 # High-yield 10-minute user test plan
 
+> **Merged / superseded (2026-04-29):** current protocol is `docs/user-testing/ten-minute-shadow-demo-protocol.md`. Keep this file as an earlier planning note.
+
 Purpose: collect maximum thesis value from a short participant session by combining controlled wake-word testing, smart-bulb UX, and multi-model shadow evaluation on the same audio.
 
 ## Core idea
@@ -172,9 +174,9 @@ Example final table:
 
 | Model | User-test recall | Hard-neg FPR | Android field FAPH | Role |
 |---|---:|---:|---:|---|
-| `v16c` | TBD | TBD | 4.06 | production candidate |
-| `expert-a` | TBD | TBD | 2.79 | best field balance candidate |
-| `expert-a+b2` | TBD | TBD | TBD | consensus candidate |
+| `v16c` | TBD | TBD | 4.06 | stable baseline / active-demo candidate |
+| `expert-a` | TBD | TBD | 2.79 | field/recall reference |
+| `expert-a+b2` | TBD | TBD | TBD | historical consensus milestone |
 | `v6-residual` | TBD | TBD | 0.58 | conservative baseline |
 | `v10` | TBD | TBD | 3.08 | fallback baseline |
 

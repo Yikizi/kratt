@@ -1,5 +1,7 @@
 # Kasutajatestide plaan
 
+> **Historical / superseded (2026-04-29):** this was the original longer E2E demo plan. The current thesis-critical protocol is `docs/user-testing/ten-minute-shadow-demo-protocol.md`, with recorder support via `kratt user-test`.
+
 **Kuupäev**: 2026-03-31 (planeerimine)
 **Testid planeeritud**: TalTech õpiõhtu / ürituse raames
 **Osalejate arv**: ~20 inimest (sõbrad, tuttavad, kaasüliõpilased)

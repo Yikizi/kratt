@@ -1,5 +1,7 @@
 # Kasutajatesti küsimustik v1
 
+> **Note (2026-04-29):** this is the fuller questionnaire bank. The current 10-minute protocol uses a 4-rating + 1-comment mini questionnaire from `ten-minute-shadow-demo-protocol.md`; use this file for optional extended Google Forms items if participant burden allows.
+
 **Alus**: VUS-inspireeritud (Kocaballi et al., 2020) + Kratt-spetsiifilised lisaküsimused
 **Formaat**: Google Forms, telefonis täidetav
 **Aeg**: ~4 minutit
