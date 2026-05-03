@@ -56,6 +56,26 @@ Vaata ka:
   - **`benchmarks/`** (2628 LibriSpeech + DiPCo) — cross-language FAPH benchmarks
   - **`mattias-short/`** (50) — uus katse sinu positiivide laiendus
 
+### Faas 5 — Positive data quality audit (aprill 2026)
+- **2026-04-27:** v17 prefix-trigger failure (`kuule`/`kule` alone) led to a manual positive-data audit.
+  - **Confirmed corrupt:** `processed/positive_tts_ssml`, `raw/neurokone_ssml_positives`, `raw/neurokone_ssml_kule` — Neurokõne read SSML/XML tags aloud (5-14s clips).
+  - **Quarantined:** XTTS positive full-command prompts (`raw/xtts_clones/*/positive` and `positive_16k`) until manually segmented/validated.
+  - **Filtered:** very short `mattias-short` clips (~0.42s) via positive duration gate.
+  - Added guard rails in `prepare_kuule_kratt_experiment.py`, `submit_hpc_kuule_kratt.sh`, and `data/validation/audit_positive_sources.py`.
+  - Full report: `docs/POSITIVE_DATA_QUALITY_AUDIT_20260427.md`.
+
+### Faas 6 — Clean positives, exact-phrase diagnostics, checkpoint-FAPH (aprill 2026)
+- **2026-04-27/28:** v18 strict-positive matrix trained after the audit.
+  - Strict generated positives from Neurokõne phase1/phase2 + `kule_vs_kuule_test`.
+  - New prefix/exact-phrase regression sets under `data/processed/prefix_regression_test/`.
+  - Result: clean labels were necessary but not sufficient; v18 single models still failed prefix/confusable selectivity.
+  - Full report: `docs/V18_CLEAN_POSITIVE_EXPERIMENTS_20260427.md`.
+- **2026-04-29:** checkpoint-FAPH v18d family evaluated.
+  - `checkpoint-faph-v18d-clean96-pw96x4`: very low ambient FAPH, but recall collapse.
+  - `checkpoint-faph10-v18d-clean96-pw96x4`: stronger ambient gate, but poor Friend1 recall and confusable FPR.
+  - Full report: `evaluation/benchmark_checkpoint_models_20260429_analysis.md`.
+- **2026-04-29:** user-test labelled recorder exists: `kratt user-test` / `tools/user-testing/run_user_test.py`.
+
 ## Kolm paralleelset arcid
 
 ### A — Positives arc
@@ -63,6 +83,8 @@ Vaata ka:
 2. + Neurokõne TTS (v5, +1560): 2026-03-20
 3. + SSML TTS (v7): 2026-03-24
 4. + Mattias Mac + XTTS family (v8): 2026-04-05
+5. v17 expanded positives exposed corrupt SSML/XML and full-command sources: 2026-04-26/27
+6. v18 strict-positive rebuild: only exact two-word `kuule/kule kratt` sources: 2026-04-27/28
 
 ### B — Negatives arc (sh hard negs)
 1. CV ET (v1, 3928): enne 2026-02
@@ -83,14 +105,18 @@ Vaata ka:
 3. **Cross-language benchmarks** (LibriSpeech, DiPCo): 2026-04-14
 4. **Ground truth XTTS pos_isa_xtts**: 2026-04-05
 5. **Mined canary set** (v10 adversarial): 2026-04-10
+6. **Prefix/confusable regression sets** after v17 incident: 2026-04-27
+7. **Friend1 real-speaker recall probe** used in v18/checkpoint analysis: 2026-04-28/29
+8. **Labelled user-test recorder** for future real-speaker data: 2026-04-29
 
-## Praegu (2026-04-14)
+## Praegu (2026-04-29)
 
 **Vajab kogumist:**
-- ≥3 speakerite päris Kuule Kratt salvestused (vaja täna õhtul, sihtimise 5× 20 ütlust)
-- Isa ja Ode XTTS recall-seti laiendamine ~200 stochastic positsioonini kummalegi; workflow on nüüd resumable ja manifest-põhine
-- Ode XTTS laiendamine (praegu 11 reaalset, CI liiga lai)
+- 20-30 user-test participant sessions using `docs/user-testing/ten-minute-shadow-demo-protocol.md` and `kratt user-test`.
+- Threshold-frozen shadow/replay analysis on the recorded user-test audio.
+- Optional only if thesis schedule allows: v19 phrase-selectivity data split with explicit partial/confusable negatives and independent holdout.
 
-**Olemas aga valideerimata:**
-- android_captures 1230 klippi — vaja STT labeling (positive vs hard neg vs garbage)
-- mattias-short 50 klippi — uus batch, pole veel kontrollitud
+**Olemas aga caveat'iga:**
+- v17/v18/checkpoint artifacts prove important failure modes, but none is a final deploy candidate.
+- Prefix/confusable regression sets are essential diagnostics; some overlap with training sources for specific v18 variants, so mark those results accordingly.
+- Android captures and older mined clips remain useful field evidence, but user-test data is now higher priority.
