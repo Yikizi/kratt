@@ -1,0 +1,78 @@
+{
+  "positive": {
+    "pos_isa_xtts": {
+      "n": 48,
+      "coverage_mean_pct": 65.87820512820514,
+      "coverage_median_pct": 67.38461538461539,
+      "coverage_min_pct": 0.0,
+      "coverage_max_pct": 92.0,
+      "first_speech_ms_p50": 424.0,
+      "first_speech_ms_p95": 638.3999999999999,
+      "no_speech_files": 1,
+      "no_speech_pct": 2.083333333333333,
+      "late_files": 43,
+      "late_files_pct": 89.58333333333334,
+      "latency_warn_ms": 250.0,
+      "speech_dur_total_s": 41.10800000000002,
+      "duration_total_s": 62.39999999999994
+    },
+    "pos_mac_mattias": {
+      "n": 30,
+      "coverage_mean_pct": 45.39733333333334,
+      "coverage_median_pct": 44.16,
+      "coverage_min_pct": 35.199999999999996,
+      "coverage_max_pct": 59.519999999999996,
+      "first_speech_ms_p50": 552.0,
+      "first_speech_ms_p95": 843.1999999999998,
+      "no_speech_files": 0,
+      "no_speech_pct": 0.0,
+      "late_files": 30,
+      "late_files_pct": 100.0,
+      "latency_warn_ms": 250.0,
+      "speech_dur_total_s": 34.04799999999999,
+      "duration_total_s": 75.0
+    }
+  },
+  "ambient": {
+    "faph_cv_et": {
+      "n": 50,
+      "speech_dur_total_s": 252.26800000000006,
+      "duration_total_s": 299.724,
+      "speech_duty_cycle": 0.8416676675875141,
+      "segment_count": 52,
+      "segment_count_per_hour": 624.5746086399488,
+      "segment_duration_median_s": 4.848,
+      "segment_duration_p95_s": 8.4342
+    },
+    "faph_librispeech": {
+      "n": 50,
+      "speech_dur_total_s": 345.56406250000015,
+      "duration_total_s": 375.6001250000001,
+      "speech_duty_cycle": 0.9200318090948454,
+      "segment_count": 62,
+      "segment_count_per_hour": 594.2490035113805,
+      "segment_duration_median_s": 5.3835,
+      "segment_duration_p95_s": 15.567199999999998
+    },
+    "faph_dipco": {
+      "n": 6,
+      "speech_dur_total_s": 5707.652999999999,
+      "duration_total_s": 11958.9375,
+      "speech_duty_cycle": 0.47727091139994665,
+      "segment_count": 2198,
+      "segment_count_per_hour": 661.6641319515217,
+      "segment_duration_median_s": 915.008,
+      "segment_duration_p95_s": 1810.00775
+    }
+  },
+  "baseline_faph": null,
+  "vad": {
+    "min_speech_ms": 250,
+    "min_silence_ms": 200,
+    "vad_pad_ms": 120,
+    "merge_gap_ms": 160
+  },
+  "params": {
+    "latency_warn_ms": 250.0
+  }
+}

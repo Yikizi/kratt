@@ -1,14 +1,25 @@
 # Training data manifest per model version
 
-This document records EXACTLY what each model version was trained on.
+**Last updated:** 2026-04-29
+
+This document records what each model version was trained on, with exact manifests where available and explicit caveats where newer HPC manifests are not yet archived locally.
 Source: `processed/experiments/kuule_kratt_v*/manifest.json` on HPC.
 A test set is considered TRULY HELD-OUT for a model only if it shares
 zero files with this model's training pool.
 
-All models use:
+Historical models in this manifest used:
 - `seed=42`, `test_split=0.15` (positives only)
 - `negative_limit=5000` (CV ET clips)
-- exclude_words = `["kratt", "kuule"]`
+- exclude_words = `["kratt", "kuule"]` for v1-v16-era CV negatives. Current training defaults keep `kuule` as ordinary negative speech and exclude only `kratt`, because excluding `kuule` contributed to prefix-only triggering.
+
+## Thesis provenance roles (paper wording, updated 2026-04-29)
+
+- **Deployment-proven/package-proven (currently):** `v11` (Android packaging/deployment evidence explicitly present).
+- **Stable single-model baseline / active-demo candidate:** `v16c`. It is not deployment-proven and not production-quality on prefix/confusable regression sets.
+- **Historical v1-v16 benchmark balance:** `v16c` (per 2026-04-21 unified hold-out benchmark in `MODEL_LINEAGE.md`).
+- **Diagnostic only:** `v17a/v17b`, `v18*`, and `checkpoint-faph*` families. They are important evidence, but should not be promoted as final deploy candidates.
+
+Korvo/custom deploy proof is separate from Android packaging and must be called out before any model is presented as deployment-proven.
 
 ## Positives
 
@@ -43,9 +54,41 @@ model**. Each model's `test_positive_samples` dir is its own canonical hold-out.
 | v15 | mic1+mic2 + positive_tts (**NO** Mac/XTTS) | **2241** | ? | 4×48f | **ON** | OFF | best IRL balance |
 | v16a | same as v15 | **2241** | ? | 4×48f | **ON** | OFF | reduced neg (10728) |
 | v16b | same as v15 | **2241** | ? | wider (4×96f, 104KB) | OFF | OFF | wider filters |
-| v16c | same as v15 | **2241** | ? | widest (4×96f, 148KB) | **ON** | OFF | latest candidate |
+| v16c | same as v15 | **2241** | ? | widest (4×96f, 148KB) | **ON** | OFF | stable baseline / demo candidate |
 
-**Puuduv info:** manifest.json ei ole alla laetud v9-v16c jaoks. Täpne positiivide allikad ja held-out test set suurused vajavad HPC-st alla laadimist. Võimalik et v12-v16 kasutavad laiemat CV ET (mitte ainult 5000 esimest).
+**THESIS CAVEAT:** `manifest.json` ei ole alla laetud v9-v16c jaoks. Täpne positiivide allikad ja held-out test set suurused vajavad HPC-st alla laadimist. Võimalik et v12-v16 kasutavad laiemat CV ET (mitte ainult 5000 esimest).
+
+## v17 positive-data incident (2026-04-27)
+
+v17a/v17b were trained before the positive-data audit. Their exact HPC manifests
+are not yet archived locally, but the `recall-cv` preset at that time included
+known-bad sources:
+
+- `processed/positive_tts_ssml` and `raw/neurokone_ssml_positives`: confirmed
+  corrupt SSML/XML read-aloud audio.
+- `raw/neurokone_ssml_kule`: confirmed corrupt Kule SSML mirror.
+- `raw/xtts_clones/{marta,annam,ema}/positive`: full command prompts rather
+  than isolated wake phrase.
+- `raw/mattias-short/positive`: mostly OK, but very short prefix-only/corrupt
+  clips were present.
+
+After the audit, `submit_hpc_kuule_kratt.sh` quarantines known-bad positive dirs
+by default and `prepare_kuule_kratt_experiment.py` records positive source dirs
+and duration/path exclusions in `manifest.json`.
+
+## v18 clean-positive and checkpoint-FAPH families (2026-04-27..29)
+
+Exact per-run HPC manifests should still be archived when available. Current
+high-confidence summary:
+
+- v18 rebuilt training around a strict positive policy: exactly `kuule/kule kratt`, no SSML/XML readout, no filler/context, no full-command XTTS positives, no random positive cropping, and a duration gate.
+- Strict generated positives were built from Neurokõne phase1/phase2 + `kule_vs_kuule_test` (709 accepted in the local count documented in `V18_CLEAN_POSITIVE_EXPERIMENTS_20260427.md`).
+- v18 single models were **not** promoted: clean labels reduced one failure mode but did not solve prefix/confusable triggering.
+- checkpoint-FAPH models reused the v18d clean-positive / 96-filter setup and changed checkpoint selection toward `ambient_false_positives_per_hour`.
+- `checkpoint-faph-v18d-clean96-pw96x4` has very low ambient FAPH but near-total external recall collapse.
+- `checkpoint-faph10-v18d-clean96-pw96x4` is a better ambient gate, but still fails real-speaker generalization and confusable rejection.
+
+Treat all v18/checkpoint results as diagnostic unless a later manifest + frozen-threshold user-test evaluation says otherwise.
 
 ## Negatives v9-v16c (sourced from dataset_summary.json)
 
@@ -97,38 +140,45 @@ model**. Each model's `test_positive_samples` dir is its own canonical hold-out.
 A test set is **truly held out** for a model only if it contains files
 that this model's training pool does NOT include.
 
-### Truly held out for ALL models (v1-v16c)
+### Truly held out for current historical model set, unless caveated below
 
 | Test set | Source | What it tests | N |
 |---|---|---|---|
 | `pos_isa_xtts` | data/processed/test_pos_xtts_isa | Recall on unseen male speaker (XTTS clone) | 48 |
 | `hard_neg_mac_holdout` | data/processed/hard_neg_test | FPR on real recorded hard negatives | 15 |
 | `hard_neg_isa_xtts` | data/processed/test_hard_neg_xtts_isa | FPR on unseen-speaker XTTS hard negatives | 60 |
-| `faph_cv_et` | data/processed/faph_test_cv_et | FAPH on unseen Estonian speech (CV ET clips 5000-7000) | 2000 (3.65h) |
-| `faph_librispeech` | data/processed/faph_test_librispeech | FAPH on English speech (cross-language robustness) | 2620 (5.62h) |
-| `faph_dipco` | data/processed/faph_test_dipco | FAPH on dialogue corpus | 6 (3.32h) |
+| `faph_cv_et` | data/processed/faph_test_cv_et | FAPH on frozen legacy CV ET held-out slice (indices 5000-7000) | 2000 (3.65h) |
+| `pos_ode_real` | data/raw/ode_kuule_kratt | Real-speaker recall proxy | 11 |
+| `pos_friend1_real` | data/raw/friend1_20260414 | Real-speaker recall warning set | 145 |
+| `faph_librispeech` | data/processed/benchmarks/librispeech-test-clean | FAPH on English speech (cross-language robustness) | 2620 (5.62h) |
+| `faph_dipco` | data/processed/benchmarks/dipco | FAPH on DiPCo eval-session subset (not full 5.5h corpus) | 6 (3.32h) |
 
-**Important:** v15-v16c positive set differs from v8-v14 (2241 vs 3343 — Mac/XTTS positives removed). Cross-version recall on `pos_isa_xtts` remains valid since that set was never in any model's training pool.
+**Important:** v15-v16c positive set differs from v8-v14 (2241 vs 3343 — Mac/XTTS positives removed). Cross-version recall on `pos_isa_xtts` remains valid for the documented historical models since that set was never in any known training pool. For v17/v18/checkpoint families, prefer the newest run manifests and the caveats in the v17/v18 sections above before calling any source a final independent holdout.
 
 ### Held out for SOME models
 
 | Test set | Held out for | Trained on by |
 |---|---|---|
 | `pos_mac_mattias` (Mac mic, real voice) | v1-v7 | v8-v16c |
-| `pos_ode` (Ode real speaker) | all (not in any training) | N/A — used as real-speaker recall proxy |
+| `pos_ode_real` (Ode real speaker) | all known model families | N/A — used as small-N real-speaker recall proxy |
+| `pos_friend1_real` | all known model families | N/A — important real-speaker recall warning set |
+| prefix/confusable regression sets | diagnostic for all; final holdout status varies | related sources may overlap for v17/v18e/v18f; label accordingly |
 
-### Not yet available — needs new collection
+### Thesis caveats / not yet available (needs new collection)
 
 | Test set | Source | Status |
 |---|---|---|
-| `neg_test_korvo2` (held-out KORVO-2 speech) | new recording session, never in training | **TODO**: user records ~30 min |
-| `pos_real_20plus` (20+ real unseen speakers) | recruitment + recording | **TODO**: user testing phase |
-| Real-speaker recall with proper N>100 per condition | user testing | **TODO**: CRITICAL for thesis |
+| `neg_test_korvo2` (held-out KORVO-2 speech) | new recording session, never in training | **CAVEAT:** no held-out Korvo set yet (~30 min still needed) |
+| `pos_real_20plus` (20+ real unseen speakers) | recruitment + recording | **CAVEAT:** pending user testing |
+| Real-speaker recall with proper N>100 per condition | user testing | **CAVEAT:** CRITICAL for thesis |
 
 ## Notes
 
 - The Mattias mic1+mic2 positive recordings are **all in training** for at least
   some portion (since seed=42 differs per version). For an honest cross-version
-  recall comparison, we use `pos_test_isa_xtts` which is guaranteed unseen everywhere.
-- The CV ET 3928 clips (after exclusion of "kratt"/"kuule" sentences) are the
-  same set in every model. Clips beyond #5000 (in the same shuffle) are unseen.
+  recall comparison, we use `pos_isa_xtts` which is guaranteed unseen for documented historical models.
+- The `faph_cv_et` 2000-clip set is a frozen legacy eval subset from CV ET indices 5000-7000.
+  It is intentionally kept stable for final CI. CV ET 7000+ is a separate, available
+  pool for train-time mining and future dev/final-split experiments.
+- Use session-level disjointness for DiPCo: final-frozen FAPH uses S01/S03/S06/S07/S08,
+  while S02/S04/S05/S09/S10 are for mining/dev and must never be mixed into final-eval.
