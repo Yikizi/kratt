@@ -190,6 +190,25 @@ v7 proovib kombineerida SpecAugment + suurema TTS hard neg'i (6090 SSML variants
 
 ---
 
+## v6 derivative side branches (2026-04-12..14) — PARTIAL METADATA / DO NOT PROMOTE
+
+Need on v6/v6-residual ümbruse eksperimendi- ja lühinimega artefaktid. Neid ei tohi kasutada thesis "best model" või deploy-kandidaadi allikana ilma mudelikausta `NOTES.md` caveat'ita, sest osa metadata on puudulik ja osa positiivallikate täpne manifest on auditi järgi kinnitamata.
+
+| Model dir | Archived data/config evidence | Current interpretation |
+|---|---|---|
+| `kuule-kratt-v6-r2` | `analysis/` says 2559 pos / 16803 neg / 0 hard_neg / 1002 ambient; local config snapshot points at `kuule-kratt-v6-r2-plus` features | alias/snapshot ambiguity; likely extra Mac/XTTS/full-command positives, exact manifest pending |
+| `kuule-kratt-v6-r2-plus` | 2559 pos / 16803 neg / 0 hard_neg / 1002 ambient | plus-positive branch; likely XTTS/full-command affected, exact manifest pending |
+| `kuule-kratt-v6-r2-novtlp` | 2241 pos / 16803 neg / 0 hard_neg / 1002 ambient | no-VTLP/extra-positive control; not known to include confirmed corrupt SSML/XTTS positives |
+| `kuule-kratt-v6-residual-plus` | 2559 pos / 16803 neg / 0 hard_neg / 1002 ambient | residual plus-positive branch; likely XTTS/full-command affected, exact manifest pending |
+| `kuule-kratt-v6-residual-novtlp` | 2241 pos / 16803 neg / 0 hard_neg / 1002 ambient | residual no-VTLP/extra-positive control; not known to include confirmed corrupt SSML/XTTS positives |
+| `kuule-kratt-v6-residual-r3` | 2241 pos / 16803 neg / 0 hard_neg / 1002 ambient | residual rerun/control branch; not known to include confirmed corrupt SSML/XTTS positives |
+| `kuule-kratt-v6-residual-r4-exact` | 2241 pos / 16803 neg / 0 hard_neg / 1002 ambient | residual exact-phrase/control branch; not known to include confirmed corrupt SSML/XTTS positives |
+| `kuule-kratt-v6-res-novtlp`, `kuule-kratt-v6-res-plus`, `kuule-kratt-v6-res-r3`, `kuule-kratt-v6-res-r4` | only TFLite artifacts in short-name dirs; SHA-256 matches the corresponding `kuule-kratt-v6-residual-*` full-name artifact | duplicate/short-name artifacts; use the full-name residual dirs for metadata |
+
+Evidence anchors: model-dir `analysis/dataset_summary.json`, `analysis/training_config_snapshot.json` where present, plus `wake-word/docs/POSITIVE_DATA_QUALITY_AUDIT_20260427.md`. These branches are side evidence for data/config sensitivity only; canonical historical comparisons should use the unified 2026-04-21 benchmark table above.
+
+---
+
 ## v7 (2026-03-24 16:39) — PARIM FAPH, KATASTROOFILINE RECALL TRADE-OFF
 
 - **Hypothesis:** hard neg set laiendus + SpecAugment → FAPH edasi, recall säilib
@@ -243,13 +262,14 @@ Esimene post-methodology-audit mudel. Disain-otsus (hard neg massive scaling) ol
 
 ---
 
-## v10 (~2026-04-10) — RESIDUAL ON + MASSIVE NEG SCALE + MUSAN BUG
+## v10 (2026-04-10 18:36) — RESIDUAL ON + MASSIVE NEG SCALE + MUSAN BUG
 
-Ainuke mudel ilma analysis/ kaustata (orphan). Residual ON esimest korda main sequence'is.
+HPC metadata restored locally on 2026-05-03 from run `microwakeword-kuule-kratt-v10-20260410-183655`. Residual ON esimest korda main sequence'is.
 
 - **Hypothesis:** scale up kõike — residual ON, suur neg pool (MUSAN speech 49h + music 41h + Riigikogu ~200h + mined false accepts), kõik ühes pools, 0% eraldi hard neg
 - **KRIITLINE BUG:** `glob("*.wav")` non-recursive → **0 MUSAN speech/music faili** tegelikult treeningus. Logid väitsid et olid. v10 "MUSAN advantage" illusoorne.
-- **Andmed:** 3343 pos / ~17k+ neg (ilma MUSAN-ita tegelikult vähem) / 0 hard neg eraldi / 1002 ambient
+- **Andmed:** 3343 pos / 16782 neg / 0 hard neg eraldi / 1002 ambient
+- **Checkpoint objective:** accuracy-selected (`target_minimization: 0.0`, `maximization_metric: accuracy`), 10000 steps
 - **Tulemus (benchmark 2026-04-21 @0.995):** FAPH CV=23, Rec Isa=65%, Rec Ode=64%, HN Mac=53%, HN Isa=10%
 - *[ARHIIV — @0.997: FAPH CV 15.7, FAPH Mac 4.3, Recall Ode 73%, Recall Isa 56%, HN Mac 53%, FRR@1FA/h 45.3%]*
 - **Tõlgendus:** residual ON = konservatiivne mudel, hea FAPH aga kõrge FRR. Sama trade-off mis v7. Hard neg ratio 46% liiga kõrge.
@@ -396,6 +416,33 @@ Praeguse repo kõige uuem ja suurim mudel. Kõige paremad üldnumbrid.
 - **Tõlgendus:** FAPH tõusis v16b-st (22 → 75) aga recall säilis 100% ja hard neg rejection paranes. v16c on parim overall balance: 100% recall + 100% hard neg rejection + talutav FAPH (75). NB: FAPH ei ole kõige madalam (v16a=16, v16b=22), aga kolme mõõdiku kombinatsioon on parim.
 - **Deployment/status (updated 2026-04-29):** v16c jääb stabiilseks single-model baseline'iks ja soovitatud user-test aktiivseks mudeliks, kuid hilisem prefix/confusable regression näitab, et see ei ole production-ready exact-phrase detector.
 - **Oluline kontekst:** expert-a (148KB gatekeeper) kasutab sama suurusega arhitektuuri ja saavutas MoE consensuses 0.79 FAPH. v16c võib sama MoE pipeline'is kasutada, kuid MoE ei lahenda automaatselt phrase-selectivity probleemi.
+
+---
+
+## expert / ex side branches (2026-04) — MOE AND DIAGNOSTIC FAMILY
+
+Need mudelid olid MoE/gatekeeper/verifier ja ablation-tüüpi kõrvalharud. Need ei asenda v16c baseline'i ega v17/v18/checkpoint diagnostikat.
+
+| Model dir | Archived evidence | Current interpretation |
+|---|---|---|
+| `kuule-kratt-expert-a` | 2241 pos / 9560 neg / 0 hard_neg / 1002 ambient; benchmark FAPH CV 33.0, LS 2.7, DiP 2.1; Rec Isa 100%, Ode 82%; HN Mac 87%, HN Isa 73% | historical 148KB MoE gatekeeper / field-balance reference; not standalone final |
+| `kuule-kratt-expert-b` | 3343 pos / 4045 neg / 0 hard_neg / 1002 ambient; benchmark FAPH CV 8766.8 | superseded verifier prototype; positive-data audit marks SSML-era contamination caveat |
+| `kuule-kratt-expert-b2` | 3343 pos / 5045 neg / 0 hard_neg / 1002 ambient; SpecAug ON; benchmark FAPH CV 63.1 | historical verifier paired with expert-a; standalone recall too weak |
+| `kuule-kratt-ex2a` | 3343 pos / 9560 neg / 0 hard_neg / 1002 ambient; SpecAug OFF; benchmark FAPH CV 124.3, Rec Ode 27% | failed TTS/XTTS-positive expansion; use as "real voices must dominate positives" warning |
+| `kuule-kratt-ex3a` | 1282 pos / 9560 neg / 0 hard_neg / 1002 ambient; SpecAug OFF; benchmark FAPH CV 33.0, LS 10.5, DiP 3.9 | expert-family benchmark artifact |
+| `kuule-kratt-ex3b` | 1490 pos / 9560 neg / 0 hard_neg / 1002 ambient; SpecAug OFF; benchmark FAPH CV 175.1, LS 133.8, DiP 30.7 | expert-family benchmark artifact |
+
+Evidence anchors: `wake-word/evaluation/model_evaluation_results.json`, the unified 2026-04-21 benchmark table above, and model-dir `analysis/` files restored from HPC where needed. For exact per-directory caveats see each model's `NOTES.md`.
+
+---
+
+## kuule-kratt-confusable-filter-v1 (2026-04-22) — DIAGNOSTIC FILTER EXPERIMENT / CONTAMINATED INPUT CAVEAT
+
+- **Hypothesis:** train a diagnostic filter around confusable/near-phrase behavior rather than a deployable single wake-word model.
+- **Archived data/config:** 3385 positives / 8637 negatives / 1002 ambient clips; 15000+5000 training steps; accuracy-selected checkpoint in the archived config.
+- **Audit caveat:** `POSITIVE_DATA_QUALITY_AUDIT_20260427.md` lists this as a side/ablation SSML-era model affected by v8/current-era positives with corrupt SSML and/or raw XTTS positives.
+- **Interpretation:** useful only as evidence that near-phrase filtering needed stricter data governance. Do not promote as a benchmark-best, deployment, or thesis-candidate model.
+- **Next:** treat v18/v19 strict-positive and explicit partial-phrase-negative experiments as the cleaner continuation of this line.
 
 ---
 

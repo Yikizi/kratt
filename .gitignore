@@ -54,6 +54,7 @@ wake-word/models/*/analysis/*.csv
 wake-word/models/*/analysis/*.html
 wake-word/models/*/analysis/*.png
 wake-word/models/*/analysis/*.pdf
+wake-word/models/*/analysis/*.out
 *.pb
 *.pkl
 
