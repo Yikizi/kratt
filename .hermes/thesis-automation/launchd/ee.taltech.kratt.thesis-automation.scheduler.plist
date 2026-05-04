@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>ee.taltech.kratt.thesis-automation.scheduler</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/mattias/kratt/.hermes/thesis-automation/run-scheduler.sh</string>
+    <string>--include-research-distill</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>WorkingDirectory</key>
+  <string>/Users/mattias/kratt</string>
+  <key>StandardOutPath</key>
+  <string>/Users/mattias/kratt/.hermes/thesis-automation/logs/scheduler/launchd.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/mattias/kratt/.hermes/thesis-automation/logs/scheduler/launchd.stderr.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/mattias/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>CLAUDE_BIN</key>
+    <string>/Users/mattias/.local/bin/claude</string>
+    <key>KRATT_DASHBOARD_QUIET</key>
+    <string>1</string>
+  </dict>
+</dict>
+</plist>
