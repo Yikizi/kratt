@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# DESC: Submit/dry-run Kratt-only wake word training on HPC
+# USAGE: kratt train-kratt-only <tag> [--steps N] [--mem N] [submit_hpc_kratt_only flags...]
+# ARGS: tag             Version tag, e.g. v19a-kratt-only. Required.
+# ARGS: --steps N       Training steps/phases. Default: 15000,5000.
+# ARGS: --mem N         Slurm memory. Default: 48G.
+# ARGS: --dry-run       Print local submit plan; does not SSH or sbatch.
+# ARGS: --partition NAME Slurm partition. Default in submit script: common.
+# ARGS: --positive-dir DIR  Override clean Kratt-only positive directory.
+# ARGS: --include-reviewed-real-positives Include reviewed real-source accepted cuts.
+# ARGS: --clip-duration-ms N Model clip duration. Default: 1000.
+# EXAMPLES: kratt train-kratt-only v19a-kratt-only --dry-run
+# EXAMPLES: kratt train-kratt-only v19a-kratt-only --steps 15000,5000 --clip-duration-ms 1000 --dry-run
+# EXAMPLES: kratt train-kratt-only v19a-kratt-only --steps 15000,5000 --time 08:00:00
+set -euo pipefail
+
+TAG="${1:?Usage: kratt train-kratt-only <tag> [--steps N] [--mem N] [submit_hpc_kratt_only flags...]}"
+shift
+
+STEPS="15000,5000"
+MEM="48G"
+DRY_RUN=0
+EXTRA_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --steps) STEPS="$2"; shift 2 ;;
+    --mem) MEM="$2"; shift 2 ;;
+    --dry-run) DRY_RUN=1; EXTRA_ARGS+=("--dry-run"); shift 1 ;;
+    *) EXTRA_ARGS+=("$1"); shift 1 ;;
+  esac
+done
+
+printf -v EXTRA_Q ' %q' "${EXTRA_ARGS[@]}"
+
+if [[ "${DRY_RUN}" == "1" ]]; then
+  echo "Dry-run Kratt-only ${TAG}: ${STEPS} steps, ${MEM} RAM${EXTRA_Q}"
+  KRATT_ROOT="${KRATT_ROOT}" \
+  KRATT_DATA="${KRATT_DATA:-${KRATT_WW}/data}" \
+    bash "${KRATT_WW}/training/scripts/submit_hpc_kratt_only.sh" \
+      --tag "${TAG}" --training-steps "${STEPS}" --mem "${MEM}"${EXTRA_Q}
+else
+  echo "Submitting Kratt-only ${TAG}: ${STEPS} steps, ${MEM} RAM${EXTRA_Q}"
+  ssh malinh@base.hpc.taltech.ee \
+    "export KRATT_ROOT=~/kratt KRATT_DATA=/gpfs/mariana/smbhome/malinh/kratt-data && \
+     bash ~/kratt/wake-word/training/scripts/submit_hpc_kratt_only.sh \
+     --tag ${TAG} --training-steps ${STEPS} --mem ${MEM}${EXTRA_Q}"
+fi

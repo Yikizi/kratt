@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# DESC: Extract Kratt-only candidate clips from clean Kuule/Kule Kratt audio
+# USAGE: kratt extract-kratt-segments [extract_kratt_segments.py flags...]
+# ARGS: --source-dir DIR  Source directory; may be repeated. Default: strict Kuule/Kule positives.
+# ARGS: --output-dir DIR  Output dataset directory. Default: wake-word/data/processed/positive_kratt_only_v19a.
+# ARGS: --sample N       Randomly sample N matched inputs for smoke tests.
+# ARGS: --limit N        Limit matched inputs after sorting/sampling.
+# ARGS: --dry-run        Write manifest/summary only; no audio cuts.
+# ARGS: --reject-flag F   Put candidates with flag F in rejected/ instead of accepted/. May repeat.
+# ARGS: --reject-index N  Reject a specific extraction index. May repeat.
+# ARGS: --force           Replace existing output dir.
+# EXAMPLES: kratt extract-kratt-segments --sample 25 --force
+# EXAMPLES: kratt extract-kratt-segments --source-dir wake-word/data/processed/positive_strict_kuule_kule --output-dir wake-word/data/processed/positive_kratt_only_smoke --sample 50 --force
+set -euo pipefail
+
+cd "$KRATT_WW"
+uv run python data/validation/extract_kratt_segments.py "$@"

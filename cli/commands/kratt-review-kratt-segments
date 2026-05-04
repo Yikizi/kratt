@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# DESC: Fast terminal reviewer for Kratt-only segment extraction outputs
+# USAGE: kratt review-kratt-segments [review_kratt_segments_terminal.py flags...]
+# ARGS: --dataset DIR     Extraction output directory with manifest.jsonl.
+# ARGS: --start-index N   Start at the first source index >= N.
+# ARGS: --resume          Start at first pending row.
+# ARGS: --reject-index N  Seed/record rejected source index. May repeat.
+# ARGS: --only-flag F     Review only rows with flag F. May repeat.
+# ARGS: --only-source S   Review only rows whose source path contains S. May repeat.
+# ARGS: --no-autoplay     Disable autoplay after j/k movement.
+# ARGS: --preview-gain-db DB  Max temporary preview boost. Default: 24 dB.
+# ARGS: --no-normalize-preview Disable temporary preview normalization.
+# ARGS: --export-only     Apply seed labels/export reject args without opening UI.
+# EXAMPLES: kratt review-kratt-segments --dataset wake-word/data/processed/positive_kratt_only_real_voice_probe_kguard --start-index 472
+# EXAMPLES: kratt review-kratt-segments --dataset wake-word/data/processed/positive_kratt_only_real_voice_probe_kguard --only-flag possible_prefix_leak --resume
+# EXAMPLES: kratt review-kratt-segments --dataset wake-word/data/processed/positive_kratt_only_real_voice_probe_kguard --reject-index 75 --export-only
+set -euo pipefail
+
+cd "$KRATT_WW"
+uv run python data/validation/review_kratt_segments_terminal.py "$@"
