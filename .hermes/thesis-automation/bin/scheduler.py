@@ -26,7 +26,25 @@ LOGS = AUTO / "logs" / "scheduler"
 STATE = AUTO / "state" / "scheduler.json"
 LOCK = AUTO / "state" / "scheduler.lock"
 
-DEFAULT_PATH = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+DEFAULT_PATH = f"{Path.home()}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+
+
+def resolve_claude_bin() -> str:
+    """Find Claude Code across the per-user installer and Homebrew paths."""
+    override = os.environ.get("CLAUDE_BIN")
+    if override:
+        return override
+    for candidate in (
+        Path.home() / ".local" / "bin" / "claude",
+        Path("/opt/homebrew/bin/claude"),
+        Path("/usr/local/bin/claude"),
+    ):
+        if candidate.exists():
+            return str(candidate)
+    return "claude"
+
+
+CLAUDE_BIN = resolve_claude_bin()
 
 
 def now_local() -> dt.datetime:
@@ -207,7 +225,7 @@ def claude_auth_smoke(timeout_s: int = 60) -> tuple[bool, str]:
     env.pop("CLAUDE_CODE_USE_OPENAI", None)
 
     cmd = [
-        "/opt/homebrew/bin/claude",
+        CLAUDE_BIN,
         "--print",
         "--output-format", "text",
         "--permission-mode", "default",
@@ -231,6 +249,8 @@ def claude_auth_smoke(timeout_s: int = 60) -> tuple[bool, str]:
         )
     except subprocess.TimeoutExpired:
         return False, f"auth smoke timed out after {timeout_s}s"
+    except FileNotFoundError:
+        return False, f"claude binary not found: {CLAUDE_BIN}"
 
     if proc.returncode == 0:
         return True, "ok"
@@ -250,6 +270,7 @@ def run_job(job: Job) -> dict:
     env = os.environ.copy()
     env["PATH"] = f"{DEFAULT_PATH}:{env.get('PATH', '')}"
     env.setdefault("KRATT_DASHBOARD_QUIET", "1")
+    env.setdefault("CLAUDE_BIN", CLAUDE_BIN)
     env.pop("CLAUDE_API_KEY", None)
     env.pop("CLAUDE_CODE_USE_OPENAI", None)
 

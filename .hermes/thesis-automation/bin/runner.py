@@ -24,6 +24,7 @@ import json
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import time
@@ -38,7 +39,30 @@ STATE_DIR = AUTO / "state"
 PROMPTS_DIR = AUTO / "prompts"
 REVIEWS_DIR = REPO / ".hermes" / "thesis-quality-reviews"
 
-CLAUDE_BIN = os.environ.get("CLAUDE_BIN", "/opt/homebrew/bin/claude")
+def resolve_claude_bin() -> str:
+    """Find Claude Code across Homebrew and the per-user installer.
+
+    launchd starts with a small PATH, while recent Claude Code installs place the
+    executable under ~/.local/bin.  Keep CLAUDE_BIN as the override, but make the
+    default robust after upgrades/reboots.
+    """
+    override = os.environ.get("CLAUDE_BIN")
+    if override:
+        return override
+    found = shutil.which("claude")
+    if found:
+        return found
+    for candidate in (
+        Path.home() / ".local" / "bin" / "claude",
+        Path("/opt/homebrew/bin/claude"),
+        Path("/usr/local/bin/claude"),
+    ):
+        if candidate.exists():
+            return str(candidate)
+    return "claude"
+
+
+CLAUDE_BIN = resolve_claude_bin()
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL")
 
 

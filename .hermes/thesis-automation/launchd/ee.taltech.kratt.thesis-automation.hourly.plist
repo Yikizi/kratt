@@ -23,7 +23,9 @@
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key>
-    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <string>/Users/mattias/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>CLAUDE_BIN</key>
+    <string>/Users/mattias/.local/bin/claude</string>
   </dict>
 </dict>
 </plist>

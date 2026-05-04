@@ -181,17 +181,20 @@ Two options, in order of preference.
 
 ### Option A — macOS launchd (persistent, runs without Claude Code open)
 
-Install the three plists shipped in `.hermes/thesis-automation/launchd/` and
-load them:
+Install the serial scheduler and dashboard plists. The scheduler runs hourly,
+daily, weekly, and research-distill jobs through `bin/scheduler.py`, so automation
+jobs do not overlap. The dashboard plist keeps `kratt thesis-dashboard` available
+at `http://127.0.0.1:8765`.
 
 ```bash
-cp .hermes/thesis-automation/launchd/ee.taltech.kratt.*.plist ~/Library/LaunchAgents/
-launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-automation.hourly.plist
-launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-automation.daily.plist
-launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-automation.weekly.plist
-launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-automation-research-distill.plist
+cp .hermes/thesis-automation/launchd/ee.taltech.kratt.thesis-automation.scheduler.plist ~/Library/LaunchAgents/
+cp .hermes/thesis-automation/launchd/ee.taltech.kratt.thesis-dashboard.plist ~/Library/LaunchAgents/
+launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-automation.scheduler.plist
+launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-dashboard.plist
 ```
 
+Do **not** load the legacy per-job launchd plists (`hourly`, `daily`, `weekly`,
+`research-distill`) at the same time as the serial scheduler, or jobs can overlap.
 Unload with `launchctl unload -w <plist>` to pause.
 
 ### Option B — Claude Code in-session cron (dev-loop only)
