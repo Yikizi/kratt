@@ -1,6 +1,6 @@
 # kuule-kratt-v17a notes
 
-**Created:** 2026-04-26  
+**Created:** 2026-04-26
 **Status:** Failed deploy candidate; retained as a data-quality incident marker.
 **Metadata:** `analysis/dataset_summary.json`, `analysis/training_config_snapshot.json`, and `training_config.yaml` restored from HPC on 2026-05-03.
 

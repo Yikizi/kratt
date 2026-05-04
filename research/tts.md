@@ -64,7 +64,7 @@ That nuance is the key point for Kratt. The modern confusable-augmentation paper
 
 The strongest synthesis for the thesis is therefore:
 
-1. synthetic confusables can absolutely help train **exact phrase selectivity**, and  
+1. synthetic confusables can absolutely help train **exact phrase selectivity**, and
 2. the resulting gains must be kept separate from claims about **ambient false accepts** and **unseen-speaker recall**.
 
 That is, synthetic hard negatives are scientifically useful, but best treated as a targeted intervention for the decision boundary, not a blanket guarantee of field robustness. citeturn11view8turn7search6turn11view10
@@ -83,8 +83,8 @@ Voice cloning is more mixed. Personalized Speech Synthesis for Zero-Shot KWS is 
 
 So the safest thesis position is:
 
-- **multi-speaker TTS is evidence-backed and useful**,  
-- **voice cloning is plausible and potentially helpful**, especially for targeted speaker/style diversification,  
+- **multi-speaker TTS is evidence-backed and useful**,
+- **voice cloning is plausible and potentially helpful**, especially for targeted speaker/style diversification,
 - but **voice-cloned positives are risky** unless transcript integrity and phrase isolation are aggressively audited, because the cloned data may still live in a synthetic sub-domain that the model can detect. citeturn21view0turn22view0turn16view2
 
 I did **not** find a clean KWS paper that compares multiple TTS engines while holding text prompts, negative sets, and evaluation fixed. The clearest controlled “which TTS generator is best for downstream use?” study I found was in ASR, where Rossenbach et al. showed that different TTS decoders produce materially different downstream value and that standard MOS/intelligibility metrics do not predict that value well. For Kratt, that means “use more TTS engines” is a defensible future-work hypothesis, but **not yet a literature-backed prescription for KWS**. citeturn20search0turn20search4turn13view0turn15view0
@@ -107,8 +107,8 @@ What the literature does support very well is the broader principle that **speec
 
 This gives you a clean thesis framing:
 
-- **manual listening audits were necessary and justified**,  
-- **exact-phrase filtering was a scientifically sound corrective step**, and  
+- **manual listening audits were necessary and justified**,
+- **exact-phrase filtering was a scientifically sound corrective step**, and
 - future pipelines should treat synthetic positives as needing the **same or stricter QC** as real recordings, not weaker QC.
 
 That is a robust claim even though the exact failure mode is project-specific. citeturn35view0turn33search6

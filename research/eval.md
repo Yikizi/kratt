@@ -36,7 +36,7 @@ A **cooldown** or **refractory period** is the period after a detection during w
 
 ## External baseline table
 
-The table below distinguishes between **measured numeric results**, **relative improvements only**, and **documentation targets**. “Comparable” here means *scientifically comparable to a small-footprint Estonian single-stage wake-word detector evaluated on your current corpora*. It does **not** mean “useful background.” 
+The table below distinguishes between **measured numeric results**, **relative improvements only**, and **documentation targets**. “Comparable” here means *scientifically comparable to a small-footprint Estonian single-stage wake-word detector evaluated on your current corpora*. It does **not** mean “useful background.”
 
 | System / paper / source | Wake word(s) | Model / architecture | Test corpus / hours | Reported FA/h or FAPH | Reported FRR / recall | Operating point convention | Comparable? | Citation |
 |---|---|---|---|---|---|---|---|---|

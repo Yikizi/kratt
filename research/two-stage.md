@@ -123,8 +123,8 @@ If you do a live prototype, the lowest-risk shape is not to modify core Home Ass
 
 So the practical order of operations is:
 
-1. Offline verifier experiment on saved clips and saved first-stage triggers.  
-2. Optional local “safety mode” for demos, implemented outside the default pipeline if necessary.  
+1. Offline verifier experiment on saved clips and saved first-stage triggers.
+2. Optional local “safety mode” for demos, implemented outside the default pipeline if necessary.
 3. Anything more ambitious goes in future work.
 
 ## Minimal diagnostic experiment plan for the existing repo and data

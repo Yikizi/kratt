@@ -83,16 +83,16 @@ The safest thesis conclusion is that Kratt demonstrates **feasibility plus evalu
 
 ### Short quotable excerpts and safe interpretations
 
-> “real-life KWS involves the continuous processing of an input audio stream.” citeturn25view2  
+> “real-life KWS involves the continuous processing of an input audio stream.” citeturn25view2
 **Safe interpretation:** clip-level or fixed-window evaluation is insufficient as the primary thesis metric.
 
-> “most misactivations are not repeatable” citeturn10view1  
+> “most misactivations are not repeatable” citeturn10view1
 **Safe interpretation:** near-threshold false wakes are partly stochastic, so repeated replay or longer field logging is necessary.
 
-> “hours of continuous speech and background noise” citeturn36view4  
+> “hours of continuous speech and background noise” citeturn36view4
 **Safe interpretation:** negative evaluation should approximate sustained real deployment conditions, not just short held-out clips.
 
-> “This is not a perfect estimate of the streaming model’s real-world false accepts per hour” citeturn14view1  
+> “This is not a perfect estimate of the streaming model’s real-world false accepts per hour” citeturn14view1
 **Safe interpretation:** offline ambient FA/h is useful for model selection, but not a substitute for deployment measurement.
 
 ## Evaluation protocol recommendation for Kratt

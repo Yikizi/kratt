@@ -1,7 +1,7 @@
 # Kratt-only segment extraction plan
 
-**Status:** planning started / state document  
-**Created:** 2026-05-03  
+**Status:** planning started / state document
+**Created:** 2026-05-03
 **Goal:** build an auditable, conservative pipeline for deriving single-word `Kratt` positive clips from existing clean `Kuule/Kule Kratt` audio, without introducing boundary-label noise.
 
 ## Why this exists

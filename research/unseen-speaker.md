@@ -111,17 +111,17 @@ Use this as a skeptical audit list before changing architecture:
 
 A practical immediate recipe, based on the public evidence and your time constraints, is therefore:
 
-1. freeze architecture for one more cycle;  
-2. rebuild checkpoint selection around **real-speaker recall floors**;  
-3. improve the synthetic/augmentation path;  
-4. add **balanced** confusable negatives;  
+1. freeze architecture for one more cycle;
+2. rebuild checkpoint selection around **real-speaker recall floors**;
+3. improve the synthetic/augmentation path;
+4. add **balanced** confusable negatives;
 5. only then decide whether architecture change is still necessary.
 
 That sequence is the lowest-risk route to a thesis-safe result. **Confidence: high.**
 
 ### V19 candidate
 
-**Recommended v19 experiment:** **high-recall first stage on ESP32 + phrase/order-aware second-stage verifier on Raspberry Pi / Home Assistant.**  
+**Recommended v19 experiment:** **high-recall first stage on ESP32 + phrase/order-aware second-stage verifier on Raspberry Pi / Home Assistant.**
 Why this one? Because it directly addresses your strongest tension: the edge model needs recall, but strict phrase selectivity is still weak. Public production systems routinely separate those jobs. openWakeWord also explicitly supports second-stage verifier models, and Home Assistant already distinguishes MCU-class and server-class wake-word engines. **Confidence: medium-high.** citeturn11view2turn37view0turn26view4turn26view5
 
 Concretely:
@@ -146,9 +146,9 @@ This is feasible because the second stage only runs on a **small number of candi
 
 The most promising post-thesis path is a **sequence-aware or open-vocabulary formulation**, not another long series of one-stage binary sweeps. The shortlist is:
 
-- **multi-task KWS + phonetic / ASR supervision**,  
-- **CTC-based phrase verification**,  
-- **metric-learning / prototypical embedding approaches for low-resource personalization**, or  
+- **multi-task KWS + phonetic / ASR supervision**,
+- **CTC-based phrase verification**,
+- **metric-learning / prototypical embedding approaches for low-resource personalization**, or
 - **on-device / post-deployment domain adaptation** if the product eventually wants per-home or per-user adaptation. **Confidence: medium.** citeturn40search0turn9search3turn29search0turn35view0turn39search0
 
 If privacy and consent permit later product work, the most compelling deployable research direction is a **generic speaker-independent gate + optional post-deployment adaptation** for device/domain noise, not immediate per-user threshold tuning. Recent embedded work reports double-digit gains from on-device self-learning or domain adaptation, but that is better framed as a future track than as a thesis-critical fix. **Confidence: medium.** citeturn35view0turn39search0
@@ -157,7 +157,7 @@ If privacy and consent permit later product work, the most compelling deployable
 
 The following formulation is academically defensible:
 
-> *The remaining weakness of the Kratt detector appears to be primarily a speaker-generalization problem rather than a label-purity problem. After contaminated positives were removed, ambient false accepts could be reduced substantially through more conservative checkpoint selection, but this improvement came with a marked drop in unseen real-speaker recall, especially on the Friend1 evaluation set. Public wake-word and low-resource KWS literature suggests that such behavior is consistent with insufficient real-speaker diversity, synthetic-to-real mismatch, and overly conservative operating-point selection. In particular, recent studies show that speaker diversity in the positive class is more important than repeated utterances from a small number of speakers, and that large volumes of synthetic speech can still induce domain-specific shortcut learning unless combined with diverse real audio, realistic augmentation, or explicit mitigation techniques. Therefore, the most plausible explanation for the remaining error is that the project has reached the limit of what can be achieved with the current small real-speaker pool and current synthetic methodology within a single tiny-device binary-classification setup.*  
+> *The remaining weakness of the Kratt detector appears to be primarily a speaker-generalization problem rather than a label-purity problem. After contaminated positives were removed, ambient false accepts could be reduced substantially through more conservative checkpoint selection, but this improvement came with a marked drop in unseen real-speaker recall, especially on the Friend1 evaluation set. Public wake-word and low-resource KWS literature suggests that such behavior is consistent with insufficient real-speaker diversity, synthetic-to-real mismatch, and overly conservative operating-point selection. In particular, recent studies show that speaker diversity in the positive class is more important than repeated utterances from a small number of speakers, and that large volumes of synthetic speech can still induce domain-specific shortcut learning unless combined with diverse real audio, realistic augmentation, or explicit mitigation techniques. Therefore, the most plausible explanation for the remaining error is that the project has reached the limit of what can be achieved with the current small real-speaker pool and current synthetic methodology within a single tiny-device binary-classification setup.*
 
 That wording is well supported by the public evidence on speaker diversity, TTS overfitting, and multi-stage wake-word design. **Confidence: high.** citeturn25view0turn24view0turn26view6turn11view2turn37view0
 
@@ -206,33 +206,33 @@ Also report **A/B vs v16c** and **A/B vs current best combo**, not only absolute
 
 I would call v19 successful if it achieves all three:
 
-1. Friend1 recall materially above the current 40% combo failure case and ideally near or above `v16c`,  
-2. clear reduction in `kuule/kule <confusable>` FPR relative to `v16c`,  
-3. acceptable ambient FAPH even if not as extreme as `checkpoint-faph20`.  
+1. Friend1 recall materially above the current 40% combo failure case and ideally near or above `v16c`,
+2. clear reduction in `kuule/kule <confusable>` FPR relative to `v16c`,
+3. acceptable ambient FAPH even if not as extreme as `checkpoint-faph20`.
 
 That is the right trade to optimize for the thesis. A near-zero ambient FAPH model with unusable unseen-speaker recall is not a better wake-word detector for your problem.
 
 ## Bibliography with DOIs and source links
 
-- Apple. *Personalized Hey Siri* (official research article, 2018). citeturn11view3  
-- Apple. *Voice Trigger System for Siri* (official research article, 2023). citeturn11view2  
-- Bezzam, Scheibler, Cadoux, Gisselbrecht. *A study on more realistic room simulation for far-field keyword spotting* (APSIPA 2020). arXiv:2006.02774. citeturn31search0  
-- Ghosh et al. *Low-resource Low-footprint Wake-word Detection using Knowledge Distillation* (Interspeech 2022). DOI: **10.21437/Interspeech.2022-529**. citeturn19view7turn20view2  
-- Higuchi, Gupta, Dhir. *Multi-task Learning with Cross Attention for Keyword Spotting* (2021). arXiv:2107.07634. citeturn40search0turn40search2  
-- Hou et al. *Mining Effective Negative Training Samples for Keyword Spotting* (ICASSP 2020). PDF source. citeturn33view0turn34view1  
-- Lee, Baek. *Keyword Spotting with Synthetic Data using Heterogeneous Knowledge Distillation* (Interspeech 2022). DOI: **10.21437/Interspeech.2022-47**. citeturn19view5turn20view0  
-- Lin et al. *Training Keyword Spotters with Limited and Synthesized Speech Data* (ICASSP 2020). DOI: **10.1109/ICASSP40776.2020.9053193**; arXiv:2002.01322. citeturn17search1turn21view0  
-- Mazumder et al. *Few-Shot Keyword Spotting in Any Language* (2021). arXiv:2104.01454. Uses multilingual Common Voice data from entity["organization","Mozilla","foundation"]. citeturn22view0turn22view2  
-- openWakeWord project documentation and repository (official docs / repo). citeturn14view1turn14view2turn26view4  
-- Park et al. *Adversarial training of Keyword Spotting to Minimize TTS Data Overfitting* (2024). arXiv:2408.10463; workshop DOI: **10.21437/SynData4GenAI.2024-18**. citeturn24view0turn24view2  
-- Park et al. *Utilizing TTS Synthesized Data for Efficient Development of Keyword Spotting Model* (2024). arXiv:2407.18879. citeturn24view3turn25view0  
-- Petegrosso et al. *AB/BA analysis: A framework for estimating keyword spotting recall improvement while maintaining audio privacy* (NAACL 2022). DOI: **10.18653/v1/2022.naacl-industry.4**. citeturn38view0  
-- Raju et al. *Data Augmentation for Robust Keyword Spotting under Playback Interference* (2018). arXiv:1808.00563. citeturn30search0turn30search3  
-- Rikhye et al. *Personalized Keyphrase Detection using Speaker and Environment Information* (2021). arXiv:2104.13970. citeturn29search2  
-- Rusci et al. *Self-Learning for Personalized Keyword Spotting on Ultra-Low-Power Audio Sensors* (2024). arXiv:2408.12481. citeturn35view0turn36view0  
-- Rybakov et al. *Streaming Keyword Spotting on Mobile Devices* (2020). arXiv:2005.06720. citeturn28search0  
-- Sainath, Parada. *Convolutional Neural Networks for Small-footprint Keyword Spotting* (Interspeech 2015). DOI: **10.21437/Interspeech.2015-248**. citeturn40search15  
-- Werchniak et al. *Exploring the application of synthetic audio in training keyword spotters* (ICASSP 2021). DOI: **10.1109/ICASSP39728.2021.9413448**. citeturn19view4  
-- Wu et al. *Monophone-based Background Modeling for Two-stage On-device Wake Word Detection* (ICASSP 2018). DOI: **10.1109/ICASSP.2018.8462227**. citeturn37view0  
-- Zhang et al. *GraphemeAug: A Systematic Approach to Synthesized Hard Negative Keyword Spotting Examples* (Interspeech 2025). DOI: **10.21437/Interspeech.2025-1038**; arXiv:2505.14814. citeturn32search0turn20view1  
+- Apple. *Personalized Hey Siri* (official research article, 2018). citeturn11view3
+- Apple. *Voice Trigger System for Siri* (official research article, 2023). citeturn11view2
+- Bezzam, Scheibler, Cadoux, Gisselbrecht. *A study on more realistic room simulation for far-field keyword spotting* (APSIPA 2020). arXiv:2006.02774. citeturn31search0
+- Ghosh et al. *Low-resource Low-footprint Wake-word Detection using Knowledge Distillation* (Interspeech 2022). DOI: **10.21437/Interspeech.2022-529**. citeturn19view7turn20view2
+- Higuchi, Gupta, Dhir. *Multi-task Learning with Cross Attention for Keyword Spotting* (2021). arXiv:2107.07634. citeturn40search0turn40search2
+- Hou et al. *Mining Effective Negative Training Samples for Keyword Spotting* (ICASSP 2020). PDF source. citeturn33view0turn34view1
+- Lee, Baek. *Keyword Spotting with Synthetic Data using Heterogeneous Knowledge Distillation* (Interspeech 2022). DOI: **10.21437/Interspeech.2022-47**. citeturn19view5turn20view0
+- Lin et al. *Training Keyword Spotters with Limited and Synthesized Speech Data* (ICASSP 2020). DOI: **10.1109/ICASSP40776.2020.9053193**; arXiv:2002.01322. citeturn17search1turn21view0
+- Mazumder et al. *Few-Shot Keyword Spotting in Any Language* (2021). arXiv:2104.01454. Uses multilingual Common Voice data from entity["organization","Mozilla","foundation"]. citeturn22view0turn22view2
+- openWakeWord project documentation and repository (official docs / repo). citeturn14view1turn14view2turn26view4
+- Park et al. *Adversarial training of Keyword Spotting to Minimize TTS Data Overfitting* (2024). arXiv:2408.10463; workshop DOI: **10.21437/SynData4GenAI.2024-18**. citeturn24view0turn24view2
+- Park et al. *Utilizing TTS Synthesized Data for Efficient Development of Keyword Spotting Model* (2024). arXiv:2407.18879. citeturn24view3turn25view0
+- Petegrosso et al. *AB/BA analysis: A framework for estimating keyword spotting recall improvement while maintaining audio privacy* (NAACL 2022). DOI: **10.18653/v1/2022.naacl-industry.4**. citeturn38view0
+- Raju et al. *Data Augmentation for Robust Keyword Spotting under Playback Interference* (2018). arXiv:1808.00563. citeturn30search0turn30search3
+- Rikhye et al. *Personalized Keyphrase Detection using Speaker and Environment Information* (2021). arXiv:2104.13970. citeturn29search2
+- Rusci et al. *Self-Learning for Personalized Keyword Spotting on Ultra-Low-Power Audio Sensors* (2024). arXiv:2408.12481. citeturn35view0turn36view0
+- Rybakov et al. *Streaming Keyword Spotting on Mobile Devices* (2020). arXiv:2005.06720. citeturn28search0
+- Sainath, Parada. *Convolutional Neural Networks for Small-footprint Keyword Spotting* (Interspeech 2015). DOI: **10.21437/Interspeech.2015-248**. citeturn40search15
+- Werchniak et al. *Exploring the application of synthetic audio in training keyword spotters* (ICASSP 2021). DOI: **10.1109/ICASSP39728.2021.9413448**. citeturn19view4
+- Wu et al. *Monophone-based Background Modeling for Two-stage On-device Wake Word Detection* (ICASSP 2018). DOI: **10.1109/ICASSP.2018.8462227**. citeturn37view0
+- Zhang et al. *GraphemeAug: A Systematic Approach to Synthesized Hard Negative Keyword Spotting Examples* (Interspeech 2025). DOI: **10.21437/Interspeech.2025-1038**; arXiv:2505.14814. citeturn32search0turn20view1
 - Zhu et al. *Synth4Kws: Synthesized Speech for User Defined Keyword Spotting in Low Resource Environments* (2024). DOI: **10.21437/SynData4GenAI.2024-3**; arXiv:2407.16840. citeturn19view3turn23view0
