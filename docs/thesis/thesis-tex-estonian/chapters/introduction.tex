@@ -10,7 +10,8 @@ Töö põhiküsimus on järgmine: kuidas luua ja hinnata eestikeelset äratussõ
 \begin{itemize}
     \item kuidas valideerida treeningu- ja hindamistoru enne eestikeelse andmestiku juurde liikumist;
     \item millist rolli mängivad positiivsed, negatiivsed ja taustaheli-andmed äratussõna mudeli kvaliteedi hindamisel;
-    \item kuidas eristada andmestikust tulenevaid probleeme toru tehnilistest vigadest.
+    \item kuidas eristada andmestikust tulenevaid probleeme toru tehnilistest vigadest;
+    \item kas treenitud mudel saavutab eestikeelsel ambient-korpusel pidevvoo FAPH~$<$~1 ja lähikõne recall~$\geq$~0{,}95 sihi.
 \end{itemize}
 
 Töö konkreetne panus on kolmeosaline: (a) eestikeelne äratussõna \enquote{Kuule Kratt} mudel koos reprodutseeritava treening- ja hindamistoruga, (b) FAPH-põhine pidevvoo hindamismetoodika eestikeelse äratussõna kontekstis ning (c) ESP32-S3 ja Home Assistanti integratsioonimuster lokaalse nutikodu satelliidi näitel. Mõiste \enquote{usaldusväärne} all peetakse käesolevas töös silmas operatsionaalset sihti: pidevvoo FAPH sihiks seatakse alla ühe valevallandumise tunnis ning lähikõne tuvastusmääraks (\emph{recall}) vähemalt 0{,}95, mille vastu metoodika ja tulemuste peatükid on kalibreeritud. Need on käesoleva töö projekti-spetsiifilised otsustuskriteeriumid, mitte kirjanduses kehtestatud universaalsed standardid \cite{lopezespejo2021deepkws,openwakeword2026}. Töö piirangud on teadlikud: ei kaeta täielikku STT/TTS toru, kasutajauuring on piiratud mahus ning hindamine toimub ühe äratusfraasi ulatuses.
