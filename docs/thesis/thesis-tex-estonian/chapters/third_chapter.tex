@@ -86,6 +86,17 @@ Peamiseks ambient-mõõdikuks on valitud FAPH (false activations per hour), kuna
     \item hindamise toru on kapseldatud skripti \texttt{wake-word/evaluation/compare\_models.py}, mis kutsub \texttt{microwakeword.test} kanoonilist FAPH-funktsiooni.
 \end{itemize}
 
+\subsection{MoE-konsensushindamise parameetrid}
+\label{subsec:moe-consensus-params}
+Peatüki tulemus streaming FAPH${=}0{,}79$ ei pärine ühest mudelist, vaid kahe eksperdi konsensusest, mistõttu fikseeritakse konsensuse­toru reprodutseeritavuse mõttes eraldi:
+\begin{itemize}
+    \item ekspertide kontrollpunktid: \emph{Expert~A} on \texttt{wake-word/models/kuule-kratt-expert-a/kuule\_\allowbreak kratt\_\allowbreak expert-a.tflite} (148~KB, \texttt{residual\_connection}${=}1$, SpecAugment OFF, sama \texttt{mixednet}-arhitektuur kui v16c laiema $96$-filtrise variandiga) ja \emph{Expert~B2} on \texttt{wake-word/models/kuule-kratt-expert-b2/kuule\_\allowbreak kratt\_\allowbreak expert-b2.tflite} (55~KB, kitsam $48$-filtrine \texttt{mixednet}, treenitud sama §3.3.3 andmestikukoosseisuga, kuid sõltumatu HPC-seemnega; täpsem versioonidelta on dokumenteeritud \texttt{wake-word/docs/MODEL\_LINEAGE.md} kirjetes \emph{expert-a} ja \emph{expert-b2});
+    \item konsensuse operaator: \emph{freimitasandi AND} silutud tõenäosustel --- iga ekspert hinnatakse \emph{eraldi} streaming-toruga (sama 5-freimiline libisev keskmine kui §3.3.4), seejärel võetakse iga freimi kohta kahe silutud rea miinimum (\texttt{np.minimum.reduce}), mis toimib AND-ina lävede $0{,}996/0{,}996$ all;
+    \item silumise ja refraktoorperioodi rakendamise järjekord: silumine rakendatakse \emph{enne} kombineerimist (per ekspert), refraktoorperiood (2~s) rakendatakse \emph{pärast} kombineerimist konsensus­reale, nii et iga AND-rising-edge'i järel summutatakse mõlema eksperdi panus üheks ühiseks sündmuseks;
+    \item ülejäänud parameetrid (10~ms freimi samm, ambient-korpused, FAPH-valem) on identsed §3.3.4-ga;
+    \item hindamise toru on kapseldatud skripti \texttt{wake-word/evaluation/benchmark\_add\_combo.py}, mille \texttt{-{}-combo expert-a expert-b2 -{}-thresholds 0.996} kutse taastoodab tabelis raporteeritud $0{,}79$ väärtuse \texttt{faph\_cv\_et} korpusel.
+\end{itemize}
+
 \subsection{Reaalajas seadme-testi protokoll}
 \label{subsec:live-device-protocol}
 Et §-s~\ref{sec:benchmark-gap} viidatud reaalajas testimise numbrid (v6-residual ja v15 recall, foneetiliselt sarnaste fraaside aktiveerumismäärad ning mittekõnelistele stiimulitele reageerimine) oleksid samaväärsel reprodutseeritavuse tasemel kui klipi- ja voogedastushindamine, fikseeritakse seadmel toimunud testi protokoll järgmiselt:
