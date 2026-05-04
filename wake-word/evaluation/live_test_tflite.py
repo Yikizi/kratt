@@ -8,13 +8,18 @@ Press Ctrl+C to stop.
 """
 
 import argparse
+import os
 import subprocess
 import sys
 import threading
 import time
 import wave
+import warnings
 from datetime import datetime
 from pathlib import Path
+
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+warnings.filterwarnings("ignore", message=r".*tf\.lite\.Interpreter is deprecated.*")
 
 import numpy as np
 
@@ -35,6 +40,7 @@ def main():
     parser.add_argument("--model", required=True, help="Path to .tflite model")
     parser.add_argument("--threshold", type=float, default=0.5, help="Detection threshold")
     parser.add_argument("--sample-rate", type=int, default=16000)
+    parser.add_argument("--device", type=int, default=None, help="Input device ID for sounddevice")
     parser.add_argument("--frame-ms", type=int, default=10, help="Frame size in ms (match model step_ms)")
     parser.add_argument("--cooldown", type=float, default=2.0, help="Seconds to suppress after a detection")
     parser.add_argument("--name", default=None, help="Wake word name for display (auto-detected from model path)")
@@ -42,6 +48,7 @@ def main():
     parser.add_argument("--pre-roll-seconds", type=float, default=5.0, help="Seconds of audio before detection to keep in RAM")
     parser.add_argument("--post-roll-seconds", type=float, default=1.0, help="Seconds of audio after detection to include in saved snippet")
     parser.add_argument("--alert-sound", default="", help="Sound alias (ping|pop|tink|none) or path to .wav/.aiff/.m4a to play on detection")
+    parser.add_argument("--verbose", action="store_true", help="Print model path and tensor details")
     args = parser.parse_args()
 
     alert_sound = (args.alert_sound or "").strip().lower()
@@ -214,26 +221,25 @@ def main():
                     pending_capture["post"].append(int16_data[:take].copy())
                     pending_capture["remaining"] -= take
 
-    # Print model info
+    # Print model info. Keep normal CLI output concise; use --verbose for tensor/debug details.
     if capture_dir is not None:
-        print(f"Capture dir: {capture_dir} (pre={args.pre_roll_seconds:.1f}s, post={args.post_roll_seconds:.1f}s)")
-        print(f"Rolling buffer RAM: {rolling_buffer.nbytes / 1024:.1f} KiB")
+        print(f"Capture: enabled (pre={args.pre_roll_seconds:.1f}s, post={args.post_roll_seconds:.1f}s)")
     else:
-        print("Capture dir: disabled")
+        print("Capture: disabled")
 
-    if alert_sound:
-        print(f"Alert sound: {alert_sound}")
-    else:
-        print("Alert sound: disabled")
-
-    print(f"Model: {args.model}")
-    print(f"Inputs: {len(input_details)}")
-    for i, d in enumerate(input_details):
-        print(f"  [{i}] {d['name']}: shape={d['shape']} dtype={d['dtype']}")
-    print(f"Outputs: {len(output_details)}")
-    for i, d in enumerate(output_details):
-        print(f"  [{i}] {d['name']}: shape={d['shape']} dtype={d['dtype']}")
+    print(f"Alert: {alert_sound if alert_sound else 'disabled'}")
+    print(f"Label: {args.name}")
     print(f"Threshold: {args.threshold}")
+
+    if args.verbose:
+        print(f"Model path: {args.model}")
+        print(f"Rolling buffer RAM: {rolling_buffer.nbytes / 1024:.1f} KiB")
+        print(f"Inputs: {len(input_details)}")
+        for i, d in enumerate(input_details):
+            print(f"  [{i}] {d['name']}: shape={d['shape']} dtype={d['dtype']}")
+        print(f"Outputs: {len(output_details)}")
+        for i, d in enumerate(output_details):
+            print(f"  [{i}] {d['name']}: shape={d['shape']} dtype={d['dtype']}")
     print()
 
     # The streaming TFLite model expects one spectrogram frame at a time.
@@ -260,13 +266,17 @@ def main():
     frame_count = 0
     warmup_frames = 50  # ignore first ~0.5s while model state stabilizes
 
-    with sd.InputStream(
+    stream_kwargs = dict(
         samplerate=args.sample_rate,
         channels=1,
         dtype="float32",
         blocksize=frame_samples,
         callback=audio_callback,
-    ):
+    )
+    if args.device is not None:
+        stream_kwargs["device"] = args.device
+
+    with sd.InputStream(**stream_kwargs):
         try:
             while True:
                 while True:

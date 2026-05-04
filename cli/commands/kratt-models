@@ -1,16 +1,62 @@
 #!/usr/bin/env bash
-# DESC: List all trained wake word models
+# DESC: List available wake word model tags
+# USAGE: kratt models [--paths]
+# ARGS: --paths   Show .tflite paths for debugging. Default output is concise.
 set -euo pipefail
 
-echo "Trained models:"
-for d in "${KRATT_WW}"/models/kuule-kratt-v*/; do
+SHOW_PATHS=0
+case "${1:-}" in
+  --paths|--details|-v|--verbose)
+    SHOW_PATHS=1
+    ;;
+  -h|--help)
+    echo "Usage: kratt models [--paths]"
+    echo "Lists model tags accepted by: kratt live <model> [threshold]"
+    exit 0
+    ;;
+  "")
+    ;;
+  *)
+    echo "Unknown option: $1" >&2
+    echo "Usage: kratt models [--paths]" >&2
+    exit 2
+    ;;
+esac
+
+MODELS_ROOT="${KRATT_WW}/models"
+
+if [[ ! -d "$MODELS_ROOT" ]]; then
+  echo "Model directory not found: $MODELS_ROOT" >&2
+  exit 1
+fi
+
+echo "Available microWakeWord models"
+echo
+if [[ "$SHOW_PATHS" -eq 1 ]]; then
+  printf "  %-52s %s\n" "MODEL" "TFLITE"
+  printf "  %-52s %s\n" "-----" "------"
+else
+  printf "  %-52s %s\n" "MODEL" "STATUS"
+  printf "  %-52s %s\n" "-----" "------"
+fi
+
+count=0
+while IFS= read -r d; do
   [[ -d "$d" ]] || continue
-  version=$(basename "$d")
-  tflite="${d}kuule_kratt_${version#kuule-kratt-}.tflite"
-  if [[ -f "$tflite" ]]; then
-    size=$(du -h "$tflite" | cut -f1)
-    echo "  ${version#kuule-kratt-}  ${size}  $tflite"
+  tag="${d##*/kuule-kratt-}"
+  tflite="${d}/kuule_kratt_${tag}.tflite"
+  status="ready"
+  [[ -f "$tflite" ]] || status="no tflite"
+
+  if [[ "$SHOW_PATHS" -eq 1 ]]; then
+    printf "  %-52s %s\n" "$tag" "$tflite"
   else
-    echo "  ${version#kuule-kratt-}  (no tflite)"
+    printf "  %-52s %s\n" "$tag" "$status"
   fi
-done
+  count=$((count + 1))
+done < <(find "$MODELS_ROOT" -maxdepth 1 -type d -name 'kuule-kratt-*' | sort -V)
+
+echo
+echo "Aliases: checkpoint-faph, checkpoint-faph10, checkpoint-faph20"
+echo "Example: kratt live checkpoint-faph20 v16c 0.995"
+echo "Total: ${count} models"

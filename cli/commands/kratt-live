@@ -1,15 +1,67 @@
 #!/usr/bin/env bash
 # DESC: Live wake word test with MacBook microphone (microWakeWord TFLite or openWakeWord ONNX)
 # USAGE: kratt live <version(s)> [threshold(s)]
-# ARGS: version     One or more model versions (v6-residual v10 v15, or oww-v17-smoke2). Default: latest.
-# ARGS: threshold   One threshold for all, or one per model. Default: 0.997 for microWakeWord, 0.5 for openWakeWord.
+# ARGS: version     One or more model tags/aliases (v16c, checkpoint-faph20, expert-a, or oww-v17-smoke2). Default: latest v*.
+# ARGS: threshold   One threshold for all, or one per model in --mode window. Defaults: 0.997 single microWakeWord, 0.995 multi-model consensus, 0.5 openWakeWord.
 # EXAMPLES: kratt live v15
 # EXAMPLES: kratt live v15 0.97
 # EXAMPLES: kratt live oww-v17-smoke2 0.5
 # EXAMPLES: kratt live v6-residual v10 v15
 # EXAMPLES: kratt live v6-residual v10 v15 0.997
 # EXAMPLES: kratt live v6-residual v10 0.997 0.99
+# EXAMPLES: kratt live checkpoint-faph20 v16c 0.995
 set -euo pipefail
+
+model_path_from_tag() {
+  local tag="$1"
+  printf '%s/models/kuule-kratt-%s/kuule_kratt_%s.tflite' "$KRATT_WW" "$tag" "$tag"
+}
+
+resolve_mww_model_tag() {
+  local input="${1#kuule-kratt-}"
+
+  # Short aliases for long checkpoint-FAPH diagnostic model names.
+  case "$input" in
+    checkpoint-faph)
+      input="checkpoint-faph-v18d-clean96-pw96x4"
+      ;;
+    checkpoint-faph10)
+      input="checkpoint-faph10-v18d-clean96-pw96x4"
+      ;;
+    checkpoint-faph20)
+      input="checkpoint-faph20-v18d-clean96-pw96x4"
+      ;;
+  esac
+
+  if [[ -f "$(model_path_from_tag "$input")" ]]; then
+    printf '%s\n' "$input"
+    return 0
+  fi
+
+  local matches=()
+  local d tag
+  while IFS= read -r d; do
+    tag="${d##*/kuule-kratt-}"
+    [[ -f "$(model_path_from_tag "$tag")" ]] && matches+=("$tag")
+  done < <(find "${KRATT_WW}/models" -maxdepth 1 -type d -name "kuule-kratt-${input}*" 2>/dev/null | sort -V)
+
+  if [[ ${#matches[@]} -eq 1 ]]; then
+    printf '%s\n' "${matches[0]}"
+    return 0
+  fi
+
+  if [[ ${#matches[@]} -gt 1 ]]; then
+    echo "Ambiguous model alias: $1" >&2
+    echo "Matches:" >&2
+    for tag in "${matches[@]}"; do
+      echo "  $tag" >&2
+    done
+    return 2
+  fi
+
+  echo "Model not found: $1" >&2
+  return 1
+}
 
 # Parse args: split into versions and thresholds, keep extra flags passthrough.
 VERSIONS=()
@@ -59,6 +111,14 @@ while [[ "$#" -gt 0 ]]; do
     *)
       if [[ "$arg" =~ ^0\.[0-9]+$ ]] || [[ "$arg" =~ ^1\.0*$ ]]; then
         THRESHOLDS+=("$arg")
+      elif [[ "$arg" == "+" ]]; then
+        # Allow copying combo labels such as "checkpoint-faph20 + v16c".
+        continue
+      elif [[ "$arg" == *+* ]]; then
+        IFS='+' read -ra parts <<< "$arg"
+        for part in "${parts[@]}"; do
+          [[ -n "$part" ]] && VERSIONS+=("$part")
+        done
       else
         VERSIONS+=("$arg")
       fi
@@ -73,8 +133,25 @@ if [[ ${#VERSIONS[@]} -eq 0 ]]; then
   echo "Using latest: $v"
 fi
 
+# Resolve short aliases / unique prefixes before validation and display.
+RESOLVED_VERSIONS=()
+for v in "${VERSIONS[@]}"; do
+  if [[ "$v" == oww-* ]]; then
+    RESOLVED_VERSIONS+=("$v")
+    continue
+  fi
+
+  if ! resolved_v="$(resolve_mww_model_tag "$v")"; then
+    echo >&2
+    kratt models >&2
+    exit 1
+  fi
+  RESOLVED_VERSIONS+=("$resolved_v")
+done
+VERSIONS=("${RESOLVED_VERSIONS[@]}")
+
 if [[ ${#VERSIONS[@]} -gt 1 ]]; then
-  DEFAULT_THRESHOLD="0.95"  # product mode: prob*prob, so lower threshold
+  DEFAULT_THRESHOLD="0.995"  # multi-model default mirrors benchmark-like min consensus
 elif [[ "${VERSIONS[0]}" == oww-* ]]; then
   DEFAULT_THRESHOLD="0.5"
 else
@@ -138,7 +215,8 @@ if [[ ${#VERSIONS[@]} -eq 1 ]]; then
       echo "Create it with: cd ${KRATT_WW} && uv venv .venv-openwakeword --python python3.11 && uv pip install -p .venv-openwakeword/bin/python openwakeword onnxruntime onnx sounddevice soundfile numpy"
       exit 1
     fi
-    echo "openWakeWord model: $VERSION ($(du -h "$MODEL" | cut -f1)), threshold: $THRESHOLD"
+    echo "openWakeWord model: $VERSION"
+    echo "Threshold: $THRESHOLD"
     echo "Log: ${log_file}"
     PYTHONUNBUFFERED=1 "$OWW_PY" \
       "${KRATT_WW}/evaluation/live_test_openwakeword.py" \
@@ -148,15 +226,17 @@ if [[ ${#VERSIONS[@]} -eq 1 ]]; then
       "${EXTRA_ARGS[@]}" \
       2>&1 | tee -a "${log_file}"
   else
-    MODEL="${KRATT_WW}/models/kuule-kratt-${VERSION}/kuule_kratt_${VERSION}.tflite"
+    MODEL="$(model_path_from_tag "$VERSION")"
 
     if [[ ! -f "$MODEL" ]]; then
-      echo "Model not found: $MODEL"
-      echo "Available:" && kratt models
+      echo "Model not found: $VERSION" >&2
+      echo >&2
+      kratt models >&2
       exit 1
     fi
 
-    echo "Model: $VERSION ($(du -h "$MODEL" | cut -f1)), threshold: $THRESHOLD"
+    echo "Model: $VERSION"
+    echo "Threshold: $THRESHOLD"
     echo "Log: ${log_file}"
     PYTHONUNBUFFERED=1 "${KRATT_WW}/.venv-microwakeword/bin/python" \
       "${KRATT_WW}/evaluation/live_test_tflite.py" \
@@ -169,17 +249,19 @@ if [[ ${#VERSIONS[@]} -eq 1 ]]; then
 
 # Multi-model mode
 else
+  echo "Models:"
   # Validate all models exist
   for i in "${!VERSIONS[@]}"; do
     v="${VERSIONS[$i]}"
-    m="${KRATT_WW}/models/kuule-kratt-${v}/kuule_kratt_${v}.tflite"
+    m="$(model_path_from_tag "$v")"
     if [[ ! -f "$m" ]]; then
-      echo "Model not found: $m"
-      echo "Available:" && kratt models
+      echo "Model not found: $v" >&2
+      echo >&2
+      kratt models >&2
       exit 1
     fi
     t="${THRESHOLDS[$i]:-$DEFAULT_THRESHOLD}"
-    echo "  Model: $v ($(du -h "$m" | cut -f1)), threshold: $t"
+    printf "  %-44s threshold %s\n" "$v" "$t"
   done
 
   echo "Log: ${log_file}"

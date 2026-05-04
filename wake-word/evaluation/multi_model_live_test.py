@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Run multiple wake word models simultaneously on the same mic input.
 
-Two consensus modes:
-  --mode product   (default) Multiply per-frame probabilities, smooth, threshold.
-                   Both models evaluate the EXACT same audio frame.
-  --mode window    (legacy)  Each model triggers independently; consensus if
+Consensus modes:
+  --mode min       (default) Benchmark-like same-frame consensus: smooth each
+                   model probability, then threshold min(model probabilities).
+  --mode product   Multiply smoothed per-frame probabilities, then threshold.
+  --mode window    (legacy) Each model triggers independently; consensus if
                    all fire within --consensus-window-ms.
 
 Usage:
     python multi_model_live_test.py v14 expert-a
-    python multi_model_live_test.py v14 expert-a --threshold 0.95
+    python multi_model_live_test.py v14 expert-a --threshold 0.995
+    python multi_model_live_test.py v14 expert-a --mode min --threshold 0.995
     python multi_model_live_test.py v14 expert-a --mode window --threshold 0.997
     python multi_model_live_test.py --log live.jsonl v14 expert-a
 """
@@ -18,12 +20,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
 import subprocess
 import sys
 import time
+import warnings
 from collections import deque
 from datetime import datetime
 from pathlib import Path
+
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+warnings.filterwarnings("ignore", message=r".*tf\.lite\.Interpreter is deprecated.*")
 
 import numpy as np
 import sounddevice as sd
@@ -45,12 +53,59 @@ SAMPLE_RATE = 16000
 FRAME_MS = 10
 MA_WINDOW = 5
 
+MODEL_ALIASES = {
+    "checkpoint-faph": "checkpoint-faph-v18d-clean96-pw96x4",
+    "checkpoint-faph10": "checkpoint-faph10-v18d-clean96-pw96x4",
+    "checkpoint-faph20": "checkpoint-faph20-v18d-clean96-pw96x4",
+}
+
 COLORS = [
     "\033[32m", "\033[33m", "\033[36m", "\033[35m",
     "\033[34m", "\033[91m", "\033[92m", "\033[93m",
 ]
 RESET = "\033[0m"
 BOLD = "\033[1m"
+
+
+def model_path_from_tag(tag: str) -> Path:
+    return MODELS_DIR / f"kuule-kratt-{tag}" / f"kuule_kratt_{tag}.tflite"
+
+
+def natural_key(value: str) -> list[object]:
+    return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", value)]
+
+
+def available_model_tags() -> list[str]:
+    tags = []
+    for d in MODELS_DIR.glob("kuule-kratt-*"):
+        if not d.is_dir():
+            continue
+        tag = d.name.removeprefix("kuule-kratt-")
+        if model_path_from_tag(tag).exists():
+            tags.append(tag)
+    return sorted(tags, key=natural_key)
+
+
+def resolve_model_tag(tag: str) -> tuple[str, Path]:
+    tag = tag.removeprefix("kuule-kratt-")
+    tag = MODEL_ALIASES.get(tag, tag)
+
+    exact_path = model_path_from_tag(tag)
+    if exact_path.exists():
+        return tag, exact_path
+
+    matches = [candidate for candidate in available_model_tags() if candidate.startswith(tag)]
+    if len(matches) == 1:
+        resolved = matches[0]
+        return resolved, model_path_from_tag(resolved)
+
+    if len(matches) > 1:
+        raise ValueError(
+            "Ambiguous model alias "
+            f"'{tag}'. Matches: " + ", ".join(matches)
+        )
+
+    raise ValueError(f"Model not found: {tag}")
 
 
 class StreamingModel:
@@ -107,9 +162,9 @@ def main():
                         help="Combined threshold (product mode) or per-model (window mode)")
     parser.add_argument("--log", type=str, default=None, help="JSONL log file")
     parser.add_argument("--device", type=int, default=None, help="Mic device ID")
-    parser.add_argument("--mode", choices=["product", "window"], default="product",
-                        help="Consensus mode: product (multiply probs, default) or "
-                             "window (legacy independent triggers)")
+    parser.add_argument("--mode", choices=["min", "product", "window"], default="min",
+                        help="Consensus mode: min (benchmark-like same-frame consensus, default), "
+                             "product (multiply probs), or window (legacy independent triggers)")
     parser.add_argument("--consensus-window-ms", type=int, default=1000,
                         help="Time window for window mode (ms)")
     parser.add_argument("--cooldown", type=float, default=2.0,
@@ -119,17 +174,31 @@ def main():
     parser.add_argument("--alert-sound", default="ping", help="Sound alias (ping|pop|tink|none) or path")
     args = parser.parse_args()
 
-    # Load models
+    # Resolve all tags before loading any TFLite interpreter; this keeps bad-model
+    # errors clean and avoids TensorFlow warnings before the actual error message.
+    resolved_models: list[tuple[str, str, Path]] = []
+    load_failed = False
+    for requested_tag in args.models:
+        try:
+            tag, tflite_path = resolve_model_tag(requested_tag)
+            resolved_models.append((requested_tag, tag, tflite_path))
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            print("\nAvailable models:", file=sys.stderr)
+            for candidate in available_model_tags():
+                print(f"  {candidate}", file=sys.stderr)
+            load_failed = True
+
+    if load_failed:
+        sys.exit("Model load failed")
+
     streaming_models: list[StreamingModel] = []
-    for i, tag in enumerate(args.models):
-        tflite_path = MODELS_DIR / f"kuule-kratt-{tag}" / f"kuule_kratt_{tag}.tflite"
-        if not tflite_path.exists():
-            print(f"Model not found: {tflite_path}")
-            continue
+    for i, (requested_tag, tag, tflite_path) in enumerate(resolved_models):
         color = COLORS[i % len(COLORS)]
         m = StreamingModel(tag, str(tflite_path), color)
         streaming_models.append(m)
-        print(f"  {color}■{RESET} {tag} ({tflite_path.stat().st_size // 1024}KB)")
+        alias_note = f" ← {requested_tag}" if requested_tag != tag else ""
+        print(f"  {color}■{RESET} {tag}{alias_note}")
 
     if not streaming_models:
         sys.exit("No models loaded")
@@ -137,10 +206,15 @@ def main():
     n_models = len(streaming_models)
 
     # Threshold setup
-    if args.mode == "product":
+    if args.mode in {"min", "product"}:
         combined_threshold = args.threshold[0]
-        print(f"\n  Mode: {BOLD}product{RESET} (multiply frame probs)")
-        print(f"  Combined threshold: {combined_threshold}")
+        if len(args.threshold) > 1:
+            print(f"  Note: {args.mode} mode uses the first threshold only: {combined_threshold}")
+        if args.mode == "min":
+            print(f"\n  Mode: {BOLD}min{RESET} (benchmark-like same-frame consensus)")
+        else:
+            print(f"\n  Mode: {BOLD}product{RESET} (multiply smoothed frame probs)")
+        print(f"  Threshold: {combined_threshold}")
         print(f"  MA window: {args.ma_window} frames ({args.ma_window * FRAME_MS}ms)")
     else:
         thresholds = args.threshold
@@ -201,16 +275,15 @@ def main():
         int16_data = (indata[:, 0] * 32768).clip(-32768, 32767).astype(np.int16)
         audio_buffer.extend(int16_data.tobytes())
 
-    # State for product mode
-    combined_scores: deque[float] = deque(maxlen=args.ma_window)
+    # Shared state
     detection_count = 0
     last_detection_time = 0.0
     peak_combined = 0.0
+    individual_ma: dict[str, deque] = {m.name: deque(maxlen=args.ma_window) for m in streaming_models}
 
     # State for window mode (legacy)
     recent_detections: dict[str, float] = {}
     individual_counts: dict[str, int] = {m.name: 0 for m in streaming_models}
-    individual_ma: dict[str, deque] = {m.name: deque(maxlen=args.ma_window) for m in streaming_models}
 
     print(f"\n{BOLD}Listening... say 'Kuule Kratt'!{RESET}")
     print(f"{'='*60}")
@@ -236,37 +309,42 @@ def main():
                     features = np.array(result.features, dtype=np.float32)
                     now = time.monotonic()
 
-                    # Get raw prob from each model on the SAME frame
+                    # Get raw prob from each model on the SAME frame, then smooth
+                    # per model. This mirrors benchmark FAPH combo scoring better
+                    # than smoothing a product after the fact.
                     raw_probs = []
+                    ma_probs = []
                     for m in streaming_models:
-                        p = m.process_features(features.copy())
-                        raw_probs.append(max(0.0, p))
+                        p = max(0.0, m.process_features(features.copy()))
+                        raw_probs.append(p)
+                        individual_ma[m.name].append(p)
+                        ma_probs.append(sum(individual_ma[m.name]) / len(individual_ma[m.name]))
 
-                    if args.mode == "product":
-                        # Multiply raw probs → smooth → threshold
-                        product = 1.0
-                        for p in raw_probs:
-                            product *= p
-                        combined_scores.append(product)
-                        ma_score = sum(combined_scores) / len(combined_scores)
+                    if args.mode in {"min", "product"}:
+                        if args.mode == "min":
+                            combined_score = min(ma_probs)
+                            joiner = " ∧ "
+                        else:
+                            combined_score = 1.0
+                            for p in ma_probs:
+                                combined_score *= p
+                            joiner = " × "
 
-                        if ma_score > peak_combined:
-                            peak_combined = ma_score
+                        if combined_score > peak_combined:
+                            peak_combined = combined_score
 
-                        if ma_score >= combined_threshold and (now - last_detection_time) >= args.cooldown:
+                        if combined_score >= combined_threshold and (now - last_detection_time) >= args.cooldown:
                             detection_count += 1
                             last_detection_time = now
                             ts = datetime.now()
-                            probs_str = " × ".join(
+                            probs_str = joiner.join(
                                 f"{m.color}{m.name}={p:.3f}{RESET}"
-                                for m, p in zip(streaming_models, raw_probs)
+                                for m, p in zip(streaming_models, ma_probs)
                             )
                             model_names = "+".join(m.name for m in streaming_models)
                             print(
-                                f"\n  {BOLD}\033[42m >>> DETECTED {model_names}! (prob={ma_score:.3f}, count={detection_count}) <<< {RESET}"
-                            )
-                            print(
-                                f"\n  {BOLD}\033[42m >>> CONSENSUS {n_models}/{n_models}: KUULE KRATT! (#{detection_count}) [{model_names}] <<< {RESET}"
+                                f"\n  {BOLD}\033[42m >>> CONSENSUS {n_models}/{n_models}: KUULE KRATT! "
+                                f"(score={combined_score:.3f}, #{detection_count}) [{model_names}] <<< {RESET}"
                                 f"\n  {probs_str}\n"
                             )
                             play_alert()
@@ -275,10 +353,11 @@ def main():
                                 log_file.write(json.dumps({
                                     "event": "detection",
                                     "count": detection_count,
-                                    "combined_prob": round(ma_score, 4),
+                                    "mode": args.mode,
+                                    "combined_prob": round(combined_score, 4),
                                     "individual_probs": {
                                         m.name: round(p, 4)
-                                        for m, p in zip(streaming_models, raw_probs)
+                                        for m, p in zip(streaming_models, ma_probs)
                                     },
                                     "timestamp": ts.isoformat(),
                                 }) + "\n")
@@ -286,9 +365,7 @@ def main():
 
                     else:
                         # Legacy window mode
-                        for m, p in zip(streaming_models, raw_probs):
-                            individual_ma[m.name].append(p)
-                            ma_p = sum(individual_ma[m.name]) / len(individual_ma[m.name])
+                        for m, ma_p in zip(streaming_models, ma_probs):
                             thr = getattr(m, "_threshold", 0.997)
                             if ma_p >= thr and (now - recent_detections.get(m.name, 0)) >= args.cooldown:
                                 individual_counts[m.name] = individual_counts.get(m.name, 0) + 1
@@ -329,8 +406,8 @@ def main():
         except KeyboardInterrupt:
             print(f"\n\n{'='*60}")
             print(f"{BOLD}Results:{RESET}")
-            if args.mode == "product":
-                print(f"  Mode: product")
+            if args.mode in {"min", "product"}:
+                print(f"  Mode: {args.mode}")
                 print(f"  Peak combined score: {peak_combined:.4f}")
                 for m in streaming_models:
                     print(f"  {m.color}■{RESET} {m.name}")
@@ -343,7 +420,7 @@ def main():
                     "event": "session_end",
                     "mode": args.mode,
                     "detections": detection_count,
-                    "peak_combined": round(peak_combined, 4) if args.mode == "product" else None,
+                    "peak_combined": round(peak_combined, 4) if args.mode in {"min", "product"} else None,
                     "individual": individual_counts if args.mode == "window" else None,
                     "timestamp": datetime.now().isoformat(),
                 }) + "\n")
