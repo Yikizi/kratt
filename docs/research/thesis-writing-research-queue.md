@@ -53,6 +53,28 @@ status. Mark as `done` once the corresponding sentence is drafted.
       point with FA/h > 0,5, so that FRR @ 0,5 FA/h can be obtained
       by linear interpolation rather than extrapolation; otherwise
       (b) is forced.
+    - **Split-mode outcome**: if exactly one of {v16c, MoE
+      consensus} brackets 0,5 FA/h on the holdout-aligned sweep
+      (i.e. satisfies the pass/fail rule above) and the other
+      does not, option (a) is taken **only** for the bracketing
+      configuration and the non-bracketing one is reported under
+      (b) in the same sentence. The drafted comparison sentence
+      then reads, e.g., "v16c FRR = X % @ 0,5 FA/h vs.
+      microWakeWord's 5 %; MoE consensus reported at cutoff 0,97,
+      FAPH = 0,79" (or with the roles reversed). This split-mode
+      branch is named explicitly so the next iteration cannot
+      stall on a partial sweep: neither configuration is dropped,
+      and the asymmetric reporting is treated as the defensible
+      outcome rather than a failure mode.
+    - **Split-mode clause order**: when the split-mode branch
+      fires, the option-(a) half (matched-frame FRR @ 0,5 FA/h
+      vs. the microWakeWord 5 % anchor) is reported first and the
+      option-(b) half (acknowledged-gap FAPH @ cutoff 0,97 vs. the
+      same microWakeWord 0,5 FA/h target) second, regardless of
+      whether v16c or the MoE consensus is the bracketing
+      configuration. This pins sentence ordering deterministically
+      and removes the last drafting degree of freedom before the
+      comparison sentence is written.
     - **Authoritative sweep identity**: the pass/fail check uses
       only the `det_curves.json` entries whose model tag is exactly
       `v16c` (single model) and the MoE consensus pair Expert A +
