@@ -168,7 +168,7 @@ Hindamistoru kesksesse moodulisse \texttt{evaluation/test\_sets.py} kirjutati \t
 
 \subsubsection{Korrigeeritud tulemused}
 
-Tabel~\ref{tab:fair-comparison-holdout} esitab kõigi kaheksa mudeliversiooni täielikud tulemused hold-out komplektidel lävel 0,97. Streaming FAPH on arvutatud pideva moving-average'iga (5 freimi) ja 2-sekundilise refraktoorperioodiga.
+Tabel~\ref{tab:fair-comparison-holdout} esitab kõigi kaheksa mudeliversiooni täielikud tulemused hold-out komplektidel lävel 0,97. Streaming FAPH on arvutatud pideva moving-average'iga (5 freimi) ja 2-sekundilise refraktoorperioodiga. FAPH on käesolevas peatükis raporteeritud kui valehäirete arv ühe negatiivse heli tunni kohta (toores streaming-detektsioonide arv jagatud hold-out komplekti kestusega, nt 3,82\,h \texttt{faph\_cv\_et} puhul), järgides microWakeWord'i ja openWakeWord'i \emph{per-hour-of-negative-audio} konventsiooni, mitte voogtunni (\emph{per-stream-hour}) oma; see määrab telje, millel Q1 (v16c vs MoE konsensus 0,5 FA/h juures) hinnatakse.
 
 \begin{table}[H]
 \centering
