@@ -68,15 +68,15 @@ v6 & 915 & 1560 & 3928 & 4656 & 1644 & 10228 \\
 \end{tabular}
 \end{table}
 
-Versiooni v1 ja v2 andmestik oli identne; v2 erines ainult heli eeltöötluse poolest (vaikuse trimmimine klippide algusest ja lõpust). Kõik versioonid kasutasid sama treeningukonfiguratsiooni: \texttt{negative\_class\_weight\,=\,20}, \texttt{negative\_sampling\_weight\,=\,10}, \texttt{positive\_sampling\_weight\,=\,2}. Versioonidest v3 alates kasutati lisaks MUSAN-ile ka 6,0 tundi Korvo-2 ambient-salvestust.
+Versiooni v1 ja v2 andmestik oli identne; v2 erines ainult heli eeltöötluse poolest (vaikuse trimmimine klippide algusest ja lõpust). Kõik versioonid kasutasid sama treeningukonfiguratsiooni: \texttt{negative\_class\_weight\,=\,20}, \texttt{negative\_sampling\_weight\,=\,10}, \texttt{positive\_sampling\_weight\,=\,2}. Versioonidest v3 alates kasutati lisaks MUSAN-ile ka 6,0\,tundi Korvo-2 ambient-salvestust.
 
-Korvo-2 negatiivsed pärinesid kahest salvestussessioonist. Esimene sessioon sisaldas 14 minutit tahtlikku kõnet ja 6,2 tundi taustahelisid, millest Silero VAD tuvastas kokku 1311 kõnesegmenti. Teine sessioon oli 2,8-tunnine pidev kõnesalvestus, mis lõigati 3-sekundilisteks tükkideks (3345 klippi).
+Korvo-2 negatiivsed pärinesid kahest salvestussessioonist. Esimene sessioon sisaldas 14\,minutit tahtlikku kõnet ja 6,2\,tundi taustahelisid, millest Silero VAD tuvastas kokku 1311 kõnesegmenti. Teine sessioon oli 2,8-tunnine pidev kõnesalvestus, mis lõigati 3-sekundilisteks tükkideks (3345 klippi).
 
 Versioonidest v5 alates lisati kaks täiendavat andmeallikat. Positiivsete hulka lisati 1560 Neurokõne TTS-iga sünteesitud \enquote{Kuule Kratt} klippi 12 eesti kõnelejaga. Negatiivsete hulka lisati 1644 TTS-iga sünteesitud \emph{hard negative} klippi --- fraase, mis sisaldavad sõna \enquote{Kratt}, kuid ei ole äratussõna: \enquote{Hei Kratt}, \enquote{Tere Kratt}, \enquote{Kratt} üksikult, \enquote{Kratt kuule} jm. Nende eesmärk oli sundida mudelit eristama täpset fraasi \enquote{Kuule Kratt} lähisugulastest.
 
 \subsection{Esialgne eksitav tulemus}
 
-Esialgne v3 tulemus näis katastroofiline: klipi-taseme valepositiivsete määr (FPR) tõusis v1 66,4\%-lt 94,0\%-le. Kuid selle võrdluse aluseks olnud hindamiskomplektid erinesid. V1 negatiivne testikomplekt sisaldas ainult Common~Voice klippe, v3 oma aga ka Korvo-2 negatiivseid. Ambient-hindamine toimus v1 puhul 6,2 tunni ja v3 puhul 12,2 tunni heli peal.
+Esialgne v3 tulemus näis katastroofiline: klipi-taseme valepositiivsete määr (FPR) tõusis v1 66,4\%-lt 94,0\%-le. Kuid selle võrdluse aluseks olnud hindamiskomplektid erinesid. V1 negatiivne testikomplekt sisaldas ainult Common~Voice klippe, v3 oma aga ka Korvo-2 negatiivseid. Ambient-hindamine toimus v1 puhul 6,2\,tunni ja v3 puhul 12,2\,tunni heli peal.
 
 See kogemus viis olulise metoodilise järelduseni: \textbf{mudeliversioone tohib võrrelda ainult identsete hindamiskomplektide peal}. Vastasel juhul võib andmestiku koosseisu muutus maskeerida tegelikku mudeli käitumise muutust.
 
