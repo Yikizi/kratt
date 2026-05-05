@@ -113,6 +113,10 @@ Et §-s~\ref{sec:benchmark-gap} viidatud reaalajas testimise numbrid (v6-residua
 \noindent
 Selle protokolli statistilist piiratust ($n{=}11$ ütlust kõneleja kohta, $n{=}15$ hard-negatiivset fraasi) käsitletakse §-s~\ref{sec:benchmark-gap} ja ptk~\ref{chapter:results}; siinne alampeatükk fikseerib protokolli üksnes selleks, et tsiteeritud numbrid oleksid kontrollitavad.
 
+\subsection{ESP32-S3 sihtseadmele juurutamise konfiguratsioon}
+\label{subsec:esp32-deploy}
+Et treenitud TFLite-artefakti ja sihtseadme vahe oleks reprodutseeritav, fikseeritakse Korvo-2 voice-satellite'i ESPHome-konfiguratsioon järgmiselt (vt \texttt{hardware/esp32/esphome/voice-satellite-esp32-s3-korvo2.yaml} ning mudelimanifest \texttt{hardware/esp32/esphome/models/kratt.json}). Heliahel kulgeb ES7210 ADC kaudu I2S-siinile ($16$~kHz mono PCM16, vasak kanal) ja edasi \texttt{micro\_wake\_word} komponenti võimendusteguriga \texttt{gain\_factor}${=}4$, mis vastab §3.3.1 positiivsete kogumisel kasutatud sama plaadi mikrofoni\-konfiguratsioonile. Mudelimanifest seab \texttt{probability\_cutoff}${=}0{,}97$ (sama lävi kui §3.3.4 voogedastushindamise protokollis), \texttt{sliding\_window\_size}${=}5$ freimi ($50$~ms silumine, sama kui §3.3.4), \texttt{feature\_step\_size}${=}10$~ms ja \texttt{tensor\_arena\_size}${=}45{,}000$~baiti; minimaalne ESPHome'i versioon on $2024.7$. \texttt{micro\_wake\_word} käivitatakse \texttt{on\_boot}, töötab sisemise VAD-iga ja kasutab lippu \texttt{stop\_after\_detection: true}; tuvastusel kutsutakse välja \texttt{voice\_assistant.start} (\texttt{use\_wake\_word: false}, st seade ei tugine ESPHome'i kaasasolevatele äratussõnadele), mis suunab heli ESPHome'i krüpteeritud natiivse API kaudu Home Assistanti \texttt{voice\_assistant} pipeline'i. Sama 148~KB INT8 TFLite-artefakt jooksutatakse seadmel ilma täiendava kvantiseerimiseta; käesolev alampeatükk fikseerib üksnes seadmepoolse konfiguratsiooni, juurutamise kasutajakogemuse väited jäävad ptk~\ref{chapter:results} kasutajatesti raami.
+
 \section{Standardsete võrdlusaluste ebapiisavus reaalse kasutuse ennustamisel}
 \label{sec:benchmark-gap}
 
