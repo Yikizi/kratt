@@ -62,6 +62,56 @@ status. Mark as `done` once the corresponding sentence is drafted.
       contains additional sweeps (other model tags, other negative
       sets, or ad-hoc reruns), they are ignored for this decision;
       the holdout-aligned entries are authoritative.
+    - **Cutoff-of-record**: each pinned FAPH carries its own
+      decision threshold and they are not shared. v16c's 75 FAPH and
+      v16c's 0,79-frame readout are reported at cutoff 0,97 per
+      `tab:fair-comparison-holdout` (`chapters/second_chapter.tex`
+      l. 179–198), whereas the MoE consensus' 0,79 FAPH was achieved
+      by the Expert A + Expert B2 pair at cutoff 0,996/0,996 per the
+      historical milestone recorded in
+      `wake-word/docs/MODEL_LINEAGE.md` (and recapped in this repo's
+      CLAUDE.md "Wake Word" section). The option-(b) sentence — and
+      the option-(b) half of the split-mode branch — must therefore
+      name the per-configuration cutoff (0,97 for v16c; 0,996/0,996
+      for the MoE consensus) rather than a single shared "cutoff
+      0,97" frame. This disambiguates which threshold anchors each
+      half of the (b) readout without introducing a new comparator
+      or a new sweep.
+    - **Negative-set-of-record (MoE consensus, option (b))**: the
+      cutoff-of-record bullet above pins the MoE consensus' 0,79 FAPH
+      to cutoff 0,996/0,996 via `wake-word/docs/MODEL_LINEAGE.md` (and
+      the CLAUDE.md "Wake Word" recap), but does not pin the negative
+      audio set on which that 0,79 was measured. Resolution: inspect
+      `MODEL_LINEAGE.md` (and the linked NOTES.md for the Expert A +
+      Expert B2 milestone) and confirm whether the historical FAPH
+      was measured on `faph_test_cv_et` (CV ET, ≈ 3,82 h, the same
+      negative set used by `tab:fair-comparison-holdout` and pinned
+      for v16c above) or on a different negative corpus. If the
+      milestone set matches `faph_test_cv_et`, the existing per-set
+      parenthetical convention covers both halves of the (b) sentence
+      unchanged; if it does not, the (b) sentence — and the option-(b)
+      half of the split-mode branch — must name v16c's and the MoE
+      consensus' negative sets separately (e.g. "v16c FAPH = 75 on
+      CV ET @ cutoff 0,97; MoE consensus FAPH = 0,79 on <name> @
+      cutoff 0,996/0,996"), mirroring the existing DiPCo / CV ET
+      dataset parenthetical rather than implying a shared CV ET frame.
+      This entry only names the artefact to consult; it does not
+      prescribe the outcome.
+    - **Sweep ordering convention**: within the filtered v16c /
+      MoE-consensus + `faph_test_cv_et` rows, sweep points are
+      ordered by ascending decision threshold (the `thresholds`
+      column in `det_curves.json`, produced by
+      `generate_det_curve.py` as `np.arange(0.01, 1.001, 0.01)`,
+      cf. l. 168). "Neighbouring" in the pass/fail rule means
+      adjacent in that threshold ordering — not nearest in FA/h —
+      so the bracketing pair around 0,5 FA/h is uniquely defined
+      even if the sweep is non-monotone in FA/h. Concretely, the
+      bracketing pair is the unique consecutive index pair
+      $(i, i{+}1)$ for which $\mathrm{FA/h}_i \le 0{,}5 <
+      \mathrm{FA/h}_{i+1}$ or $\mathrm{FA/h}_i > 0{,}5 \ge
+      \mathrm{FA/h}_{i+1}$ in threshold order; if multiple such
+      crossings exist, the lowest-threshold crossing is used so
+      the choice is deterministic across iterations.
     - **FA/h unit convention**: the 0,5 FA/h threshold is
       interpreted as false-alarms per hour of negative audio, i.e.
       raw sweep counts are normalised by the holdout duration
