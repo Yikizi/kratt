@@ -48,6 +48,7 @@ If a v19-style run is attempted, partial and confusable phrases should be first-
 - v17 showed that corrupted positives can break the model.
 - v18 showed that clean positives alone do not solve exact phrase selectivity.
 - checkpoint-FAPH showed that ambient-FAPH checkpointing alone can collapse recall.
+- `v19a-kratt-only` is a separate **diagnostic** single-word `Kratt` target-policy branch. It must not be treated as a replacement for exact two-word `Kuule/Kule Kratt` detection, and it must keep separate manifests/evaluation claims.
 
 ## Eval policy
 
@@ -75,6 +76,7 @@ If a v19-style run is attempted, partial and confusable phrases should be first-
 - ⏳ Exact manifests for v17/v18/checkpoint runs should be archived when available.
 - ⏳ Wilson CI / small-N uncertainty should be included in final tables.
 - 🧊 Large negative-pool expansion (MUSAN/CV/VOiCES/podcasts) is deferred unless thesis schedule is safe.
-- 🧊 v19 phrase-selectivity training is optional and should not displace user testing/writing.
+- 🧊 v19 two-word phrase-selectivity training is optional and should not displace user testing/writing.
+- 🧊 `Kratt`-only follow-up variants or promotion decisions are frozen until matching hard negatives, separate evaluation, and thesis/user-test priority are safe.
 
 Vaata ka: `docs/PROJECT_TODO.md` operatiivseks taskide järjekorraks.

@@ -1,8 +1,10 @@
 # Kratt-only segment extraction plan
 
-**Status:** planning started / state document
-**Created:** 2026-05-03
+**Status:** active diagnostic side-branch state document; summarized in `docs/PROJECT_TODO.md` and `docs/research/source-of-truth-apr-2026.md` as of 2026-05-04.  
+**Created:** 2026-05-03  
 **Goal:** build an auditable, conservative pipeline for deriving single-word `Kratt` positive clips from existing clean `Kuule/Kule Kratt` audio, without introducing boundary-label noise.
+
+> **Scope warning:** this is not the current user-test/demo target and not a replacement for exact two-word `Kuule/Kule Kratt` detection. Treat it as a diagnostic ablation unless a later explicit thesis decision promotes a different target policy.
 
 ## Why this exists
 
@@ -670,5 +672,30 @@ partition: common
 state at submit check: R on green30
 log: /gpfs/mariana/smbhome/malinh/kratt-data/training/runs/logs/kratt-only-v19a-kratt-only-923301.out
 ```
+
+Training completion — 2026-05-05:
+
+```text
+job_id: 923301
+state: COMPLETED
+elapsed: 03:54:42
+run_dir: /gpfs/mariana/smbhome/malinh/kratt-data/training/runs/microwakeword-kratt-only-v19a-kratt-only-20260504-203253
+```
+
+Downloaded local model artifacts:
+
+```text
+wake-word/models/kuule-kratt-v19a-kratt-only/model.tflite
+wake-word/models/kuule-kratt-v19a-kratt-only/kuule_kratt_v19a-kratt-only.tflite
+wake-word/models/kuule-kratt-v19a-kratt-only/analysis/
+wake-word/models/kuule-kratt-v19a-kratt-only/NOTES.md
+```
+
+Internal streaming TFLite eval:
+
+| cutoff | FRR | FAPH |
+|---:|---:|---:|
+| 0.99 | 0.0435 | 2.0 |
+| 1.00 | 1.0000 | 0.0 |
 
 Build `Kratt`-like hard negatives (`kurat`, `kraam`, `kraan`, `kraad`, `krats`, `ratas`, `rattad`, etc.) before calling any resulting model final.

@@ -1,5 +1,7 @@
 # Next Steps — April 2026
 
+> **Historical / superseded (2026-05-04):** do not use this as the current TODO list. It preserves the April 13 planning state before v17/v18/checkpoint-FAPH, user-test tooling, CI integration, and the `Kratt`-only diagnostic side branch. Current steering lives in `docs/PROJECT_TODO.md` and `docs/research/source-of-truth-apr-2026.md`; detailed `Kratt`-only state lives in `wake-word/docs/kratt-only-segment-extraction-plan.md`.
+
 ## Priority 1: Fix Training Fundamentals (Before Next Training Run)
 
 ### Augmentation (DONE — committed)
