@@ -151,9 +151,7 @@ Need esialgsed tulemused olid aga \emph{eksitavad} --- ja nende ümberlükkamine
 \subsection{Andmelekke avastamine ja korrigeeritud hindamine}
 \label{sec:data-leakage}
 
-Pärast vahekaitsmist alustati v6 mudeli reaalajas testimist MacBook~Pro sisemikrofoniga (vt §\ref{sec:cross-mic-asymmetry}). 40-minutilise tavakõne testi jooksul registreeriti umbes 50 valevallandumist tunnis (FAPH~$\approx$~50). See tulemus oli teravas vastuolus tabelis~\ref{tab:full-comparison} esitatud CV FPR\,=\,0,4\% väärtusega, mis ennustanuks kordades vähem valeaktiveerimisi.
-
-Anomaalia uurimisel selgus, et lokaalne hindamisskript \texttt{compare\_models.py} kasutas negatiivse testikomplektina kataloogi \texttt{data/processed/negative\_samples}, mis sisaldas \emph{täpselt samu} 5000 Common~Voice eestikeelset klippi, mida kasutati mudeli treenimiseks. Klipi-taseme FPR mõõtis seega seda, kui hästi mudel oli oma treeningkomplekti pähe õppinud, mitte seda, kui hästi ta üldistub uutele kõnenäidetele. Sama probleem kehtis ka Korvo-2 negatiivsete kohta: kõik kogutud klipid olid treeningusse võetud ning sõltumatut hold-out komplekti polnud kunagi loodud.
+Vastuolu allikat hakati otsima 40-minutilise MacBook~Pro sisemikrofoni testi (vt §\ref{sec:cross-mic-asymmetry}) järgses metoodika auditis. Anomaalia uurimisel selgus, et lokaalne hindamisskript \texttt{compare\_models.py} kasutas negatiivse testikomplektina kataloogi \texttt{data/processed/negative\_samples}, mis sisaldas \emph{täpselt samu} 5000 Common~Voice eestikeelset klippi, mida kasutati mudeli treenimiseks. Klipi-taseme FPR mõõtis seega seda, kui hästi mudel oli oma treeningkomplekti pähe õppinud, mitte seda, kui hästi ta üldistub uutele kõnenäidetele. Sama probleem kehtis ka Korvo-2 negatiivsete kohta: kõik kogutud klipid olid treeningusse võetud ning sõltumatut hold-out komplekti polnud kunagi loodud.
 
 \subsubsection{Hold-out hindamiskomplektide ehitamine}
 
