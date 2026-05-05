@@ -18,7 +18,7 @@ Sanity-check eksperimendi tulemusena saadi edukalt:
     \item tunnusefailid \texttt{mmap} vormingus;
     \item treenitud \texttt{microWakeWord} mudel;
     \item kvantiseeritud TFLite artefakt;
-    \item automaatselt genereeritud analüüsikaust ROC-kõvera, threshold-tabelite ja score-jaotustega.
+    \item automaatselt genereeritud analüüsikaust ROC-kõvera, lävitabelite (ingl k \emph{cutoff/threshold}) ja score-jaotustega.
 \end{itemize}
 
 Selle tulemuse peamine väärtus seisneb selles, et treeningutoru enda töökindlus sai avaliku andmestiku peal kinnitust. Edasised eestikeelse mudeli probleemid ei ole seega enam automaatselt seletatavad infrastruktuuri veaga.
@@ -41,7 +41,7 @@ Kirjutamise hetkeks on olemas:
     \item selgem arusaam sellest, kuidas tuleb üles ehitada eestikeelne \enquote{Kratt} andmestik.
 \end{itemize}
 
-Tulemuste peatüki keskne eesmärk on seega mitte esitada üht lõplikult \'võitnud\' mudelit, vaid dokumenteerida, kuidas valideeritud torule toetudes treeniti kaheksa eestikeelse äratussõna mudeliversiooni (v1--v8), kuidas avastati varasemas hindamises andmeleke ning kuidas korrigeeritud hold-out hindamine muutis mudelite järjestust ja töö põhilisi järeldusi. Järgnev analüüs keskendub seetõttu võrdlustele, kus mudelite hindamine toimub ühtsetel eeldustel: samal \texttt{cutoff}-väärtusel (0,97), samadel hold-out komplektidel ning kolmel võrdlusmõõdul --- recall, hard-negatiivide eristus ja FAPH.
+Tulemuste peatüki keskne eesmärk on seega mitte esitada üht lõplikult \'võitnud\' mudelit, vaid dokumenteerida, kuidas valideeritud torule toetudes treeniti kaheksa eestikeelse äratussõna mudeliversiooni (v1--v8), kuidas avastati varasemas hindamises andmeleke ning kuidas korrigeeritud hold-out hindamine muutis mudelite järjestust ja töö põhilisi järeldusi. Järgnev analüüs keskendub seetõttu võrdlustele, kus mudelite hindamine toimub ühtsetel eeldustel: samal läviväärtusel (0,97), samadel hold-out komplektidel ning kolmel võrdlusmõõdul --- recall, hard-negatiivide eristus ja FAPH.
 
 \section{Eestikeelse äratussõna eksperimendid}
 
@@ -86,7 +86,7 @@ Mõõtmise korrektsuse tagamiseks skooriti v1 ja v3 mudelid samade positiivsete 
 
 \begin{table}[H]
 \centering
-\caption{V1 ja v3 mudelite õiglane võrdlus identsete hindamiskomplektidega (cutoff\,=\,0,99).}
+\caption{V1 ja v3 mudelite õiglane võrdlus identsete hindamiskomplektidega (lävi\,=\,0,99).}
 \label{tab:fair-comparison}
 \begin{tabular}{l r r l}
 \hline
@@ -119,11 +119,11 @@ Versiooni v3 Korvo-2 negatiivsete osakaal oli 2,7\%{} --- täpselt degradatsioon
 
 \subsection{Iteratiivne paranemine: v4 kuni v6}
 
-Tabel~\ref{tab:full-comparison} esitab kõigi mudeliversioonide õiglase võrdluse identsete hindamiskomplektide peal (cutoff\,=\,0,99).
+Tabel~\ref{tab:full-comparison} esitab kõigi mudeliversioonide õiglase võrdluse identsete hindamiskomplektide peal (lävi\,=\,0,99).
 
 \begin{table}[H]
 \centering
-\caption{Mudeliversioonide õiglane võrdlus identsete hindamiskomplektidega (cutoff\,=\,0,99). Parim tulemus igas reas on \textbf{paksus kirjas}.}
+\caption{Mudeliversioonide õiglane võrdlus identsete hindamiskomplektidega (lävi\,=\,0,99). Parim tulemus igas reas on \textbf{paksus kirjas}.}
 \label{tab:full-comparison}
 \begin{tabular}{l l r r r r r}
 \hline
@@ -170,11 +170,11 @@ Hindamistoru kesksesse moodulisse \texttt{evaluation/test\_sets.py} kirjutati \t
 
 \subsubsection{Korrigeeritud tulemused}
 
-Tabel~\ref{tab:fair-comparison-holdout} esitab kõigi kaheksa mudeliversiooni täielikud tulemused hold-out komplektidel cutoff'iga 0,97. Streaming FAPH on arvutatud pideva moving-average'iga (5 freimi) ja 2-sekundilise refraktoorperioodiga.
+Tabel~\ref{tab:fair-comparison-holdout} esitab kõigi kaheksa mudeliversiooni täielikud tulemused hold-out komplektidel lävel 0,97. Streaming FAPH on arvutatud pideva moving-average'iga (5 freimi) ja 2-sekundilise refraktoorperioodiga.
 
 \begin{table}[H]
 \centering
-\caption{Mudeliversioonide korrigeeritud võrdlus tõeselt hold-out hindamiskomplektidel (cutoff\,=\,0,97). Parim tulemus igas reas on \textbf{paksus kirjas}. v8 puhul on \texttt{pos\_mac\_mattias} treeningusse võetud, mistõttu mõõtmine puudub. Wilsoni 95\% usaldusvahemik (UV) on arvutatud iga recall-rea valimi suuruse alusel ($N$ on toodud rea pealkirjas). FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. FAPH on raporteeritud skriptitud offline-variandina (vt §\ref{subsec:faph-variants}).}
+\caption{Mudeliversioonide korrigeeritud võrdlus tõeselt hold-out hindamiskomplektidel (lävi\,=\,0,97). Parim tulemus igas reas on \textbf{paksus kirjas}. v8 puhul on \texttt{pos\_mac\_mattias} treeningusse võetud, mistõttu mõõtmine puudub. Wilsoni 95\% usaldusvahemik (UV) on arvutatud iga recall-rea valimi suuruse alusel ($N$ on toodud rea pealkirjas). FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. FAPH on raporteeritud skriptitud offline-variandina (vt §\ref{subsec:faph-variants}).}
 \label{tab:fair-comparison-holdout}
 \setlength{\tabcolsep}{3pt}
 \scriptsize
@@ -246,7 +246,7 @@ Korrigeeritud hindamine võimaldas teha täiendava eksperimendi: mõõta FAPH mi
 
 \begin{table}[H]
 \centering
-\caption{V6 mudeli FAPH erinevatel keeltel ja corpus'tel (cutoff\,=\,0,97).}
+\caption{V6 mudeli FAPH erinevatel keeltel ja corpus'tel (lävi\,=\,0,97).}
 \label{tab:cross-language-faph}
 \begin{tabular}{l l r r l}
 \hline
