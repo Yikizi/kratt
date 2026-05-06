@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 # DESC: Full voice demo pipeline: wake word → STT → LLM → smart home
 # USAGE: kratt demo [options] [model(s)]
-# ARGS: --profile      Optional preset: demo, wiz-claude, wiz-claude-safe, wiz-manual
+# ARGS: --profile      Optional preset: demo, wiz-claude, wiz-claude-safe, wiz-manual, wiz-7b
 # ARGS: --models       One or more wake word model tags. Default: v16c
 # ARGS: --threshold    Detection threshold(s). Default: 0.996
 # ARGS: --consensus    Min models that must agree. Default: all
 # ARGS: --wake-hold-frames Consecutive above-threshold frames required. Default: 3
 # ARGS: --wake-model-cooldown Per-model trigger cooldown seconds. Default: 4
-# ARGS: --post-trigger-cooldown Cooldown before listening again. Default: 4
+# ARGS: --post-trigger-cooldown Cooldown before listening again. Default: 2
 # ARGS: --no-wakeword  Manual trigger mode (press Enter)
+# ARGS: --streaming-stt/--no-streaming-stt Stream audio into STT while recording (default: on)
 # ARGS: --wiz/--no-wiz Auto-enable real WiZ bulbs when cached/discovered. Use --no-wiz for mock HA
 # ARGS: --wiz-bash     Use WiZ bash-agent mode via local wiz CLI
+# ARGS: --ble-bridge   Send WiZ JSON to bulbs over BLE bridge instead of local UDP
 # ARGS: --bulbs        Comma-separated WiZ bulb IPs (default: KRATT_WIZ_BULBS or /tmp cache)
-# ARGS: --llm          Ollama model name when using --no-claude-code. Default: gemma3:4b
-# ARGS: --claude-code/--no-claude-code Use Claude Code by default; --no-claude-code uses Ollama
+# ARGS: --llm          Ollama model name. Default: qwen2.5:3b
+# ARGS: --claude-code  Use Claude Code instead of local Ollama (dev/debug)
 # ARGS: --claude-session-id Reuse a specific Claude Code session UUID
 # ARGS: --log          Enable per-interaction JSONL telemetry
 # ARGS: --participant  Participant ID for log naming
@@ -26,6 +28,9 @@
 # EXAMPLES: kratt demo --wiz --no-wakeword
 # EXAMPLES: kratt demo --wiz-bash --no-wakeword
 # EXAMPLES: kratt demo --wiz --models v15
+# EXAMPLES: kratt demo --wiz --ble-bridge
+# EXAMPLES: kratt demo --wiz --ble-bridge --no-wakeword
+# EXAMPLES: kratt demo --profile wiz-7b              # higher-accuracy LLM (qwen2.5:7b ~98%, ~700ms)
 # EXAMPLES: kratt demo --wiz --models v10 v15 --consensus 2
 # EXAMPLES: kratt demo --wiz --bulbs 192.168.68.56,192.168.68.57 --models v15
 # EXAMPLES: kratt demo --wiz-bash --models v15 --llm qwen3:8b
@@ -53,10 +58,21 @@ if [[ ! -f "${VENV_PYTHON}" ]]; then
   exit 1
 fi
 
-# Check Ollama
-if ! curl -sf http://localhost:11434/api/tags > /dev/null 2>&1; then
-  echo "Ollama not running. Start with: ollama serve" >&2
-  exit 1
+# Default backend is local Ollama. Skip this only for explicit Claude/pi modes.
+use_pi_cli=false
+use_ollama=true
+for arg in "$@"; do
+  case "${arg}" in
+    --pi-cli|--pi-gpt) use_pi_cli=true; use_ollama=false ;;
+    --claude-code) use_ollama=false ;;
+    --no-claude-code) use_ollama=true ;;
+  esac
+done
+if [[ "${use_pi_cli}" == false && "${use_ollama}" == true ]]; then
+  if ! curl -sf http://localhost:11434/api/tags > /dev/null 2>&1; then
+    echo "Ollama not running. Start with: ollama serve" >&2
+    exit 1
+  fi
 fi
 
 # Launch overlay (watches log file for detections)

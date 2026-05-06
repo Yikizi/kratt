@@ -22,16 +22,16 @@ mkdir -p "${OUT_DIR}"
 cat > "${OUT_DIR}/${OUT_JSON_BASENAME}" <<EOF
 {
   "type": "micro",
-  "wake_word": "kratt",
+  "wake_word": "kuule_kratt",
   "author": "Mattias",
   "trained_languages": ["et"],
   "model": "${TFLITE}",
   "version": 2,
   "micro": {
-    "probability_cutoff": 0.97,
+    "probability_cutoff": 0.996,
     "sliding_window_size": 5,
     "feature_step_size": 10,
-    "tensor_arena_size": 22860,
+    "tensor_arena_size": 45000,
     "minimum_esphome_version": "2024.7"
   }
 }

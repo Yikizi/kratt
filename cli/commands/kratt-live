@@ -223,7 +223,7 @@ if [[ ${#VERSIONS[@]} -eq 1 ]]; then
       --model "$MODEL" --threshold "$THRESHOLD" --name "kuule kratt $VERSION" \
       --capture-dir "${CAPTURE_DIR}" --pre-roll-seconds 5 --post-roll-seconds 1 \
       --alert-sound ping \
-      "${EXTRA_ARGS[@]}" \
+      ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
       2>&1 | tee -a "${log_file}"
   else
     MODEL="$(model_path_from_tag "$VERSION")"
@@ -235,15 +235,20 @@ if [[ ${#VERSIONS[@]} -eq 1 ]]; then
       exit 1
     fi
 
+    DETECTION_NAME="kuule kratt $VERSION"
+    if [[ "$VERSION" == *kratt-only* ]]; then
+      DETECTION_NAME="kratt $VERSION"
+    fi
+
     echo "Model: $VERSION"
     echo "Threshold: $THRESHOLD"
     echo "Log: ${log_file}"
     PYTHONUNBUFFERED=1 "${KRATT_WW}/.venv-microwakeword/bin/python" \
       "${KRATT_WW}/evaluation/live_test_tflite.py" \
-      --model "$MODEL" --threshold "$THRESHOLD" --name "kuule kratt $VERSION" \
+      --model "$MODEL" --threshold "$THRESHOLD" --name "$DETECTION_NAME" \
       --capture-dir "${CAPTURE_DIR}" --pre-roll-seconds 5 --post-roll-seconds 1 \
       --alert-sound ping \
-      "${EXTRA_ARGS[@]}" \
+      ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
       2>&1 | tee -a "${log_file}"
   fi
 
@@ -269,7 +274,7 @@ else
   PYTHONUNBUFFERED=1 "${KRATT_WW}/.venv-microwakeword/bin/python" \
     "${KRATT_WW}/evaluation/multi_model_live_test.py" \
     "${VERSIONS[@]}" --threshold "${THRESHOLDS[@]}" \
-    "${EXTRA_ARGS[@]}" \
+    ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
     --log "${log_file}" \
     2>&1 | tee -a "${log_file}"
 fi

@@ -36,6 +36,14 @@ detection (microWakeWord) and Home Assistant Assist streaming.
 ESPHome `micro_wake_word` models are defined by a JSON manifest that references a `.tflite` file.
 For local testing you can keep both files on disk and point ESPHome at the JSON via an absolute path.
 
+For the current user-test/demo baseline, prepare the local ESPHome model copy without flashing:
+
+```bash
+./cli/kratt prepare-esphome-model v16c --cutoff 0.996
+```
+
+Manual path:
+
 1. Put your trained `.tflite` somewhere on disk.
 2. Create a JSON manifest (see `models/kratt.example.json`) and update:
    - `wake_word`

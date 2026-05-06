@@ -2,11 +2,13 @@
   "type": "micro",
   "wake_word": "kuule_kratt",
   "author": "Mattias",
-  "trained_languages": ["et"],
+  "trained_languages": [
+    "et"
+  ],
   "model": "/Users/mattias/kratt/hardware/esp32/esphome/models/kratt.tflite",
   "version": 2,
   "micro": {
-    "probability_cutoff": 0.97,
+    "probability_cutoff": 0.996,
     "sliding_window_size": 5,
     "feature_step_size": 10,
     "tensor_arena_size": 45000,
