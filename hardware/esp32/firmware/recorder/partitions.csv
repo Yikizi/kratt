@@ -1,0 +1,6 @@
+# Name,   Type, SubType, Offset,   Size, Flags
+# NimBLE pushes the recorder app over ESP-IDF's default 1 MiB factory slot.
+# Keep one large factory app partition; this firmware does not use OTA slots.
+nvs,      data, nvs,     0x9000,   0x6000,
+phy_init, data, phy,     0xf000,   0x1000,
+factory,  app,  factory, 0x10000,  0x1F0000,

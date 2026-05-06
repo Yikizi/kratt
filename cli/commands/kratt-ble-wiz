@@ -1,0 +1,255 @@
+#!/usr/bin/env python3
+# DESC: Send a WiZ UDP frame to a WiZ bulb through the ESP32 BLE bridge.
+# USAGE: kratt ble-wiz [options]
+# ARGS: --bulb      Optional WiZ bulb IPv4 address. Default: auto (ESP32 AP broadcast)
+# ARGS: --on        Send setPilot state=true
+# ARGS: --off       Send setPilot state=false
+# ARGS: --brightness Set WiZ dimming (0-255) while also turning on
+# ARGS: --color     Set WiZ color/temp: red/blue/punane/sinine or soe valge / neutraalne / külm valge
+# ARGS: --raw       Full WiZ payload JSON override (e.g. '{"method":"setPilot","params":{"state":true}}')
+# ARGS: --status    Query WiZ getPilot state
+# ARGS: --response  Print ESP32 firmware response JSON
+# ARGS: --port      UDP destination port for forwarded payload (default 38899)
+# ARGS: --interactive Keep one BLE connection open and type repeated commands
+# EXAMPLES: kratt ble-wiz --on
+# EXAMPLES: kratt ble-wiz --bulb 192.168.4.20 --off
+# EXAMPLES: kratt ble-wiz --brightness 150
+# EXAMPLES: kratt ble-wiz --color "soe valge"
+# EXAMPLES: kratt ble-wiz --raw '{"method":"setPilot","params":{"state":true,"dimming":77}}'
+# EXAMPLES: kratt ble-wiz --status --response
+# EXAMPLES: kratt ble-wiz --interactive
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+
+ROOT = Path(os.environ.get("KRATT_ROOT", Path(__file__).resolve().parents[2]))
+VENV_PYTHON = ROOT / ".venv" / "bin" / "python"
+if VENV_PYTHON.exists() and Path(sys.executable).resolve() != VENV_PYTHON.resolve():
+    os.execv(str(VENV_PYTHON), [str(VENV_PYTHON), str(Path(__file__).resolve()), *sys.argv[1:]])
+
+_bridge_dir = ROOT / "tools" / "ble-wiz-bridge"
+if str(_bridge_dir) not in sys.path:
+    sys.path.append(str(_bridge_dir))
+
+try:
+    from bridge import (
+        WIZ_BRIDGE_DEFAULT_BULB_IP,
+        WIZ_UDP_PORT,
+        send_wiz_via_ble,
+        send_wiz_via_ble_response,
+    )
+except Exception as exc:  # pragma: no cover
+    print(f"Failed to import BLE bridge module: {exc}", file=sys.stderr)
+    print("Run from root repo with synced project dependencies (uv sync).", file=sys.stderr)
+    raise SystemExit(1)
+
+COLOR_MAP = {
+    # White temperature aliases -> WiZ `temp` Kelvin
+    "soe valge": 2700,
+    "warm white": 2700,
+    "soe": 2700,
+    "warm": 2700,
+    "neutraalne": 4000,
+    "neutral": 4000,
+    "külm valge": 6500,
+    "cool white": 6500,
+    "külm": 6500,
+    "cool": 6500,
+    "päevavalgus": 5000,
+    "daylight": 5000,
+    "öövalgus": 2200,
+    "night": 2200,
+    # RGB aliases -> WiZ `r/g/b`
+    "red": (255, 0, 0),
+    "punane": (255, 0, 0),
+    "green": (0, 255, 0),
+    "roheline": (0, 255, 0),
+    "blue": (0, 0, 255),
+    "sinine": (0, 0, 255),
+    "yellow": (255, 255, 0),
+    "kollane": (255, 255, 0),
+    "purple": (180, 0, 255),
+    "lilla": (180, 0, 255),
+    "magenta": (255, 0, 255),
+    "cyan": (0, 255, 255),
+    "orange": (255, 120, 0),
+    "oranž": (255, 120, 0),
+    "pink": (255, 30, 140),
+    "roosa": (255, 30, 140),
+    "white": (255, 255, 255),
+    "valge": (255, 255, 255),
+}
+
+
+def apply_color_param(params: dict, raw_color: str) -> None:
+    color = COLOR_MAP.get(raw_color.lower())
+    if color is None:
+        raise ValueError(f"Unknown color: {raw_color}")
+    if isinstance(color, tuple):
+        params.update({"r": color[0], "g": color[1], "b": color[2]})
+    else:
+        params["temp"] = color
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Send WiZ command through BLE bridge")
+    parser.add_argument(
+        "--bulb",
+        default=WIZ_BRIDGE_DEFAULT_BULB_IP,
+        help="Optional target WiZ bulb IPv4. Default: auto (ESP32 AP broadcast).",
+    )
+    parser.add_argument("--on", action="store_true", help="Turn bulb on")
+    parser.add_argument("--off", action="store_true", help="Turn bulb off")
+    parser.add_argument(
+        "--brightness", type=int, metavar="0-255", help="Optional dimming (0-255)"
+    )
+    parser.add_argument(
+        "--color",
+        type=str,
+        help="Optional color/temp name: red, blue, punane, sinine, soe valge, neutraalne, ...",
+    )
+    parser.add_argument("--raw", type=str, help="Raw WiZ payload JSON (overrides presets)")
+    parser.add_argument("--status", action="store_true", help="Query getPilot state")
+    parser.add_argument("--response", action="store_true", help="Print ESP32 firmware response JSON")
+    parser.add_argument("--port", type=int, default=WIZ_UDP_PORT, help="Forward UDP port")
+    parser.add_argument(
+        "--interactive",
+        "-i",
+        action="store_true",
+        help="Keep one BLE connection open and type repeated commands",
+    )
+    return parser.parse_args()
+
+
+def to_payload(args: argparse.Namespace) -> dict:
+    if args.raw:
+        return json.loads(args.raw)
+
+    if args.status:
+        if args.on or args.off or args.brightness is not None or args.color:
+            raise ValueError("--status cannot be combined with set commands")
+        return {"method": "getPilot", "params": {}}
+
+    if args.on and args.off:
+        raise ValueError("--on and --off are mutually exclusive")
+
+    if args.off and (args.brightness is not None or args.color):
+        raise ValueError("--off cannot be combined with --brightness or --color")
+
+    if args.brightness is not None and not (0 <= args.brightness <= 255):
+        raise ValueError("--brightness must be 0..255")
+
+    if args.off:
+        return {"method": "setPilot", "params": {"state": False}}
+
+    params = {"state": True}
+
+    if args.brightness is not None:
+        params["dimming"] = max(10, round(args.brightness / 255 * 100))
+
+    if args.color:
+        apply_color_param(params, args.color)
+
+    if not args.on and args.brightness is None and args.color is None:
+        raise ValueError("Provide --on, --off, --raw, --brightness, --color, or --status")
+
+    return {"method": "setPilot", "params": params}
+
+
+def payload_from_interactive_line(line: str) -> dict:
+    line = line.strip()
+    if not line:
+        raise ValueError("empty command")
+
+    lower = line.lower()
+    if lower == "on":
+        return {"method": "setPilot", "params": {"state": True}}
+    if lower == "off":
+        return {"method": "setPilot", "params": {"state": False}}
+    if lower in {"status", "state", "get"}:
+        return {"method": "getPilot", "params": {}}
+    if lower.startswith("brightness ") or lower.startswith("b "):
+        value = int(line.split(maxsplit=1)[1])
+        if not (0 <= value <= 255):
+            raise ValueError("brightness must be 0..255")
+        return {
+            "method": "setPilot",
+            "params": {"state": True, "dimming": max(10, round(value / 255 * 100))},
+        }
+    if lower.startswith("color "):
+        name = line.split(maxsplit=1)[1]
+        params = {"state": True}
+        apply_color_param(params, name)
+        return {"method": "setPilot", "params": params}
+    if lower in COLOR_MAP:
+        params = {"state": True}
+        apply_color_param(params, lower)
+        return {"method": "setPilot", "params": params}
+    if lower.startswith("raw "):
+        return json.loads(line.split(maxsplit=1)[1])
+
+    raise ValueError("use: on | off | status | brightness 0-255 | color <name> | <color> | raw <json> | quit")
+
+
+def run_interactive(args: argparse.Namespace) -> int:
+    print("BLE WiZ interactive mode. Commands: on, off, status, brightness 0-255, color <name>, <color>, raw <json>, quit")
+    print("Keeping one BLE connection open inside this process after first command.")
+    while True:
+        try:
+            line = input("ble-wiz> ")
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return 0
+
+        if line.strip().lower() in {"q", "quit", "exit"}:
+            return 0
+
+        try:
+            payload = payload_from_interactive_line(line)
+        except Exception as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            continue
+
+        response = send_wiz_via_ble_response(args.bulb, payload, port=args.port)
+        if response is not None:
+            print("✓ Command sent")
+            print(json.dumps(response, ensure_ascii=False))
+        else:
+            print("✗ BLE send failed", file=sys.stderr)
+
+
+def main() -> int:
+    args = parse_args()
+    if args.interactive:
+        return run_interactive(args)
+
+    try:
+        payload = to_payload(args)
+    except Exception as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 2
+
+    if args.response or args.status:
+        response = send_wiz_via_ble_response(args.bulb, payload, port=args.port)
+        if response is not None:
+            print("✓ Command sent")
+            print(json.dumps(response, ensure_ascii=False, indent=2))
+            return 0
+        print("✗ BLE send failed", file=sys.stderr)
+        return 1
+
+    if send_wiz_via_ble(args.bulb, payload, port=args.port):
+        print("✓ Command sent")
+        return 0
+
+    print("✗ BLE send failed", file=sys.stderr)
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
