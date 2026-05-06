@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# DESC: Score WAV clips/directories with a wake-word model
+# USAGE: kratt score-clips <model> <wav-or-dir> [wav-or-dir ...] [--thresholds T...]
+# ARGS: model      Model tag/alias, e.g. v19a, v19a-kratt-only, v16c
+# ARGS: wav-or-dir One or more WAV files or directories containing WAVs
+# ARGS: --thresholds Decision thresholds to summarize. Default: 0.99 0.996
+# EXAMPLES: kratt score-clips v19a output/manual-v19a/kratt --thresholds 0.99 0.996
+# EXAMPLES: kratt score-clips v19a wake-word/data/raw/friend1_20260414 --top 5
+set -euo pipefail
+
+PYTHON="${KRATT_WW}/.venv-microwakeword/bin/python"
+SCRIPT="${KRATT_WW}/evaluation/score_clip_dir.py"
+
+if [[ ! -x "$PYTHON" ]]; then
+  echo "microWakeWord venv not found: $PYTHON" >&2
+  exit 1
+fi
+
+exec "$PYTHON" "$SCRIPT" "$@"

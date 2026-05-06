@@ -20,12 +20,19 @@ MODEL_ORDER = [
     "v6", "v6-specaug", "v6-residual",
     "v7", "v8", "v9", "v10", "v11", "v12",
     "v13a", "v13b", "v14", "v15",
-    "v16a", "v16b", "v16c",
+    "v16a", "v16b", "v16c", "v17a", "v17b",
+    "oww-v17-smoke2",
+    "v18a-clean48", "v18b-clean48-sa", "v18c-clean48-hn",
+    "v18d-clean96", "v18e-clean48-tts-hn", "v18f-clean48-tts-hn-fast",
+    "checkpoint-faph-v18d-clean96-pw96x4",
+    "checkpoint-faph10-v18d-clean96-pw96x4",
+    "checkpoint-faph20-v18d-clean96-pw96x4",
+    "v19a-kratt-only",
     "ex2a", "ex3a", "ex3b",
     "expert-a", "expert-b", "expert-b2",
 ]
 
-# Combos appended after singles, alphabetical
+# Combos appended after singles, roughly chronological/family order.
 COMBO_PRIORITY = [
     "v14 + expert-b",
     "v6-residual + expert-a",
@@ -35,6 +42,30 @@ COMBO_PRIORITY = [
     "ex3a + expert-a + expert-b",
     "ex3a + expert-b + expert-b2",
     "ex3b + expert-b2",
+    "v17a + v17b",
+    "v17a + expert-a",
+    "v17b + expert-a",
+    "v18a-clean48 + expert-a",
+    "v18a-clean48 + v16c",
+    "v18a-clean48 + v18b-clean48-sa",
+    "v18b-clean48-sa + expert-a",
+    "v18b-clean48-sa + v16c",
+    "v18c-clean48-hn + expert-a",
+    "v18c-clean48-hn + v16c",
+    "v18d-clean96 + expert-a",
+    "v18d-clean96 + v16c",
+    "v18e-clean48-tts-hn + expert-a",
+    "v18e-clean48-tts-hn + v16c",
+    "v18e-clean48-tts-hn + v18f-clean48-tts-hn-fast",
+    "v18f-clean48-tts-hn-fast + expert-a",
+    "v18f-clean48-tts-hn-fast + v16c",
+    "checkpoint-faph10-v18d-clean96-pw96x4 + v16c",
+    "checkpoint-faph10-v18d-clean96-pw96x4 + expert-a",
+    "checkpoint-faph10-v18d-clean96-pw96x4 + v6-residual",
+    "checkpoint-faph20-v18d-clean96-pw96x4 + v16c",
+    "checkpoint-faph20-v18d-clean96-pw96x4 + expert-a",
+    "checkpoint-faph20-v18d-clean96-pw96x4 + v6-residual",
+    "checkpoint-faph20-v18d-clean96-pw96x4 + checkpoint-faph10-v18d-clean96-pw96x4",
 ]
 
 # Columns shown in the main @0.97 table
@@ -46,7 +77,7 @@ MAIN_COLS = [
     ("hard_neg_mac_holdout", "fpr", "HN-Mac(15)"),
     ("hard_neg_isa_xtts", "fpr", "HN-Isa(60)"),
     ("hard_neg_canary", "fpr", "HN-Can(5)"),
-    ("faph_cv_et", "faph", "CV-ET 3.82h"),
+    ("faph_cv_et", "faph", "CV-ET 3.82h track"),
     ("faph_librispeech", "faph", "LibSp 5.62h"),
     ("faph_dipco", "faph", "DiPCo 3.32h"),
     ("faph_macbook_bg", "faph", "MacBG 1.17h"),
@@ -152,13 +183,15 @@ def main() -> None:
     rows = load_rows(inp)
     if not rows:
         raise SystemExit("No rows in input")
+    timestamps = [r.get("timestamp", "") for r in rows if r.get("timestamp")]
+    latest_ts = max(timestamps) if timestamps else ""
 
     data = pivot(rows, args.threshold)
     models = sort_models(list(data.keys()))
 
     md_parts: list[str] = []
     md_parts.append(f"# Kuule Kratt — mudelite benchmark (supervisor view)\n")
-    md_parts.append(f"*Generated from `{inp.name}` ({rows[0]['timestamp']})*\n")
+    md_parts.append(f"*Generated from `{inp.name}` (latest row timestamp: {latest_ts})*\n")
     md_parts.append(
         "**Protokoll**: canonical streaming FAPH via "
         "`microwakeword.test.compute_false_accepts_per_hour`, "

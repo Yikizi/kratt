@@ -147,7 +147,7 @@ that this model's training pool does NOT include.
 | `pos_isa_xtts` | data/processed/test_pos_xtts_isa | Recall on unseen male speaker (XTTS clone) | 48 |
 | `hard_neg_mac_holdout` | data/processed/hard_neg_test | FPR on real recorded hard negatives | 15 |
 | `hard_neg_isa_xtts` | data/processed/test_hard_neg_xtts_isa | FPR on unseen-speaker XTTS hard negatives | 60 |
-| `faph_cv_et` | data/processed/faph_test_cv_et | FAPH on frozen legacy CV ET held-out slice (indices 5000-7000) | 2000 (3.65h) |
+| `faph_cv_et` | data/processed/faph_test_cv_et | FAPH on frozen legacy CV ET held-out slice (indices 5000-7000) | 2000 raw clips (3.65h raw; 3.82h canonical streaming track with 300 ms gaps) |
 | `pos_ode_real` | data/raw/ode_kuule_kratt | Real-speaker recall proxy | 11 |
 | `pos_friend1_real` | data/raw/friend1_20260414 | Real-speaker recall warning set | 145 |
 | `faph_librispeech` | data/processed/benchmarks/librispeech-test-clean | FAPH on English speech (cross-language robustness) | 2620 (5.62h) |

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# DESC: Build context-aware Kratt-only positive crops for v19b experiments
+# USAGE: kratt build-kratt-context [build_kratt_context_dataset.py flags...]
+# ARGS: --output-dir DIR       Output dataset dir. Default: wake-word/data/processed/positive_kratt_context_v19b
+# ARGS: --window-ms N          Fixed crop duration. Default: 1000
+# ARGS: --kratt-offset-ms CSV  Target offsets in crop. Default: 40,160,280,400
+# ARGS: --sample N             Randomly sample N source clips for smoke tests
+# ARGS: --dry-run              Write manifest/summary only; no audio
+# ARGS: --force                Replace existing output dir
+# EXAMPLES: kratt build-kratt-context --sample 25 --force
+# EXAMPLES: kratt build-kratt-context --force
+set -euo pipefail
+
+cd "$KRATT_WW"
+uv run python data/validation/build_kratt_context_dataset.py "$@"

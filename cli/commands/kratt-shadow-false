@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# DESC: Mark the oldest pending kratt shadow-benchmark auto trigger as FALSE accept
+# USAGE: kratt shadow-false [socket]
+# ARGS: socket Optional Unix socket path. Default: /tmp/kratt-shadow-benchmark.sock
+# EXAMPLES: kratt shadow-false
+set -euo pipefail
+
+SOCKET_PATH="${1:-${KRATT_SHADOW_SOCKET:-/tmp/kratt-shadow-benchmark.sock}}"
+
+python3 - "$SOCKET_PATH" <<'PY'
+import socket
+import sys
+
+path = sys.argv[1]
+s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+try:
+    s.connect(path)
+except FileNotFoundError:
+    print(f"shadow benchmark socket not found: {path}", file=sys.stderr)
+    sys.exit(2)
+except ConnectionRefusedError:
+    print(f"shadow benchmark socket refused connection: {path}", file=sys.stderr)
+    sys.exit(2)
+
+s.sendall(b"FALSE\n")
+try:
+    reply = s.recv(1024).decode("utf-8", errors="ignore").strip()
+except Exception:
+    reply = ""
+print(reply or "OK FALSE")
+PY

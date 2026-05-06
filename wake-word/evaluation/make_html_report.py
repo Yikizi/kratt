@@ -20,6 +20,12 @@ MODEL_ORDER = [
     "v13a", "v13b", "v14", "v15",
     "v16a", "v16b", "v16c", "v17a", "v17b",
     "oww-v17-smoke2",
+    "v18a-clean48", "v18b-clean48-sa", "v18c-clean48-hn",
+    "v18d-clean96", "v18e-clean48-tts-hn", "v18f-clean48-tts-hn-fast",
+    "checkpoint-faph-v18d-clean96-pw96x4",
+    "checkpoint-faph10-v18d-clean96-pw96x4",
+    "checkpoint-faph20-v18d-clean96-pw96x4",
+    "v19a-kratt-only",
     "ex2a", "ex3a", "ex3b",
     "expert-a", "expert-b", "expert-b2",
     "v14 + expert-b",
@@ -33,6 +39,27 @@ MODEL_ORDER = [
     "v17a + v17b",
     "v17a + expert-a",
     "v17b + expert-a",
+    "v18a-clean48 + expert-a",
+    "v18a-clean48 + v16c",
+    "v18a-clean48 + v18b-clean48-sa",
+    "v18b-clean48-sa + expert-a",
+    "v18b-clean48-sa + v16c",
+    "v18c-clean48-hn + expert-a",
+    "v18c-clean48-hn + v16c",
+    "v18d-clean96 + expert-a",
+    "v18d-clean96 + v16c",
+    "v18e-clean48-tts-hn + expert-a",
+    "v18e-clean48-tts-hn + v16c",
+    "v18e-clean48-tts-hn + v18f-clean48-tts-hn-fast",
+    "v18f-clean48-tts-hn-fast + expert-a",
+    "v18f-clean48-tts-hn-fast + v16c",
+    "checkpoint-faph10-v18d-clean96-pw96x4 + v16c",
+    "checkpoint-faph10-v18d-clean96-pw96x4 + expert-a",
+    "checkpoint-faph10-v18d-clean96-pw96x4 + v6-residual",
+    "checkpoint-faph20-v18d-clean96-pw96x4 + v16c",
+    "checkpoint-faph20-v18d-clean96-pw96x4 + expert-a",
+    "checkpoint-faph20-v18d-clean96-pw96x4 + v6-residual",
+    "checkpoint-faph20-v18d-clean96-pw96x4 + checkpoint-faph10-v18d-clean96-pw96x4",
 ]
 
 # Default threshold for the main table view
@@ -69,7 +96,7 @@ SET_INFO = {
         "5 päris v10 false-accept kanaariklippi — mined live testingust.",
     "faph_cv_et":
         "Common Voice eesti, 2000 klippi (indeksid 5000–7000, seed=42). "
-        "3.82h. Primary in-domain FAPH benchmark.",
+        "3.65h raw / 3.82h streaming track with 300 ms gaps. Primary in-domain FAPH benchmark.",
     "faph_librispeech":
         "LibriSpeech test-clean, 2620 klippi, 5.62h. "
         "Standard cross-language FAPH (inglise kõne).",
@@ -195,8 +222,15 @@ th {
 }
 th.sortable:hover { background: #e7e3da; }
 th.sorted { background: #e2ddd0; }
-th.sorted::after { content: " ↓"; }
-th.sorted.asc::after { content: " ↑"; }
+.sort-badge {
+  display: inline-flex; align-items: center; gap: 0.15rem;
+  margin-left: 0.28rem; padding: 0.02rem 0.28rem; border-radius: 999px;
+  background: #fff9ee; border: 1px solid #d8c7a6; color: var(--accent);
+  font-size: 10px; font-weight: 600; text-transform: none; letter-spacing: 0;
+  vertical-align: middle;
+}
+.sort-badge .ord { color: #7b6b53; }
+.sort-badge.desc { background: #f7e8df; border-color: #d6ac98; }
 th.model, td.model { text-align: left; font-weight: 500; padding-left: 0.25rem; }
 tbody tr:hover td { background: #f4f2ec; }
 tbody tr.moe td { background: #f3f8fc; }
@@ -297,7 +331,7 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
     </label>
     <label><input type="checkbox" id="show-moe" checked> Näita MoE-konsensusi</label>
     <label><input type="checkbox" id="color-heat" checked> Värvikodeering</label>
-    <span style="margin-left: auto; color: var(--muted);">Kliki veerul → sorteeri. Hover → detailid.</span>
+    <span style="margin-left: auto; color: var(--muted);">Kliki veerul → min → max → väljas. Mitu veergu = mitmeastmeline sort.</span>
   </div>
   <div style="overflow-x: auto;">
     <table id="main-table">
@@ -352,7 +386,7 @@ const state = {
   threshold: __DEFAULT_THR__,
   showMoe: true,
   heat: true,
-  sort: { col: 'CV-ET', dir: 'asc' },
+  sorts: [],
   hiddenCurves: new Set(),
 };
 
@@ -398,19 +432,65 @@ function getAndroidFieldValue(model) {
   return ANDROID_FIELD.models[model] ?? null;
 }
 
+function modelRank(model) {
+  const idx = MODEL_ORDER.indexOf(model);
+  return idx >= 0 ? idx : Number.MAX_SAFE_INTEGER;
+}
+
+function compareModelOrder(a, b, dir = 'asc') {
+  const factor = dir === 'asc' ? 1 : -1;
+  const ar = modelRank(a);
+  const br = modelRank(b);
+  if (ar !== br) return (ar - br) * factor;
+  return a.localeCompare(b) * factor;
+}
+
+function compareNullableNumber(va, vb, dir) {
+  if (va == null && vb == null) return 0;
+  if (va == null) return 1;
+  if (vb == null) return -1;
+  const factor = dir === 'asc' ? 1 : -1;
+  return (va - vb) * factor;
+}
+
+function compareBySort(a, b, sort) {
+  if (sort.col === 'model') return compareModelOrder(a, b, sort.dir);
+  const col = MAIN_COLS.find(c => c[2] === sort.col);
+  if (col) {
+    const [set, metric] = col;
+    return compareNullableNumber(
+      getValue(a, set, metric, state.threshold),
+      getValue(b, set, metric, state.threshold),
+      sort.dir
+    );
+  }
+  if (sort.col === ANDROID_FIELD.label) {
+    return compareNullableNumber(getAndroidFieldValue(a), getAndroidFieldValue(b), sort.dir);
+  }
+  return 0;
+}
+
+function sortBadge(col) {
+  const idx = state.sorts.findIndex(s => s.col === col);
+  if (idx < 0) return '';
+  const dir = state.sorts[idx].dir;
+  const label = dir === 'asc' ? 'min' : 'max';
+  return `<span class="sort-badge ${dir}"><span class="ord">${idx + 1}</span>${label}</span>`;
+}
+
 function renderTable() {
   const thead = document.getElementById('main-thead');
   const tbody = document.getElementById('main-tbody');
 
-  const headCells = ['<th class="model sortable" data-col="model">Mudel</th>'];
+  const headCells = [`<th class="model sortable" data-col="model">Mudel${sortBadge('model')}</th>`];
   for (const [set, metric, label, n] of MAIN_COLS) {
     const info = SET_INFO[set] || '';
     headCells.push(
-      `<th class="sortable" data-col="${label}" title="${info.replace(/"/g, '&quot;')}">${label}<br><small style="color:#888;font-weight:400;text-transform:none;letter-spacing:0">n=${n}</small></th>`
+      `<th class="sortable" data-col="${label}" title="${info.replace(/"/g, '&quot;')}">${label}${sortBadge(label)}<br><small style="color:#888;font-weight:400;text-transform:none;letter-spacing:0">n=${n}</small></th>`
     );
   }
   headCells.push(
-    `<th class="sortable" data-col="${ANDROID_FIELD.label}" title="${ANDROID_FIELD.info.replace(/"/g, '&quot;')}">${ANDROID_FIELD.label}<br><small style="color:#888;font-weight:400;text-transform:none;letter-spacing:0">${ANDROID_FIELD.hours.toFixed(2)}h @ ${ANDROID_FIELD.threshold.toFixed(2)}</small></th>`
+    `<th class="sortable" data-col="${ANDROID_FIELD.label}" title="${ANDROID_FIELD.info.replace(/"/g, '&quot;')}">${ANDROID_FIELD.label}${sortBadge(ANDROID_FIELD.label)}<br><small style="color:#888;font-weight:400;text-transform:none;letter-spacing:0">${ANDROID_FIELD.hours.toFixed(2)}h @ ${ANDROID_FIELD.threshold.toFixed(2)}</small></th>`
   );
   thead.innerHTML = '<tr>' + headCells.join('') + '</tr>';
 
@@ -418,41 +498,13 @@ function renderTable() {
   let models = Object.keys(DATA);
   if (!state.showMoe) models = models.filter(m => !MOE_SET.has(m));
 
-  const sortCol = state.sort.col;
-  const sortDir = state.sort.dir === 'asc' ? 1 : -1;
-
-  if (sortCol === 'model') {
-    models.sort((a, b) => {
-      const ai = MODEL_ORDER.indexOf(a);
-      const bi = MODEL_ORDER.indexOf(b);
-      return (ai - bi) * sortDir;
-    });
-  } else {
-    const col = MAIN_COLS.find(c => c[2] === sortCol);
-    if (col) {
-      const [set, metric] = col;
-      models.sort((a, b) => {
-        const va = getValue(a, set, metric, state.threshold);
-        const vb = getValue(b, set, metric, state.threshold);
-        if (va == null && vb == null) return 0;
-        if (va == null) return 1;
-        if (vb == null) return -1;
-        // recall: higher = better (desc default)
-        const isRecall = metric === 'recall';
-        const factor = isRecall ? -1 : 1;
-        return (va - vb) * factor * sortDir;
-      });
-    } else if (sortCol === ANDROID_FIELD.label) {
-      models.sort((a, b) => {
-        const va = getAndroidFieldValue(a);
-        const vb = getAndroidFieldValue(b);
-        if (va == null && vb == null) return 0;
-        if (va == null) return 1;
-        if (vb == null) return -1;
-        return (va - vb) * sortDir;
-      });
+  models.sort((a, b) => {
+    for (const sort of state.sorts) {
+      const cmp = compareBySort(a, b, sort);
+      if (cmp !== 0) return cmp;
     }
-  }
+    return compareModelOrder(a, b);
+  });
 
   const rows = models.map(m => {
     const isMoe = MOE_SET.has(m);
@@ -477,26 +529,31 @@ function renderTable() {
   });
   tbody.innerHTML = rows.join('');
 
-  // Mark sorted column
+  // Mark sorted columns
   thead.querySelectorAll('th').forEach(th => {
-    th.classList.remove('sorted', 'asc');
-    if (th.dataset.col === state.sort.col) {
-      th.classList.add('sorted');
-      if (state.sort.dir === 'asc') th.classList.add('asc');
+    th.classList.remove('sorted', 'asc', 'desc');
+    const sort = state.sorts.find(s => s.col === th.dataset.col);
+    if (sort) {
+      th.classList.add('sorted', sort.dir);
     }
   });
+}
+
+function toggleSort(col) {
+  const idx = state.sorts.findIndex(s => s.col === col);
+  if (idx < 0) {
+    state.sorts.push({ col, dir: 'asc' });
+  } else if (state.sorts[idx].dir === 'asc') {
+    state.sorts[idx].dir = 'desc';
+  } else {
+    state.sorts.splice(idx, 1);
+  }
 }
 
 document.addEventListener('click', (e) => {
   const th = e.target.closest('th.sortable');
   if (th) {
-    const col = th.dataset.col;
-    if (state.sort.col === col) {
-      state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
-    } else {
-      state.sort.col = col;
-      state.sort.dir = 'asc';
-    }
+    toggleSort(th.dataset.col);
     renderTable();
   }
 });
@@ -708,9 +765,11 @@ def main() -> None:
     rows = load_rows(inp)
     thresholds = sorted({float(r["threshold"]) for r in rows})
     data = build_data(rows)
+    timestamps = [r.get("timestamp", "") for r in rows if r.get("timestamp")]
+    latest_ts = max(timestamps) if timestamps else ""
     meta = {
         "source": inp.name,
-        "timestamp": rows[0]["timestamp"] if rows else "",
+        "timestamp": latest_ts,
         "rows": len(rows),
     }
 
@@ -725,7 +784,7 @@ def main() -> None:
         .replace("__MODEL_ORDER__", json.dumps(MODEL_ORDER))
         .replace("__DEFAULT_THR__", f"{DEFAULT_THR}")
         .replace("__SOURCE__", inp.name)
-        .replace("__TIMESTAMP__", rows[0]["timestamp"] if rows else "")
+        .replace("__TIMESTAMP__", latest_ts)
         .replace("__ROWS__", str(len(rows)))
         .replace("__MODEL_COUNT__", str(len(data)))
         .replace("__SET_COUNT__", str(len({r.get("test_set") or r.get("set") for r in rows})))

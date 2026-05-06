@@ -20,13 +20,26 @@ Eesmärk: vältida et mudelite arv (v1..v18, expert-*, checkpoint-*) tekitaks se
 
 **Do not promote:** v17, v18 single models, or checkpoint-FAPH models as final production candidates. Their thesis value is diagnostic: label purity, phrase selectivity, and checkpoint-objective alignment.
 
-## Current high-level lesson (2026-04-29)
+## Current high-level lesson (updated 2026-05-05)
 
-No current model satisfies the full deployment objective alone. Final thesis tables must keep together:
+No current two-word `Kuule Kratt` model satisfies the full deployment objective alone. Final thesis tables must keep together:
 
 1. ambient FAPH,
 2. real/unseen-speaker recall,
 3. hard-negative / prefix / confusable FPR.
+
+New `v19a-kratt-only` is a **target-policy ablation**, not directly comparable to exact-phrase hard-negative tables: any phrase containing actual `Kratt` is positive under the new policy.
+
+## v19a-kratt-only (2026-05-04/05) — SINGLE-WORD TARGET ABLATION
+
+- **Hypothesis:** a one-word rare-name target (`Kratt`) may be easier for tiny KWS than exact two-word `Kuule/Kule Kratt`, which repeatedly failed phrase-selectivity/prefix tests.
+- **Target policy:** any clean utterance containing `Kratt` is positive. Old exact-phrase hard negatives containing `Kratt` are label-poison for this model and must not be evaluated as negatives.
+- **Data:** 551 reviewed clean `Kratt` cuts from `positive_kratt_only_v19a/accepted`; internal split 469 train / 82 positive test. Negatives: 5000 CV ET + 6725 general/device/mined extra negatives; 0 hard negatives; 1002 ambient.
+- **Training:** `kratt-only-v19a-kratt-only`, SLURM job `923301`, completed 2026-05-05 in 03:54:42. Config: 1000ms clip, 15000+5000 steps, SpecAug ON, recall profile, 4×96 pointwise filters, target minimization 20.
+- **Internal result:** exported 139KB TFLite. Internal streaming eval recommends cutoff `0.99` with FRR 4.35% and FAPH 2.0; cutoff 1.00 gives 0 FAPH but 100% FRR. Artifacts downloaded from HPC on 2026-05-05.
+- **External Kratt-only-aware benchmark (2026-05-05 @0.99):** isolated/generated single `Kratt` recall 98.9% (184/186), but full-phrase external recall was poor: Isa XTTS 0% (0/48), Ode 9.1% (1/11), Friend1 0% (0/145), Mattias-short 18.2% (66/362). Target-free hard negatives: Mac 0/15, Isa XTTS 0/45, kuule/kule confusables 13.5% (81/600). Streaming FAPH: CV ET 0.79, LibriSpeech 1.60, MacBook bg 5.99, DiPCo 0.00.
+- **Interpretation:** diagnostic only. The model learned isolated generated `Kratt` cuts but did not transfer to real/full-phrase target contexts; do not promote as demo/user-test replacement for `v16c`.
+- **Artifacts:** `wake-word/models/kuule-kratt-v19a-kratt-only/NOTES.md`; `wake-word/evaluation/benchmark_v19a_kratt_only_20260505.md`.
 
 ## Legacy unified benchmark (2026-04-21, threshold=0.995)
 

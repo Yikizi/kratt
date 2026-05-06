@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# DESC: Interactive live shadow benchmark: label wake attempts and see which models fired
+# USAGE: kratt shadow-benchmark [models...] [options]
+# ARGS: models       Model tags. Default: v16a expert-a v16c ex3a v6-residual
+# ARGS: --threshold  One threshold for all or one per model. Default: 0.996
+# ARGS: --window-s   Seconds before keypress to score. Default: 3.0
+# ARGS: --device     sounddevice input device id
+# ARGS: --log        JSONL log path. Default: output/shadow-benchmark/shadow_<timestamp>.jsonl
+# ARGS: --control-socket Unix socket for Raycast/global false shortcut. Default: /tmp/kratt-shadow-benchmark.sock
+# EXAMPLES: kratt shadow-benchmark
+# EXAMPLES: kratt shadow-benchmark v16c expert-a v6-residual --threshold 0.996
+# EXAMPLES: kratt shadow-benchmark v16c expert-a --window-s 4 --device 2
+set -euo pipefail
+
+SCRIPT="${KRATT_WW}/evaluation/live_shadow_benchmark.py"
+PYTHON="${KRATT_WW}/.venv-microwakeword/bin/python"
+LOG_ROOT="${KRATT_ROOT}/output/shadow-benchmark"
+TEXT_LOG_ROOT="${KRATT_ROOT}/output/demo-logs"
+
+if [[ ! -f "${SCRIPT}" ]]; then
+  echo "shadow benchmark script not found: ${SCRIPT}" >&2
+  exit 1
+fi
+if [[ ! -x "${PYTHON}" ]]; then
+  echo "Missing microWakeWord venv: ${PYTHON}" >&2
+  echo "Run the wake-word setup first." >&2
+  exit 1
+fi
+
+mkdir -p "${LOG_ROOT}" "${TEXT_LOG_ROOT}"
+timestamp="$(date +%Y%m%d_%H%M%S)"
+json_log="${LOG_ROOT}/shadow_${timestamp}.jsonl"
+text_log="${TEXT_LOG_ROOT}/shadow_benchmark_${timestamp}.log"
+latest_text="${TEXT_LOG_ROOT}/shadow_benchmark_latest.log"
+
+has_log=false
+for arg in "$@"; do
+  if [[ "${arg}" == "--log" ]]; then
+    has_log=true
+    break
+  fi
+done
+
+args=("$@")
+if [[ "${has_log}" == false ]]; then
+  args+=(--log "${json_log}")
+fi
+
+ln -sfn "${text_log}" "${latest_text}"
+echo "Text log: ${text_log}"
+echo "Latest:   ${latest_text}"
+if [[ "${has_log}" == false ]]; then
+  echo "JSONL:    ${json_log}"
+fi
+echo
+
+PYTHONUNBUFFERED=1 "${PYTHON}" "${SCRIPT}" "${args[@]}" 2>&1 | tee -a "${text_log}"

@@ -699,3 +699,39 @@ Internal streaming TFLite eval:
 | 1.00 | 1.0000 | 0.0 |
 
 Build `Kratt`-like hard negatives (`kurat`, `kraam`, `kraan`, `kraad`, `krats`, `ratas`, `rattad`, etc.) before calling any resulting model final.
+
+Context-aware positive dataset — 2026-05-06:
+
+After live/manual analysis of `v19a-kratt-only`, we identified a likely windowing shortcut: v19a positives were isolated `Kratt` cuts shorter than 1s, and microWakeWord left-padded short positives to the 1000ms training window. This can teach `[silence] + Kratt` rather than `Kratt` in natural phrase context.
+
+Implemented a context-aware dataset builder:
+
+- `wake-word/data/validation/build_kratt_context_dataset.py`
+- `cli/commands/kratt-build-kratt-context`
+
+Generated local dataset:
+
+```text
+wake-word/data/processed/positive_kratt_context_v19b
+```
+
+Counts / policy:
+
+- source: `positive_strict_kuule_kule` clean generated positives;
+- source WAVs: 709;
+- output clips: 2836 fixed 1000ms WAVs;
+- four variants per source with `Kratt` target offsets 40/160/280/400ms from crop start;
+- prefix variants included from filenames: `kule` 113, `kuule` 384, `kuulee` 106, `kuuule` 106;
+- all output clips are exactly 1.0s, so the normal 1000ms Kratt-only training path should not introduce new left padding;
+- review symlink samples are under `positive_kratt_context_v19b/review/`.
+
+Dry-run command for a possible later training run:
+
+```bash
+./cli/kratt train-kratt-only v19b-context \
+  --positive-dir data/processed/positive_kratt_context_v19b/accepted \
+  --clip-duration-ms 1000 \
+  --dry-run
+```
+
+Do not submit this as a new training run unless user testing/writing budget is explicitly protected. If trained later, keep it a `Kratt`-only target-policy ablation and pair it with target-free `Kratt`-like hard negatives before making quality claims.

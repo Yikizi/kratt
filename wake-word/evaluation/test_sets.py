@@ -196,7 +196,9 @@ TEST_SETS: dict[str, TestSet] = {
         held_out_for=ALL_MODELS,
         notes=(
             "Primary final FAPH benchmark for in-domain Estonian speech. Keep this set "
-            "frozen; do not mix it with training, mining, or validation."
+            "frozen; do not mix it with training, mining, or validation. The raw WAV "
+            "clips are ~3.65 h; canonical streaming benchmark scripts add 300 ms "
+            "inter-clip silence, producing a ~3.82 h evaluation track."
         ),
     ),
 

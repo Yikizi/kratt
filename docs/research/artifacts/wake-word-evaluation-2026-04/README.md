@@ -11,6 +11,9 @@ These files were originally produced under `wake-word/evaluation/` during model 
 - `false_accepts_*.csv` and `kratt_false_live_scores.csv` — false-trigger analysis tables.
 - `ohem_expert_a_cv_et.csv` — OHEM mining/analysis output for Expert A.
 - `supervisor_table.csv` and `supervisor_report.html` — supervisor-facing evaluation table/report.
+  The mega report source `benchmark_results_supervisor.csv` is the post-v17 supervisor CSV
+  with appended v18 clean/consensus/checkpoint rows and the v19a Kratt-only target-policy
+  benchmark for cross-version browsing.
 - `kratt_false_live_timeline.png` and `kratt_music_vs_positive_mel_grid.png` — selected diagnostic figures.
 
 ## Notes

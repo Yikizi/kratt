@@ -113,10 +113,10 @@ For FAPH measurement to be statistically meaningful, you need **continuous audio
 | **openWakeWord (DiPCo)** | 5.5 hours | Far-field dinner-party conversations |
 | **openWakeWord (full validation)** | ~11 hours | DiPCo + Santa Barbara + MUSDB |
 | **Picovoice benchmark** | LibriSpeech test_clean | Hours of clean speech |
-| **Our `faph_cv_et`** | ~3.65 hours | Common Voice ET, frozen legacy untrained subset (indices 5000-7000) |
+| **Our `faph_cv_et`** | ~3.65 hours raw / ~3.82 hours streaming track | Common Voice ET, frozen legacy untrained subset (indices 5000-7000); benchmark track includes 300 ms inter-clip silence |
 | **Our `faph_dipco` (local)** | 3.32 hours | DiPCo eval-session subset (S01/S03/S06/S07/S08), not full 5.5h |
 
-**Recommendation for thesis**: ~3.65 hours is on the low end. Should add at least one more long-form source (e.g., 10+ hours of Estonian podcast or news audio) to make FAPH stable. Even better: include English (out-of-language) negatives to test cross-language false fires.
+**Recommendation for thesis**: ~3.65 hours raw / ~3.82 hours after benchmark concatenation is on the low end. Should add at least one more long-form source (e.g., 10+ hours of Estonian podcast or news audio) to make FAPH stable. Even better: include English (out-of-language) negatives to test cross-language false fires.
 
 ### 2.4 RULE: hard negatives are a separate dimension
 
@@ -362,7 +362,7 @@ Three categories of disjoint hold-out sets:
    - **Add**: `hard_neg_korvo2_holdout` — record the same 100 phrases on KORVO-2 mic
    
 3. **Long-form FAPH sets** (each measured separately, never averaged):
-   - `faph_cv_et` (~3.65h, in-domain Estonian) — primary
+   - `faph_cv_et` (~3.65h raw, ~3.82h streaming track with 300 ms gaps, in-domain Estonian) — primary
    - `faph_dipco` (3.32h, DiPCo eval sessions S01/S03/S06/S07/S08 only) — primary frozen final-eval split
    - `faph_dipco` mining/dev sessions (S02/S04/S05/S09/S10) are intentionally disjoint from final-eval sessions.
    - `faph_korvo2_holdout` (~30 min, same-device, fresh recording) — primary same-device

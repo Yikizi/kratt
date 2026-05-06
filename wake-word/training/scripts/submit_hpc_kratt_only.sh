@@ -256,7 +256,7 @@ if [[ "${DRY_RUN}" == "1" ]]; then
   echo "residual_flag: ${RESIDUAL_FLAG:-<default>}"
   echo
   echo "NOTE: local dry-run uses the current machine's KRATT_DATA. Real submit runs on HPC with KRATT_DATA=/gpfs/mariana/smbhome/malinh/kratt-data."
-  echo "      Before real submit, sync repo + ${PROCESSED_DIR}/positive_kratt_only_v19a to HPC."
+  echo "      Before real submit, sync repo + the selected positive dirs to HPC: ${POSITIVE_DIRS[*]}"
   exit 0
 fi
 

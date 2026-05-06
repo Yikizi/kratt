@@ -141,7 +141,7 @@ def _plot_pareto() -> Path:
 
     ax.set_xscale("log")
     ax.set_xlim(right=PARETO_FAPH_MAX)
-    ax.set_xlabel("Streaming-FAPH (CV ET hold-out, 3,82 h)")
+    ax.set_xlabel("Streaming-FAPH (CV ET hold-out, 3,82 h koos vahedega)")
     ax.set_ylabel("Recall, Isa XTTS (%, N=48)")
     ax.set_title(
         f"FAPH-recall'i operatsioonipunktid lävel {str(THRESHOLD).replace('.', ',')}"
