@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# pre-push hook — never blocks. Reviews unapplied proposals for push range.
+# Stdin: <local_ref> <local_sha> <remote_ref> <remote_sha> per line.
+#
+# Disable: KRATT_TIME_HOOKS=0 git push ...
+
+[ "${KRATT_TIME_HOOKS:-1}" = "0" ] && exit 0
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+LIB="$REPO_ROOT/.githooks/lib"
+LOG_DIR="$HOME/.kratt-time-log"
+mkdir -p "$LOG_DIR/logs"
+
+python3 "$LIB/review_proposals.py" 2>>"$LOG_DIR/logs/review.err" || true
+
+exit 0

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# post-commit hook — never blocks. Two stages:
+#   Tier 0 (sync, fast): log_commit.py — appends ~/.kratt-time-log/commits.jsonl
+#   Tier 1 (async): propose_commit.py — fires LLM (codex), writes proposal
+#
+# Disable temporarily:
+#   git -c core.hooksPath= commit ...
+#   or: KRATT_TIME_HOOKS=0 git commit ...
+
+[ "${KRATT_TIME_HOOKS:-1}" = "0" ] && exit 0
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+LIB="$REPO_ROOT/.githooks/lib"
+LOG_DIR="$HOME/.kratt-time-log"
+mkdir -p "$LOG_DIR/logs"
+
+# Tier 0: log commit metadata. Stdout = JSON with hash + gap_sec.
+RESULT="$(python3 "$LIB/log_commit.py" 2>>"$LOG_DIR/logs/log_commit.err" || echo '')"
+[ -z "$RESULT" ] && exit 0
+
+HASH="$(printf '%s' "$RESULT" | python3 -c "import sys,json
+try: print(json.load(sys.stdin).get('hash',''))
+except Exception: pass" 2>/dev/null)"
+GAP="$(printf '%s' "$RESULT" | python3 -c "import sys,json
+try: print(json.load(sys.stdin).get('gap_sec',0))
+except Exception: print(0)" 2>/dev/null)"
+[ -z "$HASH" ] && exit 0
+
+# Tier 1: fire-and-forget LLM proposer. Detach fully so commit returns instantly.
+( nohup python3 "$LIB/propose_commit.py" "$HASH" "$GAP" \
+    >>"$LOG_DIR/logs/propose.out" \
+    2>>"$LOG_DIR/logs/propose.err" \
+    </dev/null & ) >/dev/null 2>&1 &
+
+exit 0
