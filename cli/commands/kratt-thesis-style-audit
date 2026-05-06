@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# DESC: Audit thesis prose for compression-mode style issues
+# USAGE: kratt thesis-style-audit [--json] [--fail-on-findings] [--max-examples N]
+# EXAMPLES: kratt thesis-style-audit
+# EXAMPLES: kratt thesis-style-audit --json --fail-on-findings
+set -euo pipefail
+
+python3 "$KRATT_ROOT/scripts/thesis_style_audit.py" "$@"

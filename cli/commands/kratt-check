@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# DESC: Run thesis-critical repo consistency checks
+# USAGE: kratt check [--strict-docs] [--skip-docs-audit]
+# ARGS: --strict-docs Fail on docs freshness warnings/staleness
+# ARGS: --skip-docs-audit Only run targeted thesis-final checks
+# EXAMPLES: kratt check
+# EXAMPLES: kratt check --strict-docs
+set -euo pipefail
+
+PYTHON="${KRATT_ROOT}/.venv/bin/python"
+if [[ ! -x "$PYTHON" ]]; then
+  PYTHON="$(command -v python3)"
+fi
+
+exec "$PYTHON" "${KRATT_ROOT}/scripts/thesis_final_check.py" "$@"

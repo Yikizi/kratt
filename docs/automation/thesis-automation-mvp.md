@@ -1,18 +1,20 @@
 # Thesis automation MVP
 
-A lean, writable automation that nudges the thesis forward in small,
-inspectable steps using Claude Code, persistent git worktrees, chapter-scoped
-lanes, and daily consolidation.
+A lean, writable automation that now acts as a **compression-first thesis editor**:
+it shortens existing prose, removes repetition, normalizes Estonian terminology,
+cleans citation/caption style, and only adds text for mandatory final evidence.
+It still uses Claude Code, persistent git worktrees, chapter-scoped lanes, and
+daily consolidation.
 
 Source of truth: `.hermes/thesis-automation/`.
 
 ## Architecture at a glance
 
 ```
-hourly  ─── pick next lane ─── reviewer ─── writer ─── ≤1 commit (lane branch only)
-daily   ─── triage lane commits ─── accept to main / reject with distilled guidance
+hourly  ─── pick next lane ─── reviewer ─── writer ─── ≤1 compression commit (lane branch only)
+daily   ─── triage lane commits ─── accept tightening / reject additive drift
             └── then reset all lane branches/worktrees to fresh main
-weekly  ─── rerun thesis-quality-review ─── meta summary (lane signal + guidance tweaks)
+weekly  ─── rerun thesis-quality-review ─── meta summary (compression signal + guidance tweaks)
 ```
 
 Main rules:
@@ -22,41 +24,44 @@ Main rules:
 - Rejected work is distilled into 1–3 short positive lane-guidance lines, then its
   branch is reset. Lessons survive, clutter does not.
 - One scoped improvement per run. One commit max per run.
+- Thesis prose changes should be net-shorter by default: delete, merge, translate
+  into clearer Estonian, or calibrate claims instead of adding more explanation.
+- Additive drafting is paused except for mandatory final evidence such as real
+  user-test results already present in tracked artifacts.
 
 ## The 14 lanes
 
-Defined in `.hermes/thesis-automation/lanes/lanes.json`.
+Defined in `.hermes/thesis-automation/lanes/lanes.json`. Most lane IDs are kept
+stable for branch/worktree compatibility, but their focus has shifted from
+additive drafting to thesis closeout editing.
 
-| id                           | target files                              | focus                                                                  |
-|------------------------------|-------------------------------------------|------------------------------------------------------------------------|
-| terminology                  | all chapters (rotating)                   | normalize Estonian technical vocabulary / acronyms                     |
-| chapter-readiness            | all chapters (rotating)                   | flow, signposting, paragraph coherence                                 |
-| committee-questions          | intro, third, summary                     | anticipate one defense committee question and tighten the passage       |
-| claim-evidence               | third, second, intro                      | each claim backed by number / table / cited source                     |
-| literature-gap               | second, intro                             | positioning vs existing Estonian NLP / wake-word literature            |
-| formal-compliance-writer     | all chapters (rotating)                   | TalTech formal style: quotes, dashes, refs, captions                   |
-| summary-tightening           | summary.tex                               | crisp self-contained summary aligned to contributions                  |
-| methodology-tightening       | third_chapter.tex                         | reproducibility of wake-word methodology                               |
-| intro-builder                | introduction.tex                          | build problem, scope, research questions, contribution, and limits      |
-| implementation-narrative     | third_chapter.tex                         | draft implementation prose from repo-backed Android/ESP32/demo evidence |
-| evaluation-closeout          | second, third                             | close result, field-evidence, MoE, and user-test framing gaps           |
-| alternatives-comparison      | first, intro                              | compare against existing wake-word / voice-assistant alternatives       |
-| research-note                | docs/research/thesis-writing-research-queue.md | distillable one-item research notes for thesis writing        |
-| distill-sentence            | intro, first, second, third                | inject one evidence-backed thesis sentence from latest research queue |
+| id                           | target files                              | compression-mode focus                                                  |
+|------------------------------|-------------------------------------------|-------------------------------------------------------------------------|
+| terminology                  | all chapters (rotating)                   | idiomatic Estonian terminology; remove unnecessary English glosses       |
+| chapter-readiness            | all chapters (rotating)                   | prune repeated claims and over-explained transitions                     |
+| committee-questions          | intro, third, summary                     | sharpen existing answers to likely defense questions                     |
+| claim-evidence               | third, second, intro                      | calibrate claims to existing evidence; soften instead of expanding       |
+| literature-gap               | second, intro                             | concise prior-art positioning with bibliography citations                |
+| formal-compliance-writer     | all chapters (rotating)                   | citation hygiene, short captions, quotes, dashes, units, refs            |
+| summary-tightening           | summary.tex                               | compressed, self-contained summary                                      |
+| methodology-tightening       | third_chapter.tex                         | compress reproducibility detail; remove log-like parameter dumps         |
+| intro-builder                | introduction.tex                          | introduction compression, not new motivation                             |
+| implementation-narrative     | third_chapter.tex                         | compress Android/ESP32/ESPHome implementation detail                     |
+| evaluation-closeout          | second, third                             | compress result history; add only final user-test results when present   |
+| alternatives-comparison      | first, intro                              | concise non-duplicative alternatives comparison                          |
+| research-note                | docs/research/thesis-writing-research-queue.md | **paused** unless a missing source is explicitly approved       |
+| distill-sentence             | intro, first, second, third               | **paused** unless an approved mandatory evidence note must be inserted   |
 
-The last four lanes are drafting lanes for known missing thesis mass. They are
-still constrained to one small edit per run and must push back if the sentence
-would require evidence or citations not already present in the repo.
+`research-note` and `distill-sentence` are inactive during compression mode.
+Reactivate them only when a specific missing source/evidence gap is approved by
+the author.
 
 ## Ordered two-phase lane cycle
 
-`run-research-distill-cycle.sh` runs two lanes in sequence:
-
-1. `research-note`
-2. `distill-sentence` (only if step 1 produced a committed update)
-
-This guarantees the sentence lane cannot apply a draft before the research note
-lane has written fresh input.
+`run-research-distill-cycle.sh` is retained for compatibility, but in compression
+mode it exits successfully without work when `research-note` / `distill-sentence`
+are inactive. The two-phase additive research-to-sentence cycle should remain
+paused until the author explicitly approves a missing source/evidence gap.
 
 Each lane has a persistent branch `cron/<lane>` and persistent worktree
 `.claude/worktrees/cron-<lane>`.
@@ -68,20 +73,20 @@ Each lane has a persistent branch `cron/<lane>` and persistent worktree
 1. Pick the next lane in a deterministic rotation (`state/rotation.json`).
 2. Pick the next target file in that lane's rotation.
 3. Run a **reviewer** call (`claude --print`) — proposes exactly one
-   highest-value improvement.
+   compression/style/citation improvement.
 4. Run a **writer** call (`claude --print --dangerously-skip-permissions` inside
-   the lane worktree) — either applies a surgical edit + commits on the lane
-   branch, or prints `PUSHBACK: …` and does nothing.
+   the lane worktree) — either applies a surgical net-shorter edit + commits on
+   the lane branch, or prints `PUSHBACK: …` and does nothing.
 5. Append a structured JSON line to `logs/hourly/<date>.jsonl`.
 
 Pushback is a first-class outcome and counted separately from `no_change` / `committed`.
 
 ### Prompts
 
-- `prompts/reviewer.md` — narrow, one-finding-only format
-- `prompts/writer.md` — surgical writer with explicit pushback rule
-- `prompts/consolidator.md` — strict-JSON consolidation output
-- `prompts/weekly.md` — short markdown meta summary
+- `prompts/reviewer.md` — narrow, one-finding-only compression/style review
+- `prompts/writer.md` — surgical writer with explicit additive-drift pushback
+- `prompts/consolidator.md` — strict-JSON consolidation output; rejects additive drift
+- `prompts/weekly.md` — short markdown meta summary focused on compression signal
 
 Each lane contributes `reviewer_extra` / `writer_extra` lines and its own
 memory (`memory/<lane>.json`).
@@ -95,11 +100,13 @@ memory (`memory/<lane>.json`).
    consolidation.
 2. Show full diffs to a consolidator Claude call; require strict-JSON output with
    `accept | reject | defer` per commit + positive guidance lines.
-3. Cherry-pick accepted commits onto `main` (refuses if working tree dirty).
-4. Distill rejected commits into ≤ 3 short positive guidance lines per lane
+3. Accept only tightening, Estonianization, citation/caption hygiene, or mandatory
+   evidence insertions; reject additive drift.
+4. Cherry-pick accepted commits onto `main` (refuses if working tree dirty).
+5. Distill rejected commits into ≤ 3 short positive guidance lines per lane
    (rolling window). Optionally 1 global line.
-5. Refresh every lane worktree/branch to the new `main`.
-6. Write `logs/daily/<timestamp>.json` and update `state/rotation.json`.
+6. Refresh every lane worktree/branch to the new `main`.
+7. Write `logs/daily/<timestamp>.json` and update `state/rotation.json`.
 
 Rejected commits disappear from branch history on refresh, but their rejection
 reason + distilled line live on in `memory/<lane>.json.rejected_refs` (rolling last 20).
@@ -181,10 +188,10 @@ Two options, in order of preference.
 
 ### Option A — macOS launchd (persistent, runs without Claude Code open)
 
-Install the serial scheduler and dashboard plists. The scheduler runs hourly,
-daily, weekly, and research-distill jobs through `bin/scheduler.py`, so automation
-jobs do not overlap. The dashboard plist keeps `kratt thesis-dashboard` available
-at `http://127.0.0.1:8765`.
+Install the serial scheduler and dashboard plists. In compression mode the scheduler
+runs hourly, daily, and weekly jobs through `bin/scheduler.py`, so automation jobs
+do not overlap. The dashboard plist keeps `kratt thesis-dashboard` available at
+`http://127.0.0.1:8765`.
 
 ```bash
 cp .hermes/thesis-automation/launchd/ee.taltech.kratt.thesis-automation.scheduler.plist ~/Library/LaunchAgents/
@@ -195,7 +202,8 @@ launchctl load -w ~/Library/LaunchAgents/ee.taltech.kratt.thesis-dashboard.plist
 
 Do **not** load the legacy per-job launchd plists (`hourly`, `daily`, `weekly`,
 `research-distill`) at the same time as the serial scheduler, or jobs can overlap.
-Unload with `launchctl unload -w <plist>` to pause.
+The research-distill plist is disabled in compression mode. Unload with
+`launchctl unload -w <plist>` to pause.
 
 ### Option B — Claude Code in-session cron (dev-loop only)
 
@@ -205,7 +213,7 @@ From an open `claude` REPL in this repo:
 CronCreate cron="7 * * * *" prompt="Run ./.hermes/thesis-automation/run-hourly.sh and report the JSON line it prints." recurring=true durable=true
 CronCreate cron="11 3 * * *" prompt="Run ./.hermes/thesis-automation/run-daily-consolidation.sh and report counts." recurring=true durable=true
 CronCreate cron="17 4 * * 1" prompt="Run ./.hermes/thesis-automation/run-weekly-review.sh and print the meta path." recurring=true durable=true
-CronCreate cron="15 * * * *" prompt="Run ./.hermes/thesis-automation/run-research-distill-cycle.sh research-note distill-sentence." recurring=true durable=true
+# Compression mode: do not schedule research-distill unless an additive evidence gap is explicitly approved.
 ```
 
 Session jobs auto-expire after 7 days — launchd is what you want for actual
@@ -226,8 +234,8 @@ git log --oneline -5 main                        # what consolidation accepted
 ## Pausing or repairing a lane
 
 Pause a lane without removing it — set `active: false` for it in `lanes/lanes.json`.
-The hourly runner will skip inactive lanes; the daily consolidator will still
-refresh the branch/worktree.
+The hourly runner will skip inactive lanes. Reactivate and run bootstrap/refresh
+before using a paused lane again.
 
 Repair a broken worktree:
 
@@ -249,8 +257,12 @@ Clear a lane's guidance memory: edit `memory/<lane>.json` and set
 ## Guardrails built into the system
 
 - Hourly writer must stay inside `TARGET_FILE` and produce ≤ 1 commit.
+- Hourly writer must push back on additive prose unless it replaces longer text
+  or inserts mandatory final evidence.
 - Consolidator will not cherry-pick onto `main` if the working tree is dirty.
 - Lane refresh uses a hard reset to the new `main`, with `git clean` that
   preserves `.claude/` so worktree machinery survives.
 - Per-lane `rejected_refs` window is capped at 20 entries.
 - Per-lane active guidance is capped at 3 lines. Global at 5.
+- Use `kratt thesis-style-audit` to spot chapter footnotes, English glosses,
+  Englishisms, TODO artefacts, and overlong captions before consolidation.

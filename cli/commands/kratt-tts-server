@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# DESC: Run TartuNLP TTS HTTP server (port 5380) used by kratt demo voice output
+# USAGE: kratt tts-server [--port N]
+# ARGS: --port N   Listen port. Default: 5380.
+# EXAMPLES: kratt tts-server
+# EXAMPLES: kratt tts-server --port 5381
+set -euo pipefail
+
+VENV="${KRATT_ROOT}/tools/tts-server/.venv/bin/python"
+SERVER="${KRATT_ROOT}/tools/tts-server/server.py"
+
+if [[ ! -x "$VENV" ]]; then
+  echo "tts-server venv not found: $VENV" >&2
+  echo "Setup: (cd tools/tts-server && uv sync)" >&2
+  exit 1
+fi
+
+if [[ ! -f "$SERVER" ]]; then
+  echo "Server script missing: $SERVER" >&2
+  exit 1
+fi
+
+exec "$VENV" "$SERVER" "$@"

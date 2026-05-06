@@ -136,11 +136,12 @@ Goal: collect real-speaker wake-word evidence + one-bulb UX data with 20-30 part
 
 ### Active diagnostic side branch — `v19a-kratt-only`
 
-- 🔄 `v19a-kratt-only` was submitted to HPC as a diagnostic run (`job_id: 923301`, partition `common`, 2026-05-04) after the clean `Kratt`-only positive set was synced.
+- ✅ `v19a-kratt-only` diagnostic run (`job_id: 923301`, partition `common`, 2026-05-04) completed and was downloaded/benchmarked locally as a separate target-policy ablation.
+- ✅ Context-aware positive dataset for a possible later `v19b-context` ablation prepared locally: `wake-word/data/processed/positive_kratt_context_v19b` (2836 fixed-1s clips; target offsets 40/160/280/400ms; no new training submitted). Builder: `kratt build-kratt-context`.
 - 🎯 Do **not** switch the user-test/demo active model because of this branch. User-test active default remains `v16c` unless pilot evidence says otherwise.
-- ⏳ If the run finishes, evaluate it only as a diagnostic ablation with its own target policy and do not mix its metrics into exact two-word model tables without a clear caveat.
+- ⏳ Treat v19a/v19b-context as diagnostic only with their own target policy; do not mix metrics into exact two-word model tables without a clear caveat.
 - ⏳ Before any promotion beyond diagnostic: build `Kratt`-like hard negatives (`kurat`, `kraam`, `kraan`, `kraad`, `krats`, `ratas`, `rott`, etc.), run frozen held-out FAPH/recall/hard-negative evaluation, add model `NOTES.md`, update `wake-word/docs/MODEL_LINEAGE.md`, and update `wake-word/evaluation/training_data_manifest.md`.
-- 🧊 Do not start additional `Kratt`-only variants before real-mic pilot/user testing and thesis writing are safe.
+- 🧊 Do not submit additional `Kratt`-only training variants before real-mic pilot/user testing and thesis writing are safe.
 
 ### Pending / optional
 

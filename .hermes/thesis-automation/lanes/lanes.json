@@ -1,12 +1,12 @@
 {
-  "version": 1,
+  "version": 2,
   "worktree_root": ".claude/worktrees",
   "branch_prefix": "cron/",
   "chapters_root": "docs/thesis/thesis-tex-estonian/chapters",
   "lanes": [
     {
       "id": "terminology",
-      "title": "Terminology normalization",
+      "title": "Estonian terminology compression",
       "active": true,
       "branch": "cron/terminology",
       "worktree": ".claude/worktrees/cron-terminology",
@@ -17,13 +17,13 @@
         "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
         "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
       ],
-      "focus": "Normalize Estonian technical vocabulary, model/version names, acronyms. Preserve meaning.",
-      "reviewer_extra": "Identify at most one term whose usage is inconsistent or non-idiomatic in Estonian technical writing within the target file.",
-      "writer_extra": "Apply a surgical rename or rewording in the target file only. If no clear win, push back and commit nothing."
+      "focus": "Replace mixed English/Estonian technical prose with idiomatic Estonian, remove unnecessary English glosses, and keep established acronyms consistent.",
+      "reviewer_extra": "Identify one Englishism, unnecessary \"ingl ...\" gloss, or inconsistent term that can be replaced with a shorter Estonian form.",
+      "writer_extra": "Replace the term or sentence with idiomatic Estonian. Preserve code/model names. Prefer net-shorter wording."
     },
     {
       "id": "chapter-readiness",
-      "title": "Chapter readiness polish",
+      "title": "Redundancy pruning",
       "active": true,
       "branch": "cron/chapter-readiness",
       "worktree": ".claude/worktrees/cron-chapter-readiness",
@@ -34,13 +34,13 @@
         "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
         "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
       ],
-      "focus": "Flow, signposting, paragraph coherence inside one chapter.",
-      "reviewer_extra": "Identify the single weakest transition or paragraph in the target chapter.",
-      "writer_extra": "Rewrite at most that paragraph or transition. No new claims. No new references."
+      "focus": "Remove repeated claims, duplicated caveats, and over-explained transitions inside one chapter while preserving the argument.",
+      "reviewer_extra": "Identify the single clearest repetition or overlong transition in the target chapter.",
+      "writer_extra": "Delete, merge, or shorten that passage. Do not add new signposting unless it replaces a longer unclear sentence."
     },
     {
       "id": "committee-questions",
-      "title": "Committee-facing explanation",
+      "title": "Committee-facing compression",
       "active": true,
       "branch": "cron/committee-questions",
       "worktree": ".claude/worktrees/cron-committee-questions",
@@ -49,13 +49,13 @@
         "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
         "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
       ],
-      "focus": "Anticipate a likely defense committee question and tighten the passage that already tries to answer it.",
-      "reviewer_extra": "Pose one committee-style question and point to the passage meant to pre-empt it.",
-      "writer_extra": "Tighten that passage so a skeptical committee member cannot easily push on it. Do not introduce new claims."
+      "focus": "Pre-empt likely defense questions by sharpening existing explanations, not by adding new caveat lists.",
+      "reviewer_extra": "Pose one committee-style concern and identify the existing sentence/paragraph that can answer it more tightly.",
+      "writer_extra": "Tighten the existing passage so it is more defensible and shorter or same length. Do not add new claims."
     },
     {
       "id": "claim-evidence",
-      "title": "Claim\u2013evidence alignment",
+      "title": "Claim–evidence calibration",
       "active": true,
       "branch": "cron/claim-evidence",
       "worktree": ".claude/worktrees/cron-claim-evidence",
@@ -64,13 +64,13 @@
         "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
         "docs/thesis/thesis-tex-estonian/chapters/introduction.tex"
       ],
-      "focus": "Each claim must be backed by a concrete number, table, figure, or cited source.",
-      "reviewer_extra": "Find one claim whose evidence is vague or missing in the target file.",
-      "writer_extra": "Either attach the existing evidence in-text, or soften the claim to what is defensible. No fabricated numbers."
+      "focus": "Make existing claims match existing evidence; prefer softening or shortening unsupported claims over adding more prose.",
+      "reviewer_extra": "Find one claim whose evidence is vague, repeated, or stronger than the cited/table-backed result.",
+      "writer_extra": "Attach existing evidence only if needed; otherwise shorten or soften the claim. No fabricated numbers and no new side discussion."
     },
     {
       "id": "literature-gap",
-      "title": "Literature gap framing",
+      "title": "Literature gap compression",
       "active": true,
       "branch": "cron/literature-gap",
       "worktree": ".claude/worktrees/cron-literature-gap",
@@ -78,13 +78,13 @@
         "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
         "docs/thesis/thesis-tex-estonian/chapters/introduction.tex"
       ],
-      "focus": "How the Kratt work positions against existing Estonian NLP / wake-word literature.",
-      "reviewer_extra": "Identify one place where the literature gap or positioning is weak or missing.",
-      "writer_extra": "Strengthen that positioning using sources already in references.bib. Do not invent citations."
+      "focus": "Keep prior-art positioning concise, citation-backed, and free of source footnotes or duplicated comparisons.",
+      "reviewer_extra": "Identify one prior-art or literature-gap passage that can be shortened, deduplicated, or moved from footnote-style prose into normal citation style.",
+      "writer_extra": "Tighten existing positioning using citations already present. Do not add new sources, new subsections, or long comparison paragraphs."
     },
     {
       "id": "formal-compliance-writer",
-      "title": "Formal LaTeX compliance",
+      "title": "Citation and formal hygiene",
       "active": true,
       "branch": "cron/formal-compliance-writer",
       "worktree": ".claude/worktrees/cron-formal-compliance-writer",
@@ -95,65 +95,65 @@
         "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
         "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
       ],
-      "focus": "TalTech/Estonian thesis formal style: quotes, dashes, units, cross-references, figure/table captions.",
-      "reviewer_extra": "Identify one concrete formal-style issue in the target file (e.g., straight quotes, missing non-breaking space, broken \\ref).",
-      "writer_extra": "Fix only that one issue. No stylistic rewriting."
+      "focus": "TalTech/Estonian thesis style: bibliography citations instead of source footnotes, clean captions, quotes, dashes, units, and cross-references.",
+      "reviewer_extra": "Identify one concrete formal issue: source footnote, overlong caption, straight quotes, broken reference, unit spacing, or mixed citation style.",
+      "writer_extra": "Fix only that one issue. Prefer shortening captions/notes and converting source footnotes to bibliography citations when safe."
     },
     {
       "id": "summary-tightening",
-      "title": "Summary tightening",
+      "title": "Summary compression",
       "active": true,
       "branch": "cron/summary-tightening",
       "worktree": ".claude/worktrees/cron-summary-tightening",
       "rotation": [
         "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
       ],
-      "focus": "Keep summary crisp, self-contained, aligned with actual contributions.",
-      "reviewer_extra": "Find the single sentence in the summary that overclaims, underclaims, or drifts from the thesis contributions.",
-      "writer_extra": "Rewrite that one sentence only."
+      "focus": "Keep summary crisp, self-contained, and no longer than necessary; remove repeated setup already covered in the introduction.",
+      "reviewer_extra": "Find the single summary sentence that can be shortened, made more accurate, or deduplicated from earlier chapters.",
+      "writer_extra": "Rewrite that one sentence only; net-shorter unless correcting a factual ambiguity."
     },
     {
       "id": "methodology-tightening",
-      "title": "Methodology tightening",
+      "title": "Methodology compression",
       "active": true,
       "branch": "cron/methodology-tightening",
       "worktree": ".claude/worktrees/cron-methodology-tightening",
       "rotation": [
         "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex"
       ],
-      "focus": "Reproducibility of wake-word methodology: data, augmentation, training, evaluation.",
-      "reviewer_extra": "Identify one methodology detail that a reader could not reproduce from the current text.",
-      "writer_extra": "Add the missing detail concisely in-place. Do not expand scope."
+      "focus": "Compress reproducibility prose: keep details needed to interpret results, remove low-level configuration logs from the main narrative.",
+      "reviewer_extra": "Identify one methodology detail block that is too log-like or too low-level for the main text.",
+      "writer_extra": "Replace that detail block with a shorter thesis-level description. Do not add new parameters."
     },
     {
       "id": "intro-builder",
-      "title": "Introduction builder",
+      "title": "Introduction compressor",
       "active": true,
       "branch": "cron/intro-builder",
       "worktree": ".claude/worktrees/cron-intro-builder",
       "rotation": [
         "docs/thesis/thesis-tex-estonian/chapters/introduction.tex"
       ],
-      "focus": "Build the thin introduction into a complete thesis opening: problem, scope, research questions, contribution, and limits.",
-      "reviewer_extra": "Identify the single highest-value missing introduction sentence or short paragraph that would clarify the thesis scope or contribution.",
-      "writer_extra": "Add or rewrite at most one short paragraph in the introduction. Use only claims already supported by repo evidence or existing citations. No broad reframing."
+      "focus": "Tighten the introduction: problem, scope, research question, contribution, and limits in fewer words and cleaner Estonian.",
+      "reviewer_extra": "Identify one introduction sentence or paragraph that is redundant, overlong, or mixed-language.",
+      "writer_extra": "Shorten or rewrite at most one paragraph. Do not add new motivation or literature unless replacing longer existing text."
     },
     {
       "id": "implementation-narrative",
-      "title": "Implementation narrative",
+      "title": "Implementation detail compressor",
       "active": true,
       "branch": "cron/implementation-narrative",
       "worktree": ".claude/worktrees/cron-implementation-narrative",
       "rotation": [
         "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex"
       ],
-      "focus": "Turn repo implementation evidence into thesis prose: Android logger, ESP32-S3/Korvo-2, ESPHome voice_assistant, demo pipeline, packaging, and configuration choices.",
-      "reviewer_extra": "Identify one missing implementation detail that is already evidenced in the repo and belongs in the current discussion/implementation prose.",
-      "writer_extra": "Add at most one evidence-backed implementation paragraph. Prefer concrete file-backed facts over architecture wishes. Do not claim unvalidated deployment status."
+      "focus": "Compress Android/ESP32/ESPHome implementation prose; keep thesis-relevant facts and remove repo-log-level detail.",
+      "reviewer_extra": "Identify one implementation passage that reads like a repository log or configuration dump rather than thesis prose.",
+      "writer_extra": "Shorten the passage to the design-relevant point. Do not add implementation details."
     },
     {
       "id": "evaluation-closeout",
-      "title": "Evaluation closeout",
+      "title": "Evaluation compression and closeout",
       "active": true,
       "branch": "cron/evaluation-closeout",
       "worktree": ".claude/worktrees/cron-evaluation-closeout",
@@ -161,13 +161,13 @@
         "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
         "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex"
       ],
-      "focus": "Close evaluation gaps in small pieces: v16c, expert-a, MoE consensus, field evidence, user-test framing, and limits.",
-      "reviewer_extra": "Identify one missing evaluation result, limitation, or bridge that is already supported by tracked artifacts or current thesis TODO/source-of-truth docs.",
-      "writer_extra": "Add or tighten at most one short result/limitation paragraph. Keep benchmark, field, and planned user-test evidence clearly separated."
+      "focus": "Compress evaluation history and keep benchmark, field, and user-test evidence clearly separated; add only final user-test results when present.",
+      "reviewer_extra": "Identify one result-history passage, limitation, or bridge that can be shortened or deduplicated without losing evidence.",
+      "writer_extra": "Tighten at most one short result/limitation passage. Add prose only for final user-test data already present in tracked outputs."
     },
     {
       "id": "alternatives-comparison",
-      "title": "Alternatives and comparison",
+      "title": "Alternatives comparison compression",
       "active": true,
       "branch": "cron/alternatives-comparison",
       "worktree": ".claude/worktrees/cron-alternatives-comparison",
@@ -175,27 +175,27 @@
         "docs/thesis/thesis-tex-estonian/chapters/first_chapter.tex",
         "docs/thesis/thesis-tex-estonian/chapters/introduction.tex"
       ],
-      "focus": "Incrementally build the background comparison against existing wake-word and voice-assistant alternatives.",
-      "reviewer_extra": "Identify one missing comparison point against an already cited or repo-documented alternative such as microWakeWord, openWakeWord, Picovoice, commercial assistants, or Estonian ASR.",
-      "writer_extra": "Add at most one comparison sentence or paragraph using existing references.bib entries or repo-documented evidence only. If new external research is needed, push back instead of inventing citations."
+      "focus": "Keep comparison against alternatives concise and non-duplicative; remove repeated or overly broad framing.",
+      "reviewer_extra": "Identify one comparison point that is duplicated, too broad, or longer than needed for an already-cited alternative.",
+      "writer_extra": "Shorten or merge the comparison sentence/paragraph using existing citations only. Do not introduce new alternatives."
     },
     {
       "id": "research-note",
-      "title": "Research note",
-      "active": true,
+      "title": "Research note (paused in compression mode)",
+      "active": false,
       "branch": "cron/research-note",
       "worktree": ".claude/worktrees/cron-research-note",
       "rotation": [
         "docs/research/thesis-writing-research-queue.md"
       ],
-      "focus": "Draft one small, evidence-backed research note that will be distilled into thesis prose next.",
-      "reviewer_extra": "Identify the single most useful unresolved comparative/evidence gap for the next thesis sentence.",
-      "writer_extra": "Append exactly one concise research note item with source file references and what sentence it should inform."
+      "focus": "Paused during compression-first closeout; reactivate only when a mandatory missing source/evidence gap is approved.",
+      "reviewer_extra": "Paused: push back unless the user explicitly asks to collect a missing source.",
+      "writer_extra": "Paused: do not append research notes during compression mode."
     },
     {
       "id": "distill-sentence",
-      "title": "Distill sentence",
-      "active": true,
+      "title": "Distill sentence (paused in compression mode)",
+      "active": false,
       "branch": "cron/distill-sentence",
       "worktree": ".claude/worktrees/cron-distill-sentence",
       "depends_on": {
@@ -207,9 +207,9 @@
         "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
         "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex"
       ],
-      "focus": "Turn the newest research note into exactly one thesis sentence/mini-paragraph, without adding unsupported claims.",
-      "reviewer_extra": "Identify the target sentence location that directly maps to the latest research note and can be added in one edit.",
-      "writer_extra": "Add or refine one sentence/mini-paragraph based on the latest research-note queue item. No extra restructuring."
+      "focus": "Paused during compression-first closeout; reactivate only to insert approved mandatory evidence.",
+      "reviewer_extra": "Paused: push back unless the latest approved research note maps to a mandatory thesis gap.",
+      "writer_extra": "Paused: do not add thesis prose during compression mode."
     }
   ]
 }

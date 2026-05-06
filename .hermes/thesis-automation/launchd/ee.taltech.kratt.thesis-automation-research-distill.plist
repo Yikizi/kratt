@@ -5,6 +5,8 @@
 <dict>
   <key>Label</key>
   <string>ee.taltech.kratt.thesis-automation.research-distill</string>
+  <key>Disabled</key>
+  <true/>
   <key>ProgramArguments</key>
   <array>
     <string>/Users/mattias/kratt/.hermes/thesis-automation/run-research-distill-cycle.sh</string>

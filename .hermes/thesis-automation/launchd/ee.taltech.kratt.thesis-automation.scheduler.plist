@@ -8,7 +8,6 @@
   <key>ProgramArguments</key>
   <array>
     <string>/Users/mattias/kratt/.hermes/thesis-automation/run-scheduler.sh</string>
-    <string>--include-research-distill</string>
   </array>
   <key>RunAtLoad</key>
   <true/>

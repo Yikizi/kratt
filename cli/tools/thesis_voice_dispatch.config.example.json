@@ -1,0 +1,36 @@
+{
+  "default_profile": "claude-yolo",
+  "control_words": {
+    "escape": ["stop", "stopp"]
+  },
+  "profiles": {
+    "claude-yolo": {
+      "kind": "claude",
+      "yolo": true,
+      "model": null,
+      "max_budget_usd": "1.25"
+    },
+    "claude-sonnet": {
+      "kind": "claude",
+      "yolo": true,
+      "model": "sonnet",
+      "max_budget_usd": "1.25"
+    },
+    "codex-yolo": {
+      "kind": "codex",
+      "yolo": true,
+      "model": null
+    },
+    "codex-spark": {
+      "kind": "codex",
+      "yolo": true,
+      "model": "gpt-5.3-codex-spark"
+    },
+    "pi-agent": {
+      "kind": "shell",
+      "model": "",
+      "dispatcher_command": "ssh pi 'cd /path/to/kratt && exec $SHELL -l'",
+      "worker_command": "printf %s {{prompt_q}} | ssh pi 'cd /path/to/kratt && codex exec -s danger-full-access --dangerously-bypass-approvals-and-sandbox -'"
+    }
+  }
+}

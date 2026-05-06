@@ -1,0 +1,190 @@
+{
+  "timestamp": "2026-05-04_210025",
+  "project_name": "Kratt",
+  "project_root": "/Users/mattias/kratt",
+  "review_kind": "follow_up",
+  "criteria_source": [
+    "TalTech Academic Policies: https://oigusaktid.taltech.ee/en/academic-policies/",
+    "TalTech graduation thesis publication/preservation rules: https://oigusaktid.taltech.ee/loputoode-avalikustamise-ja-sailitamise-eeskiri/",
+    "TalTech Digikogu graduation thesis information: https://digikogu.taltech.ee/et/Info/About/loputood",
+    "MIT Specifications for Thesis Preparation: https://libraries.mit.edu/distinctive-collections/thesis-specs/",
+    "General academic best practice for technical bachelor theses synthesized from the above"
+  ],
+  "inputs_reviewed": [
+    "README.md",
+    "docs/PROJECT_TODO.md",
+    "docs/thesis/thesis-tex-estonian/chapters/chapters_main.tex",
+    "docs/thesis/thesis-tex-estonian/chapters/introduction.tex",
+    "docs/thesis/thesis-tex-estonian/chapters/first_chapter.tex",
+    "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
+    "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
+    "docs/thesis/thesis-tex-estonian/chapters/summary.tex",
+    "docs/thesis/thesis-tex-estonian/misc/abstract-estonian.tex",
+    "docs/thesis/thesis-tex-estonian/misc/abstract-english.tex",
+    ".hermes/thesis-quality-reviews/2026-04-20_000916-review.json"
+  ],
+  "scores": {
+    "problem_framing": {
+      "score_0_to_5": 4,
+      "rationale": "Problem is clearly articulated as 'Estonian wake-word on a microcontroller is the missing front-end' and is now backed by an explicit literature gap audit (no Estonian KWS-on-MCU work found). Operational thresholds (FAPH < 1, recall >= 0.95) are defined as project-specific, not universal, which is honest framing."
+    },
+    "research_questions_and_scope": {
+      "score_0_to_5": 3,
+      "rationale": "Main RQ and three sub-RQs are present, but the contribution claim has drifted into four parallel stories: (a) first Estonian wake-word, (b) streaming FAPH methodology, (c) ESP32-S3+HA integration, (d) three-audit-ring evaluation pattern, plus an emerging (e) agentic-engineering thesis in §5. The single-sentence claim is still not pinned down."
+    },
+    "related_work_and_positioning": {
+      "score_0_to_5": 5,
+      "rationale": "Recent integration of a 9-doc / 50+ citation literature pass shows clearly: deep KWS surveys, Apple Hey-Siri, Picovoice, openWakeWord, BC-ResNet, SVDF, MISP Challenge, accidental-trigger studies, cascade architectures, LF-MMI, personalized verification. Industrial vs small-project gap is articulated rather than glossed over. Estonian language KWS literature gap is documented with explicit search terms and dates."
+    },
+    "methodology_rigor": {
+      "score_0_to_5": 5,
+      "rationale": "The strongest dimension. Disjointness asserts in code, four explicit FAPH variants (framework-native / scripted offline / field / user-study replay), Wilson 95% CIs on every recall row, exact Poisson + rule-of-three CIs on FAPH, single-variable ablation explicitly separated from multi-change versions, and a v13a/v13b clean SpecAugment ablation. Three documented audit rings each escalate the metric vector in response to a real failure."
+    },
+    "implementation_or_artifact_clarity": {
+      "score_0_to_5": 4,
+      "rationale": "Training config snapshots are pinned per version, manifest.json captures positive sources with kept/excluded counts, audit_positive_sources.py is a programmatic guard, --allow-known-bad-positives gate makes regression to dirty data explicit. ESP32 flash budget is stated; tensor-arena is honestly flagged as still unmeasured."
+    },
+    "evaluation_and_evidence": {
+      "score_0_to_5": 4,
+      "rationale": "Evidence is now broad and methodologically defensible: hold-out FAPH on three corpora, six-FPR vector for phrase selectivity, DET curves over four families, Pareto envelope at fixed threshold, controlled checkpoint-FAPH failure analysis. Major remaining gap: zero user-test participants and unseen-speaker recall still rests on small-N samples (Isa N=48, Ode N=11; Friend1 N=145 is one speaker)."
+    },
+    "discussion_and_limitations": {
+      "score_0_to_5": 5,
+      "rationale": "Unusually honest. §5.1.4 'Aus piir: võimalik neljas ring' explicitly warns the reader not to read 'multi-metric is better' as 'multi-metric is sufficient'. Checkpoint-FAPH 0.00 result is debunked as a shortcut by the same chapter that proudly produced it. The benchmark-vs-reality gap (§3.5) is reframed as a transferable contribution to small-language KWS."
+    },
+    "ethics_privacy_reproducibility": {
+      "score_0_to_5": 3,
+      "rationale": "Two-tier consent (metrics-only vs audio opt-in) is drafted in user-testing protocol; recorder logs PII-relevant fields explicitly. Still no participant runs, no documented ethics-committee outcome, and no GDPR/data-handling section in the thesis text itself. Reproducibility is now strong on training side (manifests, fingerprints, disjointness asserts) but the user-test side has not been exercised."
+    },
+    "structure_and_coherence": {
+      "score_0_to_5": 4,
+      "rationale": "The chapter arc now reads as a real thesis: introduction frames the gap, methodology defines protocols, results document three audit rings as a story (not a list), discussion synthesizes the rings into a transferable principle, summary closes honestly. The agentic-engineering section sits a little awkwardly in §5 — it is well-argued but introduces a fifth competing narrative."
+    },
+    "language_and_academic_style": {
+      "score_0_to_5": 4,
+      "rationale": "Estonian academic register is consistent and analytical. One residual typo example survives (\"corpus'tel\" in second_chapter.tex line 249). Anglicism density is high but largely unavoidable in this domain; most are explained on first use."
+    },
+    "formal_compliance": {
+      "score_0_to_5": 4,
+      "rationale": "Both abstracts now contain real, well-structured content (problem, method, contribution, current finding) — the baseline blocker is resolved. Summary is now multi-paragraph and substantive. No remaining placeholder markers (TODO/FIXME/§X.Y/lisatakse hiljem) found in active chapter sources. Page-count macros and table/figure counters are wired correctly."
+    },
+    "defense_readiness": {
+      "score_0_to_5": 3,
+      "rationale": "The methodological core is now genuinely defensible and the technical narrative is coherent. Defense readiness is held back by (a) zero user-test participants 14 days before deadline, (b) unsettled single-sentence contribution claim, and (c) the fact that no current single model passes the prefix/confusable test, so the 'what does the project actually deliver' question needs a rehearsed scope statement."
+    }
+  },
+  "overall_readiness_0_to_10": 7.1,
+  "hard_findings": [
+    {
+      "severity": "major",
+      "finding": "User testing still has zero participants with 14 days to the 2026-05-18 hard deadline.",
+      "evidence": "docs/PROJECT_TODO.md §1 'USER TESTING (critical path)' lists pilot, full 20-30 participant run, and analysis as still pending; recorder and protocol exist but no participant data collected."
+    },
+    {
+      "severity": "major",
+      "finding": "Single-sentence contribution claim is not yet pinned. Introduction lists three contributions, discussion §5.3 promotes the audit-ring methodology as the central scientific contribution, and §5 also adds an agentic-engineering framing.",
+      "evidence": "introduction.tex line 16 lists (a) Estonian wake-word model, (b) FAPH streaming methodology, (c) ESP32-S3+HA integration; third_chapter.tex §5.3 ('contribution-transferability') argues the audit-ring methodology is the strongest defendable contribution; third_chapter.tex §4 ('agentpõhine arendus') frames agentic dev as a work multiplier."
+    },
+    {
+      "severity": "major",
+      "finding": "No current single model passes the prefix/confusable selectivity test; v18-pere all show prefix-FPR 82-100% and the consensus configurations that achieve sub-1 FAPH carry a real-speaker recall of 21-45%. The thesis therefore cannot claim a deployable single-model exact-phrase detector.",
+      "evidence": "second_chapter.tex tab:v18-family-results (Pre-FPR 82-100% across all v18 variants) and tab:checkpoint-consensus (faph10+v6-residual: Friend1 recall 20.7%, Conf-FPR 85.5%)."
+    },
+    {
+      "severity": "major",
+      "finding": "Unseen-speaker recall claims rest on tight samples. Isa XTTS N=48 and Ode N=11 produce wide Wilson CIs that the thesis correctly flags but cannot tighten without more real speakers; Friend1 N=145 helps but is a single speaker.",
+      "evidence": "second_chapter.tex tab:fair-comparison-holdout shows Isa XTTS Wilson CIs up to 14 percentage points wide; second_chapter.tex tab:expert-consensus explicitly states 'N=11 on liiga väike, et eristada konsensuskonfiguratsioonide recall'i statistiliselt'."
+    },
+    {
+      "severity": "minor",
+      "finding": "Live evaluation scripts are still being modified, which weakens the 'frozen evaluation harness' framing that the methodology contribution depends on.",
+      "evidence": "Initial gitStatus snapshot showed wake-word/evaluation/live_test_tflite.py and multi_model_live_test.py modified, plus several new untracked validation/extraction scripts. Project freeze for user testing has not been declared in PROJECT_TODO.md."
+    },
+    {
+      "severity": "minor",
+      "finding": "Residual typographic blemish remains in chapter source.",
+      "evidence": "second_chapter.tex line 249: \"V6 mudeli FAPH erinevatel keeltel ja corpus'tel\" — Estonian declension on the English word 'corpus' should use a clean form (corpustel / korpustel)."
+    },
+    {
+      "severity": "minor",
+      "finding": "Ethics/privacy handling is drafted in the user-testing protocol but is not yet visible as a thesis-text section, despite the project actively recording human voices.",
+      "evidence": "docs/PROJECT_TODO.md confirms two-level consent in tools/user-testing/run_user_test.py; no GDPR/consent paragraph found in introduction.tex, first_chapter.tex, or third_chapter.tex."
+    }
+  ],
+  "strengths": [
+    "Three-audit-ring narrative is now the strongest spine of the thesis: each ring is triggered by a documented external failure, each parade is paid for with explicit metric-vector expansion, and each ring's lesson is generalized to small-language KWS projects beyond Estonian.",
+    "Statistical hygiene is genuinely high for a bachelor thesis: Wilson CIs on every recall row, exact Poisson with rule-of-three for zero-event FAPH, explicit acknowledgement that overlapping CIs preclude ranking — this turns small-N from a weakness into a defended limitation.",
+    "Honesty about negative results. Checkpoint-FAPH section reaches 0.00 FAPH and then deconstructs that number as an acoustic shortcut in the very next subsection. v18 family is presented as 'cleaning labels was necessary but not sufficient'. This kind of self-rebuttal is rare and genuinely defendable.",
+    "Formal compliance has flipped from the baseline's biggest weakness to a strength: both abstracts are real, summary is full, no draft markers remain in chapter sources."
+  ],
+  "risks": [
+    "User-test critical path has 14 days remaining and zero participants, which makes any thesis claim that depends on real-speaker FAPH or task-success extremely vulnerable.",
+    "Contribution inflation. With four-to-five competing 'main contribution' framings active in the text, a committee question of 'what is THE thesis claim' can produce an unfocused answer and erode the value of the audit-ring story, which is the most defensible piece.",
+    "The agentic-engineering framing in §5 §4 is well-argued but enlarges the thesis's surface area at exactly the moment it should be narrowing. A committee may treat it as scope creep unless tied tightly to the 'evaluation cost vs evidence cost' point.",
+    "Live evaluation tooling still being edited contradicts the 'methodology has been frozen' claim that the audit-ring narrative depends on; a freeze commit before user testing is a small cost with high credibility return.",
+    "Estonian KWS-on-MCU literature gap is established by negative search rather than systematic review, which is appropriate but should be hedged with 'to the best of our search'."
+  ],
+  "defense_risks": {
+    "probable_questions": [
+      "What is the single main contribution: a working Estonian wake-word, an evaluation methodology, an integration pattern, or an agentic-engineering position paper?",
+      "If no current single model passes the prefix/confusable test, what does this thesis actually deliver as a working system?",
+      "How can the consensus 0.8 FAPH and the checkpoint 0.00 FAPH be reconciled with a recall of 21-45% on real unseen speakers — is the system in any sense usable?",
+      "Why should we accept the 'three-audit-ring' pattern as a research contribution rather than as an internal engineering story?",
+      "User testing was framed as critical path; what was actually run, with how many participants, and what does the absence of those numbers mean for your evaluation chapter?",
+      "How are the four FAPH variants comparable, given that you correctly note the literature does not agree on counting rules?",
+      "Friend1 (N=145) is one speaker; can a single speaker carry the unseen-speaker generalization claim?"
+    ],
+    "weak_answers_if_unfixed": [
+      "An ambiguous answer to 'what is the main contribution' will undercut the audit-ring story — the strongest defendable piece — and let the committee redefine the thesis around a weaker piece.",
+      "Treating user testing as 'will happen' rather than as a defined scope decision (done / pilot only / explicitly out of scope) will turn a limitation into a perceived incompleteness.",
+      "Citing checkpoint-FAPH 0.00 without leading with the shortcut critique would invite immediate cross-examination on shortcut learning.",
+      "Defending the agentic-engineering framing as a parallel contribution risks a committee redirect: 'is this an Estonian wake-word thesis or a thesis on LLM-assisted research?'"
+    ],
+    "suggested_preparation": [
+      "Pin one sentence: 'This thesis contributes a methodologically corrected, three-round audit pattern for evaluating low-resource wake-word detection, demonstrated on Estonian \"Kuule Kratt\".' Treat the wake-word model and the ESP32-HA integration as supporting evidence, not parallel contributions.",
+      "Decide and rehearse the user-testing scope statement before defense: completed pilot of N participants, or explicitly declared as pilot/future work with named reasons.",
+      "Prepare a one-line narrative for each audit ring: 'expected metric → observed metric → real-world failure → metric vector expansion → unresolved residual'.",
+      "Prepare a claim-to-evidence map: every numeric claim (0.8 FAPH, sub-1 FAPH, prefix-FPR 82%) maps to one specific table or benchmark file with thresholds, sample sizes, and CI.",
+      "Tie the agentic-engineering paragraph to the evidence-cost argument: agentic dev reduces tooling cost but does not reduce evidence cost, which is precisely why user testing still needs human participants. Land it as a minor closing observation, not a parallel claim."
+    ]
+  },
+  "next_actions": [
+    "Decide user-testing scope this week. Either run the pilot (3 participants) and at least one full session before 2026-05-11, or explicitly demote user testing to 'future work' in the thesis text with a clearly named reason.",
+    "Pin the single-sentence main contribution claim and rewrite the introduction's contribution paragraph and summary's closing paragraph to point at it. Move the wake-word model and integration pattern down into supporting-evidence framing.",
+    "Freeze the evaluation harness with a tagged commit before user testing; the audit-ring contribution loses force if the evaluation code is still drifting.",
+    "Add a short ethics/privacy paragraph to the methodology chapter covering recording, storage, two-tier consent, and retention, even if user testing is small or pilot-only.",
+    "Sweep for residual typographic blemishes (corpus'tel and similar) in a final language pass before submission."
+  ],
+  "comparison_to_previous": {
+    "previous_review_found": true,
+    "previous_timestamp": "2026-04-20_000916",
+    "score_deltas": {
+      "problem_framing": 0,
+      "research_questions_and_scope": 0,
+      "related_work_and_positioning": 1,
+      "methodology_rigor": 1,
+      "implementation_or_artifact_clarity": 0,
+      "evaluation_and_evidence": 1,
+      "discussion_and_limitations": 1,
+      "ethics_privacy_reproducibility": 1,
+      "structure_and_coherence": 1,
+      "language_and_academic_style": 0,
+      "formal_compliance": 3,
+      "defense_readiness": 1,
+      "overall_readiness_0_to_10_delta": 1.3
+    },
+    "resolved_issues": [
+      "Both abstract files now contain real, structured content (problem/method/contribution/finding) — baseline blocker eliminated.",
+      "Summary chapter expanded from a 5-line wrap-up to a multi-paragraph closeout that names methodological contribution and remaining work.",
+      "Visible draft markers ('lisatakse hiljem', '§2.X') are no longer present in chapter sources.",
+      "Repository hygiene: gitStatus shows clean working tree at review time (vs 27 modified + 90 untracked at baseline)."
+    ],
+    "new_issues": [
+      "Contribution inflation: the audit-ring methodology promotion in discussion competes with the introduction's three-part contribution claim and with a new agentic-engineering framing in §5.4.",
+      "Phrase-selectivity wall: v17 prefix-trigger discovery and v18 family results show that no current single model is exact-phrase selective; this is honestly reported but creates a 'what does the project deliver' defense risk that did not exist at baseline.",
+      "Eval-harness freeze not yet declared, despite the methodology contribution depending on a stable evaluation surface."
+    ],
+    "summary": "Major progress on formal compliance, methodology rigor, related work, and discussion honesty. User-testing risk is unchanged in nature but more acute given proximity to deadline. New risks center on contribution focus and on the gap between the methodology contribution and any single deployable model."
+  },
+  "reviewer_notes": "The thesis has moved from 'advanced interim draft' to 'defendable methodological work' since the 2026-04-20 baseline. The strongest contribution is now clearly the three-audit-ring evaluation pattern, supported by genuinely careful statistics. The single largest remaining risk is not technical: it is the gap between zero user-test participants and a hard 2026-05-18 deadline, plus an unsettled single-sentence contribution claim. Both are fixable in the remaining 14 days without new training runs."
+}

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# DESC: Dispatch dictated thesis correction requests to tmux agents/workers
+# USAGE: kratt thesis-voice <pane|agent|send|listen|profiles> [args...]
+# ARGS: subcommand pane, agent, send, listen, or profiles
+# EXAMPLES: kratt thesis-voice pane
+# EXAMPLES: kratt thesis-voice send "lehel 3 on sanity check"
+# EXAMPLES: kratt thesis-voice send "lehel 3 on sanity check, paranda eesti keelde"
+# EXAMPLES: kratt thesis-voice listen --device 1
+# EXAMPLES: kratt thesis-voice listen --device 1 --mode tmux-pane
+# EXAMPLES: kratt thesis-voice listen --device 1 --mode worker-window --profile codex-yolo
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+exec /usr/bin/env python3 "$ROOT/cli/tools/thesis_voice_dispatch.py" "$@"
