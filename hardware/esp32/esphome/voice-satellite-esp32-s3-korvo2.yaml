@@ -21,6 +21,9 @@ substitutions:
   # DSDIN (ESP I2S DOUT) is GPIO8.
   spk_dout_pin: "GPIO8"
 
+  # NS4150 class-D amplifier enable pin (Korvo-2 schematic):
+  pa_ctrl_pin: "GPIO48"
+
 esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
@@ -75,13 +78,14 @@ audio_adc:
     id: es7210_adc
     bits_per_sample: 16bit
     sample_rate: 16000
+    mic_gain: 30dB
 
 # Speaker output: ES8311 + I2S (shared BCLK/LRCLK/MCLK with microphone).
 audio_dac:
   - platform: es8311
     id: es8311_dac
     bits_per_sample: 16bit
-    sample_rate: 16000
+    sample_rate: 48000
 
 speaker:
   - platform: i2s_audio
@@ -89,9 +93,10 @@ speaker:
     dac_type: external
     i2s_dout_pin: ${spk_dout_pin}
     audio_dac: es8311_dac
-    sample_rate: 16000
+    sample_rate: 48000
     bits_per_sample: 16bit
-    channel: mono
+    channel: left
+    buffer_duration: 100ms
 
 microphone:
   - platform: i2s_audio
@@ -101,6 +106,14 @@ microphone:
     sample_rate: 16000
     bits_per_sample: 16bit
     channel: left
+
+# NS4150 amplifier enable -- must be HIGH for speaker output.
+switch:
+  - platform: gpio
+    id: pa_ctrl
+    pin: ${pa_ctrl_pin}
+    name: "${friendly_name} Speaker Enable"
+    restore_mode: ALWAYS_ON
 
 binary_sensor:
   - platform: template
@@ -156,6 +169,8 @@ voice_assistant:
   speaker: spk
   micro_wake_word: microww
   use_wake_word: false
+  auto_gain: 31dBFS
+  noise_suppression_level: 2
   on_listening:
     then:
       - binary_sensor.template.publish:
@@ -169,10 +184,12 @@ voice_assistant:
       - binary_sensor.template.publish:
           id: va_listening
           state: OFF
+      - delay: 1000ms
       - micro_wake_word.start:
   on_error:
     then:
       - binary_sensor.template.publish:
           id: va_listening
           state: OFF
+      - delay: 1000ms
       - micro_wake_word.start:
