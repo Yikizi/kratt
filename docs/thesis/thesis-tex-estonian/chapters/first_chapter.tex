@@ -20,8 +20,6 @@ Võrdlus viiakse läbi neljal teljel:
 
 Integreeritavuse teljel tuleb arvestada, et \texttt{openWakeWord} sihib ONNX-runtime'i ja Raspberry Pi klassi hosti, mitte mikrokontrollerit \cite{openwakeword2026}, mistõttu mudeli suurus ja \texttt{tensor\_arena} (käesolevas töös 57\,KB ning ${\sim}107$\,KB koos töömäluga, vt §\ref{subsec:quantization}) pole tema puhul ESP32-S3 mälupiirangute vastu otseselt võrreldavad --- see asümmeetria on integreeritavuse telje tulemus, mitte selle puudus.
 
-Sellise võrdlusraami eesmärk ei ole leida abstraktselt \enquote{parimat} äratussõna raamistikku, vaid hinnata, milline lähenemine on sobivam eestikeelse ja piiratud ressursiga nutikodu kasutusjuhtumi jaoks. See võimaldab hiljem põhjendada nii lõpliku tehnoloogiavaliku kui ka selle käigus tehtud kompromisside loogikat.
-
 \section{Andmeliikide eristamine}
 Äratussõna mudeli arenduses ei piisa ainult tavalisest treeningu- ja testandmete jaotusest \cite{lopezespejo2021deepkws,microwakeword2026}. Käesolevas töös eristatakse kolme andmeliiki:
 \begin{itemize}
