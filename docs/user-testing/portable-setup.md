@@ -49,11 +49,13 @@ Tihe, aga mahub. Kui RAM lõppeb, kaaluda väiksemat LLM mudelit (8B → ~5GB).
 - [ ] Docker images pulled: HA, Kiirkirjutaja, Piper
 - [ ] Ollama mudel alla laetud (Gemma 3 12B)
 - [ ] macOS Internet Sharing konfigureeritud ja testitud
-- [ ] ESP32/active demo path configured with the frozen active model (pilot default: `v16c`) and threshold
+- [x] ESPHome local model copy prepared for pilot default `v16c` at cutoff `0.996` (`kratt prepare-esphome-model v16c --cutoff 0.996`; still compile/flash before ESP32 demo)
 - [ ] WiFi pirn seadistatud HA-s (testitud kodus enne)
 - [ ] Google Forms küsimustik loodud + QR-kood prinditud
 - [ ] `kratt user-test` recorder tested (dry-run + real mic)
-- [ ] Logging/replay scripts tested
+- [ ] Recorder input device chosen with `kratt user-test --list-devices`; run a short real-mic check and reject any device that gives near-zero RMS warnings
+- [x] Synthetic fixture recorder/validator/replay path tested (`kratt user-test-fixtures` → `kratt user-test --audio-fixture-dir` → `kratt replay-user-test`)
+- [ ] Real-mic replay scripts tested
 
 ### Enne üritust testida
 - [ ] Kogu stack üles: AP → ESP32 ühendub → wake word → STT → LLM → pirn
@@ -76,6 +78,33 @@ Tihe, aga mahub. Kui RAM lõppeb, kaaluda väiksemat LLM mudelit (8B → ~5GB).
 | MacBook (AP) | 192.168.2.1 |
 | ESP32 | DHCP → 192.168.2.x |
 | WiFi pirn | DHCP → 192.168.2.x |
+
+### Valikuline BLE → WiZ sild
+
+Kasuta seda ainult fallback'ina, kui MacBook ei saa pirniga samasse võrku või kui ESP32 peab olema pirni-poolse AP osana. Tavaline tee jääb `kratt demo --wiz`. Vaata detailsemat seadistuse ja testimise juhist [hardware/esp32/firmware/recorder/BLE_BRIDGE.md](../../hardware/esp32/firmware/recorder/BLE_BRIDGE.md).
+
+```bash
+./cli/kratt ble-wiz --on
+./cli/kratt demo --wiz --ble-bridge --no-wakeword
+```
+
+Oodatav BLE identiteet: `Kratt-BLE-Bridge`, service UUID `c6d6f8f5-6b2d-6d4b-8f5d-0f1d2c3b4a50`.
+
+## Recorder sanity check
+
+```bash
+./cli/kratt user-test-fixtures --output-dir output/user-test-fixtures/ten-minute-v1
+./cli/kratt user-test SYNTH01 --audio-fixture-dir output/user-test-fixtures/ten-minute-v1 --auto-advance --new-session-subdir
+./cli/kratt user-test --list-devices
+./cli/kratt user-test TEST_REAL --new-session-subdir --device <input_device_id>
+./cli/kratt validate-user-test output/user-tests/TEST_REAL/<session_dir> --fail-on-warnings
+./cli/kratt replay-user-test output/user-tests/TEST_REAL/<session_dir>
+./cli/kratt summarize-user-test output/user-test-replay
+```
+
+`kratt summarize-user-test` excludes dry-run/synthetic fixture rows by default; use `--include-smoke` only for debug.
+
+Local 2026-05-04 smoke result: CoreAudio device selection was unstable and some listed/default inputs produced zero RMS or PortAudio channel errors in this harness. Always run the smoke test and pick a device that returns non-zero RMS before recording participants; re-check device IDs before every test day because macOS device numbering can change.
 
 ## Startup järjekord
 

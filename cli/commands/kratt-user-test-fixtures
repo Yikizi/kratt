@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# DESC: Generate synthetic WAV fixtures for user-test smoke/replay
+# USAGE: kratt user-test-fixtures [options]
+# ARGS: --output-dir Fixture output dir. Default: output/user-test-fixtures/ten-minute-v1
+# ARGS: --method auto|local-tts|macos-say. Default: auto
+# ARGS: --url Local TTS /synthesize URL. Default: http://127.0.0.1:5380/synthesize
+# ARGS: --speaker Local TTS speaker. Default: meelis
+# ARGS: --speed Local TTS speed. Default: 1.0
+# ARGS: --voice macOS say voice name
+# EXAMPLES: kratt user-test-fixtures
+# EXAMPLES: kratt user-test-fixtures --method local-tts --speaker meelis
+# EXAMPLES: kratt user-test SYNTH01 --audio-fixture-dir output/user-test-fixtures/ten-minute-v1 --auto-advance --new-session-subdir
+set -euo pipefail
+
+SCRIPT="${KRATT_ROOT}/tools/user-testing/make_user_test_fixtures.py"
+PYTHON="${KRATT_ROOT}/.venv/bin/python"
+
+if [[ ! -f "$SCRIPT" ]]; then
+  echo "fixture generator not found: $SCRIPT" >&2
+  exit 1
+fi
+if [[ ! -x "$PYTHON" ]]; then
+  echo "Python venv not found: $PYTHON" >&2
+  echo "Run setup first (project venv)." >&2
+  exit 1
+fi
+
+exec "$PYTHON" "$SCRIPT" "$@"

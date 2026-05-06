@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# DESC: Aggregate replayed user-test wake metrics into thesis-ready tables
+# USAGE: kratt summarize-user-test <replay_output_dir|replay_scores.jsonl> [...]
+# ARGS: path Replay output root/session dir or replay_scores.jsonl file
+# ARGS: --output-dir Output directory. Default: output/user-test-analysis
+# ARGS: --prefix Output filename prefix. Default: user_test_replay_summary
+# ARGS: --confidence Wilson CI confidence. Default: 0.95
+# ARGS: --include-smoke Include dry-run/synthetic fixture rows (debug only; never thesis main tables)
+# EXAMPLES: kratt summarize-user-test output/user-test-replay
+# EXAMPLES: kratt summarize-user-test output/user-test-replay/P*/session*/replay_scores.jsonl
+set -euo pipefail
+
+SCRIPT="${KRATT_ROOT}/tools/user-testing/summarize_user_test_replay.py"
+PYTHON="${KRATT_ROOT}/.venv/bin/python"
+
+if [[ ! -f "$SCRIPT" ]]; then
+  echo "user-test summary script not found: $SCRIPT" >&2
+  exit 1
+fi
+if [[ ! -x "$PYTHON" ]]; then
+  echo "Python venv not found: $PYTHON" >&2
+  echo "Run setup first (project venv)." >&2
+  exit 1
+fi
+
+exec "$PYTHON" "$SCRIPT" "$@"

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# DESC: Validate user-test session files (trials.jsonl + WAV integrity)
+# USAGE: kratt validate-user-test <session_dir> [session_dir ...]
+# ARGS: session_dir Directory containing session.json and trials.jsonl
+# ARGS: --expected-trials Expected trial count. Default: 17; use -1 to disable
+# ARGS: --fail-on-warnings Treat warnings as failures
+# ARGS: --json Emit machine-readable JSON summary
+# EXAMPLES: kratt validate-user-test output/user-tests/P01/20260504-120000_abcd1234
+# EXAMPLES: kratt validate-user-test output/user-tests/P01/* --fail-on-warnings
+set -euo pipefail
+
+SCRIPT="${KRATT_ROOT}/tools/user-testing/validate_user_test_session.py"
+PYTHON="${KRATT_ROOT}/.venv/bin/python"
+
+if [[ ! -f "$SCRIPT" ]]; then
+  echo "user-test validator not found: $SCRIPT" >&2
+  exit 1
+fi
+if [[ ! -x "$PYTHON" ]]; then
+  echo "Python venv not found: $PYTHON" >&2
+  echo "Run setup first (project venv)." >&2
+  exit 1
+fi
+
+exec "$PYTHON" "$SCRIPT" "$@"

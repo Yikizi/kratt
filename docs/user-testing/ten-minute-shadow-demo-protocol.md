@@ -46,6 +46,8 @@ Offline replay models stay identical for all participants.
 
 ## Threshold policy
 
+Pilot freeze candidate: `docs/user-testing/frozen-threshold-policy.md`.
+
 Before final analysis, freeze one deployment threshold per model for the main table. Threshold sweeps may still be reported as exploratory.
 
 Suggested initial reporting thresholds:
@@ -151,6 +153,8 @@ Purpose:
 
 ### E. Mini questionnaire
 
+Use the short form in `docs/user-testing/mini-questionnaire-form-v1.md`.
+
 Rate 1–5:
 
 1. Süsteem reageeris piisavalt usaldusväärselt.
@@ -240,6 +244,45 @@ Implemented recorder output:
 
 This creates a session directory with `session.json`, `trials.jsonl`, and optional `audio/*.wav` files depending on consent.
 
+Before real recording, pick and smoke-test the input device:
+
+```bash
+./cli/kratt user-test --list-devices
+./cli/kratt user-test --mic-smoke-test --device <input_device_id>
+```
+
+Synthetic fixture smoke test (TTS/macOS `say`; infrastructure only, not user-study evidence):
+
+```bash
+./cli/kratt user-test-fixtures --output-dir output/user-test-fixtures/ten-minute-v1
+./cli/kratt user-test SYNTH01 \
+  --audio-fixture-dir output/user-test-fixtures/ten-minute-v1 \
+  --auto-advance \
+  --new-session-subdir
+```
+
+Validate every pilot/full session immediately after recording:
+
+```bash
+./cli/kratt validate-user-test output/user-tests/P01/<session_dir>
+```
+
+The validator checks trial counts, JSONL schema, consent handling, WAV existence, sample rate/channel count, duration, and very-low-RMS microphone warnings.
+
+Replay consented WAVs through the frozen shadow set after each audio-consent session:
+
+```bash
+./cli/kratt replay-user-test output/user-tests/P01/<session_dir>
+```
+
+Default replay models are `v16c`, `expert-a`, `expert-b2`, `v6-residual`, `v10`, and `v15`; default consensus is `expert-a+expert-b2`; default replay threshold is `0.996` with a 5-frame moving average and 0.5s prepended silence for streaming-state warmup. This writes `output/user-test-replay/<participant>/<session_id>/replay_scores.jsonl` and `replay_summary.csv` with per-model/per-combo trigger decisions and trigger times.
+
+Aggregate replayed sessions into thesis-ready tables with Wilson intervals. By default this excludes dry-run and synthetic fixture rows; use `--include-smoke` only for infrastructure debugging.
+
+```bash
+./cli/kratt summarize-user-test output/user-test-replay
+```
+
 ## Metrics
 
 ### Wake-word metrics
@@ -272,6 +315,8 @@ For each command task:
 
 ## Consent model
 
+Participant-facing consent draft: `docs/user-testing/consent-script-v1.md`. Mini questionnaire form: `docs/user-testing/mini-questionnaire-form-v1.md`.
+
 Use two consent levels:
 
 1. **Basic consent:** anonymous metrics and logs may be used in the thesis.
@@ -291,11 +336,19 @@ Participants who decline audio storage may still contribute UX/questionnaire dat
 
 Before full data collection:
 
-- [ ] Run one dry-run self-pilot: `kratt user-test TEST --dry-run --new-session-subdir`.
+- [x] Run one dry-run recorder smoke test: `kratt user-test TEST_AUTO --dry-run --new-session-subdir` (2026-05-04).
+- [x] Verify dry-run creates 17 WAVs + 17 `trial` JSONL rows (2026-05-04, `kratt validate-user-test`).
+- [x] Verify `--audio-consent no` retains no WAVs but keeps trial metadata (2026-05-04).
+- [x] Add microphone smoke-test command: `kratt user-test --mic-smoke-test --device <id>` (2026-05-04).
+- [x] Add synthetic fixture injection path: `kratt user-test-fixtures` + `kratt user-test --audio-fixture-dir ... --auto-advance` (2026-05-04).
+- [x] Prepare ESPHome local active model copy as `v16c` at cutoff `0.996` with `kratt prepare-esphome-model v16c --cutoff 0.996` (2026-05-04; compile/flash still required before ESP32 demo).
 - [ ] Run one real-mic self-pilot with audio consent enabled.
-- [ ] Verify every trial creates one WAV and one `trials.jsonl` row.
+- [ ] Validate real-mic self-pilot immediately with `kratt validate-user-test <session_dir>`.
+- [ ] Replay real-mic self-pilot with `kratt replay-user-test <session_dir>`.
+- [ ] Aggregate replay outputs with `kratt summarize-user-test output/user-test-replay`.
 - [ ] Verify the WiZ commands work manually.
 - [ ] Verify active demo logs STT/intent/action latency, or document which fields are manual.
-- [ ] Verify replay analysis can score the recorded WAVs.
+- [x] Verify replay analysis can score dry-run WAVs (2026-05-04, `kratt replay-user-test`).
+- [ ] Verify replay analysis can score real-mic WAVs.
 - [ ] Freeze active model and thresholds.
 - [ ] Run 2–3 participant pilots and only then freeze final wording.

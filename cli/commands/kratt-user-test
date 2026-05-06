@@ -6,13 +6,19 @@
 # ARGS: --audio-consent yes|no. If no, raw WAV files are not retained
 # ARGS: --output-dir Base output directory. Default: output/user-tests
 # ARGS: --device sounddevice input device id
+# ARGS: --audio-fixture-dir Inject WAV fixtures named TRIAL_ID.wav instead of microphone
+# ARGS: --auto-advance Do not wait for Enter between trials (fixture/dry-run smoke)
+# ARGS: --min-rms-warning Warn below this RMS for non-dry-run recordings
 # ARGS: --list-devices List available audio input/output devices
+# ARGS: --mic-smoke-test Record a short in-memory mic test and exit
 # ARGS: --dry-run Create silent WAVs for harness testing
 # ARGS: --new-session-subdir Create participant/timestamp_session subdir
 # EXAMPLES: kratt user-test P01
 # EXAMPLES: kratt user-test P01 --active-model expert-a
 # EXAMPLES: kratt user-test P01 --list-devices
-# EXAMPLES: kratt user-test TEST --dry-run --new-session-subdir
+# EXAMPLES: kratt user-test --mic-smoke-test --device 2
+# EXAMPLES: kratt user-test TEST --dry-run --auto-advance --new-session-subdir
+# EXAMPLES: kratt user-test SYNTH01 --audio-fixture-dir output/user-test-fixtures/demo --auto-advance --new-session-subdir
 set -euo pipefail
 
 SCRIPT="${KRATT_ROOT}/tools/user-testing/run_user_test.py"

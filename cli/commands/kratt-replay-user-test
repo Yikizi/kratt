@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# DESC: Replay user-test WAVs through frozen wake-word models
+# USAGE: kratt replay-user-test <session_dir> [session_dir ...]
+# ARGS: session_dir Directory from kratt user-test
+# ARGS: --models Model tags to replay. Default: v16c expert-a expert-b2 v6-residual v10 v15
+# ARGS: --combos Consensus combos, e.g. expert-a+expert-b2; pass --combos with no values to disable
+# ARGS: --threshold Frozen replay threshold. Default: 0.996
+# ARGS: --prepad-silence-s Silence prepended before each clip for streaming model warmup. Default: 0.5
+# ARGS: --output-dir Output root. Default: output/user-test-replay
+# EXAMPLES: kratt replay-user-test output/user-tests/P01/20260504-120000_abcd1234
+# EXAMPLES: kratt replay-user-test output/user-tests/P*/20* --threshold 0.996
+set -euo pipefail
+
+SCRIPT="${KRATT_ROOT}/tools/user-testing/replay_user_test.py"
+PYTHON="${KRATT_ROOT}/wake-word/.venv-microwakeword/bin/python"
+
+if [[ ! -f "$SCRIPT" ]]; then
+  echo "user-test replay script not found: $SCRIPT" >&2
+  exit 1
+fi
+if [[ ! -x "$PYTHON" ]]; then
+  echo "microWakeWord venv not found: $PYTHON" >&2
+  echo "Set up wake-word/.venv-microwakeword first." >&2
+  exit 1
+fi
+
+exec "$PYTHON" "$SCRIPT" "$@"

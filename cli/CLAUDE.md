@@ -20,6 +20,7 @@ Project CLI tool — `kratt <command>` gateway for common development tasks.
 | `kratt det` | DET / threshold curve helpers |
 | `kratt faph-log` | FAPH log tooling |
 | `kratt flash` | Flash ESP32 firmware / model config |
+| `kratt prepare-esphome-model` | Copy selected model into ESPHome manifest without flashing |
 | `kratt hpc` | Submit/monitor HPC training jobs |
 | `kratt label` | Label or inspect captured clips |
 | `kratt live` | Run live mic test with one or more models |
@@ -27,9 +28,14 @@ Project CLI tool — `kratt <command>` gateway for common development tasks.
 | `kratt prepare-negative-splits` | Materialize scaled negative train/dev/eval splits (optional/future-work) |
 | `kratt rec` | Record wake word samples |
 | `kratt thesis-dashboard` | Thesis automation/dashboard helper |
+| `kratt thesis-watch` | Watch LaTeX thesis sources and auto-rebuild/open PDF |
 | `kratt train` | Training wrapper / HPC submit front-end |
 | `kratt tts` | Generate TTS samples |
 | `kratt user-test` | Record labelled 10-minute user-test trials (`trials.jsonl` + WAVs) |
+| `kratt user-test-fixtures` | Generate synthetic WAV fixtures for user-test smoke/replay |
+| `kratt validate-user-test` | Validate user-test session JSONL/WAV integrity before analysis |
+| `kratt replay-user-test` | Replay labelled user-test WAVs through frozen wake-word models |
+| `kratt summarize-user-test` | Aggregate replay outputs into thesis-ready recall/FPR tables |
 
 ## Adding commands
 

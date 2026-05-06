@@ -100,6 +100,65 @@ def list_devices() -> None:
     print(sd.query_devices())
 
 
+def mic_smoke_test(duration_s: float, device: int | None, min_rms_warning: float) -> int:
+    print(f"Recording {duration_s:.1f}s microphone smoke test (device={device if device is not None else 'default'})...", flush=True)
+    try:
+        audio = record_audio(duration_s, device, dry_run=False)
+    except Exception as exc:
+        print(f"ERROR: failed to open/record microphone: {exc}", file=sys.stderr)
+        print("Run `kratt user-test --list-devices` and try another input device.", file=sys.stderr)
+        return 2
+    peak = float(np.max(np.abs(audio))) if audio.size else 0.0
+    rms = float(np.sqrt(np.mean(np.square(audio)))) if audio.size else 0.0
+    print(f"peak_abs={peak:.6f}")
+    print(f"rms={rms:.6f}")
+    if rms < min_rms_warning:
+        print(
+            f"WARNING: RMS below {min_rms_warning:.6f}; choose another --device or check macOS microphone permissions",
+            file=sys.stderr,
+        )
+        return 1
+    print("MIC_SMOKE_OK")
+    return 0
+
+
+def fit_duration(audio: np.ndarray, duration_s: float) -> np.ndarray:
+    frames = int(round(duration_s * SAMPLE_RATE))
+    audio = np.asarray(audio, dtype=np.float32).reshape(-1)
+    if audio.size >= frames:
+        return audio[:frames]
+    return np.pad(audio, (0, frames - audio.size)).astype(np.float32)
+
+
+def resample_linear(audio: np.ndarray, source_sr: int, target_sr: int = SAMPLE_RATE) -> np.ndarray:
+    audio = np.asarray(audio, dtype=np.float32).reshape(-1)
+    if source_sr == target_sr or audio.size == 0:
+        return audio
+    new_len = int(round(audio.size * target_sr / source_sr))
+    old_x = np.arange(audio.size, dtype=np.float64)
+    new_x = np.linspace(0, max(audio.size - 1, 0), new_len, dtype=np.float64)
+    return np.interp(new_x, old_x, audio).astype(np.float32)
+
+
+def load_fixture_audio(fixture_dir: Path, trial: TrialSpec) -> tuple[np.ndarray, str]:
+    candidates = [
+        fixture_dir / f"{trial.trial_id}.wav",
+        fixture_dir / f"{trial.trial_id}_attempt{trial.attempt_number}.wav",
+    ]
+    matches = [path for path in candidates if path.exists()]
+    if not matches:
+        raise SystemExit(
+            f"Missing fixture WAV for {trial.trial_id}. Expected one of: "
+            + ", ".join(str(path) for path in candidates)
+        )
+    fixture_path = matches[0]
+    audio, sr = sf.read(str(fixture_path), dtype="float32", always_2d=False)
+    if isinstance(audio, np.ndarray) and audio.ndim > 1:
+        audio = np.mean(audio, axis=1)
+    audio = resample_linear(np.asarray(audio, dtype=np.float32), int(sr))
+    return fit_duration(audio, trial.duration_s), str(fixture_path)
+
+
 def record_audio(duration_s: float, device: int | None, dry_run: bool) -> np.ndarray:
     frames = int(round(duration_s * SAMPLE_RATE))
     if dry_run:
@@ -147,6 +206,7 @@ def run_session(args: argparse.Namespace) -> Path:
         "sample_rate": SAMPLE_RATE,
         "device": args.device,
         "dry_run": args.dry_run,
+        "audio_fixture_dir": str(Path(args.audio_fixture_dir).expanduser().resolve()) if args.audio_fixture_dir else None,
         "operator": args.operator,
         "notes": args.notes,
     }
@@ -158,7 +218,11 @@ def run_session(args: argparse.Namespace) -> Path:
     print(f"Session:     {session_id}")
     print(f"Output:      {base_dir}")
     print(f"Active:      {args.active_model}")
-    print(f"Audio:       {'DRY RUN silence' if args.dry_run else 'microphone'}")
+    if args.audio_fixture_dir:
+        audio_source_label = f"fixture WAVs from {Path(args.audio_fixture_dir).expanduser().resolve()}"
+    else:
+        audio_source_label = 'DRY RUN silence' if args.dry_run else 'microphone'
+    print(f"Audio:       {audio_source_label}")
     print("\nControls: Enter = record next trial, q + Enter = stop.\n")
 
     trials = default_trials()
@@ -169,7 +233,11 @@ def run_session(args: argparse.Namespace) -> Path:
         print(f"[{idx:02d}/{total}] {trial.trial_id} ({trial.trial_type})")
         print(trial.prompt)
         print(f"Recording duration: {trial.duration_s:.1f}s")
-        cmd = input("Press Enter to record, or q to quit: ").strip().lower()
+        if args.auto_advance:
+            cmd = ""
+            print("Auto-advance: recording this trial")
+        else:
+            cmd = input("Press Enter to record, or q to quit: ").strip().lower()
         if cmd == "q":
             append_jsonl(
                 trials_path,
@@ -183,12 +251,19 @@ def run_session(args: argparse.Namespace) -> Path:
             )
             break
 
-        print("Recording in 0.5s...")
-        time.sleep(0.5)
+        if args.audio_fixture_dir:
+            print("Injecting fixture audio...")
+        else:
+            print("Recording in 0.5s...")
+            time.sleep(0.5)
         print("● recording")
         t_start = iso_now()
         monotonic_start = time.monotonic()
-        audio = record_audio(trial.duration_s, args.device, args.dry_run)
+        fixture_file = None
+        if args.audio_fixture_dir:
+            audio, fixture_file = load_fixture_audio(Path(args.audio_fixture_dir).expanduser().resolve(), trial)
+        else:
+            audio = record_audio(trial.duration_s, args.device, args.dry_run)
         monotonic_end = time.monotonic()
         t_end = iso_now()
         print("✓ done")
@@ -204,6 +279,11 @@ def run_session(args: argparse.Namespace) -> Path:
 
         peak = float(np.max(np.abs(audio))) if audio.size else 0.0
         rms = float(np.sqrt(np.mean(np.square(audio)))) if audio.size else 0.0
+        if not args.dry_run and args.audio_consent == "yes" and rms < args.min_rms_warning:
+            print(
+                f"! warning: very low audio RMS ({rms:.6f}); "
+                "check microphone device/permissions before continuing full testing"
+            )
 
         record = {
             "type": "trial",
@@ -221,6 +301,8 @@ def run_session(args: argparse.Namespace) -> Path:
             "audio_peak_abs": round(peak, 6),
             "audio_rms": round(rms, 6),
             "audio_consent": args.audio_consent,
+            "audio_source": "fixture" if args.audio_fixture_dir else ("dry_run" if args.dry_run else "microphone"),
+            "audio_fixture_file": fixture_file,
         }
         append_jsonl(trials_path, record)
 
@@ -250,7 +332,12 @@ def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     parser.add_argument("--notes", default="", help="Free-text session note stored in session.json")
     parser.add_argument("--session-id", default=None)
     parser.add_argument("--device", type=int, default=None, help="sounddevice input device id")
+    parser.add_argument("--audio-fixture-dir", default=None, help="Inject WAV fixtures named TRIAL_ID.wav instead of using microphone")
+    parser.add_argument("--auto-advance", action="store_true", help="Do not wait for Enter between trials (useful with --dry-run or --audio-fixture-dir)")
+    parser.add_argument("--min-rms-warning", type=float, default=0.0001, help="Warn below this RMS for non-dry-run recordings")
     parser.add_argument("--list-devices", action="store_true", help="Print audio devices and exit")
+    parser.add_argument("--mic-smoke-test", action="store_true", help="Record a short in-memory mic test and exit")
+    parser.add_argument("--smoke-duration-s", type=float, default=1.0, help="Duration for --mic-smoke-test")
     parser.add_argument("--dry-run", action="store_true", help="Create silent WAVs without using microphone")
     parser.add_argument("--allow-existing", action="store_true", help="Allow writing into a non-empty participant dir")
     parser.add_argument("--new-session-subdir", action="store_true", help="Create participant/timestamp_session subdir")
@@ -259,8 +346,14 @@ def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     if args.list_devices:
         list_devices()
         raise SystemExit(0)
+    if args.mic_smoke_test:
+        raise SystemExit(mic_smoke_test(args.smoke_duration_s, args.device, args.min_rms_warning))
+    if args.dry_run and args.audio_fixture_dir:
+        parser.error("--dry-run and --audio-fixture-dir are mutually exclusive")
+    if args.audio_fixture_dir and not Path(args.audio_fixture_dir).expanduser().exists():
+        parser.error(f"--audio-fixture-dir does not exist: {args.audio_fixture_dir}")
     if not args.participant_id:
-        parser.error("participant_id is required unless --list-devices is used")
+        parser.error("participant_id is required unless --list-devices or --mic-smoke-test is used")
     return args
 
 
