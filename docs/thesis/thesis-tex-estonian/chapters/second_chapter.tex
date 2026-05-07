@@ -23,15 +23,6 @@ Mõistlikkuskontrolli eksperimendi tulemusena saadi edukalt:
 
 Selle tulemuse peamine väärtus seisneb selles, et treeningutoru enda töökindlus sai avaliku andmestiku peal kinnitust. Edasised eestikeelse mudeli probleemid ei ole seega enam automaatselt seletatavad infrastruktuuri veaga.
 
-\section{Peamine metoodiline leid}
-Senise töö üks olulisemaid järeldusi on seotud hindamisprotsessiga. Varasemas \enquote{Kratt} run'is saadud AUC väärtus kirjeldas puudulikku evaluatsiooniseadistust, sest \texttt{testing\_ambient} oli tühi. Pärast taustaheli toe lisamist muutus ROC-analüüs sisuliseks ning oli võimalik eristada kahte olukorda:
-\begin{itemize}
-    \item degeneratiivne tulemus, mis tuleb puuduliku sisendi tõttu;
-    \item jämedateraline, kuid siiski korrektne tulemus, mis tuleb liiga lühikesest taustaheli signaalist.
-\end{itemize}
-
-See tulemus on oluline, sest muudab töö rõhuasetust. Küsimus ei ole enam ainult selles, kas mudelit saab treenida, vaid ka selles, kas mudelit hinnatakse metodoloogiliselt korrektselt.
-
 \section{Praegune seis}
 Kirjutamise hetkeks on olemas:
 \begin{itemize}
