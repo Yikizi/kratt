@@ -36,7 +36,7 @@ Enne eestikeelse \enquote{Kratt} andmestiku juurde liikumist otsustati kohalik t
 Taustaheli ja speech-negative allikatena lisatakse torusse \texttt{MUSAN}, \texttt{VOiCES} ja \texttt{Common Voice} korpused \cite{musan2015,voices2018,commonvoice2020}. Nende rollid on erinevad. \texttt{MUSAN} pakub palju müra, muusikat ja kõnet. \texttt{VOiCES} toob sisse kaugkõne, ruumiakustika ja realistlikumad kuulamistingimused. \texttt{Common Voice} on vajalik eelkõige kõnepõhiste negatiivsete näidete jaoks ning hiljem ka eestikeelse mudeli taustamaterjalina.
 
 \section{Tunnused ja andmevorming}
-Andmed teisendatakse spektraalseteks tunnusteks ja salvestatakse \texttt{mmap} vormingus. Memory-mapped file lähenemine võimaldab töödelda suuri andmehulkasid nii, et kogu korpust ei pea korraga muutmällu laadima. See on oluline nii treeningukiiruse kui ka stabiilsuse jaoks.
+Andmed teisendatakse spektraalseteks tunnusteks ja salvestatakse \texttt{mmap} vormingus. See võimaldab töödelda suuri andmehulkasid nii, et kogu korpust ei pea korraga muutmällu laadima. See on oluline nii treeningukiiruse kui ka stabiilsuse jaoks.
 
 Praktilises torus moodustatakse eraldi järgmised andmekogumid:
 \begin{itemize}
