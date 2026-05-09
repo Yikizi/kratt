@@ -670,42 +670,17 @@ Kontrollpunkti-FAPH eksperiment on kontrollitud näide \emph{mõõdiku ja lõppe
 \section{Kasutajatesti tulemused}
 \label{sec:user-test-results}
 
-% TODO (Mattias, enne 2026-05-18): kasutajatesti tulemuste alapeatükk.
-% Kasutajatesti metoodika ja külmutatud läve poliitika on kirjeldatud §\ref{sec:user-test-methodology}-s
-% (ptk~\ref{chapter:method}). Käesoleva peatüki kirjutamise hetkel ei ole 20--30 osalejaga
-% täismahus kasutajatesti veel läbi viidud, mistõttu allpool olevad alapeatükid on platsihoidjad.
-% Enne tähtaega tuleb täita järgmised alaosad reaalse osalejaandmestikuga ning
-% \texttt{kratt summarize-user-test} väljundiga. Seni jääb alapeatükk eksplitsiitselt poolikuks,
-% mitte ei kirjuta ümber metoodika peatüki lubadusi.
-
 Käesoleva peatüki eelnevad alaosad raporteerivad mudelite käitumist kõrvalejäetud hindamiskomplektidel ning kontrollitud reaalajas testides väikese kõnelejate hulgaga (autor, Kõneleja B, üks treeningust eraldi hoitud Kõneleja D). Need tulemused valideerivad metoodikat, kuid ei asenda sõltumatut kasutajatesti, mille protokoll on kirjeldatud §\ref{sec:user-test-methodology}-s. \emph{20--30 osalejaga täismahus kasutajatest on käesoleva peatüki kirjutamise hetkel veel läbi viimata}; seetõttu jäävad järgnevad osad teadlikult tühjadeks raamideks, mille sisu täidetakse vahetult enne lõputöö esitamist.
 
 \subsection{Osalejabaas ja sessioonide ülevaade}
-% TODO: tegelik osalejate arv, vanusevahemik, eesti keel emakeelena (jah/ei),
-% sessioonide kestused ja katsete arv versus protokoll
-% (5 puhast + 5 sarnast negatiivfraasi + 6 käsku + 1 vaba ülesanne).
-% Allikas: trials.jsonl koondus skriptiga `kratt summarize-user-test`.
 
 \subsection{Reaalsete kõnelejate äratussõna tuvastamismäär (külmutatud lävega taasmäng)}
-% TODO: per-mudel recall (v16c, expert-a, expert-b2, v6-residual, v10, v15
-% ning konsensus expert-a+expert-b2) koos Wilsoni 95\% UV-dega,
-% läved fikseeritud enne kogumist.
-% NB! kasutajatesti audio jääb hindamisandmestikuks; seda ei lisata mudeli treeningusse.
 
 \subsection{Inimese öeldud sarnaste negatiivnäidete ja prefiksi-FPR}
-% TODO: human-spoken target-similar negatives (5 fraasi osaleja kohta) ja võimalusel
-% prefiksi/segiajamis kategooriad. Sama mudelite komplekt nagu recall'i tabelis,
-% sama lävi.
 
 \subsection{Otsast-lõpuni pirnikäskude edukus ja latentsus}
-% TODO: 6 skriptitud käsku + 1 vaba ülesanne, raporteerida per-käsk edukus,
-% äratussõna $\rightarrow$ pirnireaktsiooni latentsus (kvartiilid),
-% STT/intent vigade kategooriad.
 
 \subsection{Subjektiivne rahulolu}
-% TODO: usaldusväärsuse, kiiruse, käskude loomulikkuse ja kodus kasutamise
-% valmisoleku skoorid; UMUX-Lite kahe väite koondhinnang
-% (kui sessiooniajapiir lubas); kvalitatiivsed märkmed avatud küsimuse põhjal.
 
 \subsection{Piirangud ja lugeja hoiatus}
 Kuni siinse alapeatüki täitmiseni tuleb käesolevat tööd lugeda kui \emph{prototüübi ja hindamismetoodika} dokumentatsiooni, mitte kui empiirilist hinnangut sellele, kuidas süsteem käitub laia kasutajaskonna käes. Kõik üldistused reaalsete kõnelejate käitumisele põhinevad kahel autori-lähedasel kõnelejal (autor, Kõneleja B) ning ühel treeningust eraldi hoitud Kõneleja D häälega salvestatud \texttt{pos\_speaker\_d} kõrvalejäetud komplektil ($N=145$); need pole asendus sõltumatule, eelregistreeritud osalejauuringule. Eraldi tuleb tähele panna, et treeningu positiivne klass on ${\sim}86\%$ ulatuses dominantselt \enquote{Kuule}-vormis (kirjakeelne hääldus), kuid igapäevases kõnes esineb sageli kõnekeelne lühivariant \enquote{Kule Kratt}; seetõttu on Kule-vormi tuvastamismäär reaalsete kõnelejate peal töö üks kesksetest avatud riskidest, mille suurus selgub alles täismahus kasutajatestist.
