@@ -18,7 +18,7 @@ Võrdlus viiakse läbi neljal teljel:
     \item laiendatavus eesti keelele, sealhulgas sõltuvus ingliskeelsetest eeldustest ja sünteetilise andmestiku roll.
 \end{itemize}
 
-Integreeritavuse teljel tuleb arvestada, et \texttt{openWakeWord} sihib ONNX-runtime'i ja Raspberry Pi klassi hosti, mitte mikrokontrollerit \cite{openwakeword2026}, mistõttu mudeli suurus ja \texttt{tensor\_arena} (käesolevas töös 57\,KB ning ${\sim}107$\,KB koos töömäluga, vt §\ref{subsec:quantization}) pole tema puhul ESP32-S3 mälupiirangute vastu otseselt võrreldavad --- see asümmeetria on integreeritavuse telje tulemus, mitte selle puudus.
+Integreeritavuse teljel tuleb arvestada, et \texttt{openWakeWord} sihib ONNX-runtime'i ja Raspberry Pi klassi hosti, mitte mikrokontrollerit \cite{openwakeword2026}, mistõttu mudeli suurus ja \texttt{tensor\_arena} pole tema puhul ESP32-S3 mälupiirangute vastu otseselt võrreldavad --- see asümmeetria on integreeritavuse telje tulemus, mitte selle puudus.
 
 \section{Andmeliikide eristamine}
 Äratussõna mudeli arenduses ei piisa ainult tavalisest treeningu- ja testandmete jaotusest \cite{lopezespejo2021deepkws,microwakeword2026}. Käesolevas töös eristatakse kolme andmeliiki:
