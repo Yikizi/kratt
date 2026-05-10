@@ -44,6 +44,12 @@ from tools.demo_pipeline.intent.responses_et import (
     weather_response_et,
 )
 from tools.demo_pipeline.mcp_client import MCPClient
+from tools.demo_pipeline.persona import (
+    capabilities_response,
+    color_clarification,
+    holding_phrase,
+    soften_weather_response,
+)
 from tools.demo_pipeline.paths import (
     LOG_DIR,
     MOCK_MCP_SERVER,
@@ -82,7 +88,9 @@ from tools.demo_pipeline.wiz_ble_bridge import (
     parse_bulb_ips,
     warm_ble_bridge_connection,
 )
+from tools.demo_pipeline.helper_conversation import ask_helper_assistant, warm_helper_assistant
 from tools.demo_pipeline.llm_backends import (
+    DEFAULT_HELPER_RPC_TIMEOUT,
     DEFAULT_LLM_MODEL,
     DEFAULT_PI_MODEL,
     DEFAULT_PI_RPC_TIMEOUT,
@@ -485,6 +493,35 @@ def run_pipeline(args):
         close_pi_rpc_clients()
         return
 
+    # --- Helper-model warmup (non-blocking) ---
+    helper_warmup_state: dict[str, Any] = {"started": False, "ready": False, "error": None}
+
+    def _background_helper_warmup() -> None:
+        helper_warmup_state["started"] = True
+        started = time.monotonic()
+        try:
+            warm_helper_assistant(timeout_s=args.helper_warmup_timeout)
+            helper_warmup_state["ready"] = True
+            startup_timer.mark(
+                "helper_warmup_done",
+                f"ms={int((time.monotonic() - started) * 1000)} model={args.pi_model}",
+            )
+            print(f"  Helper ready: pi-rpc:{args.pi_model}:{args.pi_thinking}")
+        except Exception as exc:
+            helper_warmup_state["error"] = str(exc)
+            startup_timer.mark("helper_warmup_failed", str(exc))
+            print(f"  Helper warmup failed: {exc}")
+
+    if not args.no_helper and args.helper_warmup:
+        print(f"  Helper: warming pi-rpc:{args.pi_model}:{args.pi_thinking} in background...")
+        threading.Thread(
+            target=_background_helper_warmup,
+            name="kratt-helper-warmup",
+            daemon=True,
+        ).start()
+    else:
+        startup_timer.mark("helper_warmup_skipped")
+
     # --- Ready ---
     false_trigger_override = TerminalKeyOverride(
         enabled=bool(models) and not args.no_false_trigger_key
@@ -565,8 +602,109 @@ def run_pipeline(args):
         if action_name == "get_date":
             return natural_date_et(int(action.get("offset_days", 0) or 0)), True
         if action_name == "get_weather":
-            return weather_response_et(str(action.get("location") or "Tallinn")), True
+            mode = str(action.get("mode") or "current")
+            result = weather_response_et(str(action.get("location") or "Tallinn"), mode=mode)
+            return soften_weather_response(result, mode=mode, turn_seq=turn_seq), True
+        if action_name == "get_capabilities":
+            return capabilities_response(turn_seq), True
         return "", False
+
+    local_runtime_actions = {"get_time", "get_date", "get_weather", "get_capabilities"}
+
+    def speak_intermediate(text: str, turn_timer: StepTimer, label: str) -> float:
+        text = (text or "").strip()
+        if not text:
+            return 0.0
+        print(f"\n  KRATT: {BOLD}{text}{RESET}")
+        if not tts_available:
+            turn_timer.mark(f"{label}_tts_skipped", "tts_unavailable")
+            return 0.0
+        try:
+            turn_timer.mark(f"{label}_tts_start")
+            tts_s = tts.speak(text)
+            turn_timer.mark(f"{label}_tts_done", f"tts={tts_s:.3f}s")
+            print(f"  TTS: {tts_s:.1f}s")
+            return tts_s
+        except Exception as exc:
+            turn_timer.mark(f"{label}_tts_error", str(exc))
+            print(f"  TTS error: {exc}")
+            return 0.0
+
+    def record_followup_text(turn_timer: StepTimer, idx: int) -> tuple[str, float, float, float]:
+        print("  Recording follow-up... (answer now, no wake word needed)")
+        started = time.monotonic()
+        turn_timer.mark(f"followup_{idx}_record_start")
+        if args.streaming_stt:
+            audio2, text2, stt2 = record_and_transcribe_streaming(
+                stt,
+                max_seconds=args.followup_max_seconds,
+                initial_silence_timeout=args.followup_initial_silence_timeout,
+            )
+        else:
+            audio2 = record_until_silence(
+                max_seconds=args.followup_max_seconds,
+                initial_silence_timeout=args.followup_initial_silence_timeout,
+            )
+            t_decode = time.monotonic()
+            text2 = stt.transcribe(audio2) if len(audio2) else ""
+            stt2 = time.monotonic() - t_decode
+        rec2 = time.monotonic() - started
+        audio_s = float(len(audio2)) / SAMPLE_RATE if audio2 is not None else 0.0
+        turn_timer.mark(
+            f"followup_{idx}_record_done",
+            f"rec={rec2:.3f}s audio={audio_s:.3f}s stt={stt2:.3f}s text={text2!r}",
+        )
+        print(f'  Follow-up STT (rec={rec2:.1f}s decode={stt2:.1f}s): "{text2}"')
+        return text2.strip(), rec2, stt2, audio_s
+
+    def ask_helper_with_followups(
+        *,
+        original_transcript: str,
+        helper_question: str,
+        turn_timer: StepTimer,
+    ) -> tuple[str, float, list[dict[str, Any]], str | None]:
+        helper_messages = [{"role": "user", "text": helper_question or original_transcript}]
+        intermediate_tts = 0.0
+        helper_turns: list[dict[str, Any]] = []
+        error: str | None = None
+
+        for idx in range(1, max(1, args.helper_max_turns) + 1):
+            started = time.monotonic()
+            turn_timer.mark(f"helper_{idx}_start")
+            try:
+                result = ask_helper_assistant(helper_messages, timeout_s=args.helper_timeout)
+            except Exception as exc:
+                error = str(exc)
+                turn_timer.mark(f"helper_{idx}_error", error)
+                return "Vabandust, abimudel ei vastanud praegu.", intermediate_tts, helper_turns, error
+
+            elapsed = time.monotonic() - started
+            say = str(result.get("say") or "").strip()
+            ask_user = result.get("ask_user")
+            done = bool(result.get("done", not ask_user))
+            helper_turns.append(
+                {"idx": idx, "latency_ms": int(elapsed * 1000), "say": say, "ask_user": ask_user, "done": done}
+            )
+            turn_timer.mark(
+                f"helper_{idx}_done",
+                f"latency={elapsed:.3f}s done={done} ask_user={bool(ask_user)}",
+            )
+
+            if ask_user and not done:
+                question = say or str(ask_user)
+                intermediate_tts += speak_intermediate(question, turn_timer, f"helper_{idx}_question")
+                helper_messages.append({"role": "assistant", "text": question})
+                follow_text, _, _, audio_s = record_followup_text(turn_timer, idx)
+                if audio_s < 0.3 or not follow_text:
+                    return "Ma ei kuulnud vastust. Proovime hiljem uuesti.", intermediate_tts, helper_turns, None
+                if follow_text.lower().strip(" .!?…") in {"aitäh", "aitah", "tänan", "tanan", "lõpeta", "lopeta", "pole vaja"}:
+                    return "Olgu, lõpetan selle vestluse.", intermediate_tts, helper_turns, None
+                helper_messages.append({"role": "user", "text": follow_text})
+                continue
+
+            return say or "Valmis.", intermediate_tts, helper_turns, None
+
+        return "See vestlus läks liiga pikaks, lõpetan siinkohal.", intermediate_tts, helper_turns, None
 
     def prepare_next_listen(
         *,
@@ -808,6 +946,8 @@ def run_pipeline(args):
             llm1_error = None
             llm2_error = None
             t_llm2 = 0.0
+            helper_llm_s = 0.0
+            intermediate_tts_s = 0.0
             actions = []
             tool_results = []
             executed_actions = []
@@ -863,6 +1003,84 @@ def run_pipeline(args):
                 if llm1_error:
                     print(f"  LLM error: {llm1_error}")
 
+                route = str(parsed.get("route") or "").strip().lower()
+                if route not in {"execute", "clarify", "ask_help"}:
+                    route = "execute" if actions else "clarify"
+                turn_timer.mark("route_selected", route)
+                print(f"  Route: {route}")
+
+                if route == "ask_help" and args.no_helper and not llm1_error:
+                    parsed["response"] = "See vajab abimudelit, aga abimudel on praegu välja lülitatud."
+                    actions = []
+                elif route == "ask_help" and not llm1_error:
+                    holding = holding_phrase(transcript)
+                    helper_question = str(parsed.get("question") or transcript).strip()
+                    intermediate_tts_s += speak_intermediate(holding, turn_timer, "helper_holding")
+                    print("  Asking helper model...")
+                    helper_started = time.monotonic()
+                    helper_response, helper_tts, helper_turns, helper_error = ask_helper_with_followups(
+                        original_transcript=transcript,
+                        helper_question=helper_question,
+                        turn_timer=turn_timer,
+                    )
+                    helper_llm_s = time.monotonic() - helper_started
+                    intermediate_tts_s += helper_tts
+                    if helper_error:
+                        llm2_error = helper_error
+                    parsed["response"] = helper_response
+                    actions = []
+                    executed_actions.append(
+                        {
+                            "action": "ask_help",
+                            "args": {"question": helper_question},
+                            "result": helper_response,
+                            "ok": helper_error is None,
+                            "helper_turns": helper_turns,
+                        }
+                    )
+                    tool_results.append(f"ask_help: {helper_response}")
+                    turn_timer.mark(
+                        "helper_done",
+                        f"helper={helper_llm_s:.3f}s turns={len(helper_turns)} error={helper_error}",
+                    )
+                elif route == "clarify" and not actions and not llm1_error:
+                    clarification = str(parsed.get("response") or "").strip()
+                    if "värv" in clarification.lower() or "värvi" in transcript.lower():
+                        clarification = color_clarification(transcript)
+                    if not clarification:
+                        clarification = "Täpsusta natuke ja ma proovin uuesti."
+                    intermediate_tts_s += speak_intermediate(clarification, turn_timer, "clarify_question")
+                    follow_text, _, _, follow_audio_s = record_followup_text(turn_timer, 1)
+                    if follow_audio_s < 0.3 or not follow_text:
+                        parsed["response"] = "Ma ei kuulnud täpsustust. Proovime hiljem uuesti."
+                    elif follow_text.lower().strip(" .!?…") in {"aitäh", "aitah", "tänan", "tanan", "lõpeta", "lopeta", "pole vaja"}:
+                        parsed["response"] = "Olgu, jätan pooleli."
+                    else:
+                        try:
+                            turn_timer.mark("clarify_reparse_start")
+                            reparsed = llm_parse_intent(
+                                f"Algne käsk: {transcript}\nKasutaja täpsustus: {follow_text}",
+                                intent_prompt,
+                            )
+                            reparsed_actions, reparse_errors = normalize_intent_actions(
+                                reparsed.get("actions", []),
+                                default_entity_id="all" if args.wiz else "light.elutuba",
+                            )
+                            parsed = reparsed
+                            actions = reparsed_actions
+                            action_errors.extend(reparse_errors)
+                            if reparse_errors and not actions:
+                                llm1_error = "invalid_actions"
+                            turn_timer.mark(
+                                "clarify_reparse_done",
+                                f"actions={len(actions)} errors={len(reparse_errors)}",
+                            )
+                            print(f"  Clarified LLM: {json.dumps(actions, ensure_ascii=False)}")
+                        except Exception as exc:
+                            parsed["response"] = "Vabandust, täpsustuse mõistmine ebaõnnestus."
+                            llm1_error = str(exc)
+                            turn_timer.mark("clarify_reparse_error", str(exc))
+
                 # --- Execute actions ---
                 turn_timer.mark("execute_start", f"actions={len(actions)} transport={'ble' if args.ble_bridge else 'mcp'}")
                 if args.ble_bridge:
@@ -875,7 +1093,7 @@ def run_pipeline(args):
                         action_name = action_copy.pop("action", "")
                         action_t = time.monotonic()
                         turn_timer.mark(f"action_{i}_start", action_name)
-                        if action_name in {"get_time", "get_date", "get_weather"}:
+                        if action_name in local_runtime_actions:
                             result, ok = execute_local_info_action(action_name, action_copy)
                         else:
                             result, ok = execute_wiz_ble_action(action_name, action_copy, wiz_bulb_ips)
@@ -902,7 +1120,7 @@ def run_pipeline(args):
                         action_name = action_copy.pop("action", "")
                         action_t = time.monotonic()
                         turn_timer.mark(f"action_{i}_start", action_name)
-                        if action_name in {"get_time", "get_date", "get_weather"}:
+                        if action_name in local_runtime_actions:
                             result, ok = execute_local_info_action(action_name, action_copy)
                         else:
                             ok = True
@@ -911,6 +1129,8 @@ def run_pipeline(args):
                             except (RuntimeError, TimeoutError) as e:
                                 result = f"MCP error: {e}"
                                 ok = False
+                            if not ok and llm1_error is None:
+                                llm1_error = "mcp_command_failed"
                         tool_results.append(f"{action_name}: {result}")
                         update_light_state(action_name, action_copy, ok)
                         executed_actions.append(
@@ -928,16 +1148,16 @@ def run_pipeline(args):
                 t3 = time.monotonic()
                 turn_timer.mark("response_start")
                 planned_response = str(parsed.get("response", "")).strip()
-                if llm1_error in {"ble_bridge_command_failed", "invalid_actions"}:
+                if llm1_error in {"ble_bridge_command_failed", "mcp_command_failed", "invalid_actions"}:
                     response = "Vabandust, käsku ei saanud täita."
                 elif executed_actions and executed_actions[0].get("action") == "get_state":
-                    if args.ble_bridge and executed_actions[0].get("result"):
+                    if executed_actions[0].get("result"):
                         response = str(executed_actions[0].get("result"))
-                        print("  Response: BLE state")
+                        print("  Response: tool state")
                     else:
                         response = cached_light_state_response()
                         print("  Response: cached state")
-                elif executed_actions and executed_actions[0].get("action") in {"get_time", "get_date", "get_weather"}:
+                elif executed_actions and executed_actions[0].get("action") in local_runtime_actions:
                     response = str(executed_actions[0].get("result") or planned_response or "Vaatan.")
                     print("  Response: local info")
                 elif planned_response:
@@ -951,7 +1171,7 @@ def run_pipeline(args):
                     response = "Ma ei saanud käsku täita."
                 else:
                     response = "Tehtud."
-                t_llm2 = time.monotonic() - t3
+                t_llm2 = helper_llm_s + (time.monotonic() - t3)
                 turn_timer.mark("response_done", f"llm2={t_llm2:.3f}s error={llm2_error} response={response!r}")
                 if llm2_error:
                     print(f"  Response LLM error: {llm2_error}")
@@ -961,13 +1181,14 @@ def run_pipeline(args):
             print(f"\n  KRATT: {BOLD}{response}{RESET}")
 
             # --- TTS: speak the response ---
-            t_tts = 0.0
+            t_tts = intermediate_tts_s
             if tts_available and response:
                 try:
                     turn_timer.mark("tts_start")
-                    t_tts = tts.speak(response)
-                    turn_timer.mark("tts_done", f"tts={t_tts:.3f}s")
-                    print(f"  TTS: {t_tts:.1f}s")
+                    final_tts_s = tts.speak(response)
+                    t_tts += final_tts_s
+                    turn_timer.mark("tts_done", f"tts={final_tts_s:.3f}s total_tts={t_tts:.3f}s")
+                    print(f"  TTS: {final_tts_s:.1f}s")
                 except Exception as e:
                     turn_timer.mark("tts_error", str(e))
                     print(f"  TTS error: {e}")
@@ -1050,6 +1271,13 @@ def _mark_explicit_args(args: argparse.Namespace, argv: list[str]) -> None:
         "pi_thinking": _argv_has_option(argv, "--pi-thinking"),
         "pi_reset_each_turn": _argv_has_option(argv, "--pi-reset-each-turn"),
         "pi_rpc_timeout": _argv_has_option(argv, "--pi-rpc-timeout"),
+        "no_helper": _argv_has_option(argv, "--no-helper"),
+        "helper_warmup": _argv_has_option(argv, "--helper-warmup", "--no-helper-warmup"),
+        "helper_timeout": _argv_has_option(argv, "--helper-timeout"),
+        "helper_warmup_timeout": _argv_has_option(argv, "--helper-warmup-timeout"),
+        "helper_max_turns": _argv_has_option(argv, "--helper-max-turns"),
+        "followup_initial_silence_timeout": _argv_has_option(argv, "--followup-initial-silence-timeout"),
+        "followup_max_seconds": _argv_has_option(argv, "--followup-max-seconds"),
         "claude_code": _argv_has_option(argv, "--claude-code", "--no-claude-code"),
         "claude_session_id": _argv_has_option(argv, "--claude-session-id"),
         "log": _argv_has_option(argv, "--log"),
@@ -1091,6 +1319,16 @@ def validate_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> 
         parser.error("--initial-silence-timeout must be positive")
     if args.pi_rpc_timeout <= 0:
         parser.error("--pi-rpc-timeout must be positive")
+    if args.helper_timeout <= 0:
+        parser.error("--helper-timeout must be positive")
+    if args.helper_warmup_timeout <= 0:
+        parser.error("--helper-warmup-timeout must be positive")
+    if args.helper_max_turns < 1:
+        parser.error("--helper-max-turns must be at least 1")
+    if args.followup_initial_silence_timeout <= 0:
+        parser.error("--followup-initial-silence-timeout must be positive")
+    if args.followup_max_seconds <= 0:
+        parser.error("--followup-max-seconds must be positive")
     if args.bulbs:
         try:
             bulb_targets = parse_bulb_ips(args.bulbs)
@@ -1231,6 +1469,47 @@ def main():
         type=float,
         default=DEFAULT_PI_RPC_TIMEOUT,
         help=f"Timeout for one pi RPC LLM turn in seconds. Default: {DEFAULT_PI_RPC_TIMEOUT}.",
+    )
+    parser.add_argument(
+        "--no-helper",
+        action="store_true",
+        help="Disable the pi/Codex helper route for general questions.",
+    )
+    parser.add_argument(
+        "--helper-warmup",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Warm the pi/Codex helper in the background after local LLM startup. Default: true.",
+    )
+    parser.add_argument(
+        "--helper-timeout",
+        type=float,
+        default=DEFAULT_HELPER_RPC_TIMEOUT,
+        help=f"Timeout for one helper-model turn in seconds. Default: {DEFAULT_HELPER_RPC_TIMEOUT}.",
+    )
+    parser.add_argument(
+        "--helper-warmup-timeout",
+        type=float,
+        default=20.0,
+        help="Timeout for background helper warmup in seconds. Default: 20.0.",
+    )
+    parser.add_argument(
+        "--helper-max-turns",
+        type=int,
+        default=10,
+        help="Maximum helper conversation back-and-forth turns. Default: 10.",
+    )
+    parser.add_argument(
+        "--followup-initial-silence-timeout",
+        type=float,
+        default=4.0,
+        help="Seconds to wait for a follow-up answer without wake word. Default: 4.0.",
+    )
+    parser.add_argument(
+        "--followup-max-seconds",
+        type=float,
+        default=8.0,
+        help="Maximum seconds to record one follow-up answer. Default: 8.0.",
     )
     parser.add_argument(
         "--claude-code",

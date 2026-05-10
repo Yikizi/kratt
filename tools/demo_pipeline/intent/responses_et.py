@@ -257,9 +257,10 @@ def normalize_place_et(place: str | None) -> str:
     }
     return known.get(lower, name)
 
-def weather_response_et(place: str | None = None) -> str:
-    """Fetch current weather via Open-Meteo, no API key required."""
+def weather_response_et(place: str | None = None, mode: str = "current") -> str:
+    """Fetch current weather / simple rain forecast via Open-Meteo, no API key required."""
     place = normalize_place_et(place or DEFAULT_WEATHER_LOCATION) or DEFAULT_WEATHER_LOCATION
+    mode = (mode or "current").strip().lower()
     try:
         geo = WEATHER_SESSION.get(
             "https://geocoding-api.open-meteo.com/v1/search",
@@ -279,22 +280,51 @@ def weather_response_et(place: str | None = None) -> str:
                 "latitude": loc["latitude"],
                 "longitude": loc["longitude"],
                 "current": "temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m",
+                "daily": "precipitation_probability_max,precipitation_sum",
+                "forecast_days": 1,
                 "timezone": "auto",
             },
             timeout=4,
         )
         forecast.raise_for_status()
-        current = forecast.json().get("current") or {}
+        data = forecast.json()
+        current = data.get("current") or {}
+        daily = data.get("daily") or {}
         temp = round(float(current.get("temperature_2m")))
         apparent = round(float(current.get("apparent_temperature", temp)))
         wind_kmh = float(current.get("wind_speed_10m", 0) or 0)
         wind_ms = round(wind_kmh / 3.6, 1)
         precipitation = float(current.get("precipitation", 0) or 0)
+        precip_probs = daily.get("precipitation_probability_max") or []
+        precip_sums = daily.get("precipitation_sum") or []
+        rain_prob = int(round(float(precip_probs[0]))) if precip_probs else None
+        rain_mm = float(precip_sums[0]) if precip_sums else 0.0
         description = _weather_code_et(current.get("weather_code"))
+
+        if mode == "rain":
+            if rain_prob is not None:
+                return f"{loc_phrase} on täna vihma tõenäosus umbes {rain_prob} protsenti ja sademeid {rain_mm:g} millimeetrit."
+            rain_now = "Praegu sajab." if precipitation > 0 else "Praegu sademeid ei ole."
+            return f"{loc_phrase}: {rain_now}"
+
+        if mode == "clothing":
+            rain_hint = rain_prob is not None and rain_prob >= 40
+            if apparent <= 5:
+                advice = "Pane soe jope."
+            elif apparent <= 13:
+                advice = "Pane kerge jope või paksem pusa."
+            elif apparent <= 20:
+                advice = "Pusa või õhuke jakk on hea mõte."
+            else:
+                advice = "Kerge riietus sobib."
+            if rain_hint:
+                advice += " Võta vihmavari ka."
+            return f"{loc_phrase} on {temp} kraadi, tundub nagu {apparent}. {advice}"
+
         rain_part = " Sajab." if precipitation > 0 else " Sademeid hetkel ei ole."
         return (
-            f"{loc_phrase} on praegu {temp} kraadi ja {description}. "
-            f"Tundub nagu {apparent} kraadi. Tuul on {wind_ms:g} meetrit sekundis."
+            f"{loc_phrase} on {temp} kraadi ja {description}. "
+            f"Tundub nagu {apparent}. Tuul {wind_ms:g} meetrit sekundis."
             f"{rain_part}"
         )
     except Exception:
@@ -315,6 +345,8 @@ def demo_response_for_action(action_name: str, action: dict[str, Any] | None = N
         return "Vaatan olekut."
     if action_name == "list_devices":
         return "Vaatan seadmeid."
+    if action_name == "get_capabilities":
+        return "Ma oskan lampi juhtida, ilma ja kellaaega öelda ning üldküsimuste jaoks abi küsida."
     if action_name == "run_effect":
         effect = str(action.get("effect", "")).strip()
         if effect == "disco":

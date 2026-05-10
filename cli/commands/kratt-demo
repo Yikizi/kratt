@@ -18,6 +18,10 @@
 # ARGS: --bulbs        Comma-separated WiZ bulb IPs (default: KRATT_WIZ_BULBS or /tmp cache)
 # ARGS: --llm          Ollama model name. Default: qwen2.5:7b
 # ARGS: --pi-cli       Use pi RPC instead of local Ollama (dev/debug)
+# ARGS: --no-helper    Disable pi/Codex helper for general questions
+# ARGS: --helper-warmup/--no-helper-warmup Background warm helper after local LLM startup (default: on)
+# ARGS: --helper-timeout Timeout for one helper turn. Default: 45
+# ARGS: --helper-max-turns Max helper follow-up turns. Default: 10
 # ARGS: --claude-code  Use Claude Code instead of local Ollama (dev/debug)
 # ARGS: --claude-session-id Reuse a specific Claude Code session UUID
 # ARGS: --log          Enable per-interaction JSONL telemetry

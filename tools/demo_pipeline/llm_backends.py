@@ -6,6 +6,7 @@ import re
 import select
 import shutil
 import subprocess
+import threading
 import time
 import uuid
 from typing import Any
@@ -21,6 +22,7 @@ DEFAULT_LLM_MODEL = "qwen2.5:7b"
 DEFAULT_PI_MODEL = "openai-codex/gpt-5.3-codex-spark"
 DEFAULT_PI_THINKING = "minimal"
 DEFAULT_PI_RPC_TIMEOUT = 8.0
+DEFAULT_HELPER_RPC_TIMEOUT = float(os.getenv("KRATT_HELPER_RPC_TIMEOUT", "45"))
 
 LLM_MODEL = DEFAULT_LLM_MODEL
 PI_MODEL = DEFAULT_PI_MODEL
@@ -30,6 +32,7 @@ PI_RPC_TIMEOUT = DEFAULT_PI_RPC_TIMEOUT
 USE_CLAUDE_CODE = False
 USE_PI_CLI = False
 PI_RPC_CLIENTS: dict[str, "PiRpcClient"] = {}
+PI_RPC_CLIENTS_LOCK = threading.Lock()
 CLAUDE_SESSION_ID = str(uuid.uuid4())
 CLAUDE_SESSION_STARTED = False
 
@@ -136,6 +139,7 @@ class PiRpcClient:
         if shutil.which("pi") is None:
             raise RuntimeError("pi CLI not found in PATH")
         self.needs_reset = False
+        self.lock = threading.RLock()
         self.proc = subprocess.Popen(
             [
                 "pi",
@@ -185,58 +189,61 @@ class PiRpcClient:
         return json.loads(line)
 
     def reset_session(self, timeout_s: float = 5.0) -> None:
-        req_id = str(uuid.uuid4())
-        self._send({"id": req_id, "type": "new_session"})
-        deadline = time.monotonic() + timeout_s
-        while True:
-            event = self._read_event(deadline)
-            if event.get("type") == "response" and event.get("id") == req_id:
-                if not event.get("success", False):
-                    raise RuntimeError(event.get("error", "pi RPC new_session failed"))
-                self.needs_reset = False
-                return
+        with self.lock:
+            req_id = str(uuid.uuid4())
+            self._send({"id": req_id, "type": "new_session"})
+            deadline = time.monotonic() + timeout_s
+            while True:
+                event = self._read_event(deadline)
+                if event.get("type") == "response" and event.get("id") == req_id:
+                    if not event.get("success", False):
+                        raise RuntimeError(event.get("error", "pi RPC new_session failed"))
+                    self.needs_reset = False
+                    return
 
     def request_json(self, user_prompt: str, timeout_s: float | None = None) -> dict:
         if timeout_s is None:
             timeout_s = PI_RPC_TIMEOUT
-        if PI_RESET_EACH_TURN and self.needs_reset:
-            self.reset_session()
-        req_id = str(uuid.uuid4())
-        prompt = (
-            "Treat this as an independent voice-command turn. Ignore previous user commands; use only system rules.\n"
-            "Kasutaja STT sisend:\n"
-            f"{user_prompt}\n\n"
-            "Vasta AINULT ühe korrektse JSON objektiga. Ära lisa markdowni ega selgitusi."
-        )
-        self._send({"id": req_id, "type": "prompt", "message": prompt})
-        deadline = time.monotonic() + timeout_s
-        text_parts: list[str] = []
-        final_text = ""
-        while True:
-            event = self._read_event(deadline)
-            if event.get("type") == "message_update":
-                delta = event.get("assistantMessageEvent", {})
-                if delta.get("type") == "text_delta":
-                    text_parts.append(delta.get("delta", ""))
-                elif delta.get("type") == "text_end" and not text_parts:
-                    final_text = delta.get("content", "")
-            elif event.get("type") == "agent_end":
-                if text_parts:
-                    final_text = "".join(text_parts)
-                if not final_text:
-                    final_text = _last_text_from_agent_end(event)
-                self.needs_reset = True
-                break
-            elif event.get("type") == "message_end" and not text_parts:
-                final_text = _text_from_message(event.get("message", {}))
-        return _json_object_from_text(final_text)
+        with self.lock:
+            if PI_RESET_EACH_TURN and self.needs_reset:
+                self.reset_session()
+            req_id = str(uuid.uuid4())
+            prompt = (
+                "Treat this as an independent voice-command turn. Ignore previous user commands; use only system rules.\n"
+                "Kasutaja STT sisend:\n"
+                f"{user_prompt}\n\n"
+                "Vasta AINULT ühe korrektse JSON objektiga. Ära lisa markdowni ega selgitusi."
+            )
+            self._send({"id": req_id, "type": "prompt", "message": prompt})
+            deadline = time.monotonic() + timeout_s
+            text_parts: list[str] = []
+            final_text = ""
+            while True:
+                event = self._read_event(deadline)
+                if event.get("type") == "message_update":
+                    delta = event.get("assistantMessageEvent", {})
+                    if delta.get("type") == "text_delta":
+                        text_parts.append(delta.get("delta", ""))
+                    elif delta.get("type") == "text_end" and not text_parts:
+                        final_text = delta.get("content", "")
+                elif event.get("type") == "agent_end":
+                    if text_parts:
+                        final_text = "".join(text_parts)
+                    if not final_text:
+                        final_text = _last_text_from_agent_end(event)
+                    self.needs_reset = True
+                    break
+                elif event.get("type") == "message_end" and not text_parts:
+                    final_text = _text_from_message(event.get("message", {}))
+            return _json_object_from_text(final_text)
 
     def close(self) -> None:
-        try:
-            self.proc.terminate()
-            self.proc.wait(timeout=3)
-        except Exception:
-            self.proc.kill()
+        with self.lock:
+            try:
+                self.proc.terminate()
+                self.proc.wait(timeout=3)
+            except Exception:
+                self.proc.kill()
 
 
 def _text_from_message(message: dict[str, Any]) -> str:
@@ -257,17 +264,20 @@ def _last_text_from_agent_end(event: dict[str, Any]) -> str:
 
 
 def get_pi_rpc_client(system_prompt: str) -> PiRpcClient:
-    client = PI_RPC_CLIENTS.get(system_prompt)
-    if client is None or client.proc.poll() is not None:
-        client = PiRpcClient(system_prompt)
-        PI_RPC_CLIENTS[system_prompt] = client
-    return client
+    with PI_RPC_CLIENTS_LOCK:
+        client = PI_RPC_CLIENTS.get(system_prompt)
+        if client is None or client.proc.poll() is not None:
+            client = PiRpcClient(system_prompt)
+            PI_RPC_CLIENTS[system_prompt] = client
+        return client
 
 
 def close_pi_rpc_clients() -> None:
-    for client in list(PI_RPC_CLIENTS.values()):
+    with PI_RPC_CLIENTS_LOCK:
+        clients = list(PI_RPC_CLIENTS.values())
+        PI_RPC_CLIENTS.clear()
+    for client in clients:
         client.close()
-    PI_RPC_CLIENTS.clear()
 
 
 def pi_cli_json(system_prompt: str, user_prompt: str) -> dict:

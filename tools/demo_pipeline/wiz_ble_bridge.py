@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import ipaddress
+import threading
 import time
 from typing import Any
 
@@ -58,6 +59,10 @@ _WIZ_BRIDGE_RESPONSE_SENDER = None
 _WIZ_BRIDGE_WARMER = None
 _WIZ_BRIDGE_CLOSER = None
 _WIZ_BRIDGE_MODULE = None
+_EFFECT_LOCK = threading.Lock()
+_EFFECT_STOP: threading.Event | None = None
+_EFFECT_THREAD: threading.Thread | None = None
+_EFFECT_SEQ = 0
 
 
 def load_ble_bridge_module():
@@ -124,6 +129,7 @@ def warm_ble_bridge_connection() -> bool:
 
 
 def close_ble_bridge_connection() -> None:
+    cancel_running_effect(wait=False)
     if _WIZ_BRIDGE_CLOSER is None:
         return
     try:
@@ -240,7 +246,35 @@ def _color_payload(color_name: str, *, brightness: int | None = None) -> tuple[d
     return {"method": "setPilot", "params": params}, None
 
 
-def _send_effect_to_target(send, target: str, action: dict[str, Any]) -> tuple[str, bool]:
+def cancel_running_effect(*, wait: bool = False) -> None:
+    global _EFFECT_STOP, _EFFECT_THREAD
+    with _EFFECT_LOCK:
+        stop = _EFFECT_STOP
+        thread = _EFFECT_THREAD
+        if stop is not None:
+            stop.set()
+    if wait and thread is not None and thread is not threading.current_thread():
+        thread.join(timeout=1.0)
+
+
+def _effect_finished(seq: int) -> None:
+    global _EFFECT_STOP, _EFFECT_THREAD
+    with _EFFECT_LOCK:
+        if seq == _EFFECT_SEQ:
+            _EFFECT_STOP = None
+            _EFFECT_THREAD = None
+
+
+def _effect_wait(stop_event: threading.Event, seconds: float) -> bool:
+    return stop_event.wait(max(0.0, seconds))
+
+
+def _send_effect_to_target(
+    send,
+    target: str,
+    action: dict[str, Any],
+    stop_event: threading.Event,
+) -> tuple[str, bool]:
     effect = str(action.get("effect") or "").strip().lower()
     duration_s = max(0.5, min(12.0, float(action.get("duration_seconds", 6) or 6)))
     step_s = max(0.12, min(2.0, float(action.get("step_seconds", 0.35) or 0.35)))
@@ -250,12 +284,15 @@ def _send_effect_to_target(send, target: str, action: dict[str, Any]) -> tuple[s
         # For "show all colors", one pass is usually better UX than looping.
         max_steps = min(len(colors), max(1, int(duration_s / step_s)))
         for color in colors[:max_steps]:
+            if stop_event.is_set():
+                return f"{target}: color cycle cancelled", True
             payload, err = _color_payload(color)
             if err:
                 return err, False
             if not send(target, payload, port=WIZ_BRIDGE_DEFAULT_PORT):
                 return f"{target}: BLE command failed during color cycle", False
-            time.sleep(step_s)
+            if _effect_wait(stop_event, step_s):
+                return f"{target}: color cycle cancelled", True
         return f"{target}: color cycle sent ({max_steps} colors)", True
 
     if effect == "disco":
@@ -263,6 +300,8 @@ def _send_effect_to_target(send, target: str, action: dict[str, Any]) -> tuple[s
         end = time.monotonic() + duration_s
         steps = 0
         while time.monotonic() < end:
+            if stop_event.is_set():
+                return f"{target}: disco cancelled", True
             color = colors[steps % len(colors)]
             payload, err = _color_payload(color)
             if err:
@@ -270,7 +309,8 @@ def _send_effect_to_target(send, target: str, action: dict[str, Any]) -> tuple[s
             if not send(target, payload, port=WIZ_BRIDGE_DEFAULT_PORT):
                 return f"{target}: BLE command failed during disco", False
             steps += 1
-            time.sleep(step_s)
+            if _effect_wait(stop_event, step_s):
+                return f"{target}: disco cancelled", True
         return f"{target}: disco sent ({steps} steps)", True
 
     if effect == "pulse":
@@ -279,6 +319,8 @@ def _send_effect_to_target(send, target: str, action: dict[str, Any]) -> tuple[s
         steps = 0
         high = True
         while time.monotonic() < end:
+            if stop_event.is_set():
+                return f"{target}: pulse cancelled", True
             payload, err = _color_payload(color, brightness=255 if high else 25)
             if err:
                 return err, False
@@ -286,10 +328,49 @@ def _send_effect_to_target(send, target: str, action: dict[str, Any]) -> tuple[s
                 return f"{target}: BLE command failed during pulse", False
             high = not high
             steps += 1
-            time.sleep(step_s)
+            if _effect_wait(stop_event, step_s):
+                return f"{target}: pulse cancelled", True
         return f"{target}: pulse sent ({steps} steps)", True
 
     return f"Unsupported effect: {effect}", False
+
+
+def _effect_worker(
+    seq: int,
+    send,
+    targets: list[str],
+    action: dict[str, Any],
+    stop_event: threading.Event,
+) -> None:
+    try:
+        for target in targets:
+            if stop_event.is_set():
+                break
+            _send_effect_to_target(send, target, action, stop_event)
+    finally:
+        _effect_finished(seq)
+
+
+def start_background_effect(send, targets: list[str], action: dict[str, Any]) -> tuple[str, bool]:
+    global _EFFECT_SEQ, _EFFECT_STOP, _EFFECT_THREAD
+    cancel_running_effect(wait=False)
+
+    effect = str(action.get("effect") or "effect").strip().lower()
+    duration_s = max(0.5, min(12.0, float(action.get("duration_seconds", 6) or 6)))
+    stop_event = threading.Event()
+    with _EFFECT_LOCK:
+        _EFFECT_SEQ += 1
+        seq = _EFFECT_SEQ
+        _EFFECT_STOP = stop_event
+        _EFFECT_THREAD = threading.Thread(
+            target=_effect_worker,
+            args=(seq, send, list(targets), dict(action), stop_event),
+            name=f"kratt-wiz-effect-{effect}",
+            daemon=True,
+        )
+        _EFFECT_THREAD.start()
+    target_text = ", ".join(targets)
+    return f"{target_text}: {effect} started ({duration_s:g}s)", True
 
 
 def format_ble_state_response(response: dict[str, Any] | None) -> str:
@@ -318,14 +399,10 @@ def execute_wiz_ble_action(action_name: str, action: dict[str, Any], bulb_ips: l
         return target_error, False
 
     if action_name == "run_effect":
-        failed: list[str] = []
-        results: list[str] = []
-        for ip in targets:
-            result, ok = _send_effect_to_target(send, ip, action)
-            results.append(result)
-            if not ok:
-                failed.append(ip)
-        return "; ".join(results), not failed
+        return start_background_effect(send, targets, action)
+
+    if action_name in {"turn_on", "turn_off", "set_brightness", "set_color"}:
+        cancel_running_effect(wait=False)
 
     payload, payload_error = build_wiz_payload(action_name, action)
     if payload_error:

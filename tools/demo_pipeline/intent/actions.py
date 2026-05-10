@@ -12,6 +12,7 @@ ALLOWED_INTENT_ACTIONS = {
     "get_time",
     "get_date",
     "get_weather",
+    "get_capabilities",
     "run_effect",
 }
 
@@ -84,7 +85,11 @@ def normalize_intent_actions(
                 continue
         elif action_name == "get_weather":
             location = str(raw.get("location") or "Tallinn").strip() or "Tallinn"
+            mode = str(raw.get("mode") or "current").strip().lower()
+            if mode not in {"current", "rain", "clothing"}:
+                mode = "current"
             action["location"] = location
+            action["mode"] = mode
         elif action_name == "run_effect":
             effect = str(raw.get("effect") or "").strip().lower().replace("-", "_")
             aliases = {
