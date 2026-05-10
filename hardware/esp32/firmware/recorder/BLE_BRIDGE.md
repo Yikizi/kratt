@@ -108,3 +108,4 @@ When no `--bulbs` are provided, demo uses auto/broadcast.
 - Bulb no response in auto mode: confirm the bulb is joined to `Kratt-Recorder`, and monitor logs show a DHCP lease for it.
 - Multiple WiZ bulbs on the AP: auto/broadcast may affect all bulbs; use `--bulb <ip>` for explicit unicast.
 - `bleak` missing: install environment deps via project manifest and use the project venv.
+- Command visibly works but `kratt ble-wiz --response` says `disconnected` / no confirmation: flash a build with the BLE write-stack fix (`sdkconfig.defaults` raises the NimBLE host task stack and `ble_wiz_bridge.c` keeps large response buffers off the NimBLE stack). Validate with `kratt ble-wiz --status --response`; it should return JSON with `udp_sent` and, when the bulb replies, `response_ok`.

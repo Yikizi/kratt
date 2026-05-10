@@ -332,12 +332,11 @@ esp_err_t wiz_udp_bridge_send_payload(uint32_t dest_ip, uint16_t dest_port,
   lock_status();
 
   bool auto_target = (dest_ip == 0);
+  // Reliability-first demo behavior: auto mode broadcasts every command on the
+  // ESP32 AP subnet. The previous learned-IP unicast optimization could
+  // blackhole commands after the WiZ bulb rejoined DHCP with a new address.
   bool learned_target = false;
-  if (auto_target && g_wiz_learned_ip != 0) {
-    dest_ip = g_wiz_learned_ip;
-    learned_target = true;
-  }
-  bool broadcast_target = auto_target && !learned_target;
+  bool broadcast_target = auto_target;
 
   g_wiz_status.commands_sent++;
   g_wiz_status.responders = 0;
@@ -465,7 +464,8 @@ esp_err_t wiz_udp_bridge_send_payload(uint32_t dest_ip, uint16_t dest_port,
   }
 
   if (auto_target && g_wiz_status.responders == 0) {
-    ESP_LOGW(TAG, "No WiZ UDP response observed for auto target");
+    g_wiz_learned_ip = 0;
+    ESP_LOGW(TAG, "No WiZ UDP response observed for auto/broadcast target");
   }
 
   close(sock);

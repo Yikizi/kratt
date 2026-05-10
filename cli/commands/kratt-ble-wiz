@@ -42,6 +42,7 @@ try:
         WIZ_UDP_PORT,
         send_wiz_via_ble,
         send_wiz_via_ble_response,
+        warm_ble_bridge,
     )
 except Exception as exc:  # pragma: no cover
     print(f"Failed to import BLE bridge module: {exc}", file=sys.stderr)
@@ -198,7 +199,9 @@ def payload_from_interactive_line(line: str) -> dict:
 
 def run_interactive(args: argparse.Namespace) -> int:
     print("BLE WiZ interactive mode. Commands: on, off, status, brightness 0-255, color <name>, <color>, raw <json>, quit")
-    print("Keeping one BLE connection open inside this process after first command.")
+    print("Opening BLE connection and keeping it warm with heartbeat.")
+    if not warm_ble_bridge():
+        print("Warning: BLE warmup failed; first command will retry connection.", file=sys.stderr)
     while True:
         try:
             line = input("ble-wiz> ")
@@ -215,10 +218,15 @@ def run_interactive(args: argparse.Namespace) -> int:
             print(f"Error: {exc}", file=sys.stderr)
             continue
 
-        response = send_wiz_via_ble_response(args.bulb, payload, port=args.port)
-        if response is not None:
+        if payload.get("method") == "getPilot":
+            response = send_wiz_via_ble_response(args.bulb, payload, port=args.port)
+            if response is not None:
+                print("✓ Command sent")
+                print(json.dumps(response, ensure_ascii=False))
+            else:
+                print("✗ BLE send failed", file=sys.stderr)
+        elif send_wiz_via_ble(args.bulb, payload, port=args.port):
             print("✓ Command sent")
-            print(json.dumps(response, ensure_ascii=False))
         else:
             print("✗ BLE send failed", file=sys.stderr)
 

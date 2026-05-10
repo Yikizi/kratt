@@ -3,11 +3,17 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "esp_log.h"
 
 #if CONFIG_BT_NIMBLE_ENABLED
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+#include "freertos/semphr.h"
+#include "freertos/task.h"
 
 #include "host/ble_gap.h"
 #include "host/ble_hs.h"
@@ -42,6 +48,15 @@ static bool g_ble_notify_enabled;
 static char g_wiz_last_ble_response[WIZ_UDP_STATUS_JSON_MAX_LEN] =
     "{\"ok\":false,\"message\":\"no command yet\"}";
 
+typedef struct {
+  uint16_t frame_len;
+  uint8_t frame[WIZ_BRIDGE_MAX_FRAME_LEN];
+} wiz_ble_job_t;
+
+static QueueHandle_t g_wiz_job_queue;
+static SemaphoreHandle_t g_wiz_response_lock;
+static TaskHandle_t g_wiz_worker_task;
+
 void ble_store_config_init(void);
 
 static int gatt_access_cb(uint16_t conn_handle, uint16_t attr_handle,
@@ -51,6 +66,10 @@ static int start_advertising_if_needed(void);
 static void on_reset(int reason);
 static void on_sync(void);
 static void host_task(void *arg);
+static void notify_ble_ack(bool ok);
+static void wiz_ble_worker_task(void *arg);
+static esp_err_t ensure_worker_started(void);
+static void set_last_response(const char *response);
 
 static const struct ble_gatt_svc_def g_wiz_gatt_svcs[] = {
     {
@@ -70,6 +89,73 @@ static const struct ble_gatt_svc_def g_wiz_gatt_svcs[] = {
     },
     {0},
 };
+
+static void set_last_response(const char *response) {
+  if (!response) {
+    return;
+  }
+  if (g_wiz_response_lock) {
+    xSemaphoreTake(g_wiz_response_lock, portMAX_DELAY);
+  }
+  strlcpy(g_wiz_last_ble_response, response, sizeof(g_wiz_last_ble_response));
+  if (g_wiz_response_lock) {
+    xSemaphoreGive(g_wiz_response_lock);
+  }
+}
+
+static esp_err_t ensure_worker_started(void) {
+  if (!g_wiz_response_lock) {
+    g_wiz_response_lock = xSemaphoreCreateMutex();
+    if (!g_wiz_response_lock) {
+      return ESP_ERR_NO_MEM;
+    }
+  }
+
+  if (!g_wiz_job_queue) {
+    g_wiz_job_queue = xQueueCreate(4, sizeof(wiz_ble_job_t *));
+    if (!g_wiz_job_queue) {
+      return ESP_ERR_NO_MEM;
+    }
+  }
+
+  if (!g_wiz_worker_task) {
+    BaseType_t ok = xTaskCreate(wiz_ble_worker_task, "wiz_ble_worker", 8192,
+                                NULL, 5, &g_wiz_worker_task);
+    if (ok != pdPASS) {
+      g_wiz_worker_task = NULL;
+      return ESP_ERR_NO_MEM;
+    }
+  }
+
+  return ESP_OK;
+}
+
+static void wiz_ble_worker_task(void *arg) {
+  (void)arg;
+  while (true) {
+    wiz_ble_job_t *job = NULL;
+    if (xQueueReceive(g_wiz_job_queue, &job, portMAX_DELAY) != pdTRUE || !job) {
+      continue;
+    }
+
+    char *summary = calloc(1, WIZ_UDP_STATUS_JSON_MAX_LEN);
+    esp_err_t err = ESP_ERR_NO_MEM;
+    if (summary) {
+      err = wiz_udp_bridge_send_frame(job->frame, job->frame_len, summary,
+                                      WIZ_UDP_STATUS_JSON_MAX_LEN);
+      if (summary[0] == '\0') {
+        wiz_udp_bridge_get_status_json(summary, WIZ_UDP_STATUS_JSON_MAX_LEN);
+      }
+      set_last_response(summary);
+    } else {
+      set_last_response("{\"ok\":false,\"message\":\"no memory\"}");
+    }
+
+    notify_ble_ack(err == ESP_OK);
+    free(summary);
+    free(job);
+  }
+}
 
 static void notify_ble_ack(bool ok) {
   if (!g_ble_connected || !g_ble_notify_enabled || g_ble_conn_handle == 0xffff) {
@@ -175,8 +261,14 @@ static int gatt_access_cb(uint16_t conn_handle, uint16_t attr_handle,
   (void)arg;
 
   if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR) {
+    if (g_wiz_response_lock) {
+      xSemaphoreTake(g_wiz_response_lock, portMAX_DELAY);
+    }
     size_t len = strlen(g_wiz_last_ble_response);
     int rc = os_mbuf_append(ctxt->om, g_wiz_last_ble_response, len);
+    if (g_wiz_response_lock) {
+      xSemaphoreGive(g_wiz_response_lock);
+    }
     return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
   }
 
@@ -190,22 +282,29 @@ static int gatt_access_cb(uint16_t conn_handle, uint16_t attr_handle,
     return BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN;
   }
 
-  uint8_t frame[WIZ_BRIDGE_MAX_FRAME_LEN];
-  if (os_mbuf_copydata(ctxt->om, 0, frame_len, frame) != 0) {
+  // Do not perform WiFi/UDP work inside the NimBLE host callback. The callback
+  // must return quickly; otherwise CoreBluetooth/NimBLE can time out or drop the
+  // connection while the ESP32 waits for a WiZ UDP response. Copy the frame and
+  // let a worker task forward it asynchronously.
+  if (ensure_worker_started() != ESP_OK) {
+    return BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  wiz_ble_job_t *job = calloc(1, sizeof(*job));
+  if (!job) {
+    return BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+  job->frame_len = frame_len;
+  if (os_mbuf_copydata(ctxt->om, 0, frame_len, job->frame) != 0) {
+    free(job);
     return BLE_ATT_ERR_UNLIKELY;
   }
 
-  char summary[WIZ_UDP_STATUS_JSON_MAX_LEN] = {0};
-  esp_err_t err = wiz_udp_bridge_send_frame(frame, frame_len, summary,
-                                            sizeof(summary));
-  if (summary[0] == '\0') {
-    wiz_udp_bridge_get_status_json(summary, sizeof(summary));
-  }
-  strlcpy(g_wiz_last_ble_response, summary, sizeof(g_wiz_last_ble_response));
-  notify_ble_ack(err == ESP_OK);
-
-  if (err != ESP_OK) {
-    return BLE_ATT_ERR_UNLIKELY;
+  set_last_response("{\"ok\":true,\"queued\":true}");
+  if (xQueueSend(g_wiz_job_queue, &job, 0) != pdTRUE) {
+    free(job);
+    set_last_response("{\"ok\":false,\"queued\":false,\"message\":\"queue full\"}");
+    return BLE_ATT_ERR_INSUFFICIENT_RES;
   }
 
   return 0;
@@ -237,6 +336,11 @@ static void host_task(void *arg) {
 esp_err_t init_ble_wiz_bridge(void) {
 #if CONFIG_BT_NIMBLE_ENABLED
   ESP_ERROR_CHECK_WITHOUT_ABORT(wiz_udp_bridge_init());
+  esp_err_t worker_err = ensure_worker_started();
+  if (worker_err != ESP_OK) {
+    ESP_LOGE(TAG, "Failed to start BLE WiZ worker: %s", esp_err_to_name(worker_err));
+    return worker_err;
+  }
 
   int rc = nimble_port_init();
   if (rc != 0) {
@@ -248,6 +352,7 @@ esp_err_t init_ble_wiz_bridge(void) {
   ble_hs_cfg.sync_cb = on_sync;
 
   ble_svc_gap_init();
+  ble_svc_gap_device_name_set(WIZ_BRIDGE_DEVICE_NAME);
   ble_svc_gatt_init();
 
   rc = ble_gatts_count_cfg(g_wiz_gatt_svcs);

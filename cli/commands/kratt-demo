@@ -1,20 +1,23 @@
 #!/usr/bin/env bash
 # DESC: Full voice demo pipeline: wake word → STT → LLM → smart home
-# USAGE: kratt demo [options] [model(s)]
+# USAGE: kratt demo [options]
 # ARGS: --profile      Optional preset: demo, wiz-claude, wiz-claude-safe, wiz-manual, wiz-7b
 # ARGS: --models       One or more wake word model tags. Default: v16c
 # ARGS: --threshold    Detection threshold(s). Default: 0.996
 # ARGS: --consensus    Min models that must agree. Default: all
-# ARGS: --wake-hold-frames Consecutive above-threshold frames required. Default: 3
+# ARGS: --wake-hold-frames Consecutive above-threshold frames required. Default: 5
 # ARGS: --wake-model-cooldown Per-model trigger cooldown seconds. Default: 4
 # ARGS: --post-trigger-cooldown Cooldown before listening again. Default: 2
+# ARGS: --initial-silence-timeout Seconds to wait for speech after wake. Default: 3
 # ARGS: --no-wakeword  Manual trigger mode (press Enter)
+# ARGS: --no-false-trigger-key Disable Space key false-trigger override
 # ARGS: --streaming-stt/--no-streaming-stt Stream audio into STT while recording (default: on)
-# ARGS: --wiz/--no-wiz Auto-enable real WiZ bulbs when cached/discovered. Use --no-wiz for mock HA
-# ARGS: --wiz-bash     Use WiZ bash-agent mode via local wiz CLI
-# ARGS: --ble-bridge   Send WiZ JSON to bulbs over BLE bridge instead of local UDP
+# ARGS: --wiz/--no-wiz Use real WiZ bulbs. Default: on via BLE bridge; use --no-wiz for mock HA
+# ARGS: --wiz-bash     Legacy WiZ CLI command mode (safe allowlist; no raw shell)
+# ARGS: --ble-bridge   Send WiZ JSON to bulbs over BLE bridge (default demo transport)
 # ARGS: --bulbs        Comma-separated WiZ bulb IPs (default: KRATT_WIZ_BULBS or /tmp cache)
-# ARGS: --llm          Ollama model name. Default: qwen2.5:3b
+# ARGS: --llm          Ollama model name. Default: qwen2.5:7b
+# ARGS: --pi-cli       Use pi RPC instead of local Ollama (dev/debug)
 # ARGS: --claude-code  Use Claude Code instead of local Ollama (dev/debug)
 # ARGS: --claude-session-id Reuse a specific Claude Code session UUID
 # ARGS: --log          Enable per-interaction JSONL telemetry
@@ -22,8 +25,8 @@
 # ARGS: --task         Initial task ID tag for telemetry logs
 # ARGS: --no-tts       Disable voice output
 # ARGS: --no-tts-effects Disable sox voice effects
-# EXAMPLES: kratt demo
-# EXAMPLES: kratt demo --no-wakeword
+# EXAMPLES: kratt demo                         # BLE bridge + v16c default
+# EXAMPLES: kratt demo --no-wakeword           # BLE bridge + manual trigger
 # EXAMPLES: kratt demo --profile wiz-claude-safe
 # EXAMPLES: kratt demo --wiz --no-wakeword
 # EXAMPLES: kratt demo --wiz-bash --no-wakeword
@@ -37,6 +40,12 @@
 # EXAMPLES: kratt demo --claude-code --wiz --models v16c
 # EXAMPLES: kratt demo --log --participant P01 --task T1_turn_on
 set -euo pipefail
+
+if [[ -z "${KRATT_ROOT:-}" ]]; then
+  KRATT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+fi
+KRATT_WW="${KRATT_WW:-${KRATT_ROOT}/wake-word}"
+export KRATT_ROOT KRATT_WW
 
 PIPELINE="${KRATT_ROOT}/tools/demo-pipeline/pipeline.py"
 OVERLAY_SWIFT="${KRATT_ROOT}/scripts/demo/kratt_detection_overlay.swift"
@@ -58,17 +67,44 @@ if [[ ! -f "${VENV_PYTHON}" ]]; then
   exit 1
 fi
 
-# Default backend is local Ollama. Skip this only for explicit Claude/pi modes.
-use_pi_cli=false
-use_ollama=true
 for arg in "$@"; do
+  if [[ "${arg}" == "-h" || "${arg}" == "--help" ]]; then
+    exec env PYTHONUNBUFFERED=1 "${VENV_PYTHON}" "${PIPELINE}" "$@"
+  fi
+done
+
+# Default backend is local Ollama. Skip this for explicit Claude/pi modes and
+# for profiles that select Claude Code inside pipeline.py.
+use_pi_cli=false
+explicit_claude_code=false
+explicit_no_claude_code=false
+profile=""
+expect_profile=false
+for arg in "$@"; do
+  if [[ "${expect_profile}" == true ]]; then
+    profile="${arg}"
+    expect_profile=false
+    continue
+  fi
   case "${arg}" in
-    --pi-cli|--pi-gpt) use_pi_cli=true; use_ollama=false ;;
-    --claude-code) use_ollama=false ;;
-    --no-claude-code) use_ollama=true ;;
+    --profile) expect_profile=true ;;
+    --profile=*) profile="${arg#--profile=}" ;;
+    --pi-cli|--pi-gpt) use_pi_cli=true ;;
+    --claude-code) explicit_claude_code=true ;;
+    --no-claude-code) explicit_no_claude_code=true ;;
   esac
 done
-if [[ "${use_pi_cli}" == false && "${use_ollama}" == true ]]; then
+
+use_ollama=true
+if [[ "${use_pi_cli}" == true ]]; then
+  use_ollama=false
+elif [[ "${explicit_claude_code}" == true ]]; then
+  use_ollama=false
+elif [[ "${profile}" =~ ^wiz-claude(-safe)?$ && "${explicit_no_claude_code}" == false ]]; then
+  use_ollama=false
+fi
+
+if [[ "${use_ollama}" == true ]]; then
   if ! curl -sf http://localhost:11434/api/tags > /dev/null 2>&1; then
     echo "Ollama not running. Start with: ollama serve" >&2
     exit 1
@@ -82,7 +118,8 @@ cleanup() {
     kill "${overlay_pid}" 2>/dev/null || true
   fi
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'cleanup; exit 143' TERM
 
 if [[ -f "${OVERLAY_SWIFT}" ]]; then
   /usr/bin/env swift "${OVERLAY_SWIFT}" \
@@ -92,5 +129,11 @@ if [[ -f "${OVERLAY_SWIFT}" ]]; then
   overlay_pid=$!
 fi
 
-# Run pipeline — PYTHONUNBUFFERED ensures real-time output for overlay log watching
-exec env PYTHONUNBUFFERED=1 "${VENV_PYTHON}" "${PIPELINE}" "$@"
+# Run pipeline — PYTHONUNBUFFERED ensures real-time output for overlay log watching.
+# Keep this in the foreground so manual-trigger mode can read from the terminal;
+# the EXIT trap still cleans up the Swift overlay when Python exits.
+set +e
+env PYTHONUNBUFFERED=1 "${VENV_PYTHON}" "${PIPELINE}" "$@"
+status=$?
+set -e
+exit "${status}"

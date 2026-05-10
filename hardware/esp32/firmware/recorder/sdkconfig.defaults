@@ -24,3 +24,9 @@ CONFIG_FATFS_FS_LOCK=7
 # Bluetooth / NimBLE bridge
 CONFIG_BT_ENABLED=y
 CONFIG_BT_NIMBLE_ENABLED=y
+# BLE write callback forwards UDP and prepares a JSON status response; keep the
+# NimBLE host stack comfortably above the ESP-IDF default to avoid disconnecting
+# before the confirmation can be read.
+CONFIG_BT_NIMBLE_HOST_TASK_STACK_SIZE=8192
+CONFIG_NIMBLE_TASK_STACK_SIZE=8192
+CONFIG_BT_NIMBLE_TASK_STACK_SIZE=8192
