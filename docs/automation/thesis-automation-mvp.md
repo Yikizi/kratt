@@ -102,11 +102,14 @@ memory (`memory/<lane>.json`).
    `accept | reject | defer` per commit + positive guidance lines.
 3. Accept only tightening, Estonianization, citation/caption hygiene, or mandatory
    evidence insertions; reject additive drift.
-4. Cherry-pick accepted commits onto `main` (refuses if working tree dirty).
+4. Stash non-automation WIP if needed, cherry-pick accepted commits onto `main`,
+   then restore/reconcile the stashed WIP.
 5. Distill rejected commits into ≤ 3 short positive guidance lines per lane
    (rolling window). Optionally 1 global line.
 6. Refresh every lane worktree/branch to the new `main`.
-7. Write `logs/daily/<timestamp>.json` and update `state/rotation.json`.
+7. Push `main` once per daily run with `git push origin main:main` unless conflict
+   recovery left the repository unsafe. Set `KRATT_THESIS_AUTOMATION_PUSH=0` to disable.
+8. Write `logs/daily/<timestamp>.json` and update `state/rotation.json`.
 
 Rejected commits disappear from branch history on refresh, but their rejection
 reason + distilled line live on in `memory/<lane>.json.rejected_refs` (rolling last 20).

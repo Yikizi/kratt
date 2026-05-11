@@ -460,8 +460,11 @@ def daily_run() -> int:
         txt = result["text"]
         decisions_data = _parse_json_blob(txt)
         if decisions_data is None:
+            summary["status"] = "degraded"
+            summary.setdefault("degraded_reasons", []).append("invalid_consolidator_json")
             summary["errors"].append("consolidator did not return valid JSON")
             summary["raw_consolidator_output"] = txt[:4000]
+            _daily_push_main(summary)
             _write_daily_log(summary)
             return 5
 
@@ -544,6 +547,8 @@ def daily_run() -> int:
             except Exception as e:
                 summary["errors"].append(f"refresh {lane['id']}: {e}")
 
+    _daily_push_main(summary)
+
     st["last_consolidation"] = now_iso()
     save_state(st)
     _write_daily_log(summary)
@@ -559,6 +564,7 @@ def daily_run() -> int:
         "fixer_invocations": summary.get("fixer_invocations", 0),
         "reconciler_invoked": summary.get("reconciler_invoked", False),
         "pop_status": summary.get("pop_status"),
+        "push": summary.get("push"),
         "degraded_reasons": summary.get("degraded_reasons", []),
         "errors": summary["errors"],
     }, ensure_ascii=False))
@@ -833,6 +839,83 @@ def _refresh_lane(lane: dict, main_sha: str) -> None:
     git(worktree, "update-ref", f"refs/heads/{branch}", main_sha)
     git(worktree, "checkout", branch)
     git(worktree, "reset", "--hard", main_sha)
+
+
+def _daily_push_main(summary: dict) -> None:
+    """Best-effort daily push of the consolidated main branch.
+
+    Daily consolidation is the only automation step that moves accepted lane
+    commits onto main, so it is also the safest single place to publish them.
+    Working-tree dirt is allowed (git push publishes commits, not WIP), but we
+    skip if merge/cherry-pick conflict recovery left the repository unsafe.
+    """
+    remote = os.environ.get("KRATT_THESIS_AUTOMATION_PUSH_REMOTE", "origin")
+    local_branch = os.environ.get("KRATT_THESIS_AUTOMATION_PUSH_LOCAL_BRANCH", "main")
+    remote_branch = os.environ.get("KRATT_THESIS_AUTOMATION_PUSH_BRANCH", local_branch)
+    push = {
+        "enabled": os.environ.get("KRATT_THESIS_AUTOMATION_PUSH", "1").lower() not in {"0", "false", "no"},
+        "attempted": False,
+        "status": None,
+        "remote": remote,
+        "local_branch": local_branch,
+        "remote_branch": remote_branch,
+        "returncode": None,
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "skipped_reason": None,
+    }
+    summary["push"] = push
+
+    if not push["enabled"]:
+        push["status"] = "skipped"
+        push["skipped_reason"] = "disabled by KRATT_THESIS_AUTOMATION_PUSH"
+        return
+    if _cherry_pick_in_progress(REPO) or _unmerged_files(REPO):
+        push["status"] = "skipped"
+        push["skipped_reason"] = "repository has in-progress cherry-pick or unmerged files"
+        return
+    if summary.get("status") == "degraded" and summary.get("refresh_skipped_reason"):
+        push["status"] = "skipped"
+        push["skipped_reason"] = f"unsafe degraded consolidation: {summary.get('refresh_skipped_reason')}"
+        return
+
+    current_branch = git(REPO, "rev-parse", "--abbrev-ref", "HEAD", check=False).strip()
+    if current_branch != local_branch:
+        push["status"] = "skipped"
+        push["skipped_reason"] = f"current branch is {current_branch!r}, expected {local_branch!r}"
+        return
+    if not git(REPO, "remote", "get-url", remote, check=False).strip():
+        push["status"] = "skipped"
+        push["skipped_reason"] = f"remote {remote!r} is not configured"
+        return
+
+    push["attempted"] = True
+    refspec = f"{local_branch}:{remote_branch}"
+    try:
+        proc = subprocess.run(
+            ["git", "push", remote, refspec],
+            cwd=str(REPO),
+            text=True,
+            capture_output=True,
+            timeout=int(os.environ.get("KRATT_THESIS_AUTOMATION_PUSH_TIMEOUT_S", "300")),
+        )
+        push["returncode"] = proc.returncode
+        push["stdout_tail"] = (proc.stdout or "")[-1000:]
+        push["stderr_tail"] = (proc.stderr or "")[-1000:]
+    except subprocess.TimeoutExpired as e:
+        push["returncode"] = 124
+        push["stdout_tail"] = (e.stdout or "")[-1000:] if isinstance(e.stdout, str) else ""
+        push["stderr_tail"] = f"timeout after {e.timeout}s"
+
+    if push["returncode"] == 0:
+        push["status"] = "ok"
+    else:
+        push["status"] = "failed"
+        summary["status"] = "degraded"
+        summary.setdefault("degraded_reasons", []).append("git_push_failed")
+        summary.setdefault("errors", []).append(
+            f"daily git push failed rc={push['returncode']}: {push['stderr_tail'] or push['stdout_tail']}"
+        )
 
 
 def _write_daily_log(summary: dict) -> None:
