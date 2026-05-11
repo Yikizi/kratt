@@ -78,7 +78,7 @@ def collect_proposals(hashes: set[str]) -> list[dict]:
                     rec = json.loads(line)
                 except json.JSONDecodeError:
                     continue
-                if rec.get("hash") in hashes and not rec.get("applied"):
+                if rec.get("hash") in hashes:
                     proposals.append(rec)
     return proposals
 
@@ -109,7 +109,11 @@ def write_review(hashes: set[str], proposals: list[dict]) -> None:
     lines.append(f"- Proposals found: **{len(proposals)}**")
     lines.append(f"- Missing proposals: **{len(missing)}**")
     total_min = sum(p.get("duration_min", 0) for p in proposals)
+    applied_min = sum(p.get("duration_min", 0) for p in proposals if p.get("applied"))
+    skipped_min = sum(p.get("duration_min", 0) for p in proposals if p.get("skipped"))
+    pending_min = sum(p.get("duration_min", 0) for p in proposals if not p.get("applied") and not p.get("skipped"))
     lines.append(f"- Total proposed duration: **{total_min // 60}h {total_min % 60}m**")
+    lines.append(f"- Applied/skipped/pending: **{applied_min // 60}h {applied_min % 60}m** / **{skipped_min // 60}h {skipped_min % 60}m** / **{pending_min // 60}h {pending_min % 60}m**")
     lines.append("")
 
     lines.append("## Summary by issue")
@@ -135,15 +139,18 @@ def write_review(hashes: set[str], proposals: list[dict]) -> None:
 
     lines.append("## Detail")
     for p in proposals:
+        status = "applied" if p.get("applied") else "skipped" if p.get("skipped") else "pending"
+        extra = f" ({p.get('skip_reason')})" if p.get("skipped") and p.get("skip_reason") else ""
         lines.append(
             f"- `{p.get('hash','?')[:8]}` {p.get('issue','?')} · "
             f"{p.get('duration_min',0)}min · "
             f"_{p.get('confidence','?')}_ · "
+            f"**{status}**{extra} · "
             f"{p.get('description','')}"
         )
     lines.append("")
     lines.append("---")
-    lines.append("Apply manually for now; `kratt time apply` CLI is on roadmap.")
+    lines.append("Medium/high-confidence proposals auto-apply; inspect pending rows with `kratt time-apply --dry-run`.")
 
     REVIEW_FILE.write_text("\n".join(lines) + "\n")
 
@@ -156,11 +163,15 @@ def main() -> int:
     write_review(hashes, proposals)
 
     total_min = sum(p.get("duration_min", 0) for p in proposals)
+    applied_min = sum(p.get("duration_min", 0) for p in proposals if p.get("applied"))
+    pending_min = sum(p.get("duration_min", 0) for p in proposals if not p.get("applied") and not p.get("skipped"))
     missing = len(hashes) - len({p["hash"] for p in proposals})
 
     sys.stderr.write("\n=== Pre-push time-tracking review ===\n")
     sys.stderr.write(f"  Commits: {len(hashes)} | Proposals: {len(proposals)}")
-    sys.stderr.write(f" | Total: {total_min // 60}h {total_min % 60}m\n")
+    sys.stderr.write(f" | Total: {total_min // 60}h {total_min % 60}m")
+    sys.stderr.write(f" | Applied: {applied_min // 60}h {applied_min % 60}m")
+    sys.stderr.write(f" | Pending: {pending_min // 60}h {pending_min % 60}m\n")
     if missing:
         sys.stderr.write(f"  ⚠️  {missing} commit(s) without proposal\n")
     sys.stderr.write(f"  Review: {REVIEW_FILE}\n\n")
