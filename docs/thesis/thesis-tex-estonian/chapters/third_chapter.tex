@@ -39,7 +39,7 @@ See paradoks ei ole juhuslik ega ühekordselt esinenud anomaalia. Sama muster ko
 
 \subsection{Põhjus 1: klipitaseme tuvastamismäär ei kajasta reaalse kõneleja käitumist}
 
-Positiivse tuvastamismäära mõõtmine toimus XTTS-kloonitud hääle isoleeritud klippide peal. Kõik klipid olid normaliseeritud, konstantse kauguse ja helitugevusega ning samalt kõnelejalt kloonitud. Selline testimine andis skoore täpselt 1,0000, mis tekitas vale kindlustunnet. Tegelikud kõnelejad varieeruvad häälduse, helitugevuse ja kauguse poolest märkimisväärselt. Reaalsete kõnelejate ütluste skoorid jäävad juurutamislävele palju lähemale, mistõttu osa neist langeb piiri alla.
+Positiivse tuvastamismäära mõõtmine toimus ühe kõneleja XTTS-kloonitud isoleeritud klippide peal ja andis skoore täpselt 1,0000, mis tekitas vale kindlustunnet. Tegelikud kõnelejad varieeruvad häälduse, helitugevuse ja kauguse poolest märkimisväärselt, mistõttu nende ütluste skoorid jäävad juurutamislävele palju lähemale ja osa langeb piiri alla.
 
 Park et al.~\cite{park2024adversarial} on näidanud, et TTS-andmetega treenitud mudelid kipuvad sünteesitud kõne peal näitama ülehinnatud tuvastamismäära, sest TTS-kõne ei sisalda sama varieeruvust kui loomulik kõne. Käesoleva töö tulemused kinnitavad seda leidu, kuid lisavad olulise täpsustuse: probleem ei piirdu ainult treenimisega, vaid laieneb ka hindamisele. Kui testikomplekt koosneb samadest TTS-häältest, millega treeniti, on tuvastamismäära hinnang topelt üle paisutatud.
 
