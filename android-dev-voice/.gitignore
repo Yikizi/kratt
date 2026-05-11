@@ -1,0 +1,11 @@
+build-manual/
+build-test-framework/
+.gradle/
+build/
+local.properties
+*.apk
+.debug.keystore
+libs/sherpa-onnx-*.aar
+libs/sherpa-aar/jni/armeabi-v7a/
+libs/sherpa-aar/jni/x86/
+libs/sherpa-aar/jni/x86_64/

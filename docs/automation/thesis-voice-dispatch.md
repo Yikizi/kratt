@@ -4,6 +4,11 @@ Purpose: let Mattias read the thesis, dictate a small correction, and route the
 transcribed request into a terminal agent without turning the voice loop into the
 worker.
 
+The same Kiirkirjutaja/TTS plumbing is also available for general repo work as
+`kratt dev-voice`; it uses coding-focused prompts instead of thesis-editing
+prompts. For the Android on-device dictation MVP and lessons learned, see
+`docs/automation/android-dev-voice-session-lessons-2026-05-08.md`.
+
 This is intentionally narrow thesis-deadline tooling. It does not replace the
 existing `.hermes/thesis-automation/` lane system; it is for ad-hoc corrections
 noticed while reading the PDF.
@@ -124,6 +129,37 @@ variables: `{{repo}}`, `{{prompt}}`, `{{prompt_q}}`, `{{prompt_path}}`,
 `{{prompt_path_q}}`, `{{model}}`, `{{model_q}}`, and `{{max_budget_usd}}`.
 The same local config can override control words, for example
 `"control_words": {"escape": ["stop", "stopp", "katkesta"]}`.
+
+## Development voice mode
+
+For coding by voice, use the development wrapper:
+
+```bash
+kratt dev-voice pane
+tmux attach -t kratt-thesis-agent
+# start your coding agent in that pane, then in another terminal:
+kratt dev-voice listen --device 1 --input-method type --submit-delay-ms 150
+```
+
+Optional short spoken acknowledgement via the local TTS server:
+
+```bash
+kratt tts-server              # separate terminal, requires tools/text-to-speech-worker models
+kratt dev-voice listen --device 1 --speak-dispatch
+```
+
+The external runtime sources are expected at:
+
+- `stt-integration/kiirkirjutaja-source/` (git submodule)
+- `tools/text-to-speech-worker/` (ignored local clone of TartuNLP worker + submodules)
+
+Fresh checkout bootstrap:
+
+```bash
+git submodule update --init --recursive stt-integration/kiirkirjutaja-source
+git clone --recurse-submodules https://github.com/TartuNLP/text-to-speech-worker.git \
+  tools/text-to-speech-worker
+```
 
 ## Live microphone mode
 

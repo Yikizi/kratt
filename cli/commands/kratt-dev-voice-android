@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# DESC: Build/install the Android Dev Voice MVP that dispatches text into Termux
+# USAGE: kratt dev-voice-android <build|open|install-adb>
+# EXAMPLES: kratt dev-voice-android build
+# EXAMPLES: kratt dev-voice-android open
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+APK="$ROOT/android-dev-voice/build-manual/kratt-dev-voice-debug.apk"
+
+case "${1:-build}" in
+  build)
+    exec "$ROOT/android-dev-voice/build-apk.sh"
+    ;;
+  open)
+    "$ROOT/android-dev-voice/build-apk.sh" >/dev/null
+    exec termux-open "$APK"
+    ;;
+  install-adb)
+    "$ROOT/android-dev-voice/build-apk.sh" >/dev/null
+    exec adb install -r "$APK"
+    ;;
+  *)
+    echo "Usage: kratt dev-voice-android <build|open|install-adb>" >&2
+    exit 1
+    ;;
+esac

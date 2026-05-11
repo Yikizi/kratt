@@ -14,6 +14,8 @@ import sys
 import tempfile
 import textwrap
 import time
+import urllib.error
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -35,6 +37,10 @@ DEFAULT_WORKER_SESSION = os.environ.get(
 DEFAULT_SUBMIT_KEY = os.environ.get("KRATT_THESIS_VOICE_SUBMIT_KEY", "Enter")
 DEFAULT_INPUT_METHOD = os.environ.get("KRATT_THESIS_VOICE_INPUT_METHOD", "paste")
 DEFAULT_SUBMIT_DELAY_MS = int(os.environ.get("KRATT_THESIS_VOICE_SUBMIT_DELAY_MS", "75"))
+DEFAULT_PURPOSE = os.environ.get("KRATT_VOICE_PURPOSE", "thesis")
+DEFAULT_TTS_URL = os.environ.get("KRATT_VOICE_TTS_URL", "http://127.0.0.1:5380/synthesize")
+DEFAULT_TTS_SPEAKER = os.environ.get("KRATT_VOICE_TTS_SPEAKER", "meelis")
+DEFAULT_TTS_SPEED = float(os.environ.get("KRATT_VOICE_TTS_SPEED", "1.0"))
 
 DEFAULT_CONFIG = {
     "default_profile": "claude-yolo",
@@ -251,6 +257,60 @@ def tmux_send_escape(target: str) -> None:
     run(["tmux", "send-keys", "-t", target, "Escape"])
 
 
+def choose_audio_player(explicit: Optional[str] = None) -> Optional[list[str]]:
+    if explicit:
+        return shlex.split(explicit)
+    for candidate in ("paplay", "play", "aplay", "termux-media-player"):
+        path = shutil.which(candidate)
+        if path:
+            if candidate == "play":
+                return [path, "-q"]
+            if candidate == "termux-media-player":
+                return [path, "play"]
+            return [path]
+    return None
+
+
+def speak_text(
+    text: str,
+    *,
+    tts_url: str = DEFAULT_TTS_URL,
+    speaker: str = DEFAULT_TTS_SPEAKER,
+    speed: float = DEFAULT_TTS_SPEED,
+    player: Optional[str] = None,
+) -> None:
+    payload = json.dumps({"text": text, "speaker": speaker, "speed": speed}).encode("utf-8")
+    request = urllib.request.Request(
+        tts_url,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            audio = response.read()
+    except (urllib.error.URLError, TimeoutError) as exc:
+        print(f"tts failed: {exc}", file=sys.stderr)
+        return
+
+    player_cmd = choose_audio_player(player)
+    if not player_cmd:
+        print("tts audio ready, but no player found (paplay/play/aplay/termux-media-player)", file=sys.stderr)
+        return
+
+    suffix = ".wav"
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as wav_file:
+        wav_file.write(audio)
+        wav_path = wav_file.name
+    try:
+        subprocess.run([*player_cmd, wav_path], check=False)
+    finally:
+        try:
+            os.unlink(wav_path)
+        except OSError:
+            pass
+
+
 def normalize_control_text(text: str) -> str:
     text = text.strip().lower()
     text = re.sub(r"^[^\wõäöüšž]+|[^\wõäöüšž]+$", "", text)
@@ -268,7 +328,25 @@ def control_action_for_transcript(transcript: str) -> Optional[str]:
     return None
 
 
-def dispatcher_prompt(transcript: str) -> str:
+def dispatcher_prompt(transcript: str, purpose: str = DEFAULT_PURPOSE) -> str:
+    if purpose == "dev":
+        return textwrap.dedent(
+            f"""\
+            Voice-dispatched Kratt development request.
+
+            Transcript:
+            {transcript.strip()}
+
+            Dispatcher rules:
+            - Treat this as a coding/development request from Mattias for the Kratt repo.
+            - Preserve existing user changes: inspect git status before editing and do not revert unrelated work.
+            - Keep the request bounded. Prefer the smallest safe implementation and avoid broad refactors.
+            - Use repo guardrails from AGENTS.md / CLAUDE.md, especially thesis-deadline scope control.
+            - If the task is independent and your environment supports workers/subagents, delegate one bounded worker and keep this pane responsive.
+            - When done, report changed files and any verification command you ran.
+            """
+        ).strip()
+
     return textwrap.dedent(
         f"""\
         Voice-dispatched thesis correction request.
@@ -290,7 +368,24 @@ def dispatcher_prompt(transcript: str) -> str:
     ).strip()
 
 
-def worker_prompt(transcript: str) -> str:
+def worker_prompt(transcript: str, purpose: str = DEFAULT_PURPOSE) -> str:
+    if purpose == "dev":
+        return textwrap.dedent(
+            f"""\
+            You are a voice-dispatched Kratt coding worker.
+
+            User transcript:
+            {transcript.strip()}
+
+            Task:
+            - Make the small development change requested by the transcript.
+            - Inspect git status before editing, preserve unrelated user changes, and follow AGENTS.md / CLAUDE.md.
+            - Keep scope tight because the thesis deadline is near; do not start long training jobs or broad refactors.
+            - Prefer targeted edits and run the smallest relevant verification.
+            - Finish with changed files and verification.
+            """
+        ).strip()
+
     return textwrap.dedent(
         f"""\
         You are a voice-dispatched Kratt thesis editing worker.
@@ -363,7 +458,7 @@ def dispatch_to_worker(args: argparse.Namespace, transcript: str) -> None:
     require_cmd("tmux")
     profile = resolve_profile(args)
 
-    prompt = worker_prompt(transcript)
+    prompt = worker_prompt(transcript, args.purpose)
     now = datetime.now().strftime("%H%M%S")
     window_name = f"voice-{now}"
     prompt_file = tempfile.NamedTemporaryFile(
@@ -427,7 +522,7 @@ def dispatch_text(args: argparse.Namespace, transcript: str) -> None:
         if args.mode == "raw-pane":
             print(transcript)
         else:
-            prompt = worker_prompt(transcript) if args.mode == "worker-window" else dispatcher_prompt(transcript)
+            prompt = worker_prompt(transcript, args.purpose) if args.mode == "worker-window" else dispatcher_prompt(transcript, args.purpose)
             print(prompt)
         return
 
@@ -438,10 +533,12 @@ def dispatch_text(args: argparse.Namespace, transcript: str) -> None:
 
     if args.mode == "worker-window":
         dispatch_to_worker(args, transcript)
+        if getattr(args, "speak_dispatch", False):
+            speak_text(args.speak_text, tts_url=args.tts_url, speaker=args.tts_speaker, speed=args.tts_speed, player=args.tts_player)
         return
 
     target = args.target
-    prompt = transcript if args.mode == "raw-pane" else dispatcher_prompt(transcript)
+    prompt = transcript if args.mode == "raw-pane" else dispatcher_prompt(transcript, args.purpose)
     submit_key = None if args.no_enter else args.submit_key
     tmux_send_text(
         target,
@@ -453,6 +550,8 @@ def dispatch_text(args: argparse.Namespace, transcript: str) -> None:
     suffix = "" if submit_key is None else f" with submit key {submit_key}"
     suffix += f" via {args.input_method} after {args.submit_delay_ms}ms"
     print(f"sent transcript to tmux target: {target}{suffix}")
+    if getattr(args, "speak_dispatch", False):
+        speak_text(args.speak_text, tts_url=args.tts_url, speaker=args.tts_speaker, speed=args.tts_speed, player=args.tts_player)
 
 
 def list_devices() -> None:
@@ -602,6 +701,16 @@ def listen(args: argparse.Namespace) -> None:
         ffmpeg_proc.wait(timeout=5)
 
 
+def add_voice_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--purpose", choices=["thesis", "dev"], default=DEFAULT_PURPOSE)
+    parser.add_argument("--speak-dispatch", action="store_true", help="say a short TTS acknowledgement after dispatch")
+    parser.add_argument("--speak-text", default="Saadetud.", help="acknowledgement text for --speak-dispatch")
+    parser.add_argument("--tts-url", default=DEFAULT_TTS_URL)
+    parser.add_argument("--tts-speaker", default=DEFAULT_TTS_SPEAKER)
+    parser.add_argument("--tts-speed", type=float, default=DEFAULT_TTS_SPEED)
+    parser.add_argument("--tts-player", help="audio player command, e.g. 'paplay' or 'play -q'")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -644,6 +753,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     send.add_argument("--no-enter", action="store_true")
     send.add_argument("--dry-run", action="store_true")
+    add_voice_args(send)
     send.set_defaults(func=lambda args: dispatch_text(args, " ".join(args.text)))
 
     listen_parser = subparsers.add_parser("listen", help="listen with Kiirkirjutaja and dispatch final transcripts")
@@ -676,6 +786,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     listen_parser.add_argument("--no-enter", action="store_true")
     listen_parser.add_argument("--dry-run", action="store_true")
+    add_voice_args(listen_parser)
     listen_parser.set_defaults(func=listen)
 
     return parser

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# DESC: Voice-to-agent coding flow using Kiirkirjutaja STT and optional TTS acknowledgement
+# USAGE: kratt dev-voice <pane|agent|send|listen|bridge|speak|profiles> [args...]
+# EXAMPLES: kratt dev-voice pane
+# EXAMPLES: kratt dev-voice send "paranda see test"
+# EXAMPLES: kratt dev-voice listen --device 1 --speak-dispatch
+# EXAMPLES: kratt dev-voice bridge
+# EXAMPLES: kratt dev-voice speak "Tere Androidist"
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SUB="${1:-}"
+if [[ -z "$SUB" ]]; then
+  echo "Usage: kratt dev-voice <pane|agent|send|listen|bridge|profiles> [args...]" >&2
+  exit 1
+fi
+shift
+case "$SUB" in
+  bridge)
+    exec /usr/bin/env python3 "$ROOT/cli/tools/dev_voice_bridge.py" "$@"
+    ;;
+  speak)
+    TEXT="${1:-}"
+    if [[ -z "$TEXT" ]]; then
+      echo "Usage: kratt dev-voice speak <text>" >&2
+      exit 1
+    fi
+    exec curl --fail --silent --show-error -X POST --data "$TEXT" http://127.0.0.1:8766/speak
+    ;;
+  send|listen)
+    exec /usr/bin/env python3 "$ROOT/cli/tools/thesis_voice_dispatch.py" "$SUB" --purpose dev "$@"
+    ;;
+  *)
+    KRATT_VOICE_PURPOSE=dev exec /usr/bin/env python3 "$ROOT/cli/tools/thesis_voice_dispatch.py" "$SUB" "$@"
+    ;;
+esac
