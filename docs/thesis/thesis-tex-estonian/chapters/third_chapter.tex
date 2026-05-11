@@ -139,8 +139,6 @@ Praeguse töö seisu juures saab põhjendatult väita järgmist:
     \item eestikeelse mudeli järgmine peamine risk ei ole enam toru tehniline puudulikkus, vaid andmestiku kvaliteet ja sobivus päris kasutuskeskkonnaga.
 \end{itemize}
 
-Need väited ei lõpeta tööd, kuid annavad sellele tugeva aluse. Lõputöö tugevus ei seisne seega ainult lõplikus mudelis, vaid ka selles, et töö dokumenteerib, kuidas usaldusväärne evaluatsioon üles ehitati ja millised riskid oleksid ilma selle protsessita jäänud peidetuks.
-
 \section{Edasised suunad: kaskaadarhitektuur}
 \label{sec:future-cascade}
 Konsensus, mida käesolev töö dokumenteerib, on erijuhtum laiemast \emph{kaskaadarhitektuurist}, kus väike alati-aktiivne detektor annab esialgse kandidaadi ja teine aste kontrollib seda põhjalikumalt \cite{gruenstein2017cascade,apple_voice_trigger_2023}. Selline lähenemine on äratussõna süsteemides levinud, sest see võimaldab hoida esimese astme odava ja kiire, kuid vähendada valeaktiveeringuid täpsema järelkontrolliga \cite{michaely2017googlekws,sigtia2020multitask,garg2021streaming}. Käesoleva töö tulemused viitavad, et Krati puhul oleks loogiline järgmine samm teine aste, mis kontrollib eraldi \enquote{kuule} ja \enquote{kratt} sõnade kohalolu ning järjekorda. Selle suuna teostuvus sõltub siiski sellest, et esimene aste ei kannaks edasi käesolevas töös kirjeldatud lühitee-käitumist; vastasel juhul võib järelkontroll parandada valeaktiveeringuid päris äratuste kaotamise hinnaga \cite{kumar2020wakeword,wang2020lfmmi,rikhye2021personalized}.
