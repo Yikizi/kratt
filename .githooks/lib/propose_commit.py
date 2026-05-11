@@ -15,6 +15,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+from apply_proposals import apply_row, commit_patch_id, load_file, proposal_files
+
 LOG_DIR = Path.home() / ".kratt-time-log"
 PROPOSALS_DIR = LOG_DIR / "proposals"
 LOGS_DIR = LOG_DIR / "logs"
@@ -22,6 +24,11 @@ ERR_LOG = LOGS_DIR / "propose-errors.log"
 
 DEFAULT_AGENT = os.environ.get("KRATT_TIME_AGENT_FAST", "codex exec")
 TIMEOUT_SEC = int(os.environ.get("KRATT_TIME_AGENT_TIMEOUT", "180"))
+AUTO_APPLY = os.environ.get("KRATT_TIME_AUTO_APPLY", "1") != "0"
+CLOCKIFY_PROJECT_ID = os.environ.get("KRATT_CLOCKIFY_PROJECT_ID", "")
+GITLAB_REPO = os.environ.get("KRATT_GITLAB_REPO", "malinh/iaib")
+SKIP_CLOCKIFY = os.environ.get("KRATT_TIME_SKIP_CLOCKIFY", "0") == "1"
+SKIP_GITLAB = os.environ.get("KRATT_TIME_SKIP_GITLAB", "0") == "1"
 
 # Hand-curated; keep in sync with `glab issue list --repo malinh/iaib`.
 ISSUES_CATALOG = """#18 wake-word pipeline hardening + ambient eval
@@ -113,6 +120,55 @@ def extract_json(text: str) -> dict | None:
         return None
 
 
+def existing_patch_ref(patch_id: str | None) -> str | None:
+    if not patch_id:
+        return None
+    for path in proposal_files(None, None):
+        for row in load_file(path):
+            if not (row.get("applied") or row.get("skipped")):
+                continue
+            existing = row.get("patch_id")
+            if not existing:
+                existing = commit_patch_id(str(row.get("hash", "")))
+            if existing == patch_id:
+                return str(row.get("hash", ""))[:8]
+    return None
+
+
+def maybe_auto_apply(proposal: dict) -> dict:
+    if not AUTO_APPLY:
+        return proposal
+    try:
+        dup = existing_patch_ref(proposal.get("patch_id"))
+        if dup:
+            proposal.update(
+                {
+                    "skipped": True,
+                    "skip_reason": f"duplicate patch-id of {dup}",
+                    "applied_at": datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+            return proposal
+        status, proposal = apply_row(
+            proposal,
+            project_id=CLOCKIFY_PROJECT_ID,
+            repo=GITLAB_REPO,
+            dry_run=False,
+            include_low=False,
+            skip_clockify=SKIP_CLOCKIFY,
+            skip_gitlab=SKIP_GITLAB,
+            mark_skipped=None,
+        )
+        proposal["auto_apply_status"] = status
+        if status == "failed":
+            log_err(f"auto-apply failed for {proposal.get('hash', '')[:8]}")
+        return proposal
+    except Exception as e:
+        proposal["auto_apply_exception"] = repr(e)
+        log_err(f"auto-apply exception for {proposal.get('hash', '')[:8]}: {e!r}")
+        return proposal
+
+
 def main() -> int:
     if len(sys.argv) < 3:
         log_err("usage: propose_commit.py <hash> <gap_sec>")
@@ -180,8 +236,10 @@ def main() -> int:
             "repo": repo,
             "applied": False,
             "agent": DEFAULT_AGENT,
+            "patch_id": commit_patch_id(h),
         }
     )
+    proposal = maybe_auto_apply(proposal)
 
     PROPOSALS_DIR.mkdir(parents=True, exist_ok=True)
     today = datetime.now().strftime("%Y-%m-%d")

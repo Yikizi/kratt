@@ -48,7 +48,7 @@ Run once per week, preferably before supervisor meeting prep.
    - start/end or duration;
    - concise description;
    - evidence anchors: commit hashes / session filenames.
-4. Ask for human confirmation before writing Clockify entries.
+4. Auto-apply reviewed medium/high-confidence commit-hook proposals to Clockify and GitLab; keep low-confidence or duplicate proposals skipped/pending with an explicit reason.
 5. Produce a GitLab triage checklist:
    - issues to close;
    - issues to update;
@@ -58,9 +58,9 @@ Run once per week, preferably before supervisor meeting prep.
 
 ## Guardrails
 
-- Never create Clockify entries without explicit confirmation.
+- Auto-create Clockify/GitLab entries from commit-hook proposals when confidence is medium/high and duplicate patch-ids are filtered.
 - Prefer conservative hours when reconstructing from evidence.
-- Do not double-log days that already have detailed Clockify entries.
+- Do not double-log days that already have detailed Clockify entries; mark covered proposals as skipped.
 - Keep GitLab issues coarse; do not mirror every small task.
 - Do not let tracking automation become a replacement for `docs/PROJECT_TODO.md`.
 
@@ -71,8 +71,8 @@ Add these when the workflow stabilizes:
 ```bash
 kratt tracking status      # Clockify + GitLab + git status snapshot
 kratt tracking propose     # generate proposed backfill / weekly digest only
-kratt tracking clockify    # apply approved Clockify entries from a reviewed CSV/YAML
-kratt tracking gitlab      # print issue triage commands / summaries
+kratt tracking clockify    # inspect/apply Clockify proposal backlog
+kratt tracking gitlab      # inspect/apply GitLab proposal backlog
 ```
 
 ## 2026-04-26 backfill applied

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# DESC: Apply commit-hook time proposals to Clockify + GitLab
+# USAGE: kratt time-apply [options]
+# ARGS: --since YYYY-MM-DD       First proposal date
+# ARGS: --until YYYY-MM-DD       Last proposal date
+# ARGS: --dry-run                Show planned actions only
+# ARGS: --issue #NN              Only selected issue, repeatable
+# ARGS: --exclude-issue #NN      Exclude selected issue, repeatable
+# ARGS: --mark-skipped REASON    Mark selected proposals skipped, no external writes
+# EXAMPLES: kratt time-apply --since 2026-05-08 --dry-run
+# EXAMPLES: kratt time-apply --since 2026-05-08
+set -euo pipefail
+
+if [[ -z "${KRATT_ROOT:-}" ]]; then
+  KRATT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+fi
+
+exec python3 "${KRATT_ROOT}/.githooks/lib/apply_proposals.py" "$@"
