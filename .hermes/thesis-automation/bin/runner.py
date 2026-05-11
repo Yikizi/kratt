@@ -392,7 +392,37 @@ def daily_run() -> int:
     last = st.get("last_consolidation")
     since_iso = last  # git understands ISO
 
-    # Collect new commits per lane.
+    summary = {
+        "ts": now_iso(),
+        "since": since_iso,
+        "lane_commits": {},
+        "decisions": [],
+        "accepted": [],
+        "rejected": [],
+        "deferred": [],
+        "guidance_updates": [],
+        "refreshed_lanes": [],
+        "errors": [],
+    }
+
+    _daily_pull_main(summary)
+    if (summary.get("pull") or {}).get("status") == "failed":
+        _write_daily_log(summary)
+        print(json.dumps({
+            "status": summary.get("status", "degraded"),
+            "accepted": 0,
+            "rejected": 0,
+            "deferred": 0,
+            "guidance_updates": 0,
+            "refreshed_lanes": 0,
+            "pull": summary.get("pull"),
+            "push": summary.get("push"),
+            "degraded_reasons": summary.get("degraded_reasons", []),
+            "errors": summary["errors"],
+        }, ensure_ascii=False))
+        return 6
+
+    # Collect new commits per lane after main has been fast-forwarded from remote.
     lane_commits: dict[str, list[dict]] = {}
     for lane in lanes:
         branch = lane["branch"]
@@ -411,19 +441,7 @@ def daily_run() -> int:
             })
         if commits:
             lane_commits[lane["id"]] = commits
-
-    summary = {
-        "ts": now_iso(),
-        "since": since_iso,
-        "lane_commits": {k: [c["sha"] for c in v] for k, v in lane_commits.items()},
-        "decisions": [],
-        "accepted": [],
-        "rejected": [],
-        "deferred": [],
-        "guidance_updates": [],
-        "refreshed_lanes": [],
-        "errors": [],
-    }
+    summary["lane_commits"] = {k: [c["sha"] for c in v] for k, v in lane_commits.items()}
 
     if not lane_commits:
         print("daily: no new lane commits.")
@@ -839,6 +857,124 @@ def _refresh_lane(lane: dict, main_sha: str) -> None:
     git(worktree, "update-ref", f"refs/heads/{branch}", main_sha)
     git(worktree, "checkout", branch)
     git(worktree, "reset", "--hard", main_sha)
+
+
+def _daily_pull_main(summary: dict) -> None:
+    """Fast-forward main from the remote before daily consolidation.
+
+    This keeps multi-device edits visible before lane commits are triaged.  We
+    avoid merge commits by using --ff-only; divergence is left for the author to
+    resolve rather than letting automation invent a history shape.
+    """
+    remote = os.environ.get("KRATT_THESIS_AUTOMATION_PULL_REMOTE", "origin")
+    local_branch = os.environ.get("KRATT_THESIS_AUTOMATION_PULL_LOCAL_BRANCH", "main")
+    remote_branch = os.environ.get("KRATT_THESIS_AUTOMATION_PULL_BRANCH", local_branch)
+    pull = {
+        "enabled": os.environ.get("KRATT_THESIS_AUTOMATION_PULL", "1").lower() not in {"0", "false", "no"},
+        "attempted": False,
+        "status": None,
+        "remote": remote,
+        "local_branch": local_branch,
+        "remote_branch": remote_branch,
+        "stash_used": False,
+        "pop_status": None,
+        "reconciler_invoked": False,
+        "returncode": None,
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "skipped_reason": None,
+    }
+    summary["pull"] = pull
+
+    if not pull["enabled"]:
+        pull["status"] = "skipped"
+        pull["skipped_reason"] = "disabled by KRATT_THESIS_AUTOMATION_PULL"
+        return
+    if _cherry_pick_in_progress(REPO) or _unmerged_files(REPO):
+        pull["status"] = "failed"
+        pull["skipped_reason"] = "repository has in-progress cherry-pick or unmerged files"
+        summary["status"] = "degraded"
+        summary.setdefault("degraded_reasons", []).append("git_pull_unsafe_repo")
+        summary.setdefault("errors", []).append(pull["skipped_reason"])
+        return
+
+    current_branch = git(REPO, "rev-parse", "--abbrev-ref", "HEAD", check=False).strip()
+    if current_branch != local_branch:
+        pull["status"] = "failed"
+        pull["skipped_reason"] = f"current branch is {current_branch!r}, expected {local_branch!r}"
+        summary["status"] = "degraded"
+        summary.setdefault("degraded_reasons", []).append("git_pull_wrong_branch")
+        summary.setdefault("errors", []).append(pull["skipped_reason"])
+        return
+    if not git(REPO, "remote", "get-url", remote, check=False).strip():
+        pull["status"] = "failed"
+        pull["skipped_reason"] = f"remote {remote!r} is not configured"
+        summary["status"] = "degraded"
+        summary.setdefault("degraded_reasons", []).append("git_pull_missing_remote")
+        summary.setdefault("errors", []).append(pull["skipped_reason"])
+        return
+
+    stash_report = {
+        "stash_used": False,
+        "stash_ref": None,
+        "stash_msg": None,
+        "reconciler_invoked": False,
+        "pop_status": None,
+        "status": "clean",
+        "degraded_reasons": [],
+        "errors": [],
+    }
+    try:
+        stashed, ref, msg = _stash_push_if_dirty()
+        stash_report["stash_used"] = stashed
+        stash_report["stash_ref"] = ref
+        stash_report["stash_msg"] = msg
+        pull["stash_used"] = stashed
+    except Exception as e:
+        pull["status"] = "failed"
+        pull["skipped_reason"] = f"stash before pull failed: {e}"
+        summary["status"] = "degraded"
+        summary.setdefault("degraded_reasons", []).append("git_pull_stash_failed")
+        summary.setdefault("errors", []).append(pull["skipped_reason"])
+        return
+
+    pull["attempted"] = True
+    try:
+        proc = subprocess.run(
+            ["git", "pull", "--ff-only", remote, remote_branch],
+            cwd=str(REPO),
+            text=True,
+            capture_output=True,
+            timeout=int(os.environ.get("KRATT_THESIS_AUTOMATION_PULL_TIMEOUT_S", "300")),
+        )
+        pull["returncode"] = proc.returncode
+        pull["stdout_tail"] = (proc.stdout or "")[-1000:]
+        pull["stderr_tail"] = (proc.stderr or "")[-1000:]
+    except subprocess.TimeoutExpired as e:
+        pull["returncode"] = 124
+        pull["stdout_tail"] = (e.stdout or "")[-1000:] if isinstance(e.stdout, str) else ""
+        pull["stderr_tail"] = f"timeout after {e.timeout}s"
+
+    if stash_report["stash_used"]:
+        _pop_stash_with_reconciler(stash_report)
+        pull["pop_status"] = stash_report.get("pop_status")
+        pull["reconciler_invoked"] = stash_report.get("reconciler_invoked", False)
+        if stash_report.get("status") == "degraded":
+            summary["status"] = "degraded"
+            summary.setdefault("degraded_reasons", []).extend(stash_report.get("degraded_reasons", []))
+            summary.setdefault("errors", []).extend(stash_report.get("errors", []))
+    else:
+        pull["pop_status"] = "clean"
+
+    if pull["returncode"] == 0 and stash_report.get("status") != "degraded":
+        pull["status"] = "ok"
+    else:
+        pull["status"] = "failed"
+        summary["status"] = "degraded"
+        summary.setdefault("degraded_reasons", []).append("git_pull_failed")
+        summary.setdefault("errors", []).append(
+            f"daily git pull failed rc={pull['returncode']}: {pull['stderr_tail'] or pull['stdout_tail']}"
+        )
 
 
 def _daily_push_main(summary: dict) -> None:

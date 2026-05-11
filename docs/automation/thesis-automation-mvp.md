@@ -96,20 +96,23 @@ memory (`memory/<lane>.json`).
 `.hermes/thesis-automation/run-daily-consolidation.sh` →
 `bin/runner.py daily`.
 
-1. For every active lane, list commits in `main..cron/<lane>` since the last
+1. Stash non-automation WIP if needed, run `git pull --ff-only origin main`,
+   then restore/reconcile the stashed WIP. Set `KRATT_THESIS_AUTOMATION_PULL=0`
+   to disable. Diverged histories stop the daily run rather than creating merges.
+2. For every active lane, list commits in `main..cron/<lane>` since the last
    consolidation.
-2. Show full diffs to a consolidator Claude call; require strict-JSON output with
+3. Show full diffs to a consolidator Claude call; require strict-JSON output with
    `accept | reject | defer` per commit + positive guidance lines.
-3. Accept only tightening, Estonianization, citation/caption hygiene, or mandatory
+4. Accept only tightening, Estonianization, citation/caption hygiene, or mandatory
    evidence insertions; reject additive drift.
-4. Stash non-automation WIP if needed, cherry-pick accepted commits onto `main`,
+5. Stash non-automation WIP if needed, cherry-pick accepted commits onto `main`,
    then restore/reconcile the stashed WIP.
-5. Distill rejected commits into ≤ 3 short positive guidance lines per lane
+6. Distill rejected commits into ≤ 3 short positive guidance lines per lane
    (rolling window). Optionally 1 global line.
-6. Refresh every lane worktree/branch to the new `main`.
-7. Push `main` once per daily run with `git push origin main:main` unless conflict
+7. Refresh every lane worktree/branch to the new `main`.
+8. Push `main` once per daily run with `git push origin main:main` unless conflict
    recovery left the repository unsafe. Set `KRATT_THESIS_AUTOMATION_PUSH=0` to disable.
-8. Write `logs/daily/<timestamp>.json` and update `state/rotation.json`.
+9. Write `logs/daily/<timestamp>.json` and update `state/rotation.json`.
 
 Rejected commits disappear from branch history on refresh, but their rejection
 reason + distilled line live on in `memory/<lane>.json.rejected_refs` (rolling last 20).
