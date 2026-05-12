@@ -11,7 +11,7 @@ Varasem \enquote{Kratt} treeningukatse ei loonud piisavat tõendusbaasi, millelt
 Selle töö tulemusena muudeti treeningu- ja raportiskriptid auditeeritavaks ning täiendati evaluatsioonituge nii, et taustaheli andmete puudumine või vigane moodustamine oleks selgelt nähtav.
 
 \section{Avaliku kontrollkatse tulemus}
-Pärast kohaliku toru (ingl k \emph{pipeline}) täpsustamist käivitati from-scratch kontrollkatse \texttt{Speech Commands} korpuse \texttt{marvin} sihtsõna peal \cite{speechcommands2018}. Selle katse eesmärk ei olnud lahendada eestikeelset ülesannet, vaid kontrollida, kas kohalik toru töötab otsast lõpuni avaliku kontrollitava sisendi peal.
+Pärast kohaliku töötlustoru täpsustamist käivitati nullist kontrollkatse \texttt{Speech Commands} korpuse \texttt{marvin} sihtsõna peal \cite{speechcommands2018}. Selle katse eesmärk ei olnud lahendada eestikeelset ülesannet, vaid kontrollida, kas kohalik toru töötab otsast lõpuni avaliku kontrollitava sisendi peal.
 
 Mõistlikkuskontrolli eksperimendi tulemusena saadi edukalt:
 \begin{itemize}
@@ -27,12 +27,12 @@ Selle tulemuse peamine väärtus seisneb selles, et treeningutoru enda töökind
 Kirjutamise hetkeks on olemas:
 \begin{itemize}
     \item toimiv kohalik treeningu-, ekspordi- ja analüüsitoru;
-    \item avalikul andmestikul valideeritud \texttt{marvin} baseline;
+    \item avalikul andmestikul valideeritud \texttt{marvin} võrdlusvariant;
     \item allalaadimisel ja ettevalmistamisel suuremad public taustaheli ja speech-negative korpused;
     \item selgem arusaam sellest, kuidas tuleb üles ehitada eestikeelne \enquote{Kratt} andmestik.
 \end{itemize}
 
-Tulemuste peatüki keskne eesmärk on seega mitte esitada üht lõplikult \'võitnud\' mudelit, vaid dokumenteerida, kuidas valideeritud torule toetudes treeniti kaheksa eestikeelse äratussõna mudeliversiooni (v1--v8), kuidas avastati varasemas hindamises andmeleke ning kuidas korrigeeritud hindamine kõrvalejäetud komplektidel muutis mudelite järjestust ja töö põhilisi järeldusi. Järgnev analüüs keskendub seetõttu võrdlustele, kus mudelite hindamine toimub ühtsetel eeldustel: samal läviväärtusel (0,97), samadel kõrvalejäetud komplektidel ning kolmel võrdlusmõõdul --- tuvastamismäär, sarnaste negatiivnäidete eristamine ja FAPH.
+Tulemuste peatüki keskne eesmärk ei ole esitada üht lõplikult \'võitnud\' mudelit, vaid dokumenteerida valideeritud torule toetuvat arendusprotsessi. Peatükk näitab, kuidas treeniti kaheksa eestikeelse äratussõna mudeliversiooni (v1--v8), kuidas avastati varasemas hindamises andmeleke ning kuidas korrigeeritud hindamine kõrvalejäetud komplektidel muutis mudelite järjestust ja töö põhilisi järeldusi. Järgnev analüüs keskendub seetõttu võrdlustele, kus mudelite hindamine toimub ühtsetel eeldustel: samal läviväärtusel (0,97), samadel kõrvalejäetud komplektidel ning kolmel võrdlusmõõdul --- tuvastamismäär, sarnaste negatiivnäidete eristamine ja FAPH.
 
 \section{Eestikeelse äratussõna eksperimendid}
 
@@ -63,7 +63,7 @@ Versiooni v1 ja v2 andmestik oli identne; v2 erines ainult heli eeltöötluse po
 
 Korvo-2 negatiivsed pärinesid kahest salvestussessioonist. Esimene sessioon sisaldas 14\,minutit tahtlikku kõnet ja 6,2\,tundi taustahelisid, millest Silero VAD tuvastas kokku 1311 kõnesegmenti. Teine sessioon oli 2,8-tunnine pidev kõnesalvestus, mis lõigati 3-sekundilisteks tükkideks (3345 klippi).
 
-Versioonidest v5 alates lisati kaks täiendavat andmeallikat. Positiivsete hulka lisati 1560 Neurokõne TTS-iga sünteesitud \enquote{Kuule Kratt} klippi 12 eesti kõnelejaga. Negatiivsete hulka lisati 1644 TTS-iga sünteesitud sihtfraasiga sarnast negatiivklippi (ingl \emph{hard negative}) --- fraase, mis sisaldavad sõna \enquote{Kratt}, kuid ei ole äratussõna: \enquote{Hei Kratt}, \enquote{Tere Kratt}, \enquote{Kratt} üksikult, \enquote{Kratt kuule} jm. Nende eesmärk oli sundida mudelit eristama täpset fraasi \enquote{Kuule Kratt} lähisugulastest.
+Versioonidest v5 alates lisati kaks täiendavat andmeallikat. Positiivsete hulka lisati 1560 Neurokõne TTS-iga sünteesitud \enquote{Kuule Kratt} klippi 12 eesti kõnelejaga. Negatiivsete hulka lisati 1644 TTS-iga sünteesitud sihtfraasiga sarnast negatiivklippi --- fraase, mis sisaldavad sõna \enquote{Kratt}, kuid ei ole äratussõna: \enquote{Hei Kratt}, \enquote{Tere Kratt}, \enquote{Kratt} üksikult, \enquote{Kratt Kuule} jm. Nende eesmärk oli sundida mudelit eristama täpset fraasi \enquote{Kuule Kratt} lähisugulastest.
 
 \subsection{Esialgne eksitav tulemus}
 
@@ -83,8 +83,8 @@ Mõõtmise korrektsuse tagamiseks skooriti v1 ja v3 mudelid samade positiivsete 
 \hline
 \textbf{Testikomplekt} & \textbf{v1} & \textbf{v3} & \textbf{Mõõdik} \\
 \hline
-Positiivsed (mic1) & 92,8\% & 98,8\% & Recall \\
-Positiivsed (mic2) & 94,8\% & 98,0\% & Recall \\
+Positiivsed (mic1) & 92,8\% & 98,8\% & Tuvastamismäär \\
+Positiivsed (mic2) & 94,8\% & 98,0\% & Tuvastamismäär \\
 Negatiivsed (CV) & 8,0\% & 98,0\% & FPR \\
 Negatiivsed (Korvo-2) & 13,8\% & 24,8\% & FPR \\
 \hline
@@ -93,12 +93,12 @@ Negatiivsed (Korvo-2) & 13,8\% & 24,8\% & FPR \\
 
 Tabelist ilmneb, et v3 tuvastamismäär paranes (+6\%), kuid Common~Voice negatiivsete FPR tõusis 8\%-lt 98\%-le. See tähendab, et v3 mudel annab peaaegu igale sisendile kõrge aktivatsiooniskoori. Mudel ei ole mitte täpsem, vaid ülevallandunud: ta aktiveerub liiga kergesti.
 
-Sama \enquote{õiglase võrdluse} loogika laiendab Joonis~\ref{fig:faph-recall-pareto} kõigile käesoleva töö raames hinnatud üksikmudelitele, kuid mitte enam treeningu poolt mõjutatud klipi-tasemel, vaid sõltumatutel kõrvalejäetud komplektidel (FAPH on \texttt{faph\_cv\_et}, tuvastamismäär on \texttt{pos\_speaker\_a\_xtts}, lävi 0,995). Iga punkt vastab ühele mudeliversioonile; punane joon märgib operatsioonipunkti mähist ($\theta=0{,}995$) --- mudelite alamhulka, kelle kohta ei ole sellel lävel ühtegi teist mudelit, mis oleks samaaegselt madalama FAPH-i ja kõrgema tuvastamismääraga. Tegemist ei ole läve-sõltumatu Pareto-rinde (\emph{Pareto frontier}) konstruktsiooniga, vaid alumise-vasakpoolse mähisega ühe konkreetse läve juures. Joonis~\ref{fig:faph-recall-pareto} näitab, et mähisel on enamasti väike hulk kompromissipunkte (sh \texttt{v16a}, \texttt{v16c} ning \texttt{expert-a}); enamik versioone jääb mähisest sissepoole, st nende kompromiss on dominantselt halvem. Eraldi tähelepanu väärib see, et mähis ei ole sile: kõrge tuvastamismäära (Kõneleja A $=$ 100\%) saavutab mitu mudelit, kuid nende FAPH erineb suurusjärgu võrra, mis tähendab, et tuvastamismäär ise ei ole piisav mudeli valiku kriteerium.
+Sama \enquote{õiglase võrdluse} loogika laiendab Joonis~\ref{fig:faph-recall-pareto} kõigile käesoleva töö raames hinnatud üksikmudelitele, kuid mitte enam treeningust mõjutatud klipi-tasemel, vaid sõltumatutel kõrvalejäetud komplektidel. FAPH on \texttt{faph\_cv\_et} (3,65\,h toorheli; 3,82\,h voogedastusrada), tuvastamismäär on \texttt{pos\_speaker\_a\_xtts} ja lävi on 0,995. Iga punkt vastab ühele mudeliversioonile; punane joon märgib operatsioonipunkti mähist ($\theta=0{,}995$) --- mudelite alamhulka, kelle kohta ei ole sellel lävel ühtegi teist mudelit, mis oleks samaaegselt madalama FAPH-i ja kõrgema tuvastamismääraga. Tegemist ei ole läve-sõltumatu Pareto-rinde (\emph{Pareto frontier}) konstruktsiooniga, vaid alumise-vasakpoolse mähisega ühe konkreetse läve juures. Joonis~\ref{fig:faph-recall-pareto} näitab, et mähisel on enamasti väike hulk kompromissipunkte (sh \texttt{v16a}, \texttt{v16c} ning \texttt{expert-a}); enamik versioone jääb mähisest sissepoole, st nende kompromiss on dominantselt halvem. Eraldi tähelepanu väärib see, et mähis ei ole sile: kõrge tuvastamismäära (Kõneleja A $=$ 100\%) saavutab mitu mudelit, kuid nende FAPH erineb suurusjärgu võrra, mis tähendab, et tuvastamismäär ise ei ole piisav mudeli valiku kriteerium.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.85\linewidth]{figures/faph_recall_pareto.pdf}
-\caption{Üksiku läve ($\theta=0{,}995$) operatsioonipunktide hajuvusgraafik üle kõikide mudeliversioonide; punase joonega märgitud mudelid moodustavad alumise-vasakpoolse mähise (madalaim FAPH iga tuvastamismäära taseme jaoks). Mähis sõltub läve valikust ja ei ole läve-sõltumatu Pareto-rinne. FAPH on mõõdetud \texttt{faph\_cv\_et} kõrvalejäetud komplektil (3,65\,h toorheli; 3,82\,h voogedastusrada koos klipivahedega), tuvastamismäär \texttt{pos\_speaker\_a\_xtts}-l ($N=48$); mudelid FAPH${>}1000$ on välja jäetud loetavuse huvides. Operatsioonipunkt erineb tabelist~\ref{tab:fair-comparison-holdout}, mis raporteerib lävel $\theta=0{,}97$.}
+\caption{Üksiku läve ($\theta=0{,}995$) operatsioonipunktide hajuvusgraafik üle mudeliversioonide. Punane joon märgib alumise-vasakpoolse mähise; mudelid FAPH${>}1000$ on loetavuse huvides välja jäetud.}
 \label{fig:faph-recall-pareto}
 \end{figure}
 
@@ -120,8 +120,8 @@ Tabel~\ref{tab:full-comparison} esitab kõigi mudeliversioonide õiglase võrdlu
 \hline
 \textbf{Testikomplekt} & \textbf{Mõõdik} & \textbf{v1} & \textbf{v3} & \textbf{v4} & \textbf{v5} & \textbf{v6} \\
 \hline
-Pos. (mic1) & Recall & 92,8 & 98,8 & 100,0 & 99,6 & \textbf{99,6} \\
-Pos. (mic2) & Recall & 94,8 & 98,0 & 100,0 & 100,0 & \textbf{100,0} \\
+Pos. (mic1) & Tuvastus & 92,8 & 98,8 & 100,0 & 99,6 & \textbf{99,6} \\
+Pos. (mic2) & Tuvastus & 94,8 & 98,0 & 100,0 & 100,0 & \textbf{100,0} \\
 Neg. (CV) & FPR $\downarrow$ & 8,0 & 98,0 & 36,8 & 41,6 & \textbf{0,4} \\
 Neg. (Korvo-2) & FPR $\downarrow$ & 13,8 & 24,8 & 7,3 & 1,8 & \textbf{0,9} \\
 \hline
@@ -137,7 +137,7 @@ Tabelist näis ilmnevat selge iteratiivne paranemine:
     \item \textbf{v6} (lisatud 3345 teise sessiooni sama-seadme negatiivset) --- esialgne \enquote{läbimurre}: tuvastamismäär 99,6--100\%, CV FPR 0,4\%, Korvo-2 FPR 0,9\%.
 \end{itemize}
 
-Need esialgsed tulemused ei olnud siiski piisav tõendusbaas, sest need toetusid liiga kitsale hindamisvaatele. Esimene reaalajas test v6 mudeliga MacBook~Pro sisemikrofoni kaudu tootis umbes 50 valevallandumist tunnis (FAPH~$\approx$~50), mis oli teravas vastuolus tabelis esitatud CV FPR\,=\,0,4\% väärtusega ja näitas, et klipi-tasemel negatiivsete FPR ei kirjeldanud streaming-kasutuse riski. Järgmine alapeatükk dokumenteerib selle vastuolu kaks haru: kuidas metoodika audit paljastas andmelekke CV~negatiivsete kasutuses ja kuidas ehitati üles sõltumatud kõrvalejäetud hindamiskomplektid korrigeeritud tulemuste saamiseks.
+Need esialgsed tulemused ei olnud siiski piisav tõendusbaas, sest need toetusid liiga kitsale hindamisvaatele. Esimene reaalajas test v6 mudeliga MacBook~Pro sisemikrofoni kaudu tootis umbes 50 valevallandumist tunnis (FAPH~$\approx$~50), mis oli teravas vastuolus tabelis esitatud CV FPR\,=\,0,4\% väärtusega ja näitas, et klipi-tasemel negatiivsete FPR ei kirjeldanud voogedastava kasutuse riski. Järgmine alapeatükk dokumenteerib selle vastuolu kaks haru: kuidas metoodika audit paljastas andmelekke CV~negatiivsete kasutuses ja kuidas ehitati üles sõltumatud kõrvalejäetud hindamiskomplektid korrigeeritud tulemuste saamiseks.
 
 \subsection{Andmelekke avastamine ja korrigeeritud hindamine}
 \label{sec:data-leakage}
@@ -159,11 +159,11 @@ Hindamistoru kesksesse moodulisse \texttt{evaluation/test\_sets.py} kirjutati \t
 
 \subsubsection{Korrigeeritud tulemused}
 
-Tabel~\ref{tab:fair-comparison-holdout} esitab kõigi kaheksa mudeliversiooni täielikud tulemused kõrvalejäetud komplektidel lävel 0,97. Streaming FAPH on arvutatud pideva moving-average'iga (5 freimi) ja 2-sekundilise refraktoorperioodiga. FAPH on käesolevas peatükis raporteeritud kui valehäirete arv ühe negatiivse heli tunni kohta (toores streaming-detektsioonide arv jagatud kõrvalejäetud komplekti kestusega, nt 3,82\,h \texttt{faph\_cv\_et} puhul), järgides microWakeWord'i ja openWakeWord'i \emph{per-hour-of-negative-audio} konventsiooni, mitte voogtunni (\emph{per-stream-hour}) oma; see määrab telje, millel Q1 (v16c vs MoE konsensus 0,5 FA/h juures) hinnatakse.
+Tabel~\ref{tab:fair-comparison-holdout} esitab kõigi kaheksa mudeliversiooni täielikud tulemused kõrvalejäetud komplektidel lävel 0,97. Voogedastuse FAPH on arvutatud pideva libiseva keskmisega (5 freimi) ja 2-sekundilise refraktoorperioodiga. FAPH on käesolevas peatükis raporteeritud kui valehäirete arv ühe negatiivse heli tunni kohta. See on toores voogedastusdetektsioonide arv jagatuna kõrvalejäetud komplekti kestusega, nt 3,82\,h \texttt{faph\_cv\_et} puhul. Arvestus järgib microWakeWord'i ja openWakeWord'i negatiivse heli tunni konventsiooni, mitte voogtunni oma; see määrab telje, millel Q1 (v16c vs MoE konsensus 0,5 FA/h juures) hinnatakse.
 
 \begin{table}[H]
 \centering
-\caption{Mudeliversioonide korrigeeritud võrdlus tõeselt kõrvalejäetud hindamiskomplektidel (lävi\,=\,0,97). Parim tulemus igas reas on \textbf{paksus kirjas}. v8 puhul on autori Mac-mikrofoni positiivne komplekt treeningusse võetud, mistõttu mõõtmine puudub. Wilsoni 95\% usaldusvahemik (UV) on arvutatud iga tuvastamismäära rea valimi suuruse alusel ($N$ on toodud rea pealkirjas). FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. FAPH on raporteeritud skriptitud taasmängu variandina (vt §\ref{subsec:faph-variants}).}
+\caption{Mudeliversioonide korrigeeritud võrdlus kõrvalejäetud hindamiskomplektidel (lävi\,=\,0,97). Parim tulemus igas reas on \textbf{paksus kirjas}; v8 Mac-mikrofoni positiivne mõõtmine puudub, sest vastav komplekt oli treeningus. UV tähistab Wilsoni 95\% usaldusvahemikku ning FAPH on raporteeritud skriptitud taasmängu variandina (vt §\ref{subsec:faph-variants}).}
 \label{tab:fair-comparison-holdout}
 \setlength{\tabcolsep}{3pt}
 \scriptsize
@@ -172,8 +172,8 @@ Tabel~\ref{tab:fair-comparison-holdout} esitab kõigi kaheksa mudeliversiooni t�
 \hline
 \textbf{Hindamiskomplekt} & \textbf{v1} & \textbf{v2} & \textbf{v3} & \textbf{v4} & \textbf{v5} & \textbf{v6} & \textbf{v7} & \textbf{v8} \\
 \hline
-Recall Kõneleja A XTTS, $N=48$ [95\% UV] & 77,1 [63,5--86,7] & \textbf{100,0} [92,6--100,0] & 97,9 [89,1--99,6] & 75,0 [61,2--85,1] & \textbf{100,0} [92,6--100,0] & \textbf{100,0} [92,6--100,0] & 43,8 [30,7--57,7] & 68,8 [54,7--80,1] \\
-Recall Mac mic, $N=30$ [95\% UV] & 86,7 [70,3--94,7] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & 86,7 [70,3--94,7] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & --- \\
+Tuvastus Kõneleja A XTTS, $N=48$ [95\% UV] & 77,1 [63,5--86,7] & \textbf{100,0} [92,6--100,0] & 97,9 [89,1--99,6] & 75,0 [61,2--85,1] & \textbf{100,0} [92,6--100,0] & \textbf{100,0} [92,6--100,0] & 43,8 [30,7--57,7] & 68,8 [54,7--80,1] \\
+Tuvastus Mac mic, $N=30$ [95\% UV] & 86,7 [70,3--94,7] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & 86,7 [70,3--94,7] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & \textbf{100,0} [88,6--100,0] & --- \\
 FPR HN (Mac, real) $\downarrow$ & \textbf{33,3} & 93,3 & 73,3 & 73,3 & 100,0 & 100,0 & 80,0 & \textbf{33,3} \\
 FPR HN (Kõneleja A XTTS) $\downarrow$ & 80,0 & 100,0 & 100,0 & 71,7 & 86,7 & 63,3 & 25,0 & \textbf{21,7} \\
 \textbf{FAPH} (CV ET, 3,82\,h voogedastusrada)\,\emph{(scripted offline)} $\downarrow$ & 367 & 472 & 542 & 373 & 228 & 154 & \textbf{96} & 141 \\
@@ -196,9 +196,9 @@ Korrigeeritud tulemused muudavad varasemate alapeatükkide järeldusi mitmes olu
 
 \subsubsection{Metoodikaline järeldus}
 
-Töö üks olulisemaid leide on, et \textbf{klipi-taseme FPR mõõtmine treeningandmete osahulgal ei ole usaldusväärne äratussõna mudeli kvaliteedi mõõdik}. Iga väide mudeli generaliseerumise kohta peab põhinema andmetel, mille mudel ei ole kunagi treeningus näinud. Kuni kõrvalejäetud komplekti puudumiseni ei õnnestunud seda viga avastada, sest klipi-tasemel saadud numbrid (CV FPR 0,4\%) tundusid kõlblikud. Alles reaalajas testimine pikemate taustaheli segmentidega tõi anomaalia esile.
+Töö üks olulisemaid leide on, et \textbf{klipi-taseme FPR mõõtmine treeningandmete osahulgal ei ole usaldusväärne äratussõna mudeli kvaliteedi mõõdik}. Iga väide mudeli generaliseerumise kohta peab põhinema andmetel, mille mudel ei ole kunagi treeningus näinud. Kuni kõrvalejäetud komplekti puudumiseni ei õnnestunud seda viga avastada, sest klipi-tasemel saadud numbrid (CV FPR 0,4\%) tundusid kõlblikud. Pikemate taustaheli segmentidega reaalajas testimine tõi anomaalia esile.
 
-Praktiline järeldus tulevasteks töödeks: äratussõna süsteemi hindamistoru peab vaikimisi sisaldama (a) kohustuslikku disjointness checki test setide vs treeningandmete vahel, (b) pikkade taustaheli segmentide peal arvutatud FAPH metrikat, ja (c) vähemalt ühte truly held-out positiivset komplekti, mille mudel ei ole \emph{ühelgi} koolitusringil näinud.
+Praktiline järeldus tulevasteks töödeks on, et äratussõna süsteemi hindamistoru peab vaikimisi sisaldama kolme kontrolli. Esiteks on vaja kohustuslikku lahknevuskontrolli testikomplektide ja treeningandmete vahel. Teiseks peab hindamine sisaldama pikkade taustaheli segmentide peal arvutatud FAPH-i. Kolmandaks on vaja vähemalt ühte sõltumatut positiivset komplekti, mida mudel ei ole \emph{ühelgi} treeninguringil näinud.
 
 \subsection{Ristmikrofoni testimine (H2)}
 \label{sec:cross-mic-h2}
@@ -207,7 +207,7 @@ Hüpotees H2 väitis, et kui mudel õpib foneetilise sisu tunnuseid, peaks ta ge
 
 Testimise käigus ilmnes, et mudel:
 \begin{itemize}
-    \item tuvastas \enquote{Kuule Kratt} erinevate hääldusvariatsioonidega (Mac-mikrofoni kõrvalejäetud komplekti tuvastamismäär 100,0\%, vt Mac-mikrofoni Recall-rida tabelis~\ref{tab:fair-comparison-holdout});
+    \item tuvastas \enquote{Kuule Kratt} erinevate hääldusvariatsioonidega (Mac-mikrofoni kõrvalejäetud komplekti tuvastamismäär 100,0\%, vt Mac-mikrofoni tuvastusrida tabelis~\ref{tab:fair-comparison-holdout});
     \item ei vallandunud vaikuse, taustamüra ega üksiku sõna \enquote{kuule} või \enquote{kratt} peale selle informaalse sessiooni jooksul;
     \item ei vallandunud sarnaste fraaside peale nagu \enquote{Hei Kratt} või \enquote{Tere Kratt} sama sessiooni piires.
 \end{itemize}
@@ -217,9 +217,9 @@ See tulemus andis \emph{esialgse} kinnituse hüpoteesile H2: mudel on õppinud �
 \subsection{Ristmikrofoni generaliseerumise asümmeetria}
 \label{sec:cross-mic-asymmetry}
 
-Pikema reaalajas testimise käigus ilmnes aga oluline nüanss. Kui v6 mudelit jooksutati MacBook~Pro mikrofoni peal 40-minutilise tavakõne ajal (kus äratussõna kordagi ei öeldud), registreeriti umbes 50 valevallandumist tunnis (FAPH~$\approx$~50). Samas tuvastas mudel päris äratussõna ütlusi usaldusväärselt.
+Pikema reaalajas testimise käigus ilmnes nüanss. Kui v6 mudelit jooksutati MacBook~Pro mikrofoni peal 40-minutilise tavakõne ajal (kus äratussõna kordagi ei öeldud), registreeriti umbes 50 valevallandumist tunnis (FAPH~$\approx$~50). Samas tuvastas mudel päris äratussõna ütlusi usaldusväärselt.
 
-See tulemus viitab \textbf{generaliseerumise asümmeetriale}. Suuremõõtmeliste süsteemide (nt Apple \enquote{Hey Siri}) puhul on domeeni\-spetsiifiliste ja mitmekeelsete negatiivide vajalikkust kaudselt tunnistatud --- treeningusse kaasatakse \enquote{tuhandeid tunde} sihtdomeeni ja sihtkeelte mitte-äratus\-kõnet \cite{apple-heysiri2017} ---, kuid asümmeetriat ennast ei ole autorile teadaolevalt üheski avaldatud eesti\-keelses ega võrreldavas väikese mahuga KWS-uuringus eraldi raporteeritud:
+See tulemus viitab \textbf{generaliseerumise asümmeetriale}. Suuremõõtmeliste süsteemide (nt Apple \enquote{Hey Siri}) puhul on domeeni\-spetsiifiliste ja mitmekeelsete negatiivide vajalikkust kaudselt tunnistatud: treeningusse kaasatakse \enquote{tuhandeid tunde} sihtdomeeni ja sihtkeelte mitte-äratus\-kõnet \cite{apple-heysiri2017}. Autor ei leidnud avaldatud eesti\-keelset ega võrreldava mahuga KWS-uuringut, mis sama asümmeetria eraldi raporteeriks:
 \begin{itemize}
     \item \textbf{Tuvastamismäär generaliseerub}: mudel tunneb \enquote{Kuule Kratt} foneetilise struktuuri ära sõltumata mikrofonist. Positiivne tuvastus toimib ristseadmel.
     \item \textbf{FPR ei generaliseeru}: mudel ei oska tõrjuda MacBooki mikrofoni kaudu kuuldavat tavakõnet, sest negatiivne treeningmaterjal pärineb teisest akustilisest domeenist (Korvo-2 ja Common~Voice).
@@ -231,23 +231,26 @@ Praktilisest seisukohast ei ole see kriitiline puudus, sest lõppseade on ESP32-
 
 \subsection{Ristkeelne FAPH analüüs}
 
-Korrigeeritud hindamine võimaldas teha täiendava eksperimendi: mõõta FAPH mitte ainult eestikeelsel kõnel, vaid ka ingliskeelsel kõnel. V6 mudelit testiti LibriSpeech test-clean korpusel \cite{librispeech2015} ($\sim$5,4 tundi puhas inglise lugemiskõne, 40 kõnelejat) ning tulemused olid märkimisväärsed:
+Korrigeeritud hindamine võimaldas teha täiendava eksperimendi: mõõta FAPH mitte ainult eestikeelsel kõnel, vaid ka ingliskeelsel kõnel. V6 mudelit testiti LibriSpeech test-clean korpusel \cite{librispeech2015} ($\sim$5,4 tundi puhas inglise lugemiskõne, 40 kõnelejat).
 
 \begin{table}[H]
 \centering
-\caption{V6 mudeli FAPH erinevatel keeltel ja corpus'tel (lävi\,=\,0,97).}
+\caption{V6 mudeli FAPH eri keelte korpustel (lävi\,=\,0,97).}
 \label{tab:cross-language-faph}
+\small
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{l l r r l}
 \hline
-\textbf{Corpus} & \textbf{Keel} & \textbf{Tunnid} & \textbf{FAPH} & \textbf{Allikas} \\
+\textbf{Korpus} & \textbf{Keel} & \textbf{Tunnid} & \textbf{FAPH} & \textbf{Allikas} \\
 \hline
-Common Voice ET (kõrvalejäetud, 3,65 h toorheli + klipivahed) & Eesti & 3,82 & 44,5 & \cite{commonvoice2020} \\
+CV ET (3,65 h toor; 3,82 h voog) & Eesti & 3,82 & 44,5 & \cite{commonvoice2020} \\
 LibriSpeech test-clean & Inglise & 5,40 & 6,6 & \cite{librispeech2015} \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-Mudel vallandub ingliskeelsel kõnel \textbf{6,7 korda harvem} kui eestikeelsel. See suhe kehtib praegusel mudelil praeguste korpuste konkreetsel operatsioonipunktil ega ole stabiilne süsteemiomadus \cite{lopezespejo2021deepkws}. See erinevus tuleneb foneetilisest kattuvusest: eesti keeles on /k/+tagavokaal ja /t:/ mustrid (\enquote{kuidas}, \enquote{küsimus}, \enquote{kõik}, \enquote{kott}) sagedased, inglise keeles aga \enquote{Kuule Kratt}-i spetsiifiline foneetiline muster esineb harvem. Ristkeelne FAPH kinnitab, et negatiivne treeningmaterjal peab pärinema \textbf{sihtkeel\-est}, mitte suvalises keeles --- domeeni\-väline (ingliskeelne) kõne ei sisalda foneetilisi mustreid, mille eristamist mudel peab õppima.
+Mudel vallandub ingliskeelsel kõnel \textbf{6,7 korda harvem} kui eestikeelsel. See suhe kehtib praegusel mudelil praeguste korpuste konkreetsel operatsioonipunktil ega ole stabiilne süsteemiomadus \cite{lopezespejo2021deepkws}. See erinevus tuleneb foneetilisest kattuvusest: eesti keeles on /k/+tagavokaal ja /t:/ mustrid (\enquote{kuidas}, \enquote{küsimus}, \enquote{kõik}, \enquote{kott}) sagedased, inglise keeles aga \enquote{Kuule Kratt}-i spetsiifiline foneetiline muster esineb harvem. Ristkeelne FAPH kinnitab, et negatiivne treeningmaterjal peab pärinema \textbf{sihtkeelest}, mitte suvalises keeles --- domeeni\-väline inglise kõne ei sisalda foneetilisi mustreid, mille eristamist mudel peab õppima.
 
 See leid on kooskõlas ka kirjanduses toodud soovitusega: Apple kasutab \enquote{Hey Siri} hindamiseks \enquote{tuhandeid tunde} negatiive, sh \enquote{non-Hey-Siri Siri inputs in many languages} \cite{apple-heysiri2017}. Samas on Apple'i mudelid miljonite parameetritega ning piisava kapatsiteediga mitmekeelseks diskrimineerimiseks. Käesoleva töö 22\,000-parameetriline mudel on piiratud ressursiga, mistõttu iga gradient-uuendus peab kuluma sihtkeele foneetiliste eristuste õppimisele, mitte \enquote{kerge} ingliskeelse kõne tõrjumisele, mille mudel juba valdab.
 
@@ -255,7 +258,7 @@ See leid on kooskõlas ka kirjanduses toodud soovitusega: Apple kasutab \enquote
 
 Eestikeelse negatiivse treeningmaterjali puudulikkus on käesoleva töö üks peamisi pudelikaelu. Kõik mudeliversioonid v1--v8 kasutasid negatiivse kõnena ainult $\sim$5 tundi Common Voice ET klippe. Võrdluseks kasutab openWakeWord $\sim$31\,000 tundi negatiive \cite{openwakeword2026, openwakeword-features2024}, mis on \textbf{6200 korda rohkem}.
 
-Need korpused on kogutud ja seni kasutatud eeskätt eestikeelse kõnetuvastuse (ASR) tarbeks \cite{taltech-asr-data2024, riigikogu-stenograms2025}; ükski varasem eestikeelne äratussõna- ega KWS-töö pole neid ressursse negatiivse materjalina rakendanud. Käesolev töö on seetõttu esimene, mis eesti ASR-mastaabis korpusi KWS-negatiividena ümber kasutab.
+Need korpused on kogutud ja seni kasutatud eeskätt eestikeelse kõnetuvastuse (ASR) tarbeks \cite{taltech-asr-data2024, riigikogu-stenograms2025}. Autor ei leidnud varasemat eestikeelset äratussõna- ega KWS-tööd, mis neid ressursse negatiivse materjalina kasutaks. Seetõttu käsitleb käesolev töö nende korpuste ümberkasutust ühe eestikeelse KWS-negatiivide allikana.
 
 Edasiste versioonide jaoks on kasutada märkimisväärsed avalikud eestikeelsed kõnekorpused:
 
@@ -299,17 +302,20 @@ Ekspert~B projekteerimisel ilmnes oluline leid treeningandmete koosseisu kohta. 
 
 \begin{table}[H]
 \centering
-\caption{Ekspertmudelite individuaalsed tulemused (lävi\,=\,0,997). \enquote{Recall (Kõneleja B)} tähistab XTTS-iga genereeritud unseen kõneleja tuvastamismäära 11 klipist. HN~Mac = sarnaste negatiivnäidete FPR MacBook mikrofoni peal.}
+\caption{Ekspertmudelite individuaalsed tulemused (lävi\,=\,0,997). \enquote{Tuvastus (Kõneleja B)} tähistab XTTS-iga genereeritud seninägemata kõneleja tuvastamismäära 11 klipist. HN~Mac = sarnaste negatiivnäidete FPR MacBook mikrofoni peal.}
 \label{tab:expert-individual}
+\scriptsize
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{l r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Maht} & \textbf{FAPH CV} & \textbf{FAPH Mac} & \textbf{Recall (Kõneleja B)} & \textbf{HN Mac} \\
+\textbf{Mudel} & \textbf{Maht} & \textbf{FAPH CV} & \textbf{FAPH Mac} & \textbf{Tuv. B} & \textbf{HN Mac} \\
 \hline
 Ekspert A (väravavaht) & 148\,KB & 25,6 & 9,4 & 9/11 & 87\% \\
 Ekspert B v1 (100\% HN) & 55\,KB & 1482,7 & 546,4 & 13/11$^*$ & 100\% \\
 Ekspert B v2 (80\% HN + 20\% üld.) & 55\,KB & 42,7 & 24,8 & 5/11 & 13\% \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
 \begin{flushleft}
 \small $^*$Ülevallandunud mudel annab rohkem aktiveerimisi kui tegelikke positiivseid klippe.
 \end{flushleft}
@@ -325,12 +331,12 @@ Tabel~\ref{tab:expert-consensus} esitab ekspertmudelite konsensustulemused võrd
 
 \begin{table}[H]
 \centering
-\caption{Mitme mudeli konsensustulemused erinevatel lävedel. FAPH~CV = Common~Voice ET kõrvalejäetud komplekt (3,82\,h voogedastusrada koos 300~ms klipivahedega)\,\emph{(scripted offline)}. FAPH~Mac = MacBook taustamonitor (70\,min)\,\emph{(scripted offline)}. HN~Mac = sarnaste negatiivnäidete FPR MacBook mikrofoni peal. Android = Android seadme sarnaste negatiivnäidete FPR. Parimad tulemused \textbf{paksus kirjas}. Recall'i veerus on punkthinnang ja Wilsoni 95\% usaldusvahemik (UV); valimi suurus on $N=11$ \texttt{pos\_ode} klippi. FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. Tähistus $u_{95}$ tähistab Poissoni 95\%\ ühepoolset ülemist piiri reegli \enquote{kolm} järgi ($u_{95}\!=\!3/T$): MacBook tausta ($T\!\approx\!1{,}17$~h) korral $u_{95}\!\approx\!2{,}57$/h, LibriSpeech ($T\!=\!5{,}62$~h) $\approx\!0{,}53$/h, Common~Voice ET ($T\!=\!3{,}82$~h) $\approx\!0{,}78$/h, DiPCo ($T\!\approx\!5{,}5$~h) $\approx\!0{,}55$/h. FAPH on raporteeritud skriptitud taasmängu variandina (vt §\ref{subsec:faph-variants}).}
+\caption{Mitme mudeli konsensustulemused erinevatel lävedel. FAPH~CV on Common~Voice ET kõrvalejäetud voogedastusrada ja FAPH~Mac MacBooki taustamonitor; mõlemad on skriptitud taasmängu mõõdikud. Tuvastusveerus on punkthinnang ja Wilsoni 95\% usaldusvahemik (UV), FAPH-i puhul Poissoni 95\% usaldusvahemik \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}.}
 \label{tab:expert-consensus}
 \scriptsize
 \begin{tabular}{l r r r r r}
 \hline
-\textbf{Konfiguratsioon} & \textbf{FAPH CV} & \textbf{FAPH Mac} & \textbf{Recall [95\% UV]} & \textbf{HN Mac} & \textbf{Android} \\
+\textbf{Konfiguratsioon} & \textbf{FAPH CV} & \textbf{FAPH Mac} & \textbf{Tuvastus [95\% UV]} & \textbf{HN Mac} & \textbf{Android} \\
 \hline
 v10 + v15 @ 0,997/0,997 & 6,8 & 0,00\,$[<{\,}u_{95}]$ & 7/11 = 63,6\% [35,4--84,8] & 7\% & 8\% \\
 Ekspert A+B v2 @ 0,90/0,90 & 11,0 & 1,7 & 6/11 = 54,5\% [28,0--78,7] & 33\% & 4\% \\
@@ -343,7 +349,7 @@ $N=11$ on liiga väike, et eristada konsensuskonfiguratsioonide tuvastamismäär
 
 Ekspert~A ja B~v2 konsensus lävega 0,997/0,997 saavutab \textbf{FAPH\,=\,0,8} Common~Voice ET kõrvalejäetud komplektil. See tähendab, et 3,82 tunni pikkusel pideva tiheda eestikeelse kõne voogedastusrajal registreeritakse keskmiselt vähem kui üks valevallandmine tunnis. MacBook taustamonitori 70-minutilise seansi jooksul ei registreeritud ühtegi valevallandumist (FAPH\,=\,0,0).
 
-Tulemust tuleb tõlgendada kontekstis. Common~Voice ET koosneb lühikestest ettelloetud lausetest, mis moodustavad tiheda ja katkematu kõnevoolu --- see on äratussõna detektori jaoks oluliselt raskem keskkond kui tüüpiline kodune olukord, kus kõne on vahelduv ja pausidega. Reaalne FAPH koduses keskkonnas on tõenäoliselt madalam, mida MacBook taustamonitori 0,0 FAPH ka kaudselt kinnitab.
+Tulemust tuleb tõlgendada kontekstis. Common~Voice ET koosneb lühikestest ettelloetud lausetest, mis moodustavad tiheda ja katkematu kõnevoolu. See on äratussõna detektori jaoks raskem keskkond kui tüüpiline kodune olukord, kus kõne on vahelduv ja pausidega. Reaalne FAPH koduses keskkonnas võib olla madalam, mida MacBook taustamonitori 0,0 FAPH kaudselt toetab.
 
 Konsensuse põhjendus jääb aga ühe lävitabeli järgi peidetuks: eelnev tabel võrdleb mudeleid kindla läve juures, kuid mudeliperekondade tegelik kompromissikäitumine sõltub kogu lävede vahemikust. Joonis~\ref{fig:det-v6-v15-v16c-experta} esitab DET-tüüpi (FA/h vs FRR, log-log) kõverad nelja perekonna kohta --- \texttt{v6-residual}, \texttt{v15}, \texttt{v16c} ja \texttt{expert-a} ---, mis on käesoleva töö konsensuse aluseks valitud. Joonise põhisõnum on, et üksikmudelite kompromissikõverad jooksevad enamjaolt paralleelselt: ühe mudeli FRR-i langetamine teatud FA/h juures ei muuda samaaegselt teiste mudelite kompromissi. See õigustab konjunktsiooni-konsensuse loogikat --- kahe sõltumatu mudeli samaaegse aktiveerumise nõue valib kõverate ühisosa, mitte ühe konkreetse läve. Samas tuleb tõdeda, et joonisel toodud FRR on agregeeritud unseen-positiivide üle (\texttt{pos\_speaker\_a\_xtts} ja \texttt{pos\_speaker\_b}) --- ehk see ei eralda tuvastamismäära põrandat, mille väikeste $N$-iga osade peal UV-d (vt eelmist tabelit) jäävad laiaks.
 
@@ -356,7 +362,7 @@ Konsensuse põhjendus jääb aga ühe lävitabeli järgi peidetuks: eelnev tabel
 
 \subsubsection{Võrdlus avaldatud süsteemidega}
 
-Otsene võrdlus avaldatud süsteemidega on piiratud, sest eri tööd kasutavad erinevaid hindamiskorpusi. Tuleb rõhutada, et teadaolevalt pole eestikeelset äratussõna- ega väikesemahulist KWS-süsteemi avaldatud --- senised TalTechNLP-i ja Common~Voice~ET-põhised eestikeelsed tööd \cite{riigikogu-stenograms2025, taltech-asr-data2024, commonvoice2020} käsitlevad suurmahulist kõnetuvastust, mitte mikrokontrolleri\-mahulist äratussõna detekteerimist ---, mistõttu otsene keele-sisene võrdlus ei ole võimalik ja allpool toodud baseline'id annavad ainult suurusjärgu konteksti. Sellest hoolimata pakuvad publitseeritud FAPH väärtused võrdlusraami:
+Otsene võrdlus avaldatud süsteemidega on piiratud, sest eri tööd kasutavad erinevaid hindamiskorpusi. Autor ei leidnud avaldatud eestikeelset äratussõna- ega väikesemahulist KWS-süsteemi: senised TalTechNLP-i ja Common~Voice~ET-põhised eestikeelsed tööd \cite{riigikogu-stenograms2025, taltech-asr-data2024, commonvoice2020} käsitlevad suurmahulist kõnetuvastust, mitte mikrokontrolleri\-mahulist äratussõna detekteerimist. Seetõttu ei ole otsene keele-sisene võrdlus võimalik ja allpool toodud võrdlusvariandid annavad ainult suurusjärgu konteksti:
 
 \begin{itemize}
     \item \texttt{microWakeWord} \enquote{okay nabu}: 0,16 FAPH DiPCo korpusel \cite{microwakeword2026, dipco2020};
@@ -368,11 +374,11 @@ Need süsteemid on treenitud kümnete tuhandete tundide negatiivsete andmetega j
 
 \subsubsection{Tuvastamismäära kompromiss ja ESP32 teostatavus}
 
-Konsensuse hind on tuvastamismäära langus: 5/11 (45\%) Kõneleja B klippidest tuvastatakse. Samale Kõneleja A XTTS kõrvalejäetud komplektile (48 klippi), mida kasutati v1--v8 võrdluses tabelis~\ref{tab:fair-comparison-holdout}, rakendades langeb sama Ekspert~A+B~v2 @ 0,997/0,997 konfiguratsiooni tuvastamismäär 15/48-le (31\%) --- see number on otse võrreldav §\ref{sec:data-leakage} unseen-kõneleja tulemustega. See on fundamentaalne kapatsiteedi piirang: kaks ${\sim}22\,000$-parameetrilist mudelit konsensuses on selektiivsemad, kuid ka tõenäolisemalt eriarvamusel piirjuhtudel. Kõrgema läve (0,997) juures piisab ühe mudeli ebakindlusest, et kogu süsteem loobub aktiveerimisest.
+Konsensuse hind on tuvastamismäära langus: 5/11 (45\%) Kõneleja B klippidest tuvastatakse. Sama Ekspert~A+B~v2 @ 0,997/0,997 konfiguratsiooni rakendamisel Kõneleja A XTTS kõrvalejäetud komplektile langeb tuvastamismäär 15/48-le (31\%). See komplekt on sama 48-klipiline komplekt, mida kasutati v1--v8 võrdluses tabelis~\ref{tab:fair-comparison-holdout}, mistõttu number on otse võrreldav §\ref{sec:data-leakage} seninägemata kõneleja tulemustega. See on fundamentaalne kapatsiteedi piirang: kaks ${\sim}22\,000$-parameetrilist mudelit konsensuses on selektiivsemad, kuid ka tõenäolisemalt eriarvamusel piirjuhtudel. Kõrgema läve (0,997) juures piisab ühe mudeli ebakindlusest, et kogu süsteem loobub aktiveerimisest.
 
 Madalama läve (0,90/0,90) kasutamine tõstab tuvastamismäära 6/11-le, kuid FAPH kasvab 11,0-ni. See kompromiss on reguleeritav ja sõltub rakenduse nõuetest: koduses keskkonnas, kus kasutaja saab äratussõna vajaduse korral korrata, on madalam tuvastamismäär aktsepteeritav, kui valevallandumised on peaaegu elimineeritud.
 
-ESP32-S3 teostatavuse seisukohast on tulemus paljulubav. Ekspert~A (148\,KB) ja Ekspert~B~v2 (55\,KB) nõuavad kokku 203\,KB flash-mälu, mis mahub ESP32-S3 piirangutesse (4\,MB flash, 512\,KB SRAM). Tensor-arena tegelik töömälu vahelduvaks järeldamiseks on veel mõõtmata ja jääb tulevase tööna kontrollida microWakeWord/TFLite-Micro interpretaatori raportiga; siinkohal piirdume flash-mälu mahutavuse kinnitusega.
+ESP32-S3 rakendatavuse seisukohast on tulemus paljulubav. Ekspert~A (148\,KB) ja Ekspert~B~v2 (55\,KB) nõuavad kokku 203\,KB flash-mälu, mis mahub ESP32-S3 piirangutesse (4\,MB flash, 512\,KB SRAM). Tensor-arena tegelik töömälu vahelduvaks järeldamiseks on veel mõõtmata ja jääb tulevase tööna kontrollida microWakeWord/TFLite-Micro interpretaatori raportiga; siinkohal piirdume flash-mälu mahutavuse kinnitusega.
 
 \subsubsection{Järeldused}
 
@@ -393,14 +399,17 @@ Residuaalühenduste mõju ei käsitleta käesolevas töös tagantjärele oletuse
 \centering
 \caption{Residuaalühenduste ablatsioon: v6 (OFF) vs v6-residual (ON), lävi\,=\,0,995. Andmestik ja treeninguseadistus on samad; muutub ainult \texttt{residual\_connection}.}
 \label{tab:residual-ablation}
+\scriptsize
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{l r r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Res.} & \textbf{Rec Kõneleja A} & \textbf{Rec Kõneleja B} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Kõneleja A} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
+\textbf{Mudel} & \textbf{Res.} & \textbf{Tuv. A} & \textbf{Tuv. B} & \textbf{HN Mac} $\downarrow$ & \textbf{HN A} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
 \hline
 v6 & OFF & 98,0 & 82,0 & 100,0 & 60,0 & 25,4 \\
 v6-residual & ON & 100,0 & 91,0 & 100,0 & 73,0 & 14,4 \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 Ablatsioon näitab, et residuaalühendused parandasid selles seadistuses eelkõige voogedastuslikku stabiilsust: Common~Voice ET FAPH langes 25,4-lt 14,4-le, säilitades või parandades samal ajal positiivsete klippide tuvastamismäära. Samas jäi Mac sarnaste negatiivnäidete FPR 100\% tasemele ning Kõneleja~A XTTS sarnaste negatiivnäidete FPR isegi halvenes 60\%-lt 73\%-le. Seega on residuaalühendused kasulik arhitektuurivalik ja neid kasutati hilisemates tugevamates kandidaatides, kuid täpse fraasieristuse probleem jäi endiselt andmestiku ja sihtfunktsiooni lahendada.
@@ -416,21 +425,24 @@ Tabel~\ref{tab:specaug-ablation} esitab tulemused 2026-04-21 ühtsel kõrvalejä
 
 \begin{table}[H]
 \centering
-\caption{Puhas SpecAugmenti ablatsioon: v13a (SA OFF) vs v13b (SA ON), lävi\,=\,0,995. Andmestik ja arhitektuur identsed. \enquote{Rec Kõneleja A} = tuvastamismäär Kõneleja A XTTS unseen-kõneleja klippidel ($N=48$); \enquote{Rec Kõneleja B} = tuvastamismäär Kõneleja B reaalse kõneleja klippidel ($N=11$); HN Mac/Kõneleja A = sarnaste negatiivnäidete FPR vastaval komplektil; FAPH CV = streaming-FAPH Common~Voice ET kõrvalejäetud voogedastusrajal (3,82\,h).}
+\caption{Puhas SpecAugmenti ablatsioon: v13a (SA OFF) vs v13b (SA ON), lävi\,=\,0,995. Andmestik ja arhitektuur on identsed; tuvastusveerud mõõdavad Kõneleja A XTTS ($N=48$) ja Kõneleja B ($N=11$) kõrvalejäetud klippe.}
 \label{tab:specaug-ablation}
+\scriptsize
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{l r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Rec Kõneleja A} & \textbf{Rec Kõneleja B} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Kõneleja A} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
+\textbf{Mudel} & \textbf{Tuv. A} & \textbf{Tuv. B} & \textbf{HN Mac} $\downarrow$ & \textbf{HN A} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
 \hline
 v13a (SA OFF) & 85,0 & 45,0 & 87,0 & 82,0 & 134 \\
 v13b (SA ON) & 69,0 & 73,0 & 67,0 & 22,0 & \phantom{0}88 \\
 \hline
 \textbf{$\Delta$ (SA ON $-$ OFF)} & $-$16 pp & $+$28 pp & $-$20 pp & $-$60 pp & $-$46 ($-$34\%) \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-Tulemus näitab, et SpecAugment ei ole käesolevas seadistuses üheselt kasulik. Ühelt küljelt langetab see streaming-FAPH-i 134-lt 88-le (suhteline langus 34\%), parandab tundmatu reaalse kõneleja tuvastamismäära (Kõneleja B 45\% $\rightarrow$ 73\%) ning langetab oluliselt sarnaste negatiivnäidete FPR-i nii Mac (87\% $\rightarrow$ 67\%) kui ka Kõneleja A XTTS (82\% $\rightarrow$ 22\%) komplektidel. Need on klassikalised regularisatsiooni efektid: maskeerimine sunnib mudelit toetuma laiematele tunnustele kui ühele kitsale spektraalsele või ajalisele mustrile, mis omakorda parandab generaliseerumist tundmatutele kõnelejatele ja foneetiliselt sarnaste fraaside eristamist.
+Tulemus näitab, et SpecAugment ei ole käesolevas seadistuses üheselt kasulik. Ühelt küljelt langetab see voogedastuse FAPH-i 134-lt 88-le (suhteline langus 34\%), parandab tundmatu reaalse kõneleja tuvastamismäära (Kõneleja B 45\% $\rightarrow$ 73\%) ning langetab oluliselt sarnaste negatiivnäidete FPR-i nii Mac (87\% $\rightarrow$ 67\%) kui ka Kõneleja A XTTS (82\% $\rightarrow$ 22\%) komplektidel. Need on klassikalised regularisatsiooni efektid: maskeerimine sunnib mudelit toetuma laiematele tunnustele kui ühele kitsale spektraalsele või ajalisele mustrile, mis omakorda parandab generaliseerumist tundmatutele kõnelejatele ja foneetiliselt sarnaste fraaside eristamist.
 
 Teiselt küljelt langeb XTTS-kloonitud unseen-kõneleja tuvastamismäär (Kõneleja A: 85\% $\rightarrow$ 69\%), mis on $-16$ protsendipunkti suurune kaotus. Mudel muutub konservatiivsemaks ka sellistel positiivsetel näidetel, mille puhul see ei ole soovitav. SpecAugment ei ole seega \enquote{tasuta} regularisatsioon: see kaupleb fraasi-tundlikkust taustaheli summutamise ja sarnaste negatiivnäidete eristamise vastu. Otsus, kas seda kasutada, sõltub seetõttu sellest, milline rakenduse-spetsiifiline kompromiss tuvastamismäära ja valevallandumiste tasakaalu vahel on aktsepteeritav.
 
@@ -443,16 +455,16 @@ Pärast §\ref{sec:data-leakage}-s kirjeldatud andmelekke parandamist ja korrige
 
 Versioon v17 kujunes ootamatuks tagasilöögiks. Selle eesmärk oli tõsta tuvastamismäära, laiendades positiivset andmestikku Neurokõne SSML-prosoodiamärgistustega varieeritud variantidele, kolme pseudonüümitud XTTS-kõneleja hääleklooni positiivsetele ning täiendavatele autori lühisalvestustele. Esmane benchmark (2026-04-26, lävi 0,995) andis tõepoolest näiliselt soovitud tulemuse: v17a saavutas Kõneleja A XTTS tuvastamismäära 100\%, Kõneleja D tuvastamismäära 96\% ja autori salvestuste tuvastamismäära 99\%; v17b läks veel kõrgemale (Kõneleja D 99\%). Sarnaste negatiivnäidete ja FAPH-i numbrid olid aga halvemad kui v16c-l: HN Mac FPR 100\%, FAPH CV 144--190 (v16c puhul 75).
 
-Mudelite reaalajas testimisel ilmnes seletus, mida benchmark üksi ei näidanud. Testija ütles ainult sõna \enquote{kuule} (täisfraasi \enquote{Kuule Kratt} ütlemata) ning mõlemad v17 mudelid vallandusid. Sama kordus üksiku sõna \enquote{kule} (kõnekeelne lühivariant) puhul, samuti üksiku sõna \enquote{kratt} ja vahel ka pööratud järjekorraga \enquote{kratt kuule} fraaside peale. Mudel ei õppinud mitte kahe-sõnalist äratusfraasi, vaid foneetilist eesliidet --- mistahes \enquote{kuule}- või \enquote{kule}-tüüpi konsonant-vokaal mustrit, millele võis järgneda peaaegu suvaline jätk.
+Mudelite reaalajas testimisel ilmnes seletus, mida võrdlusalus üksi ei näidanud. Testija ütles ainult sõna \enquote{kuule} (täisfraasi \enquote{Kuule Kratt} ütlemata) ning mõlemad v17 mudelid vallandusid. Sama kordus üksiku sõna \enquote{kule} (kõnekeelne lühivariant) puhul, samuti üksiku sõna \enquote{kratt} ja vahel ka pööratud järjekorraga \enquote{Kratt Kuule} fraaside peale. Mudel ei õppinud mitte kahe-sõnalist äratusfraasi, vaid foneetilist eesliidet --- mistahes \enquote{kuule}- või \enquote{kule}-tüüpi konsonant-vokaal mustrit, millele võis järgneda peaaegu suvaline jätk.
 
 \subsection{Positiivsete näidete reostuse audit}
 \label{sec:positive-audit}
 
 Manuaalne kuulamis- ja pikkusauditeerimine näitas\footnote{Auditi täielik dokumentatsioon: \texttt{wake-word/docs/POSITIVE\_DATA\_QUALITY\_AUDIT\_20260427.md}, projekti sisemine artefakt.}, et v17 positiivne klass oli kolmes erinevas kohas reostunud sellega, et märgisega \enquote{positiivne} olid sildistatud helilõigud, mis ei kujutanud endast puhast isoleeritud äratusfraasi.
 
-Esimene reostuskategooria oli SSML-vigased Neurokõne väljundid. Kataloogid \texttt{data/processed/positive\_tts\_ssml} (972 klippi, mediaan ${\sim}7{,}39$\,s, max ${\sim}13{,}87$\,s) ja \texttt{data/raw/neurokone\_ssml\_positives} (sama heli toorkujul) sisaldasid Neurokõne TTS-i poolt valju\-häälselt ette loetud XML- ja SSML-märgendeid; süntesaator luges silbi-haaval välja näiteks \texttt{<prosody rate="slow">} sisu koos sellele järgneva fraasiga. Sama probleem kordus \texttt{data/raw/neurokone\_ssml\_kule} kataloogis (969 klippi, mediaan ${\sim}7{,}41$\,s, max ${\sim}13{,}68$\,s), mis oli kõnekeelse \enquote{Kule Kratt} variandi peegel\-kataloog.
+Esimene reostuskategooria oli SSML-vigased Neurokõne väljundid. Positiivsete TTS-/SSML-kataloogid (972 klippi, mediaan ${\sim}7{,}39$\,s, max ${\sim}13{,}87$\,s) ja nende toorheli vaste sisaldasid Neurokõne TTS-iga valju\-häälselt ette loetud XML- ja SSML-märgendeid; süntesaator luges silbi-haaval välja näiteks SSML-i \texttt{prosody} märgendite sisu koos sellele järgneva fraasiga. Sama probleem kordus kõnekeelse \enquote{Kule Kratt} variandi peegel\-kataloogis (969 klippi, mediaan ${\sim}7{,}41$\,s, max ${\sim}13{,}68$\,s).
 
-Teine reostuskategooria oli XTTS täiskäskude positiivsed. Avalikus tekstis pseudonüümitud kataloogid \texttt{data/raw/xtts\_clones/\{speaker\_x1,speaker\_x2,speaker\_x3\}/positive} ja \texttt{positive\_16k} sisaldasid voice-cloning-iga genereeritud täislauseid kujul \enquote{kuule kratt, lülita tuli sisse} ja \enquote{kuule kratt, mis ilm täna on}, mitte isoleeritud äratusfraasi. Mediaan klipipikkus oli ${\sim}3$\,s, kuid sisuliselt sisaldas iga klipp äratusfraasi pluss käsulauset.
+Teine reostuskategooria oli XTTS täiskäskude positiivsed. Avalikus tekstis pseudonüümitud \texttt{xtts\_clones/*/positive} ja \texttt{positive\_16k} kataloogid sisaldasid voice-cloning-iga genereeritud täislauseid kujul \enquote{Kuule Kratt, lülita tuli sisse} ja \enquote{Kuule Kratt, mis ilm täna on}, mitte isoleeritud äratusfraasi. Mediaan klipipikkus oli ${\sim}3$\,s, kuid sisuliselt sisaldas iga klipp äratusfraasi pluss käsulauset.
 
 Kolmas reostuskategooria oli liiga lühikesed positiivsed. Autori lühisalvestuste kataloogis osa klippe oli ${\sim}0{,}42$\,s pikkused ning sisaldasid kas ainult eesliidet (\enquote{kuule}) või mittetäielikku heli, mitte täisfraasi. 2026-04-28 STT-auditi käigus tuvastati, et alla 0,80~sekundilised autori lühiklipid olid süstemaatiliselt kas eesliide, sabaots või tühi --- mitte täisfraas.
 
@@ -462,33 +474,35 @@ Tabel~\ref{tab:positive-pollution} võtab kokku reostunud positiivsed allikad ja
 
 \begin{table}[H]
 \centering
-\caption{V17 treeningus kasutatud reostunud positiivsed allikad. \enquote{Mediaan} ja \enquote{max} viitavad klipipikkusele sekundites. Kõik allikad on kvarantiinitud kataloogi \texttt{\_quarantine\_duplicates/} alla deploy-kandidaatide treeningust.}
+\caption{V17 treeningus kasutatud reostunud positiivsed allikad. \enquote{Mediaan} ja \enquote{max} viitavad klipipikkusele sekundites. Kõik allikad on juurutuskandidaatide treeningust kvarantiinitud kataloogi \texttt{\_quarantine\_duplicates/} alla.}
 \label{tab:positive-pollution}
 \small
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{l l r r}
 \hline
 \textbf{Kataloog} & \textbf{Reostuse tüüp} & \textbf{Mediaan (s)} & \textbf{Max (s)} \\
 \hline
-\texttt{processed/positive\_tts\_ssml} & SSML-/XML-tekst & 7,39 & 13,87 \\
-\texttt{raw/neurokone\_ssml\_positives} & SSML-/XML-tekst & 7,39 & 13,87 \\
-\texttt{raw/neurokone\_ssml\_kule} & SSML-/XML-tekst (Kule peegel) & 7,41 & 13,68 \\
-\texttt{raw/xtts\_clones/\{speaker\_x1,speaker\_x2,speaker\_x3\}/positive} & täiskäsk, mitte fraas & ${\sim}3{,}0$ & --- \\
-\texttt{raw/xtts\_clones/\{speaker\_x1,speaker\_x2,speaker\_x3\}/positive\_16k} & täiskäsk, mitte fraas & ${\sim}3{,}0$ & --- \\
+\texttt{positive\_tts\_ssml} & SSML-/XML-tekst & 7,39 & 13,87 \\
+\texttt{neurokone\_ssml\_positives} & SSML-/XML-tekst & 7,39 & 13,87 \\
+\texttt{neurokone\_ssml\_kule} & SSML-/XML-tekst (Kule peegel) & 7,41 & 13,68 \\
+\texttt{xtts\_clones/*/positive} & täiskäsk, mitte fraas & ${\sim}3{,}0$ & --- \\
+\texttt{xtts\_clones/*/positive\_16k} & täiskäsk, mitte fraas & ${\sim}3{,}0$ & --- \\
 autori lühisalvestuste alamhulk & eesliide / saba / tühi & 0,42 & 0,79 \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 \subsection{Treeningutoru kvaliteedi\-kontrollid}
 \label{sec:training-guards}
 
-Et tagada, et samasugune reostus ei jõuaks tulevastesse deploy-kandidaatidesse, lisati treeningu ettevalmistustorusse mitu kontrollkihti.
+Et tagada, et samasugune reostus ei jõuaks tulevastesse juurutuskandidaatidesse, lisati treeningu ettevalmistustorusse mitu kontrollkihti.
 
-Esiteks lisati skripti \texttt{prepare\_kuule\_kratt\_experiment.py} kolm uut argumenti: \texttt{--exclude-positive-wav-dirs} kvarantiinib teadaolevalt halvad positiivsete kataloogid, \texttt{--positive-min-duration-s} eemaldab liiga lühikesed klipid ning \texttt{--positive-max-duration-s} eemaldab liiga pikad klipid. Ettevalmistuse käigus kirjutatakse iga treeningujooksu \texttt{manifest.json}-i positiivsete lähte\-kataloogid, kandidaatide arv, teerada-põhised väljajätmised, kestus-põhised väljajätmised ning näiteid kestus-tagasilükatud klippidest. See tagab, et iga hilisem audit saab täpselt rekonstrueerida, milline positiivne andmehulk konkreetsesse versiooni jõudis.
+Esiteks lisati skripti \texttt{prepare\_kuule\_kratt\_experiment.py} kolm uut kaitset: teadaolevalt halbade positiivsete kataloogide väljajätmine, liiga lühikeste klippide eemaldamine ning liiga pikkade klippide eemaldamine. Ettevalmistuse käigus kirjutatakse iga treeningujooksu \texttt{manifest.json}-i positiivsete lähte\-kataloogid, kandidaatide arv, teerada-põhised väljajätmised, kestus-põhised väljajätmised ning näiteid kestus-tagasilükatud klippidest. See tagab, et iga hilisem audit saab täpselt rekonstrueerida, milline positiivne andmehulk konkreetsesse versiooni jõudis.
 
-Teiseks muudeti HPC-treeningu ülesseadmist. Skript \texttt{submit\_hpc\_kuule\_kratt.sh} kvarantiinib vaikimisi kõik tabelis~\ref{tab:positive-pollution} loetletud teadaolevalt halvad positiivsed kataloogid ja rakendab positiivsetele kestusvärava 0,80--4,00 sekundit (alumine piir tõsteti 0,50-st 0,80-le pärast 2026-04-28 STT-auditit). Halba positiivset andmestikku saab tagasi lülitada ainult eksplitsiitse võtmega \texttt{--allow-known-bad-positives}, mis on mõeldud üksnes ajalooliste tulemuste reprodutseerimiseks, mitte uute deploy-kandidaatide treenimiseks.
+Teiseks muudeti HPC-treeningu ülesseadmist. Skript \texttt{submit\_hpc\_kuule\_kratt.sh} kvarantiinib vaikimisi kõik tabelis~\ref{tab:positive-pollution} loetletud teadaolevalt halvad positiivsed kataloogid ja rakendab positiivsetele kestusvärava 0,80--4,00 sekundit (alumine piir tõsteti 0,50-st 0,80-le pärast 2026-04-28 STT-auditit). Halba positiivset andmestikku saab tagasi lülitada ainult eksplitsiitse võtmega \texttt{--allow-known-bad-positives}, mis on mõeldud üksnes ajalooliste tulemuste reprodutseerimiseks, mitte uute juurutuskandidaatide treenimiseks.
 
-Kolmandaks tugevdati positiivsete akende valikut. Skript \texttt{generate\_microwakeword\_mmaps.py} ei kärbi vaikimisi enam pikemaid positiivseid klippe juhuslikult --- ajalooline juhuslik kärpimine on kättesaadav ainult lipuga \texttt{--positive-truncate-randomly} ja seda ei tohi deploy-kandidaatide jaoks kasutada. Juhuslik kärpimine oli §\ref{sec:positive-audit}-s kirjeldatud teist järku andme\-lekke otsene mehhanism.
+Kolmandaks tugevdati positiivsete akende valikut. Skript \texttt{generate\_microwakeword\_mmaps.py} ei kärbi vaikimisi enam pikemaid positiivseid klippe juhuslikult --- ajalooline juhuslik kärpimine on kättesaadav ainult lipuga \texttt{--positive-truncate-randomly} ja seda ei tohi juurutuskandidaatide jaoks kasutada. Juhuslik kärpimine oli §\ref{sec:positive-audit}-s kirjeldatud teist järku andme\-lekke otsene mehhanism.
 
 Neljandaks lisati programmne auditi\-tööriist \texttt{wake-word/data/validation/audit\_positive\_sources.py}, mis käib läbi etteantud positiivsete katalooge ning raporteerib kahtlasi pikkusi, kahtlasi failinimemustreid ja võimalikku duplikaati teiste allikatega. Selle käivitamine on muutunud kohustuslikuks osaks iga uue treeningujooksu eelkontrollis.
 
@@ -509,25 +523,25 @@ Neljandaks \emph{kuule/kule segiajamise FPR-i komplekt} (\texttt{neg\_kuule\_kul
 
 Lisaks neile foneetilistele negatiividele lisati üks uus reaalse kõneleja tuvastamismäära hindamiskomplekt: \texttt{pos\_speaker\_d} (145 klippi, kogutud ühe v17/v18 treeningust eraldi hoitud Kõneleja D käest). Eelmine peamine reaalne unseen-kõneleja komplekt \texttt{pos\_speaker\_b} ($N=11$) oli liiga väike Wilsoni usaldusvahemike sisuliseks tõlgendamiseks; $N=145$ võimaldab eristada 5 protsendipunkti suurusi tuvastamismäära erinevusi statistiliselt usaldusväärselt.
 
-Iga uus negatiivide komplekt mõõdab failure-režiimi, mida varasem mõõdikute kolmik ei suutnud detekteerida. Üheskoos moodustavad nad mõõdiku\-vektori, mille suhtes peab iga deploy-kandidaat olema eksplitsiitselt hinnatud.
+Iga uus negatiivide komplekt mõõdab vearežiimi, mida varasem mõõdikute kolmik ei suutnud tuvastada. Üheskoos moodustavad nad mõõdiku\-vektori, mille suhtes peab iga juurutuskandidaat olema eksplitsiitselt hinnatud.
 
 \subsection{V18 puhastatud positiivsete pere tulemused}
 \label{sec:v18-results}
 
-Pärast positiivsete sildistusprobleemide kontrolli treeniti uus mudelipere v18, mis kõik kasutavad sama ranget positiivset poliitikat: ainult kahe-sõnaline fraas (\enquote{kuule kratt} või \enquote{kule kratt}, lubatud venitatud vokaalid), ei mingit SSML-/XML-väljakuulutust, ei mingit \enquote{Ee/No/Noh kuule}-tüüpi täidist, ei mingit XTTS-täiskäsku ega juhuslikku positiivse klipi kärpimist. Genereeritud rangete positiivsete koguarv ehitati Neurokõne phase1- ja phase2-väljunditest pluss \texttt{kule\_vs\_kuule\_test}-komplektist: aktsepteeritud 709, tagasi lükatud välistus\-mustri tõttu 373, tagasi lükatud mitte-täpse fraasi-failinime tõttu 632.
+Pärast positiivsete sildistusprobleemide kontrolli treeniti uus mudelipere v18, mis kõik kasutavad sama ranget positiivset poliitikat: ainult kahe-sõnaline fraas (\enquote{Kuule Kratt} või \enquote{Kule Kratt}, lubatud venitatud vokaalid), ei mingit SSML-/XML-väljakuulutust, ei mingit \enquote{Ee/No/Noh kuule}-tüüpi täidist, ei mingit XTTS-täiskäsku ega juhuslikku positiivse klipi kärpimist. Genereeritud rangete positiivsete koguarv ehitati Neurokõne phase1- ja phase2-väljunditest pluss \texttt{kule\_vs\_kuule\_test}-komplektist: aktsepteeritud 709, tagasi lükatud välistus\-mustri tõttu 373, tagasi lükatud mitte-täpse fraasi-failinime tõttu 632.
 
 Pere koosneb kuuest variandist, mis erinevad arhitektuuri laiuse, SpecAugment-i ja sarnaste negatiivnäidete kasutuse poolest. Tabel~\ref{tab:v18-family-results} esitab nende tulemused kõigil §\ref{sec:phrase-selectivity-metrics}-s defineeritud mõõdikutel lävel 0,995 (allikas: \texttt{evaluation/benchmark\_v18\_clean\_20260428\_0214.md}).
 
 \begin{table}[H]
 \centering
-\caption{V18 perekonna tulemused puhastatud positiivsete andmetega (lävi\,=\,0,995). \textbf{Pre-FPR} = prefiksi-only FPR, \textbf{1K-FPR} = üksiku Krati FPR, \textbf{Rev-FPR} = pööratud järjekord, \textbf{Conf-FPR} = kuule/kule segiajamine. Recall'i veerud: Kõneleja A XTTS unseen-kõneleja ($N=48$) ja Kõneleja D reaalne unseen-kõneleja ($N=145$); UV = Wilsoni 95\% usaldusvahemik. FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. FAPH on raporteeritud skriptitud taasmängu variandina (vt §\ref{subsec:faph-variants}).}
+\caption{V18 perekonna tulemused puhastatud positiivsete andmetega (lävi\,=\,0,995). Pre-FPR mõõdab prefiksi, 1K-FPR üksiku Krati, Rev-FPR pööratud järjekorra ja Conf-FPR kuule/kule segiajamise riski. Tuvastusveerud esitavad Kõneleja A XTTS ($N=48$) ja Kõneleja D ($N=145$) tulemused Wilsoni 95\% usaldusvahemikuga.}
 \label{tab:v18-family-results}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l r l r l r r r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Rec Kõneleja A} & \textbf{Kõneleja A [95\% UV]} & \textbf{Rec Kõneleja D} & \textbf{Kõneleja D [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Kõneleja A} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{1K-FPR} $\downarrow$ & \textbf{Rev-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(scripted offline)} $\downarrow$ \\
+\textbf{Mudel} & \textbf{Tuv. Kõneleja A} & \textbf{Kõneleja A [95\% UV]} & \textbf{Tuv. Kõneleja D} & \textbf{Kõneleja D [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Kõneleja A} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{1K-FPR} $\downarrow$ & \textbf{Rev-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(scripted offline)} $\downarrow$ \\
 \hline
 v18a-clean48 & 100,0 & [92,6--100,0] & 93,1 & [87,8--96,2] & 86,7 & 71,7 & 97,1 & 99,5 & 98,4 & 99,3 & 515 \\
 v18b-clean48-sa & 95,8 & [86,0--98,8] & 92,4 & [86,9--95,7] & 93,3 & 56,7 & 100,0 & 98,4 & 98,4 & 99,0 & 132 \\
@@ -544,9 +558,9 @@ Kõneleja D valimi $N=145$ kitsendab UV-d 5--10 protsendipunkti laiusele, mistõ
 
 V18-pere keskmine järeldus on, et \emph{positiivsete puhastamine üksi ei lahendanud prefiks- ega segiajamis-vallandumist}. Tuvastamismäär reaalsete kõnelejate peal jäi kõrgeks (Kõneleja D 92--98\% mudelitel v18a, v18b, v18d), mis tähendab, et kvarantiinitud andmehulga eemaldamine ei rikkunud mudeli võimet täisfraasi tuvastada. Samas on prefiksi-FPR endiselt 97--100\% kõigil mudelitel, mis säilitavad kasuliku tuvastamismäära. v18a, v18b ja v18d ei ole Kõneleja D tuvastamismäära järgi statistiliselt usaldusväärselt eristatavad. v18d-clean96 säilitab kõrge tuvastamismäära kõigil komplektidel (Kõneleja A 98\%, Kõneleja D 98\%, Kõneleja B 100\%, autor 100\%), kuid samaaegselt on ta prefiksi-FPR 100\% ja segiajamis-FPR 99,8\% --- mudel vallandub praktiliselt iga sobiva esimese silbi peale. v18-pere tulemused näitavad, et puhtad positiivsed üksi ei sunni mudelit eristama täisfraasi prefiksist; sama järeldus on dokumenteeritud Apple'i DNN-HMM töös, kus partial-keyword negatiivid lisati selleks, et mudel ei vallanduks osafraasidel \cite{shrivastava2021optimize}.
 
-Ainsad variandid, mis prefiksi-FPR-i mõõdetavalt langetavad, on need, kus kasutatakse sihtfraasiga sarnaseid negatiivnäiteid (\texttt{v18c}, \texttt{v18e}, \texttt{v18f}). Need toovad prefiksi-FPR-i tasemele 82--88\%, mis on parem, kuid endiselt deploy-kõlbmatu, ja teevad seda kõrge hinnaga: \texttt{v18c} kaotab Kõneleja A tuvastamismäära 31\%-le, \texttt{v18e} 75\%-le. Tegemist on otsese kompromissiga --- praeguses pooltes saab fraasi-selektiivsust tõsta ainult tuvastamismäära hinnaga.
+Ainsad variandid, mis prefiksi-FPR-i mõõdetavalt langetavad, on need, kus kasutatakse sihtfraasiga sarnaseid negatiivnäiteid (\texttt{v18c}, \texttt{v18e}, \texttt{v18f}). Need toovad prefiksi-FPR-i tasemele 82--88\%, mis on parem, kuid endiselt juurutuskõlbmatu, ja teevad seda kõrge hinnaga: \texttt{v18c} kaotab Kõneleja A tuvastamismäära 31\%-le, \texttt{v18e} 75\%-le. Tegemist on otsese kompromissiga --- praeguses pooltes saab fraasi-selektiivsust tõsta ainult tuvastamismäära hinnaga.
 
-Konsensuse järelkatses (allikas: \texttt{evaluation/benchmark\_v18\_consensus\_20260428\_0242.md}) kombineeriti \texttt{v18b-clean48-sa} ekspertmudeliga \texttt{expert-a}. Konsensus saavutas väga madala FAPH-i (CV 3,93, LS 0,36, Mac 0,86, DiPCo 0,30) Kõneleja A tuvastamismääraga 95,8\%, kuid prefiksi-FPR jäi 82\% ja segiajamis-FPR 98,8\% peale. Konsensus suudab langetada üldist taustaheli FAPH-i, kuid ei lahenda iseseisvalt täpse fraasi selektiivsust, kui mõlema komponentmudeli treeningandmestik ei ole ekspressiivselt sundinud kahesõnalist sekventsi.
+Konsensuse järelkatses (allikas: \texttt{evaluation/benchmark\_v18\_consensus\_20260428\_0242.md}) kombineeriti \texttt{v18b-clean48-sa} ekspertmudeliga \texttt{expert-a}. Konsensus saavutas madala FAPH-i (CV 3,93, LS 0,36, Mac 0,86, DiPCo 0,30) Kõneleja A tuvastamismääraga 95,8\%, kuid prefiksi-FPR jäi 82\% ja segiajamis-FPR 98,8\% peale. Konsensus suudab langetada üldist taustaheli FAPH-i, kuid ei lahenda iseseisvalt täpse fraasi selektiivsust, kui mõlema komponentmudeli treeningandmestik ei ole ekspressiivselt sundinud kahesõnalist sekventsi.
 
 Diagnostilise kontroll-katsena treeniti ka \texttt{checkpoint-faph-v18d-clean96} pere, kus mudeli valikuks treeningu käigus kasutati taustaheli FAPH-i miinimumi (\texttt{ambient\_false\_positives\_per\_hour}) tavapärase täpsuspõhise valiku asemel. Madalama värava puhul (\texttt{target\_minimization: 2,0}) langes Common~Voice ET FAPH 1,31-ni, kuid Kõneleja A tuvastamismäär kukkus 4,2\%-le ja Kõneleja D tuvastamismäär 0,7\%-le --- mudel valis \emph{ülikonservatiivse} kontrollpunkti, mis vaevu midagi vastu võtab. Kõrgema värava puhul (\texttt{target\_minimization: 10,0}) jäi FAPH talutavaks (CV 4,19), kuid Kõneleja D tuvastamismäär jäi 22,1\% ja segiajamis-FPR 85,8\%. See näitab, et FAPH-orienteeritud kontrollpunkti valik ilma tuvastamismäära ja prefiksi-mõõdikuteta toodab teist tüüpi ülesobitust: mudel sobitub taustaheli keskkonna pikkvormi-statistikale, mitte fraasi semantikale.
 
@@ -556,43 +570,43 @@ Diagnostilise kontroll-katsena treeniti ka \texttt{checkpoint-faph-v18d-clean96}
 Kaks järjestikust auditiringi annavad kokku selge mustri töö metoodikalisest arengust. Iga hindamisprotokolli täpsustamise ring laiendas valideerimiskriteeriume ja tõi nähtavale riskiklassi, mida eelmine hindamine ei mõõtnud:
 
 \begin{itemize}
-    \item \textbf{Klipi-tasemel FPR} (algne hindamine, §\ref{sec:data-leakage} eelne) ei näinud streaming-režiimi käitumist --- v6-l 0,4\% klipi-FPR vs ${\sim}50$ valevallandumist tunnis MacBookil. Lahenduseks oli streaming-FAPH ja sõltumatud kõrvalejäetud komplektid.
+    \item \textbf{Klipi-tasemel FPR} (algne hindamine, §\ref{sec:data-leakage} eelne) ei näinud voogedastusrežiimi käitumist --- v6-l 0,4\% klipi-FPR vs ${\sim}50$ valevallandumist tunnis MacBookil. Lahenduseks oli voogedastuse FAPH ja sõltumatud kõrvalejäetud komplektid.
     \item \textbf{Ambient-FAPH koos sarnaste negatiivnäidete ja tuvastamismääraga} (§\ref{sec:expert-consensus} ajastu) ei näinud prefiks-vallandumist --- v17a/v17b täitsid tavapärase kolmiku hästi (tuvastamismäär 96--99\%, sarnaste negatiivnäidete tasakaalud), kuid vallandusid üksiku sõna \enquote{kuule} peale. Lahenduseks olid §\ref{sec:phrase-selectivity-metrics}-s defineeritud fraasi-täielikkuse negatiivid.
     \item \textbf{Praegune mõõdikute komplekt} (tuvastamismäär + sarnaste negatiivnäidete FPR + prefiksi/üksik/pööratud/segiajamis-FPR + FAPH) ei taga veel eksaktset järjekorra-tundlikkust kõigil äärejuhtudel. V18-pere tulemused näitavad, et isegi puhastatud sildid jätavad alles eelistuse foneetilise eesliite vastu, kui treeninguandmestik ei sisalda piisaval hulgal eksplitsiitselt prefiksi-tüüpi negatiive.
 \end{itemize}
 
-Sellest seeriast võib tuletada üldise metodoloogilise printsiibi, mis toetab töö ühte keskset väidet: \textbf{üksik koondnumber --- isegi nii põhjendatud nagu streaming-FAPH --- on äratussõna mudeli kvaliteedi mõõtmiseks ebapiisav}. Eriti väikese ressursiga keele puhul, kus sihtkeele kõneandmeid ja sõltumatuid kõnelejaid on vähe, peab mudeli lõplik raporteerimine olema mitme\-eesmärgiline ning pidama eksplitsiitselt loetelu nendest riskirežiimidest, mille suhtes mudel on testitud. Iga puuduolev mõõdik on koht, kus järgmine reaalajas test võib paljastada uue mõõtmata puuduse.
+Sellest seeriast võib tuletada üldise metodoloogilise printsiibi, mis toetab töö ühte keskset väidet: \textbf{üksik koondnumber --- isegi nii põhjendatud nagu voogedastuse FAPH --- on äratussõna mudeli kvaliteedi mõõtmiseks ebapiisav}. Eriti väikese ressursiga keele puhul, kus sihtkeele kõneandmeid ja sõltumatuid kõnelejaid on vähe, peab mudeli lõplik raporteerimine olema mitme\-eesmärgiline ning pidama eksplitsiitselt loetelu nendest riskirežiimidest, mille suhtes mudel on testitud. Iga puuduolev mõõdik on koht, kus järgmine reaalajas test võib paljastada uue mõõtmata puuduse.
 
-Lisaks on kahest auditiringist tuletatav konkreetne tagajärg projekti edasiseks osaks: enne kui v17/v18 või checkpoint-FAPH mudelite peret saab pidada \emph{deploy-kandidaadiks}, peab olemas olema (a) prefiksi/üksiku/pööratud/segiajamis-FPR alla mõõdetava taseme, mis ei kahjusta reaalsete kõnelejate tuvastamismäära alla rakenduse vajaliku piiri, ja (b) sõltumatu reaalsete kõnelejate kõrvalejäetud komplekt, mille suurus võimaldab Wilsoni usaldusvahemiku tõlgendust. Praegu pole üksi v18-pere mudel sellele kombineeritud kriteeriumile vastanud. Selle leiu sisuline tähendus ja sellest tulenevad järgnevad sammud (eraldi tugev prefiksi-/segi\-ajamis-negatiivide pool, fraasi-järjekorda kodeeriv treeningu sihtfunktsioon või kaheastmeline detektor, mis kontrollib eraldi \enquote{kuule} ja \enquote{kratt} sõnu) on käsitletud peatükis~\ref{chapter:discussion}.
+Lisaks on kahest auditiringist tuletatav konkreetne tagajärg projekti edasiseks osaks: enne kui v17/v18 või checkpoint-FAPH mudelite peret saab pidada \emph{juurutuskandidaadiks}, peab olemas olema (a) prefiksi/üksiku/pööratud/segiajamis-FPR alla mõõdetava taseme, mis ei kahjusta reaalsete kõnelejate tuvastamismäära alla rakenduse vajaliku piiri, ja (b) sõltumatu reaalsete kõnelejate kõrvalejäetud komplekt, mille suurus võimaldab Wilsoni usaldusvahemiku tõlgendust. Praegu pole üksi v18-pere mudel sellele kombineeritud kriteeriumile vastanud. Selle leiu sisuline tähendus ja sellest tulenevad järgnevad sammud (eraldi tugev prefiksi-/segi\-ajamis-negatiivide pool, fraasi-järjekorda kodeeriv treeningu sihtfunktsioon või kaheastmeline detektor, mis kontrollib eraldi \enquote{kuule} ja \enquote{kratt} sõnu) on käsitletud peatükis~\ref{chapter:discussion}.
 
 \section{Kolmas auditiring: FAPH-optimeeritud kontrollpunkti valiku piirangud}
 \label{sec:third-audit}
 
-V18-pere puhastatud positiivsetega mudelid (vt §\ref{sec:v18-results}) saavutasid head tuvastamismäära, kuid kõrge taustaheli FAPH-i. Loogiline järgmine eksperiment oli proovida sama andmestikku ja arhitektuuri jätta puutumatuks, kuid muuta \emph{kontrollpunkti valikukriteeriumi} treeningujooksu sees. \texttt{microWakeWord} treeningraamistik toetab kontrollpunkti valikut metrikate \texttt{maximization\_metric} ja \texttt{minimization\_metric} kaudu; senised mudelid v1--v18 olid valinud kontrollpunkti \texttt{maximization\_metric: accuracy} alusel, mis hindab kõiki klipi-tasemeid täpsuse järgi sõltumata sellest, kas mudel on streaming-režiimis stabiilne. Hüpoteesiks oli, et seadistus \texttt{minimization\_metric: ambient\_false\_positives\_per\_hour} koos sihtväärtusega \texttt{target\_minimization} valib treeningu lõpust kontrollpunkti, kus mudel on juba sisemiselt kalibreeritud madalama taustaheli FAPH-i poole. See peaks andma sama treeningandmestiku ja arhitektuuriga oluliselt madalama deploy-FAPH-i ilma uut andmestikku või uut mudeliarhitektuuri vajamata.
+V18-pere puhastatud positiivsetega mudelid (vt §\ref{sec:v18-results}) saavutasid head tuvastamismäära, kuid kõrge taustaheli FAPH-i. Loogiline järgmine eksperiment oli proovida sama andmestikku ja arhitektuuri jätta puutumatuks, kuid muuta \emph{kontrollpunkti valikukriteeriumi} treeningujooksu sees. \texttt{microWakeWord} treeningraamistik toetab kontrollpunkti valikut metrikate \texttt{maximization\_metric} ja \texttt{minimization\_metric} kaudu; senised mudelid v1--v18 olid valinud kontrollpunkti \texttt{maximization\_metric: accuracy} alusel, mis hindab kõiki klipi-tasemeid täpsuse järgi sõltumata sellest, kas mudel on voogedastusrežiimis stabiilne. Hüpoteesiks oli, et seadistus \texttt{minimization\_metric: ambient\_false\_positives\_per\_hour} koos sihtväärtusega \texttt{target\_minimization} valib treeningu lõpust kontrollpunkti, kus mudel on juba sisemiselt kalibreeritud madalama taustaheli FAPH-i poole. See peaks andma sama treeningandmestiku ja arhitektuuriga oluliselt madalama juurutus-FAPH-i ilma uut andmestikku või uut mudeliarhitektuuri vajamata.
 
 Hüpoteesi kontrollimiseks treeniti kolm kontrollpunkti-eksperimenti, mis põhinevad v18d-clean96 konfiguratsioonil (puhastatud positiivsed, 11675 negatiivset, 1002 taustaheli klippi, \texttt{pointwise\_filters\,=\,96,96,96,96}, residuaalühendused sees, SpecAugment sees).
 
-Esimene, \texttt{checkpoint-faph-v18d-clean96-pw96x4}, kasutas seadistust \texttt{target\_minimization\,=\,2{,}0} (st soovitud taustaheli FAPH-i sihtväärtus oli 2 valeaktiveeringut tunnis sisemise validatsiooni tunnetel). \texttt{clip\_duration\_ms} oli 1500. Treeningujooks lõppes plaanipäraselt ja TFLite eksport tehti automaatselt.
+Esimene katse kasutas seadistust \texttt{target\_minimization\,=\,2{,}0} (st soovitud taustaheli FAPH-i sihtväärtus oli 2 valeaktiveeringut tunnis sisemise validatsiooni tunnetel). \texttt{clip\_duration\_ms} oli 1500. Treeningujooks lõppes plaanipäraselt ja TFLite eksport tehti automaatselt.
 
-Teine, \texttt{checkpoint-faph10-v18d-clean96-pw96x4}, kasutas leebemat sihtväärtust \texttt{target\_minimization\,=\,10{,}0} ja pikemat akent \texttt{clip\_duration\_ms\,=\,2000}. SLURM-i tööjada \texttt{922050} jäi aja-piirangust hiljaks ja katkestati enne plaanipärast TFLite-i eksporti, kuid sisemine fail \texttt{best\_weights.weights.h5} oli olemas. Mudel eksporditi käsitsi täiendava SLURM-i tööjadaga \texttt{922275} 2026-04-29. Selle dokumenteeritud käsitsi-eksport on osa eksperimendi loost: ilma võime sõltumatult eksportida olemasolevaid kaalusid jääks osaleva diagnoosi tegemata.
+Teine katse kasutas leebemat sihtväärtust \texttt{target\_minimization\,=\,10{,}0} ja pikemat akent \texttt{clip\_duration\_ms\,=\,2000}. SLURM-i tööjada \texttt{922050} jäi aja-piirangust hiljaks ja katkestati enne plaanipärast TFLite-i eksporti, kuid sisemine fail \texttt{best\_weights.weights.h5} oli olemas. Mudel eksporditi käsitsi täiendava SLURM-i tööjadaga \texttt{922275} 2026-04-29. Selle dokumenteeritud käsitsi-eksport on osa eksperimendi loost: ilma võime sõltumatult eksportida olemasolevaid kaalusid jääks osaleva diagnoosi tegemata.
 
-Kolmas, \texttt{checkpoint-faph20-v18d-clean96-pw96x4}, kasutas veel leebemat sihtväärtust \texttt{target\_minimization\,=\,20{,}0}. Selle eesmärk ei olnud saada uut lõppmudelit, vaid mõõta, kas tuvastamismäär taastub enne kui taustaheli FAPH muutub praktikas liiga kõrgeks. See treeningujooks lõppes plaanipäraselt SLURM-i tööjadaga \texttt{922280} ning mudel eksporditi automaatselt.
+Kolmas katse kasutas veel leebemat sihtväärtust \texttt{target\_minimization\,=\,20{,}0}. Selle eesmärk ei olnud saada uut lõppmudelit, vaid mõõta, kas tuvastamismäär taastub enne kui taustaheli FAPH muutub praktikas liiga kõrgeks. See treeningujooks lõppes plaanipäraselt SLURM-i tööjadaga \texttt{922280} ning mudel eksporditi automaatselt.
 
 \subsection{Kontrollpunkti-eksperimentide tulemused}
 \label{sec:checkpoint-results}
 
-Tabel~\ref{tab:checkpoint-headline} esitab kontrollpunkti-eksperimentide võrdluse v16c-ga (praeguse stabiilse ühe-mudeli baasjoonega) ja v6-residual'iga (varasemast perioodist parima taustaheli FAPH-iga ühe-mudeli) lävel 0,995. Kõik andmed pärinevad 2026-04-29 benchmarkidest \texttt{evaluation/benchmark\_checkpoint\_models\_20260429.md} ja \texttt{evaluation/benchmark\_checkpoint\_faph20\_20260429.md}; testikomplektid ja hindamisparameetrid on samad kui §\ref{sec:v18-results}-s.
+Tabel~\ref{tab:checkpoint-headline} esitab kontrollpunkti-eksperimentide võrdluse v16c-ga (praeguse stabiilse ühe-mudeli baasjoonega) ja v6-residual'iga (varasemast perioodist parima taustaheli FAPH-iga ühe-mudeli) lävel 0,995. Kõik andmed pärinevad 2026-04-29 kontrollpunkti-benchmarkidest; testikomplektid ja hindamisparameetrid on samad kui §\ref{sec:v18-results}-s.
 
 \begin{table}[H]
 \centering
-\caption{Kontrollpunkti-FAPH eksperimentide tulemused võrdluses v16c ja v6-residual mudelitega (lävi\,=\,0,995). \enquote{Pre-FPR} = prefiksi-only FPR, \enquote{Conf-FPR} = kuule/kule segiajamis-FPR. Kõik FAPH-i veerud allpool on streaming-FAPH eraldi korpustel. Recall'i Wilsoni 95\% usaldusvahemikud (UV) on Kõneleja A XTTS real ($N=48$) ja Kõneleja D real ($N=145$). FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. FAPH on raporteeritud skriptitud taasmängu variandina (vt §\ref{subsec:faph-variants}).}
+\caption{Kontrollpunkti-FAPH eksperimentide tulemused võrdluses v16c ja v6-residual mudelitega (lävi\,=\,0,995). Pre-FPR mõõdab prefiksi- ja Conf-FPR kuule/kule segiajamisriski. Tuvastamismäära veergude Wilsoni 95\% UV-d on arvutatud Kõneleja A XTTS ($N=48$) ja Kõneleja D ($N=145$) ridadele; FAPH on skriptitud taasmängu mõõdik.}
 \label{tab:checkpoint-headline}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l r l r l r r r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Rec Kõneleja A} & \textbf{Kõneleja A [95\% UV]} & \textbf{Rec Kõneleja D} & \textbf{Kõneleja D [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Kõneleja A} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH LS}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH Mac}\,\emph{(scripted offline)} $\downarrow$ \\
+\textbf{Mudel} & \textbf{Tuv. Kõneleja A} & \textbf{Kõneleja A [95\% UV]} & \textbf{Tuv. Kõneleja D} & \textbf{Kõneleja D [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Kõneleja A} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH LS}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH Mac}\,\emph{(scripted offline)} $\downarrow$ \\
 \hline
 checkpoint-faph (tm=2) & 4,2 & [1,2--14,0] & 0,7 & [0,1--3,8] & 20,0 & 0,0 & 67,3 & 24,5 & 1,31 & 0,89 & 0,86 \\
 checkpoint-faph10 (tm=10) & 72,9 & [59,0--83,4] & 22,1 & [16,1--29,5] & 80,0 & 35,0 & 58,6 & 85,8 & 4,19 & 3,02 & 9,42 \\
@@ -606,7 +620,7 @@ v6-residual (võrdlus) & 100,0 & [92,6--100,0] & 95,2 & [90,4--97,6] & 100,0 & 7
 
 Wilsoni 95\% UV-d teevad tuvastamismäära järjekorra statistilise tõlgenduse läbipaistvaks. \texttt{checkpoint-faph10} ja \texttt{checkpoint-faph20} Kõneleja A XTTS tuvastamismäär on numeriliselt sama (72,9\%), nende UV-d kattuvad täielikult [59,0--83,4], st neid kahte mudelit selle 48-klipilise komplekti järgi eristada ei saa. Kõneleja D real ($N=145$) on UV-d kitsamad ja erinevus 22,1\% [16,1--29,5] vs 42,1\% [34,3--50,2] on statistiliselt usaldusväärne. Üldine järeldus: \texttt{checkpoint-faph10} ja \texttt{checkpoint-faph20} jäävad reaalsete kõnelejate tuvastamismäära poolest oluliselt nõrgemaks kui \texttt{v6-residual} (95,2\% [90,4--97,6]) või \texttt{v16c} (87,6\% [81,2--92,0]).
 
-Tulemused jagunevad kaheks selgelt eristuvaks pildiks. \texttt{checkpoint-faph} (sihtväärtus 2,0) saavutas FAPH-i taustaheli mõõdikutel taseme, mida ükski varasem ühe-mudeli mudel polnud saavutanud (CV 1,31; LS 0,89; Mac 0,86; DiPCo 0,60). Sama mudel kaotas aga peaaegu täielikult välise positiivse tuvastamismäära: Kõneleja A XTTS unseen-kõneleja peal vaid 4,2\%, Kõneleja D reaalsete kõnelejate peal 0,7\%. Manuaalne hindamine (positive recall probe, allikas: \texttt{evaluation/positive\_recall\_probe\_checkpoint\_20260429.md}) näitas, et mudel suudab endiselt vastata autori MacBook-i salvestustele (63,3\%) ja TTS-laadsetele puhastatud allikatele (86\%), aga ülejäänud kõnelejate peal on ta sisuliselt vait. Tegemist on ülikonservatiivse kontrollpunktiga, mis on optimeerinud sihtväärtust nii agressiivselt, et \enquote{kõik kahtlane} klassifitseeritakse mitte-äratuseks.
+Tulemused jagunevad kaheks selgelt eristuvaks pildiks. \texttt{checkpoint-faph} (sihtväärtus 2,0) saavutas FAPH-i taustaheli mõõdikutel taseme, mida ükski varasem ühe-mudeli mudel polnud saavutanud (CV 1,31; LS 0,89; Mac 0,86; DiPCo 0,60). Sama mudel kaotas aga peaaegu täielikult välise positiivse tuvastamismäära: Kõneleja A XTTS unseen-kõneleja peal vaid 4,2\%, Kõneleja D reaalsete kõnelejate peal 0,7\%. Manuaalne positiivse tuvastuse kontroll (allikas: \texttt{evaluation/positive\_recall\_probe\_checkpoint\_20260429.md}) näitas, et mudel suudab endiselt vastata autori MacBook-i salvestustele (63,3\%) ja TTS-laadsetele puhastatud allikatele (86\%), aga ülejäänud kõnelejate peal on ta sisuliselt vait. Tegemist on ülikonservatiivse kontrollpunktiga, mis on optimeerinud sihtväärtust nii agressiivselt, et \enquote{kõik kahtlane} klassifitseeritakse mitte-äratuseks.
 
 \texttt{checkpoint-faph10} (sihtväärtus 10,0) on vähem äärmuslik: taustaheli FAPH on jätkuvalt madal (CV 4,19; LS 3,02), kuid väline tuvastamismäär on osaliselt taastunud --- Kõneleja A XTTS 72,9\%, kuid Kõneleja D endiselt vaid 22,1\%. Sarnaste negatiivnäidete eristus paranes (HN Kõneleja A 35\% vs v16c 90\%), kuid prefiksi-FPR (58,6\%) ja segiajamis-FPR (85,8\%) jäävad reaalse kasutuse jaoks liiga kõrgeks. Mudel suudab eraldada \enquote{Kuule Kratt}-i tihedast Common~Voice ET kõnest, kuid ei suuda täielikult eraldada \enquote{Kuule}-tüüpi eesliite-fraase, mis viitab samale puudusele, mida §\ref{sec:phrase-selectivity-metrics}-s on kirjeldatud.
 
@@ -619,13 +633,13 @@ Eraldi huvi pakkus küsimus, kas \texttt{checkpoint-faph10} või \texttt{checkpo
 
 \begin{table}[H]
 \centering
-\caption{Kontrollpunkti-FAPH konsensus-kombinatsioonid muude mudelitega (lävi\,=\,0,995/0,995). FAPH 0,00 tähendab, et 3,82--5,62-tunnistel taustaheli voogedastusradadel ei registreeritud ühtegi valeaktiveeringut. Pre-FPR = prefiksi-only FPR, Conf-FPR = segiajamis-FPR. FAPH-i punkthinnang esitatakse koos täpse Poissoni 95\% usaldusvahemikuga (suurte väärtuste juures kahepoolne, $k=0$ juures ühepoolne ülemine piir reegli \enquote{kolm} järgi) \cite{garwood1936fiducial,ulm1990poisson,hanley1983ruleofthree}. FAPH on raporteeritud skriptitud taasmängu variandina (vt §\ref{subsec:faph-variants}).}
+\caption{Kontrollpunkti-FAPH konsensus-kombinatsioonid muude mudelitega (lävi\,=\,0,995/0,995). FAPH 0,00 tähendab, et 3,82--5,62-tunnistel taustaheli voogedastusradadel ei registreeritud ühtegi valeaktiveeringut. Pre-FPR mõõdab prefiksi- ja Conf-FPR segiajamisriski; FAPH on skriptitud taasmängu mõõdik.}
 \label{tab:checkpoint-consensus}
 \scriptsize
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l r r r r r r r r}
 \hline
-\textbf{Konfiguratsioon} & \textbf{Rec Kõneleja A} & \textbf{Rec Kõneleja D} & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH LS}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH Mac}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH DiPCo}\,\emph{(scripted offline)} $\downarrow$ \\
+\textbf{Konfiguratsioon} & \textbf{Tuv. Kõneleja A} & \textbf{Tuv. Kõneleja D} & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH LS}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH Mac}\,\emph{(scripted offline)} $\downarrow$ & \textbf{FAPH DiPCo}\,\emph{(scripted offline)} $\downarrow$ \\
 \hline
 faph10 + v16c & 72,9 & 20,7 & 57,3 & 85,8 & \textbf{0,26} & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
 faph10 + expert-a & 66,7 & 21,4 & 57,3 & 85,8 & 0,26 & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
@@ -642,16 +656,16 @@ Ekspert A + B v2 (võrdluseks) & --- & --- & --- & --- & 0,80 & --- & 0,00\,$[<{
 
 Konsensus \texttt{checkpoint-faph10 + v6-residual} saavutas Common~Voice ET kõrvalejäetud komplektil FAPH 0,00 (mitte ühtegi valeaktiveeringut 3,82 tunni pikkusel voogedastusrajal) ja sama tulemuse LibriSpeech, MacBook taustal ja DiPCo komplektidel. Numeriliselt on see käesoleva töö parim taustaheli FAPH ükskõik millises konfiguratsioonis --- madalam kui §\ref{sec:expert-consensus}-s kirjeldatud Ekspert~A + B~v2 \emph{0,8 FAPH}, mis seni oli olnud projekti tipptase.
 
-Tulemust ei saa siiski tõlgendada deploy-kõlblikkusena. Konsensus-süsteem säilitab kontrollpunkti-mudelist päritud nõrkused: \texttt{checkpoint-faph10}-ga kombinatsioonides jääb Kõneleja D tuvastamismäär 20--21\% juurde, mis tähendab, et umbes neli viiest reaalsete kõnelejate positiivsest näitest jääksid tuvastamata. \texttt{checkpoint-faph20} tõstab sama tuvastamismäära 40--42\%-ni, kuid ka see on üldiseks äratussõnaks ebapiisav. Mõlemal juhul jääb prefiksi-FPR kümnete protsentide tasemele ja segiajamis-FPR ligikaudu 78--86\% juurde. Konsensus saavutab oma madala FAPH-i seetõttu, et kontrollpunkti-mudel on taustaheli radadel niivõrd vait, et mistahes kombineeritud teine mudel pärib selle vaikuse. \emph{Madal taustaheli FAPH ei tähenda, et mudel on osanud äratusfraasi --- see võib tähendada lihtsalt seda, et mudel on osanud vait olla.}
+Tulemust ei saa siiski tõlgendada juurutuskõlblikkusena. Konsensus-süsteem säilitab kontrollpunkti-mudelist päritud nõrkused: \texttt{checkpoint-faph10}-ga kombinatsioonides jääb Kõneleja D tuvastamismäär 20--21\% juurde, mis tähendab, et umbes neli viiest reaalsete kõnelejate positiivsest näitest jääksid tuvastamata. \texttt{checkpoint-faph20} tõstab sama tuvastamismäära 40--42\%-ni, kuid ka see on üldiseks äratussõnaks ebapiisav. Mõlemal juhul jääb prefiksi-FPR kümnete protsentide tasemele ja segiajamis-FPR ligikaudu 78--86\% juurde. Konsensus saavutab oma madala FAPH-i seetõttu, et kontrollpunkti-mudel on taustaheli radadel niivõrd vait, et mistahes kombineeritud teine mudel pärib selle vaikuse. \emph{Madal taustaheli FAPH ei tähenda, et mudel on osanud äratusfraasi --- see võib tähendada lihtsalt seda, et mudel on osanud vait olla.}
 
 \subsection{Manuaalne kuulamine ja akustiline lühitee}
 \label{sec:checkpoint-listening}
 
 Et mõista, miks \texttt{checkpoint-faph10} käitub MacBook-taustal halvemini kui Common~Voice ET-l (Mac FAPH 9,42 vs CV FAPH 4,19), kuulati üksikud allesjäänud Mac-taustal registreeritud valeaktiveeringud käsitsi läbi. Tulemus oli informatiivne: enamik aktivatsioonidest tulid autori enda või MacBooki mikrofoni kaudu mängitud helilõikude peal --- eestikeelseid täidesõnu (\enquote{et}, \enquote{need on}) ja paari muud kõnefragmenti. Common~Voice ET-l, mis sisaldab võõraste kõnelejate kõnet, oli mudel märksa rangem.
 
-See viitab, et \texttt{checkpoint-faph10} on (osaliselt) säilitanud autori ja MacBook-i akustilise \emph{lühitee} (\emph{shortcut}): mudel toetub konkreetsele kõneleja-mikrofon-kombinatsiooni akustikale, mis treeningandmetes oli üle-esindatud, ning suppresseerib kõik muu. See on klassikaline akustiline ülesobitumine, ainult et seekord soositud kontrollpunkti valikukriteeriumi poolt --- kontrollpunkt, mis maksimaalselt langetab taustaheli FAPH-i, valib paratamatult mudeli, mis on \enquote{vaikseim} just selliste tausta-segmentide peal, mille ta on treeningus juba näinud.
+See viitab, et \texttt{checkpoint-faph10} on (osaliselt) säilitanud autori ja MacBook-i akustilise \emph{lühitee} (\emph{shortcut}): mudel toetub konkreetsele kõneleja-mikrofon-kombinatsiooni akustikale, mis treeningandmetes oli üle-esindatud, ning summutab kõik muu. See on klassikaline akustiline ülesobitumine, ainult et seekord soosib seda kontrollpunkti valikukriteerium --- kontrollpunkt, mis maksimaalselt langetab taustaheli FAPH-i, valib paratamatult mudeli, mis on \enquote{vaikseim} just selliste tausta-segmentide peal, mille ta on treeningus juba näinud.
 
-\texttt{v16c} klipi-tasemel skoorijaotus jääb käesoleva töö ulatusest välja, sest INT8-kvantiseeritud väljund (väärtused $k/255$) tekitab visuaalse jaotuse, mis on osaliselt kvantiseerimisartefakt; bimodaalsuse tõlgendus kuuluks suurema N-iga deploy-uuringusse.
+\texttt{v16c} klipi-tasemel skoorijaotus jääb käesoleva töö ulatusest välja, sest INT8-kvantiseeritud väljund (väärtused $k/255$) tekitab visuaalse jaotuse, mis on osaliselt kvantiseerimisartefakt; bimodaalsuse tõlgendus kuuluks suurema N-iga juurutusuuringusse.
 
 \subsection{Metoodikaline järeldus: mõõdiku ja eesmärgi lahknemine}
 \label{sec:checkpoint-conclusion}
@@ -659,28 +673,19 @@ See viitab, et \texttt{checkpoint-faph10} on (osaliselt) säilitanud autori ja M
 Kontrollpunkti-FAPH eksperiment on kontrollitud näide \emph{mõõdiku ja lõppeesmärgi lahknemisest}: ühe mõõdiku optimeerimine ilma kogu eesmärgivektorita loob olukorra, kus mudelil on lihtsam treeningu-mõõdiku numbrit langetada kui tegelikku kasutajakogemust parandada. Selle eksperimendi peamised järeldused on järgmised.
 
 \begin{enumerate}
-    \item \textbf{Kontrollpunkti valikukriteerium võib valida hindamis-mõõdiku jaoks ülisobiva, kuid deploy-kriteeriumidele mittevastava mudeli.} \texttt{checkpoint-faph} näitab, et \texttt{ambient\_false\_positives\_per\_hour} miinimumi sihtimine pärast 10\,000 treeningusammu valib kontrollpunkti, kus mudel on otsustanud pea kõike tagasi lükata. Sihipärase mõõdiku numerilisel langusel on hind, mille selle mõõdiku kõrvalt ei näe.
+    \item \textbf{Kontrollpunkti valikukriteerium võib valida hindamis-mõõdiku jaoks ülisobiva, kuid juurutuskriteeriumidele mittevastava mudeli.} \texttt{checkpoint-faph} näitab, et \texttt{ambient\_false\_positives\_per\_hour} miinimumi sihtimine pärast 10\,000 treeningusammu valib kontrollpunkti, kus mudel on otsustanud pea kõike tagasi lükata. Sihipärase mõõdiku numerilisel langusel on hind, mille selle mõõdiku kõrvalt ei näe.
     \item \textbf{Kahe mudeli konsensus võib pärida ühe komponendi nõrkused, vaatamata madalale taustaheli FAPH-ile.} \texttt{faph10 + v6-residual} saavutab CV ja MacBook taustal FAPH 0,00, kuid kannab Kõneleja D tuvastamismäära 20\% taseme edasi. Konsensus võib langetada FAPH-i, kuid mitte parandada ühtegi tuvastamismäära- ega prefiksi-mõõdikut, mille suhtes mõlemad komponendid on juba nõrgad.
     \item \textbf{Sihtväärtuse lõdvendamine taastab tuvastamismäära ainult osaliselt ja suure FAPH-i hinnaga.} \texttt{checkpoint-faph20} parandab Kõneleja D tuvastamismäära võrreldes \texttt{checkpoint-faph10}-ga 22,1\%-lt 42,1\%-le, kuid CV FAPH tõuseb 4,19-lt 23,29-le ja MacBook-tausta FAPH 9,42-lt 52,24-le. See näitab, et FAPH-sihtväärtuse ülemine piir jõuab kiiresti tagasi kasutuskogemuse seisukohalt liiga sagedaste valeaktiveeringuteni.
     \item \textbf{Madala taustaheli FAPH-i põhjus võib olla lühitee, mitte parem fraasi-eristus.} Kuulamiskontroll näitas, et \texttt{checkpoint-faph10}-i madal FAPH on osaliselt kunstlik: mudel on vaikne treeningu-domeeni Mac-taustal, kuid see ei tähenda, et ta on õppinud eristama äratusfraasi muust kõnest. Kui sama mudel viia uuele Mac-mikrofonile teises akustilises ruumis, võib FAPH oluliselt erineda.
 \end{enumerate}
 
-Üldisem järeldus on, et treeningu-aegne kontrollpunkti valik peab kasutama \emph{komposiitset} valideerimissihti, mis sisaldab kõiki kolme deploy-objektiivi (taustaheli FAPH, reaalsete kõnelejate tuvastamismäär ning sarnaste negatiivnäidete, prefiksi- ja segiajamisjuhtumite FPR). Ühe mõõdiku optimeerimine teiste arvelt on eesmärgi osaline asendamine mõõdikuga. See järeldus tugevdab §\ref{sec:metric-iteration-conclusion}-s sõnastatud üldist väidet: iga hindamisprotokolli täpsustuse ring laiendab nähtavat riskiruumi, ning kolmas ring (kontrollpunkti valikukriteerium) näitab, et mõõdik, mis paistab \enquote{õige} suuna seestpoolt, võib treeningu sees mängituna anda mudeli, mis sellele mõõdikule liiga ühepoolselt vastab. Selle leiu sisuline tähendus ja tulevased lahenduskäigud (mitme-mõõdikuline kontrollpunkti-valik, sõltumatu kõrvalejäetud komplekti regressioonkontroll, või uue treeningu-objektiivi disain mis kodeerib fraasi täielikkust) on käsitletud peatükis~\ref{chapter:discussion}.
+Üldisem järeldus on, et treeningu-aegne kontrollpunkti valik peab kasutama \emph{komposiitset} valideerimissihti, mis sisaldab kõiki kolme juurutuseesmärki (taustaheli FAPH, reaalsete kõnelejate tuvastamismäär ning sarnaste negatiivnäidete, prefiksi- ja segiajamisjuhtumite FPR). Ühe mõõdiku optimeerimine teiste arvelt on eesmärgi osaline asendamine mõõdikuga. See järeldus tugevdab §\ref{sec:metric-iteration-conclusion}-s sõnastatud üldist väidet: iga hindamisprotokolli täpsustuse ring laiendab nähtavat riskiruumi, ning kolmas ring (kontrollpunkti valikukriteerium) näitab, et mõõdik, mis paistab \enquote{õige} suuna seestpoolt, võib treeningu sees mängituna anda mudeli, mis sellele mõõdikule liiga ühepoolselt vastab. Selle leiu sisuline tähendus ja tulevased lahenduskäigud (mitme-mõõdikuline kontrollpunkti-valik, sõltumatu kõrvalejäetud komplekti regressioonkontroll, või uue treeningu-objektiivi disain mis kodeerib fraasi täielikkust) on käsitletud peatükis~\ref{chapter:discussion}.
 
-\section{Kasutajatesti tulemused}
+\section{Kasutajatesti tulemuste seis}
 \label{sec:user-test-results}
 
-Käesoleva peatüki eelnevad alaosad raporteerivad mudelite käitumist kõrvalejäetud hindamiskomplektidel ning kontrollitud reaalajas testides väikese kõnelejate hulgaga (autor, Kõneleja B, üks treeningust eraldi hoitud Kõneleja D). Need tulemused valideerivad metoodikat, kuid ei asenda sõltumatut kasutajatesti, mille protokoll on kirjeldatud §\ref{sec:user-test-methodology}-s. \emph{20--30 osalejaga täismahus kasutajatest on käesoleva peatüki kirjutamise hetkel veel läbi viimata}; seetõttu jäävad järgnevad osad teadlikult tühjadeks raamideks, mille sisu täidetakse vahetult enne lõputöö esitamist.
+Käesoleva peatüki eelnevad alaosad raporteerivad mudelite käitumist kõrvalejäetud hindamiskomplektidel ning kontrollitud reaalajas testides väikese kõnelejate hulgaga (autor, Kõneleja B, üks treeningust eraldi hoitud Kõneleja D). Need tulemused valideerivad metoodikat, kuid ei asenda sõltumatut kasutajatesti, mille protokoll on kirjeldatud §\ref{sec:user-test-methodology}-s.
 
-\subsection{Osalejabaas ja sessioonide ülevaade}
+Kirjutamise hetkeks ei ole 20--30 osalejaga täismahus kasutajatesti lõppandmestik veel moodustatud. Seetõttu ei kasutata kasutajatesti tulemusi käesolevas versioonis mudelikvaliteedi põhitõendina ning siia ei lisata tühje tulemusetabeleid. Kui kogumine jõuab enne esitustähtaja lõppu piisava mahuni, tuleb tulemused raporteerida ainult külmutatud lävedel ja sama helisisendi taasmänguga: osalejate ja sessioonide ülevaade, per-mudel äratusfraasi tuvastamismäär koos Wilsoni 95\% usaldusvahemikega, inimese öeldud sarnaste negatiivnäidete FPR, pirnikäskude otsast-lõpuni edukus ja latentsus ning lühikese küsimustiku vastused.
 
-\subsection{Reaalsete kõnelejate äratussõna tuvastamismäär (külmutatud lävega taasmäng)}
-
-\subsection{Inimese öeldud sarnaste negatiivnäidete ja prefiksi-FPR}
-
-\subsection{Otsast-lõpuni pirnikäskude edukus ja latentsus}
-
-\subsection{Subjektiivne rahulolu}
-
-\subsection{Piirangud ja lugeja hoiatus}
-Kuni siinse alapeatüki täitmiseni tuleb käesolevat tööd lugeda kui \emph{prototüübi ja hindamismetoodika} dokumentatsiooni, mitte kui empiirilist hinnangut sellele, kuidas süsteem käitub laia kasutajaskonna käes. Kõik üldistused reaalsete kõnelejate käitumisele põhinevad kahel autori-lähedasel kõnelejal (autor, Kõneleja B) ning ühel treeningust eraldi hoitud Kõneleja D häälega salvestatud \texttt{pos\_speaker\_d} kõrvalejäetud komplektil ($N=145$); need pole asendus sõltumatule, eelregistreeritud osalejauuringule. Eraldi tuleb tähele panna, et treeningu positiivne klass on ${\sim}86\%$ ulatuses dominantselt \enquote{Kuule}-vormis (kirjakeelne hääldus), kuid igapäevases kõnes esineb sageli kõnekeelne lühivariant \enquote{Kule Kratt}; seetõttu on Kule-vormi tuvastamismäär reaalsete kõnelejate peal töö üks kesksetest avatud riskidest, mille suurus selgub alles täismahus kasutajatestist.
+Kuni selle andmestiku lisamiseni tuleb käesolevat tööd lugeda kui \emph{prototüübi ja hindamismetoodika} dokumentatsiooni, mitte kui empiirilist hinnangut sellele, kuidas süsteem käitub laia kasutajaskonna käes. Kõik üldistused reaalsete kõnelejate käitumisele põhinevad kahel autori-lähedasel kõnelejal (autor, Kõneleja B) ning ühel treeningust eraldi hoitud Kõneleja D häälega salvestatud \texttt{pos\_speaker\_d} kõrvalejäetud komplektil ($N=145$); need pole asendus sõltumatule, eelregistreeritud osalejauuringule. Eraldi tuleb tähele panna, et treeningu positiivne klass on ${\sim}86\%$ ulatuses dominantselt \enquote{Kuule}-vormis (kirjakeelne hääldus), kuid igapäevases kõnes esineb sageli kõnekeelne lühivariant \enquote{Kule Kratt}; seetõttu on Kule-vormi tuvastamismäär reaalsete kõnelejate peal töö üks kesksetest avatud riskidest, mille suurus selgub alles täismahus kasutajatestist.

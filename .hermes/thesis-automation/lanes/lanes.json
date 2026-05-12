@@ -18,8 +18,8 @@
         "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
       ],
       "focus": "Replace mixed English/Estonian technical prose with idiomatic Estonian, remove unnecessary English glosses, and keep established acronyms consistent.",
-      "reviewer_extra": "Identify one Englishism, unnecessary \"ingl ...\" gloss, or inconsistent term that can be replaced with a shorter Estonian form.",
-      "writer_extra": "Replace the term or sentence with idiomatic Estonian. Preserve code/model names. Prefer net-shorter wording."
+      "reviewer_extra": "Use `./cli/kratt thesis-lint --check terminology --json` or `./cli/kratt terms search <term>` to identify one Englishism, unnecessary \"ingl ...\" gloss, or inconsistent term. Cite the relevant result in the finding.",
+      "writer_extra": "Replace the term or sentence with idiomatic Estonian backed by `./cli/kratt terms` or thesis-lint evidence when available. Preserve code/model names. Prefer net-shorter wording; if Ekilex has no result, avoid inventing a new term and keep/define the existing one."
     },
     {
       "id": "chapter-readiness",
@@ -178,6 +178,23 @@
       "focus": "Keep comparison against alternatives concise and non-duplicative; remove repeated or overly broad framing.",
       "reviewer_extra": "Identify one comparison point that is duplicated, too broad, or longer than needed for an already-cited alternative.",
       "writer_extra": "Shorten or merge the comparison sentence/paragraph using existing citations only. Do not introduce new alternatives."
+    },
+    {
+      "id": "lint-fixer",
+      "title": "Ranked thesis lint fixer",
+      "active": true,
+      "branch": "cron/lint-fixer",
+      "worktree": ".claude/worktrees/cron-lint-fixer",
+      "rotation": [
+        "docs/thesis/thesis-tex-estonian/chapters/introduction.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/first_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex",
+        "docs/thesis/thesis-tex-estonian/chapters/summary.tex"
+      ],
+      "focus": "Use ranked thesis-lint output to fix high-confidence terminology, style, formal, and readability issues without broad rewrites.",
+      "reviewer_extra": "Run `./cli/kratt thesis-lint --profile final --ranked --json`; choose one high-confidence finding for the target file. Prefer confidence=high and impact clarity/submission over noisy readability suggestions.",
+      "writer_extra": "Fix exactly the selected lint finding if it is real in context. Preserve meaning, citations, labels, tables, and numeric claims. If the finding is a false positive or needs human judgment, push back with the lint id and reason."
     },
     {
       "id": "research-note",

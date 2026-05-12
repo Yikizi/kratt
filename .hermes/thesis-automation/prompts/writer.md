@@ -29,7 +29,10 @@ The thesis is now in **compression-first closeout mode**. Your edit should make 
   - the edit mainly adds explanatory prose instead of replacing/deleting existing prose;
   - the edit introduces a new `\footnote{...}` in a thesis chapter;
   - the edit adds a new English gloss such as `termin (ingl ...)` unless it is the first unavoidable definition of a standard abbreviation;
-  - the edit repeats a point already made clearly elsewhere in the same file.
+  - the edit repeats a point already made clearly elsewhere in the same file;
+  - the edit introduces TODO/FIXME/TBD/platsihoidja placeholders into an active thesis chapter. If evidence is absent, write a concise limitation paragraph instead and keep detailed work items in `docs/PROJECT_TODO.md`.
+- You MAY run the read-only helper `./cli/kratt terms search ...` or `./cli/kratt terms check ...` to validate a technical term before editing. Use established Estonian terms when the helper gives a relevant public source; when no result exists, keep the term stable and define it in prose rather than inventing a new translation.
+- You MAY run targeted read-only `./cli/kratt thesis-lint --check <name> --json` before editing when it helps validate the reviewer finding. Do not broaden scope based on unrelated lint findings.
 - If you edit, prefer one of these operations:
   - delete a redundant sentence/paragraph;
   - replace a long sentence with a shorter Estonian sentence;

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# DESC: Run thesis lint checks for terminology, claims, style, scope, and form
+# USAGE: kratt thesis-lint [--profile quick|final] [--check NAME] [--ranked] [--json] [--fail-on warn|error]
+# ARGS: --profile Check profile. quick by default; final runs all checks
+# ARGS: --check Run one named check; may be repeated
+# ARGS: --ranked Sort findings by confidence/impact and include rank fields
+# ARGS: --list-checks Print available check names
+# EXAMPLES: kratt thesis-lint
+# EXAMPLES: kratt thesis-lint --profile final --max-findings 40
+# EXAMPLES: kratt thesis-lint --profile final --ranked --max-findings 25
+# EXAMPLES: kratt thesis-lint --check terminology --check claim-evidence --json
+set -euo pipefail
+
+python3 "$KRATT_ROOT/scripts/thesis_lint.py" "$@"

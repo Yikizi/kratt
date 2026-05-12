@@ -1,9 +1,9 @@
-Metoodika eesmärk on kirjeldada sellist tööprotsessi, mille abil on võimalik äratussõna mudeli arenduses eristada töötlustoru (ingl \emph{pipeline}) tehnilisi piiranguid andmestikust või mudeli üldistusvõimest tulenevatest probleemidest. See on oluline, sest vastasel juhul võib nõrk tulemus jääda valesti kas andmete, juurutamise või treeningukoodi arvele. Just seetõttu kirjeldatakse järgnevalt esmalt toru tehnilised komponendid, seejärel nende võrdlusraam, seejärel andme- ja hindamiskiht ning lõpuks mudeli arhitektuur ja selle konfigureerimine.
+Metoodika eesmärk on kirjeldada sellist tööprotsessi, mille abil on võimalik äratussõna mudeli arenduses eristada töötlustoru tehnilisi piiranguid andmestikust või mudeli üldistusvõimest tulenevatest probleemidest. See on oluline, sest vastasel juhul võib nõrk tulemus jääda valesti kas andmete, juurutamise või treeningukoodi arvele. Just seetõttu kirjeldatakse järgnevalt esmalt toru tehnilised komponendid, seejärel nende võrdlusraam, seejärel andme- ja hindamiskiht ning lõpuks mudeli arhitektuur ja selle konfigureerimine.
 
 \section{Kasutatud tehnoloogiad}
 Töö praktiline baas koosneb neljast peamisest komponendist. Esmaseks mikrokontrolleri-suunaliseks treeninguraamistikuks kasutatakse \texttt{microWakeWord} projekti \cite{microwakeword2026}, mille all töötab TensorFlow \cite{tensorflow2015}. Võrdlusraamistikuna kaasatakse \texttt{openWakeWord} \cite{openwakeword2026}, mis on suunatud kiiremale äratussõna prototüüpimisele ja mille ümber on aktiivne kasutuspraktika Home Assistanti ökosüsteemis. Mudeli sihtformaadiks on TensorFlow Lite ning sihtseadmeks ESP32-S3 põhine arendusplaat. Seadmel käitamiseks ja Home Assistantiga sidumiseks kasutatakse ESPHome'i \cite{esphome2026}. Nutikodu automaatikakihi ja sündmuste orkestreerimise eest vastutab Home Assistant \cite{homeassistant2026}.
 
-Selline tehnoloogiline valik võimaldab hoida kogu toru lokaalsena. See tähendab, et treening toimub arendusmasinas, mudeli eksport tehakse TFLite vormingusse ning järeldamine jookseb päris mikrokontrolleril ilma välise pilveteenuseta. Samal ajal võimaldab kahe erineva äratussõna raamistiku kasutamine hinnata mitte ainult lõplikku mudelikvaliteeti, vaid ka seda, kui suur on arenduskulu ja milliseid kompromisse nõuab tehnoloogiavalik väikese keeleruumi tingimustes.
+Selline tehnoloogiline valik võimaldab hoida kogu toru lokaalsena. See tähendab, et treening toimub arendusmasinas, mudeli eksport tehakse TFLite vormingusse ning järeldamine jookseb füüsilisel mikrokontrolleril ilma välise pilveteenuseta. Samal ajal võimaldab kahe erineva äratussõna raamistiku kasutamine hinnata mitte ainult lõplikku mudelikvaliteeti, vaid ka seda, kui suur on arenduskulu ja milliseid kompromisse nõuab tehnoloogiavalik väikese keeleruumi tingimustes.
 
 \section{Võrdlusraamistik}
 Töö ei piirdu ühe tehnoloogia kasutamisega, vaid võrdleb kahte praktiliselt relevantset lähenemist: \texttt{microWakeWord} ja \texttt{openWakeWord}.
@@ -14,7 +14,7 @@ Võrdlus viiakse läbi neljal teljel:
 \begin{itemize}
     \item treenimise praktiline keerukus, sealhulgas andmete ettevalmistuse maht, hüperparameetrite tundlikkus ja tööriistade kasutusmugavus;
     \item mudeli kvaliteet, sealhulgas äratussõna tabamine ja valevallandumiste käitumine positiivsete, negatiivsete ja taustaheli andmete peal;
-    \item integreeritavus, sealhulgas mudeli suurus, järeldamise praktiline teostatavus ja sobivus ESP32-S3 klassi seadmele;
+    \item integreeritavus, sealhulgas mudeli suurus, järeldamise praktiline käitatavus ja sobivus ESP32-S3 klassi seadmele;
     \item laiendatavus eesti keelele, sealhulgas sõltuvus ingliskeelsetest eeldustest ja sünteetilise andmestiku roll.
 \end{itemize}
 
@@ -26,12 +26,12 @@ Võrdlus viiakse läbi neljal teljel:
     \item taustaheli salvestused, mis sisaldavad pikka pidevat taustaheli ilma äratussõnata.
 \end{itemize}
 
-Positiivsed klipid õpetavad mudelile sihtsõna akustilist kuju. Negatiivsed klipid aitavad mudelil õppida, mida mitte pidada äratussõnaks. Taustaheli andmed täidavad teistsugust rolli: nende pealt hinnatakse, kui tihti mudel valehäireid tekitab siis, kui seade kuulab päris kasutusolukorras pidevat helivoogu.
+Positiivsed klipid õpetavad mudelile sihtsõna akustilist kuju. Negatiivsed klipid aitavad mudelil õppida, mida mitte pidada äratussõnaks. Taustaheli andmed täidavad teistsugust rolli: nende pealt hinnatakse, kui tihti mudel valehäireid tekitab siis, kui seade kuulab tegelikus kasutusolukorras pidevat helivoogu.
 
 \section{Avalikud andmekorpused}
 Enne eestikeelse \enquote{Kratt} andmestiku juurde liikumist otsustati kohalik treeningu- ja hindamistoru valideerida avaliku andmestiku peal. Selleks valiti \texttt{Speech Commands} korpus ja sihtsõna \texttt{marvin} \cite{speechcommands2018}. Tegemist on kontrollitava baasülesandega, mille peal on võimalik hinnata, kas treening, eksport ja evaluatsioon töötavad otsast lõpuni.
 
-Taustaheli ja speech-negative allikatena lisatakse torusse \texttt{MUSAN}, \texttt{VOiCES} ja \texttt{Common Voice} korpused \cite{musan2015,voices2018,commonvoice2020}. Nende rollid on erinevad. \texttt{MUSAN} pakub palju müra, muusikat ja kõnet. \texttt{VOiCES} toob sisse kaugkõne, ruumiakustika ja realistlikumad kuulamistingimused. \texttt{Common Voice} on vajalik eelkõige kõnepõhiste negatiivsete näidete jaoks ning hiljem ka eestikeelse mudeli taustamaterjalina.
+Taustaheli ja speech-negative allikatena lisatakse torusse \texttt{MUSAN}, \texttt{VOiCES} ja \texttt{Common Voice} korpused \cite{musan2015,voices2018,commonvoice2020}. Nende rollid on erinevad. \texttt{MUSAN} pakub müra, muusikat ja kõnet. \texttt{VOiCES} toob sisse kaugkõne, ruumiakustika ja realistlikumad kuulamistingimused. \texttt{Common Voice} on vajalik eelkõige kõnepõhiste negatiivsete näidete jaoks ning hiljem ka eestikeelse mudeli taustamaterjalina.
 
 \section{Tunnused ja andmevorming}
 Andmed teisendatakse spektraalseteks tunnusteks ja salvestatakse \texttt{mmap} vormingus. See võimaldab töödelda suuri andmehulkasid nii, et kogu korpust ei pea korraga muutmällu laadima. See on oluline nii treeningukiiruse kui ka stabiilsuse jaoks.
@@ -52,7 +52,7 @@ Selline jaotus on vajalik, sest voogedastushindamine ei saa toetuda ainult lühi
 \begin{itemize}
     \item \texttt{FRR} ehk false rejection rate, mis näitab, kui suur osa tegelikest äratussõna juhtudest jääb tabamata;
     \item \texttt{FAPH} ehk false accepts per hour, mis näitab valevallandumiste arvu tunni kohta;
-    \item ROC-laadne kõver, kus hinnatakse erinevate threshold'ide mõju \texttt{FRR} ja \texttt{FAPH} suhtele.
+    \item ROC-laadne kõver, kus hinnatakse erinevate lävede mõju \texttt{FRR} ja \texttt{FAPH} suhtele.
 \end{itemize}
 
 Iga raporteeritud mõõdiku juurde lisatakse 95\%~usaldusvahemik. Klipi-tasemel mõõdikutele (tuvastamismäär, FPR) kasutatakse Wilsoni skoorimeetodi vahemikku \cite{wilson1927probable,brown2001interval}, kuna see käitub paremini väikese valimi ja piiriläheduses olevate proportsioonide korral. Voogedastuse FAPH-ile kasutatakse täpset Poissoni-Garwoodi vahemikku \cite{garwood1936fiducial,ulm1990poisson}; kui $T$ tunni jooksul ei ole täheldatud ühtegi sündmust ($k=0$), raporteeritakse \enquote{kolmereegli} ühepoolne 95\%~ülemine piir $\sim 3/T$ \cite{hanley1983ruleofthree}. Lävi valitakse ainult valideerimisandmestikul; testi-komplekti pealt valitud lävi ei kajasta tegelikku ebakindlust \cite{cawley2010overfitting}.
@@ -88,14 +88,14 @@ Kogu mudeli parameetrite arv on ${\sim}22\,000$, mis on piisavalt väike, et mah
 
 MixedNet on projekteeritud voogedastusrežiimis töötamiseks. Treenimise ajal töödeldakse kogu sisendklipp korraga (mõõtmetega $194 \times 40$), kuid pärast TFLite eksporti töötab mudel ühe spektrogrammikaadri kaupa. Iga uue 10-millisekundilise akna saabumisel uuendab mudel sisemist olekut (\emph{internal state}), kus hoitakse eelmiste kaadrite osalisi konvolutsiooni\-tulemusi. Väljundina antakse üks tõenäosuse väärtus, mis näitab, kas viimase umbes 1{,}5~sekundi jooksul esines äratussõna.
 
-See lähenemine on praktiline põhjusel, et mikrokontroller ei pea puhverdama mitut sekundit heli, vaid töötleb seda reaalajas kaaderhaaval. Lisaks on voogedastusrežiimi arvutuslik kulu konstantne --- iga kaader nõuab sama palju tööd sõltumata sellest, kui kaua seade on kuulanud.
+See lähenemine on praktiline põhjusel, et mikrokontroller ei pea puhverdama mitut sekundit heli, vaid töötleb seda reaalajas kaaderhaaval. Lisaks on voogedastusrežiimi arvutuslik kulu konstantne --- iga kaader nõuab sama arvutusmahu sõltumata sellest, kui kaua seade on kuulanud.
 
 \subsection{Residuaalühendused}
 \label{subsec:residual}
 
 Residuaalühendused (\emph{residual connections}) on lühisühendused, mis liidavad ploki sisendi otse ploki väljundile, minnes mööda ploki sisemistest teisenduskihtidest \cite{he2016resnet}. Selline ühendus võimaldab gradientidel tagasilevimise ajal voolata otse läbi lühisühenduse, vältides sügavamates võrkudes esinevat gradientide kadumise probleemi (\emph{vanishing gradients}).
 
-Residuaalühenduste tõhusust väikestes äratussõna mudelites on näidanud Choi~et~al., kelle BC-ResNet arhitektuur saavutab \texttt{Speech Commands} andmestikul 96,9\% täpsuse vaid ${\sim}9200$~parameetriga \cite{choi2021bcresnet}. See tulemus viitab sellele, et residuaalõpe võimaldab väga kompaktsetes mudelites iga parameetrit tõhusamalt ära kasutada.
+Residuaalühenduste tõhusust väikestes äratussõna mudelites on näidanud Choi~et~al., kelle BC-ResNet arhitektuur saavutab \texttt{Speech Commands} andmestikul 96,9\% täpsuse vaid ${\sim}9200$~parameetriga \cite{choi2021bcresnet}. See tulemus viitab sellele, et residuaalõpe võimaldab kompaktsetes mudelites iga parameetrit tõhusamalt ära kasutada.
 
 \texttt{microWakeWord} raamistik toetab residuaalühenduste lubamist plokipõhiselt parameetri \texttt{residual\_connection} kaudu. Töö algfaasis hoiti v1--v8 põhiseerias residuaalühendused väljas (\texttt{0,0,0,0}), et esmalt fikseerida arhitektuur ja keskenduda andmestiku ning hindamistoru vigade leidmisele. Pärast kõrvalejäetud hindamiskomplektide kasutuselevõttu kontrolliti sama parameetrit eraldi ablatsioonina: \texttt{v6-residual} kordas v6 andme- ja treeninguseadistust, kuid lülitas residuaalühendused sisse (\texttt{1,1,1,1}). See vähendas ühtsel 2026-04-21 hindamisel Common~Voice ET voogedastus-FAPH-i 25,4-lt 14,4-le, kuid ei lahendanud sarnaste negatiivnäidete eristamise probleemi. Seetõttu kasutavad hilisemad tugevamad kandidaadid (nt \texttt{v16c} ja ekspertmudelid) residuaalühendusi, ent neid käsitletakse ühe kasuliku arhitektuurivalikuna, mitte iseseisva lahendusena fraasi täpsele eristamisele.
 
@@ -120,7 +120,7 @@ Käesolevas töös kasutati SpecAugment'i valikuliselt alates v7 katsetest, rake
 
 Treenitud mudel kvantiseeritakse TensorFlow Lite täisarvulisse vormingusse (\emph{full integer quantization}), kus nii kaalud kui ka aktivatsioonid teisendatakse INT8 esitlusse \cite{tensorflow2015, jacob2018quantization}. See vähendab mudeli mahtu ja kiirendab järeldamist, sest INT8 aritmeetika on mikrokontrolleri protsessoril kordades efektiivsem kui ujukomaarvutus.
 
-Piloodi aktiivseks kandidaadiks valitud \texttt{v16c} kvantiseeritud TFLite-mudeli maht on 148\,KB; varasemad väiksemad mudelid olid umbes 57\,KB. Mõlemad mahuvad ESP32-S3 flash-mällu. Järeldamise ajal vajab ESPHome manifest lisaks 45--50\,KB töömälu (\texttt{tensor\_arena}), kuhu paigutatakse vahetulemused. Seega jääb \texttt{v16c} mudeli ja tensor-arena suurusjärk alla 200\,KB ning on ESP32-S3 jaoks mälumahu mõttes teostatav, kuigi lõplik compile/flash kontroll tehakse kasutajatesti aktiivse konfiguratsiooni peal.
+Piloodi aktiivseks kandidaadiks valitud \texttt{v16c} kvantiseeritud TFLite-mudeli maht on 148\,KB; varasemad väiksemad mudelid olid umbes 57\,KB. Mõlemad mahuvad ESP32-S3 flash-mällu. Järeldamise ajal vajab ESPHome manifest lisaks 45--50\,KB töömälu (\texttt{tensor\_arena}), kuhu paigutatakse vahetulemused. Seega jääb \texttt{v16c} mudeli ja tensor-arena suurusjärk alla 200\,KB ning sobib ESP32-S3 mälupiirangutesse, kuigi lõplik compile/flash kontroll tehakse kasutajatesti aktiivse konfiguratsiooni peal.
 
 \section{Kasutajatesti metoodika ja subjektiivse rahulolu mõõtmine}
 \label{sec:user-test-methodology}

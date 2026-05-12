@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# DESC: Check thesis terminology with Ekilex/Sonaveeb data
+# USAGE: kratt terms <search|check|datasets> [options]
+# ARGS: search Search one term: kratt terms search "wake word"
+# ARGS: check Check --term entries, a terms file, or extracted .tex candidates
+# ARGS: datasets List Ekilex dataset codes
+# EXAMPLES: kratt terms search "wake word" --all-datasets
+# EXAMPLES: kratt terms check --term "wake word" --term "false positive"
+# EXAMPLES: kratt terms check docs/thesis/thesis-tex-estonian/chapters/third_chapter.tex --limit 20
+set -euo pipefail
+
+_source_env_file() {
+  local env_file="$1"
+  if [[ -z "${EKILEX_API_KEY:-}" && -f "$env_file" ]]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$env_file"
+    set +a
+  fi
+}
+
+_source_env_file "${KRATT_ROOT}/.env"
+if [[ "$KRATT_ROOT" == *"/.claude/worktrees/"* ]]; then
+  MAIN_ROOT="${KRATT_ROOT%%/.claude/worktrees/*}"
+  _source_env_file "${MAIN_ROOT}/.env"
+fi
+
+python3 "$KRATT_ROOT/scripts/thesis_terms_check.py" "$@"

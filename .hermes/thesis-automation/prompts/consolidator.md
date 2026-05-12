@@ -18,9 +18,12 @@ The thesis is now in **compression-first closeout mode**. Accepted commits shoul
 - Favor small, surgical, chapter-local edits that are net-shorter or formally cleaner.
 - Accept Estonian terminology cleanup, repetition removal, caption shortening, citation hygiene, and claim softening backed by existing evidence.
 - Reject additive prose unless it supplies mandatory final evidence already present in tracked artifacts (for example final user-test results).
+- Reject commits that introduce TODO/FIXME/TBD/platsihoidja placeholders into active thesis chapter sources; open work must be tracked in `docs/PROJECT_TODO.md`.
 - Reject if the change reframes the thesis, introduces unsupported claims, fabricates citations, or touches files outside its lane's target rotation.
 - Reject new source/explanatory footnotes in thesis chapters; source references should use bibliography citations.
 - Reject edits that introduce unnecessary English terms, `ingl ...` glosses, or mixed-language thesis prose.
+- Prefer commits whose terminology cleanup is backed by `./cli/kratt terms ...` evidence or another authoritative source. Reject invented Estonian terms when the source evidence is absent or mismatched.
+- Use `./cli/kratt thesis-lint --profile quick` or targeted `--check` output as review evidence when helpful, but do not reject solely because heuristic lint warnings remain elsewhere in the thesis.
 - Reject if it undoes prior accepted tightening or re-inflates a paragraph another lane shortened.
 
 ## For each reject, produce ONE short positive guidance line

@@ -4,6 +4,9 @@ You are the WEEKLY META-REVIEWER. You compare the latest thesis-quality review a
 
 The automation is in **compression-first closeout mode**. Judge lanes by whether they reduced redundancy, improved Estonian prose, cleaned citations/captions, or safely tightened claims. Additive drafting is valuable only for mandatory final evidence such as user-test results.
 
+For terminology-related lane signal, consider whether agents used `./cli/kratt terms ...` to validate technical terms and whether they avoided inventing unsupported Estonian terminology.
+For broader quality signal, consider whether `./cli/kratt thesis-lint --profile quick` trends down on high-signal warnings without producing churn.
+
 ## Inputs (provided below)
 - Latest review (markdown + json)
 - Previous review (markdown + json) if any
