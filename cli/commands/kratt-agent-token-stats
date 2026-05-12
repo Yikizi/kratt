@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# DESC: Summarize local Pi/Claude Code/Codex token usage for Kratt-related sessions
+# USAGE: kratt agent-token-stats [--output-dir DIR] [--since ISO] [--until ISO] [--no-write] [--tools pi claude_code codex]
+# EXAMPLES: kratt agent-token-stats
+# EXAMPLES: kratt agent-token-stats --no-write
+# EXAMPLES: kratt agent-token-stats --until 2026-05-11T00:00:00Z
+# EXAMPLES: kratt agent-token-stats --tools codex --output-dir output/agent-token-usage-codex
+set -euo pipefail
+
+SCRIPT="${KRATT_ROOT}/tools/analysis/summarize_agent_token_usage.py"
+
+if [[ ! -f "$SCRIPT" ]]; then
+  echo "agent token usage script not found: $SCRIPT" >&2
+  exit 1
+fi
+
+exec python3 "$SCRIPT" "$@"

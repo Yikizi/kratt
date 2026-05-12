@@ -1,0 +1,97 @@
+{
+  "currency": "USD",
+  "notes": [
+    "Token-price assumptions for estimating the Kratt thesis agent-engineering footprint.",
+    "Anthropic cache pricing follows the common prompt-cache convention: cache read = 0.1x input, 5m cache write = 1.25x input, 1h cache write = 2x input.",
+    "OpenAI gpt-5.5/gpt-5.4/gpt-5.4-mini rates are inferred from Pi agent usage.cost records in local transcripts.",
+    "gpt-5.3-codex and gpt-5.3-codex-spark are assumptions for token-equivalent reporting; actual Codex Desktop/Claude subscription billing may differ. Override this file if better historical prices are available."
+  ],
+  "entries": [
+    {
+      "provider": "anthropic",
+      "model_pattern": "claude-opus-*",
+      "input_per_million": 15.0,
+      "output_per_million": 75.0,
+      "cache_read_per_million": 1.5,
+      "cache_write_5m_per_million": 18.75,
+      "cache_write_1h_per_million": 30.0,
+      "source": "Assumed Claude Opus 4.x public token pricing"
+    },
+    {
+      "provider": "anthropic",
+      "model_pattern": "claude-sonnet-*",
+      "input_per_million": 3.0,
+      "output_per_million": 15.0,
+      "cache_read_per_million": 0.3,
+      "cache_write_5m_per_million": 3.75,
+      "cache_write_1h_per_million": 6.0,
+      "source": "Assumed Claude Sonnet 4.x public token pricing"
+    },
+    {
+      "provider": "anthropic",
+      "model_pattern": "claude-haiku-*",
+      "input_per_million": 1.0,
+      "output_per_million": 5.0,
+      "cache_read_per_million": 0.1,
+      "cache_write_5m_per_million": 1.25,
+      "cache_write_1h_per_million": 2.0,
+      "source": "Assumed Claude Haiku 4.x public token pricing"
+    },
+    {
+      "provider": "openai*",
+      "model_pattern": "gpt-5.5",
+      "input_per_million": 5.0,
+      "output_per_million": 30.0,
+      "cache_read_per_million": 0.5,
+      "source": "Inferred from Pi agent usage.cost for gpt-5.5"
+    },
+    {
+      "provider": "openai*",
+      "model_pattern": "gpt-5.4",
+      "input_per_million": 2.5,
+      "output_per_million": 15.0,
+      "cache_read_per_million": 0.25,
+      "source": "Inferred from Pi agent usage.cost for gpt-5.4"
+    },
+    {
+      "provider": "openai*",
+      "model_pattern": "gpt-5.4-mini",
+      "input_per_million": 0.75,
+      "output_per_million": 4.5,
+      "cache_read_per_million": 0.075,
+      "source": "Inferred from Pi agent usage.cost for gpt-5.4-mini"
+    },
+    {
+      "provider": "openai*",
+      "model_pattern": "gpt-5.3-codex",
+      "input_per_million": 2.5,
+      "output_per_million": 15.0,
+      "cache_read_per_million": 0.25,
+      "source": "Assumption: price as gpt-5.4 for token-equivalent reporting"
+    },
+    {
+      "provider": "openai*",
+      "model_pattern": "gpt-5.3-codex-spark",
+      "input_per_million": 0.75,
+      "output_per_million": 4.5,
+      "cache_read_per_million": 0.075,
+      "source": "Assumption: price as gpt-5.4-mini for token-equivalent reporting"
+    },
+    {
+      "provider": "openai*",
+      "model_pattern": "gpt-5.1-codex-mini",
+      "input_per_million": 0.75,
+      "output_per_million": 4.5,
+      "cache_read_per_million": 0.075,
+      "source": "Assumption: price as gpt-5.4-mini for token-equivalent reporting"
+    },
+    {
+      "provider": "mistral",
+      "model_pattern": "devstral-medium-latest",
+      "input_per_million": 0.4,
+      "output_per_million": 2.0,
+      "cache_read_per_million": 0.0,
+      "source": "Matches Pi agent usage.cost in local transcript sample"
+    }
+  ]
+}
