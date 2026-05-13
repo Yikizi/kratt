@@ -1,5 +1,4 @@
-ARG BUILD_FROM=python:3.11-slim-bookworm
-FROM ${BUILD_FROM}
+FROM python:3.11-slim-bookworm
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV PYTHONUNBUFFERED=1
