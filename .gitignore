@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+*.env
+**/secrets.yaml
+.venv/
+.venv-esphome/
+.esphome/
+**/.esphome/
+hardware/esp32/esphome/models/kratt.tflite
+output/
+logs/
+*.log

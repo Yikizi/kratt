@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# DESC: Copy a wake-word model into ESPHome manifest without flashing
+# USAGE: kratt prepare-esphome-model <version> [--cutoff N] [--arena BYTES]
+# ARGS: version Model tag, e.g. v16c, expert-a. Default: v16c
+# ARGS: --cutoff Probability cutoff. Default: 0.996
+# ARGS: --arena ESPHome tensor_arena_size bytes. Default: keep current JSON value
+# EXAMPLES: kratt prepare-esphome-model v16c --cutoff 0.996
+# EXAMPLES: kratt prepare-esphome-model expert-a --cutoff 0.996 --arena 45000
+set -euo pipefail
+
+VERSION="v16c"
+CUTOFF="0.996"
+ARENA=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --cutoff) CUTOFF="$2"; shift 2 ;;
+    --arena) ARENA="$2"; shift 2 ;;
+    --*) echo "Unknown: $1" >&2; exit 2 ;;
+    *) VERSION="$1"; shift ;;
+  esac
+done
+
+MODEL="${KRATT_WW}/models/kuule-kratt-${VERSION}/kuule_kratt_${VERSION}.tflite"
+ESPHOME_DIR="${KRATT_ROOT}/hardware/esp32/esphome"
+OUT_MODEL="${ESPHOME_DIR}/models/kratt.tflite"
+MANIFEST="${ESPHOME_DIR}/models/kratt.json"
+
+if [[ ! -f "$MODEL" ]]; then
+  echo "Model not found: $MODEL" >&2
+  exit 1
+fi
+if [[ ! -f "$MANIFEST" ]]; then
+  echo "Manifest not found: $MANIFEST" >&2
+  exit 1
+fi
+
+cp "$MODEL" "$OUT_MODEL"
+
+python3 - "$MANIFEST" "$CUTOFF" "$ARENA" <<'PY'
+import json, sys
+path, cutoff, arena = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(path, encoding='utf-8') as f:
+    data = json.load(f)
+data['wake_word'] = 'kuule_kratt'
+data['model'] = 'kratt.tflite'
+data.setdefault('trained_languages', ['et'])
+data.setdefault('micro', {})['probability_cutoff'] = float(cutoff)
+data['micro']['sliding_window_size'] = int(data['micro'].get('sliding_window_size', 5))
+data['micro']['feature_step_size'] = int(data['micro'].get('feature_step_size', 10))
+if arena:
+    data['micro']['tensor_arena_size'] = int(arena)
+with open(path, 'w', encoding='utf-8') as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
+    f.write('\n')
+PY
+
+echo "Prepared ESPHome wake model"
+echo "  version:  ${VERSION}"
+echo "  source:   ${MODEL}"
+echo "  target:   ${OUT_MODEL}"
+echo "  manifest: ${MANIFEST}"
+echo "  cutoff:   ${CUTOFF}"
+echo "  size:     $(wc -c < "$OUT_MODEL" | tr -d ' ') bytes"
+echo "Next: compile/flash if needed: kratt flash ${VERSION} --cutoff ${CUTOFF}"

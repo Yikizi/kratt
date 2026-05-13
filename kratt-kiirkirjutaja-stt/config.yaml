@@ -1,0 +1,27 @@
+name: Kratt Kiirkirjutaja STT
+version: 0.1.0
+slug: kratt_kiirkirjutaja_stt
+description: Local Estonian Wyoming STT service using the TalTech Kiirkirjutaja INT8 model
+url: https://github.com/Yikizi/kratt/tree/main/kratt-kiirkirjutaja-stt
+arch:
+  - aarch64
+  - amd64
+startup: services
+boot: auto
+init: false
+stage: experimental
+discovery:
+  - wyoming
+ports:
+  10300/tcp: null
+ports_description:
+  10300/tcp: Wyoming STT protocol
+backup_exclude:
+  - models
+  - models/**
+options:
+  model_base_url: https://huggingface.co/TalTechNLP/streaming-zipformer.et-en/resolve/main
+  debug_logging: false
+schema:
+  model_base_url: str
+  debug_logging: bool

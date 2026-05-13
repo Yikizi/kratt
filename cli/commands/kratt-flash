@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# DESC: Compile ESPHome + flash wake word model to KORVO-2
+# USAGE: kratt flash [version] [--cutoff N] [--port PATH]
+# ARGS: version      Model version. Default: v16c (stable demo baseline).
+# ARGS: --cutoff N   Probability cutoff 0.0-1.0. Updates kratt.json.
+# ARGS: --port PATH  Serial port. Default: auto-detect.
+# EXAMPLES: kratt flash v16c --cutoff 0.996
+# EXAMPLES: kratt flash expert-a --cutoff 0.996
+# EXAMPLES: kratt flash v16c --port /dev/cu.usbserial-140
+set -euo pipefail
+
+VERSION="v16c"
+CUTOFF=""
+PORT=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --cutoff) CUTOFF="$2"; shift 2 ;;
+    --port)   PORT="$2";   shift 2 ;;
+    --*)      echo "Unknown: $1"; exit 1 ;;
+    *)        VERSION="$1"; shift ;;
+  esac
+done
+
+echo "Using model: $VERSION"
+
+MODEL="${KRATT_WW}/models/kuule-kratt-${VERSION}/kuule_kratt_${VERSION}.tflite"
+if [[ ! -f "$MODEL" ]]; then
+  echo "Model not found: $MODEL"
+  exit 1
+fi
+
+ESPHOME_DIR="${KRATT_ROOT}/hardware/esp32/esphome"
+cp "$MODEL" "${ESPHOME_DIR}/models/kratt.tflite"
+echo "Copied ${VERSION} model to ESPHome"
+
+python3 - "${ESPHOME_DIR}/models/kratt.json" "$CUTOFF" <<'PY'
+import json, sys
+path, cutoff = sys.argv[1], sys.argv[2]
+with open(path, encoding='utf-8') as f:
+    data = json.load(f)
+data['wake_word'] = 'kuule_kratt'
+data['model'] = 'kratt.tflite'
+data.setdefault('trained_languages', ['et'])
+data.setdefault('micro', {})
+if cutoff:
+    data['micro']['probability_cutoff'] = float(cutoff)
+data['micro']['sliding_window_size'] = int(data['micro'].get('sliding_window_size', 5))
+data['micro']['feature_step_size'] = int(data['micro'].get('feature_step_size', 10))
+data['micro']['tensor_arena_size'] = int(data['micro'].get('tensor_arena_size', 45000))
+with open(path, 'w', encoding='utf-8') as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
+    f.write('\n')
+print(f"Cutoff: {data['micro'].get('probability_cutoff')}")
+PY
+
+if [[ -z "$PORT" ]]; then
+  PORT=$(find /dev -maxdepth 1 -name 'cu.usbserial-*' -print 2>/dev/null | head -1)
+  if [[ -z "$PORT" ]]; then
+    echo "No USB serial device found. Connect KORVO-2 and retry."
+    exit 1
+  fi
+fi
+echo "Port: $PORT"
+
+echo "Compiling..."
+(cd "$ESPHOME_DIR" && esphome compile voice-satellite-esp32-s3-korvo2.yaml) || exit 1
+
+FIRMWARE="${ESPHOME_DIR}/.esphome/build/kratt-korvo2/.pioenvs/kratt-korvo2/firmware.factory.bin"
+echo "Flashing..."
+if command -v idf.py &>/dev/null; then
+  idf.py -p "$PORT" -b 460800 flash --flash_files "$FIRMWARE" 2>/dev/null \
+    || python3.12 -m esptool --port "$PORT" --chip esp32s3 --baud 460800 write_flash 0x0 "$FIRMWARE"
+else
+  python3.12 -m esptool --port "$PORT" --chip esp32s3 --baud 460800 write_flash 0x0 "$FIRMWARE"
+fi
+
+echo ""
+echo "Flashed ${VERSION} to KORVO-2 via ${PORT}"
