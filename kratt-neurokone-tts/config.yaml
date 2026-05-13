@@ -1,5 +1,5 @@
 name: Kratt Neurokõne TTS
-version: 0.1.1
+version: 0.1.2
 slug: kratt_neurokone_tts
 description: Estonian Wyoming TTS service using the Tartu Neurokõne API
 url: https://github.com/Yikizi/kratt/tree/main/kratt-neurokone-tts

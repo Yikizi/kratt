@@ -1,5 +1,5 @@
 name: Kratt Kiirkirjutaja STT
-version: 0.1.1
+version: 0.1.2
 slug: kratt_kiirkirjutaja_stt
 description: Local Estonian Wyoming STT service using the TalTech Kiirkirjutaja INT8 model
 url: https://github.com/Yikizi/kratt/tree/main/kratt-kiirkirjutaja-stt

@@ -12,7 +12,7 @@ RUN apt-get update \
 WORKDIR /opt/kiirkirjutaja
 
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+RUN pip install --no-cache-dir --timeout 120 --retries 10 -r /tmp/requirements.txt
 
 COPY main.py asr.py wyoming_handler.py ./
 COPY run.sh /run.sh
