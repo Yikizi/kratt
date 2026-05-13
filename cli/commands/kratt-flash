@@ -40,6 +40,7 @@ path, cutoff = sys.argv[1], sys.argv[2]
 with open(path, encoding='utf-8') as f:
     data = json.load(f)
 data['wake_word'] = 'kuule_kratt'
+data['model'] = 'kratt.tflite'
 data.setdefault('trained_languages', ['et'])
 data.setdefault('micro', {})
 if cutoff:
@@ -54,7 +55,7 @@ print(f"Cutoff: {data['micro'].get('probability_cutoff')}")
 PY
 
 if [[ -z "$PORT" ]]; then
-  PORT=$(ls /dev/cu.usbserial-* 2>/dev/null | head -1)
+  PORT=$(find /dev -maxdepth 1 -name 'cu.usbserial-*' -print 2>/dev/null | head -1)
   if [[ -z "$PORT" ]]; then
     echo "No USB serial device found. Connect KORVO-2 and retry."
     exit 1

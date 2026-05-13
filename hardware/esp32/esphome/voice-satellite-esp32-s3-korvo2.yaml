@@ -150,7 +150,7 @@ micro_wake_word:
   stop_after_detection: true
   vad:
   models:
-    - model: "/Users/mattias/kratt/hardware/esp32/esphome/models/kratt.json"
+    - model: "models/kratt.json"
       id: kuule_kratt_model
   on_wake_word_detected:
     then:

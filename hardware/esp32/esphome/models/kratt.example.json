@@ -1,9 +1,9 @@
 {
   "type": "micro",
   "wake_word": "kuule_kratt",
-  "author": "Mattias",
+  "author": "Mattias Linholm",
   "trained_languages": ["et"],
-  "model": "/absolute/path/to/kratt_quantized.tflite",
+  "model": "kratt.tflite",
   "version": 2,
   "micro": {
     "probability_cutoff": 0.996,

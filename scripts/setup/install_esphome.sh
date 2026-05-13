@@ -27,10 +27,10 @@ source "${VENV_DIR}/bin/activate"
 python -m pip install --upgrade pip
 python -m pip install "esphome>=2026.1.0"
 
-cat <<'EOF'
-ESPHome installed in .venv-esphome.
+cat <<EOF
+ESPHome installed in ${VENV_DIR}.
 
 Usage:
-  source /Users/mattias/kratt/.venv-esphome/bin/activate
+  source "${VENV_DIR}/bin/activate"
   esphome version
 EOF

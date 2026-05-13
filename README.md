@@ -21,8 +21,7 @@ uurimis- ja tööjaam, kus koos elavad:
 - v17/v18/checkpoint-FAPH katsed on praegu **diagnostic evidence**: need näitasid positive-label purity, exact phrase selectivity ja checkpoint objective probleeme.
 - Suund on nihkunud ühe "parima universaalse mudeli" otsimiselt konservatiivse thesis-evidence suunas: user-test + threshold-frozen replay.
 - Päris seadme ja päris maailma mõõtmine toimub Android false-loggeri, ESP32-S3 Korvo-2 ning nüüd ka `kratt user-test` protokolli kaudu.
-- `home-assistant/` on praegu pigem plaan / blueprint; päris deploy tee käib
-  peamiselt `hardware/esp32/esphome/` ja demo tooling'u kaudu.
+- Home Assistant deploy tee on modulaarne: repo root sisaldab add-on repository metadata't (`repository.yaml`), `kratt-kiirkirjutaja-stt/` pakendab eestikeelse STT Wyoming add-on'i, `kratt-neurokone-tts/` pakendab Neurokõne TTS add-on'i ning wake word käib peamiselt ESPHome `micro_wake_word` manifesti kaudu.
 
 ## Source Of Truth
 
@@ -61,6 +60,12 @@ Peamised kaustad päris kasutuses:
 
 - `stt-integration/`  
   Kiirkirjutaja Wyoming/STT integratsiooni materjal.
+
+- `home-assistant/`
+  Home Assistant modulaarse installitee juhend ja Wyoming/TTS materjal.
+
+- `kratt-kiirkirjutaja-stt/`, `kratt-neurokone-tts/`
+  Home Assistant add-on'id eestikeelse STT ja TTS jaoks.
 
 - `docs/`  
   Research, thesis, user-testing, ADR-id, esitlusmaterjalid.
@@ -178,6 +183,14 @@ Vaata:
 - [hardware/esp32/esphome/README.md](hardware/esp32/esphome/README.md)
 - [stt-integration/README.md](stt-integration/README.md)
 - [external-repos/README.md](external-repos/README.md)
+
+## Litsents ja bränd
+
+Kui pole teisiti märgitud, on Kratt projekti kood, konfiguratsioon, dokumentatsioon ja projekti enda wake-word mudeli artefaktid avaldatud Apache License 2.0 all. Vaata `LICENSE` ja `NOTICE`.
+
+Kolmandate osapoolte komponendid jäävad oma litsentside alla. Kiirkirjutaja runtime'i aluseks olev kood on MIT-litsentsiga; vaata `kratt-kiirkirjutaja-stt/LICENSE`.
+
+Apache-2.0 ei anna õigust kasutada Kratt nime/logo viisil, mis jätab mulje ametlikust heakskiidust või päritolust. Vaata `TRADEMARK.md`. Privaatsuspiirangud ja välise Neurokõne API kasutus on kirjas `PRIVACY.md`.
 
 ## Lühikokkuvõte
 

@@ -43,6 +43,7 @@ path, cutoff, arena = sys.argv[1], sys.argv[2], sys.argv[3]
 with open(path, encoding='utf-8') as f:
     data = json.load(f)
 data['wake_word'] = 'kuule_kratt'
+data['model'] = 'kratt.tflite'
 data.setdefault('trained_languages', ['et'])
 data.setdefault('micro', {})['probability_cutoff'] = float(cutoff)
 data['micro']['sliding_window_size'] = int(data['micro'].get('sliding_window_size', 5))

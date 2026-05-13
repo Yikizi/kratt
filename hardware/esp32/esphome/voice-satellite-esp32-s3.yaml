@@ -92,8 +92,8 @@ micro_wake_word:
     - model: okay_nabu
       id: okay_nabu_model
 
-    # Custom Kratt model (local file URL):
-    - model: "/Users/mattias/kratt/hardware/esp32/esphome/models/kratt.json"
+    # Custom Kratt model (local manifest):
+    - model: "models/kratt.json"
       id: kratt_model
   on_wake_word_detected:
     then:

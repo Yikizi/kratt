@@ -10,7 +10,7 @@ Eesmärk: vältida et mudelite arv (v1..v18, expert-*, checkpoint-*) tekitaks se
 
 ## Current thesis rollid/provenants (updated 2026-04-29)
 
-- **Stable single-model baseline / active-demo candidate:** `v16c`. See on endiselt praktiline lähtepunkt user-test/demo jaoks, kuid mitte production-proven mudel. Hilisemad v17/v18/checkpoint katsed ei asendanud seda deploy-kandidaadina.
+- **Stable single-model baseline / active-demo candidate:** `v16c`. See on endiselt praktiline lähtepunkt user-test/demo jaoks, kuid mitte production-proven mudel. Hilisemad v17/v18/checkpoint katsed ei asendanud seda deploy-kandidaadina. Public ESPHome install artifact: `wake-word/models/kuule-kratt-v16c/kuule_kratt_v16c.json`.
 - **Historical v1-v16 benchmark balance:** `v16c` oli 2026-04-21 v1-v16 unified benchmarki parim recall + hard-neg + FAPH kompromiss, kuigi mitte madalaim FAPH.
 - **Lowest single-model ambient-FAPH diagnostic:** `checkpoint-faph-v18d-clean96-pw96x4`, aga selle recall kukub peaaegu nulli; seega **mitte deployable**.
 - **Low-FAPH gate diagnostic:** `checkpoint-faph10-v18d-clean96-pw96x4` ja selle consensus `+ v16c`, aga Friend1 recall ja confusable FPR jäävad liiga halvaks.

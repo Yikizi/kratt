@@ -1,0 +1,69 @@
+# Modular Kratt/Home Assistant stack for users who run services with Docker Compose.
+#
+# Examples:
+#   docker compose -f docker/kratt-stack.yml --profile stt up -d
+#   docker compose -f docker/kratt-stack.yml --profile stt --profile piper up -d
+#   docker compose -f docker/kratt-stack.yml --profile stt --profile neurokone up -d
+#   docker compose -f docker/kratt-stack.yml --profile ha --profile stt --profile piper up -d
+
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: kratt-ha
+    restart: unless-stopped
+    network_mode: host
+    profiles: ["ha"]
+    volumes:
+      - ha-config:/config
+    environment:
+      - TZ=Europe/Tallinn
+
+  kiirkirjutaja-stt:
+    build:
+      context: ../kratt-kiirkirjutaja-stt
+      dockerfile: Dockerfile
+    container_name: kratt-kiirkirjutaja-stt
+    restart: unless-stopped
+    profiles: ["stt"]
+    ports:
+      - "10300:10300"
+    volumes:
+      - kiirkirjutaja-data:/data
+    environment:
+      MODEL_BASE_URL: ${MODEL_BASE_URL:-https://huggingface.co/TalTechNLP/streaming-zipformer.et-en/resolve/main}
+
+  neurokone-tts:
+    build:
+      context: ../kratt-neurokone-tts
+      dockerfile: Dockerfile
+    container_name: kratt-neurokone-tts
+    restart: unless-stopped
+    profiles: ["neurokone"]
+    ports:
+      - "10301:10301"
+    volumes:
+      - neurokone-data:/data
+    environment:
+      NEUROKONE_VOICE: ${NEUROKONE_VOICE:-mari}
+      NEUROKONE_SPEED: ${NEUROKONE_SPEED:-1.0}
+
+  piper-tts:
+    image: rhasspy/wyoming-piper:latest
+    container_name: kratt-piper-tts
+    restart: unless-stopped
+    profiles: ["piper"]
+    ports:
+      - "10200:10200"
+    volumes:
+      - piper-data:/data
+    command: >
+      --voice et_EE-lhv-medium
+      --uri tcp://0.0.0.0:10200
+      --data-dir /data
+      --download-dir /data
+
+volumes:
+  ha-config:
+  kiirkirjutaja-data:
+  neurokone-data:
+  piper-data:

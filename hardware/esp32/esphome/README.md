@@ -1,58 +1,82 @@
 # ESP32 (ESPHome) Voice Satellite
 
-This folder contains ESPHome configurations for an ESP32-based voice satellite with on-device wake word
-detection (microWakeWord) and Home Assistant Assist streaming.
+ESPHome configurations for an ESP32-S3 voice satellite with on-device Kratt wake-word detection (`micro_wake_word`) and Home Assistant Assist streaming.
 
-## Quick Start (macOS / Linux)
+## Option A: use Kratt v16c like a built-in wake word
+
+In an existing ESPHome voice-satellite YAML, add the public v16c manifest under `micro_wake_word.models`:
+
+```yaml
+micro_wake_word:
+  models:
+    - model: github://Yikizi/kratt/wake-word/models/kuule-kratt-v16c/kuule_kratt_v16c.json@main
+      id: kuule_kratt_model
+```
+
+Raw URL alternative:
+
+```yaml
+micro_wake_word:
+  models:
+    - model: https://raw.githubusercontent.com/Yikizi/kratt/main/wake-word/models/kuule-kratt-v16c/kuule_kratt_v16c.json
+      id: kuule_kratt_model
+```
+
+Then compile/flash the ESPHome device. This is the closest equivalent to using a built-in model such as `hey_jarvis`.
+
+> Status: `v16c` is the stable demo/baseline model, not a production-proven detector. See `wake-word/models/kuule-kratt-v16c/NOTES.md`.
+
+## Option B: local development from this repository
 
 1. Create secrets file:
 
-   - Copy `secrets.yaml.example` to `secrets.yaml`
-   - Fill in Wi-Fi credentials
+   ```bash
+   cp hardware/esp32/esphome/secrets.yaml.example hardware/esp32/esphome/secrets.yaml
+   ```
 
-2. Install ESPHome CLI (recommended via a venv in this repo):
+   Fill in Wi-Fi credentials and `api_encryption_key`.
+
+2. Install ESPHome CLI (recommended via the repo venv):
 
    ```bash
-   cd /Users/mattias/kratt
    ./scripts/setup/install_esphome.sh
    ```
 
-3. Configure the board + microphone pins:
-
-   Edit `voice-satellite-esp32-s3.yaml` substitutions:
-   - `board` (e.g. `esp32-s3-devkitc-1`, `esp32-s3-box-3`, ...)
-   - `mic_bclk_pin`, `mic_lrclk_pin`, `mic_din_pin`
-   - If your board uses an audio ADC (ES7210/ES7243E) you may need to enable the `audio_adc:` block.
-
-4. Flash over USB and watch logs:
+3. Prepare the local Kratt model copy:
 
    ```bash
-   cd /Users/mattias/kratt
-   ./scripts/deployment/esphome_run.sh /Users/mattias/kratt/hardware/esp32/esphome/voice-satellite-esp32-s3.yaml
+   ./cli/kratt prepare-esphome-model v16c --cutoff 0.996
    ```
 
-## Custom Wake Word ("Kratt")
+   This copies `wake-word/models/kuule-kratt-v16c/kuule_kratt_v16c.tflite` to the ignored local ESPHome artifact `hardware/esp32/esphome/models/kratt.tflite` and updates `models/kratt.json`.
 
-ESPHome `micro_wake_word` models are defined by a JSON manifest that references a `.tflite` file.
-For local testing you can keep both files on disk and point ESPHome at the JSON via an absolute path.
+4. Configure board and microphone pins if you use the generic config:
 
-For the current user-test/demo baseline, prepare the local ESPHome model copy without flashing:
+   Edit `voice-satellite-esp32-s3.yaml` substitutions:
+   - `board` (for example `esp32-s3-devkitc-1` or another ESP32-S3 board);
+   - `mic_bclk_pin`, `mic_lrclk_pin`, `mic_din_pin`;
+   - enable/configure `audio_adc:` if your board uses an ES7210/ES7243E-style audio ADC.
 
-```bash
-./cli/kratt prepare-esphome-model v16c --cutoff 0.996
-```
+   For ESP32-S3-Korvo-2, start with `voice-satellite-esp32-s3-korvo2.yaml`.
 
-Manual path:
+5. Validate/flash:
 
-1. Put your trained `.tflite` somewhere on disk.
-2. Create a JSON manifest (see `models/kratt.example.json`) and update:
-   - `wake_word`
-   - `model` (path to the `.tflite`)
-   - `probability_cutoff`, `sliding_window_size`, `tensor_arena_size`
-3. Update `voice-satellite-esp32-s3.yaml` to reference your JSON.
+   ```bash
+   ./.venv-esphome/bin/esphome config hardware/esp32/esphome/voice-satellite-esp32-s3-korvo2.yaml
+   ./.venv-esphome/bin/esphome run hardware/esp32/esphome/voice-satellite-esp32-s3-korvo2.yaml
+   ```
 
-If you want to (re)train the model from the repo dataset:
-  - `/Users/mattias/kratt/wake-word/training/scripts/train_microwakeword.sh`
+## Included configs
 
-Notes:
-- This repo intentionally does not commit trained model binaries (see `.gitignore`).
+- `voice-satellite-esp32-s3-korvo2.yaml` — full Korvo-2 Home Assistant Assist satellite.
+- `voice-satellite-esp32-s3-korvo2-demo.yaml` — wake-word-only serial/log demo for Korvo-2.
+- `voice-satellite-esp32-s3.yaml` — generic ESP32-S3 skeleton with configurable pins.
+- `models/kratt.json` — local development manifest; expects ignored `models/kratt.tflite`.
+
+## Home Assistant pipeline
+
+Use this ESPHome device as the wake-word satellite, then choose whichever backend components you need:
+
+- local Estonian STT: `Kratt Kiirkirjutaja STT` add-on (`10300`);
+- TTS: official Piper add-on or `Kratt Neurokõne TTS` add-on (`10301`);
+- conversation agent: Home Assistant.

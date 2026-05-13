@@ -1,0 +1,24 @@
+Kratt
+Copyright 2026 Mattias Linholm
+
+This product includes software developed for the Kratt thesis/project.
+
+Except where otherwise noted, Kratt project code, configuration, documentation,
+and project-owned wake-word model artifacts are made available under the Apache
+License, Version 2.0.
+
+Third-party components and upstream-derived files remain under their own
+licenses. In particular:
+
+- The Kiirkirjutaja minimal Wyoming STT runtime is derived from work by
+  Tanel Alumäe / TalTech and is distributed under the MIT License; see
+  `kratt-kiirkirjutaja-stt/LICENSE` and the upstream project notices.
+- The TalTechNLP Kiirkirjutaja STT model files are downloaded from Hugging Face
+  at add-on runtime and are governed by their upstream model/license terms.
+- ESPHome, Home Assistant, Wyoming, microWakeWord, sherpa-onnx, Piper, and
+  Neurokõne/TartuNLP are separate projects and are not included under the Kratt
+  Apache-2.0 license merely by being referenced or integrated.
+
+The names "Kratt" and "Kuule Kratt" are project marks/branding. Use of the
+Apache-2.0 licensed code does not grant trademark or branding rights; see
+`TRADEMARK.md`.

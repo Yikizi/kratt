@@ -2,11 +2,12 @@
   "type": "micro",
   "wake_word": "kuule_kratt",
   "author": "Mattias Linholm",
+  "website": "https://github.com/Yikizi/kratt",
   "trained_languages": [
     "et"
   ],
-  "model": "kratt.tflite",
-  "version": 2,
+  "model": "kuule_kratt_v16c.tflite",
+  "version": 1,
   "micro": {
     "probability_cutoff": 0.996,
     "sliding_window_size": 5,
