@@ -69,7 +69,7 @@ marketed as a production-ready Estonian wake-word detector. See:
 
 - `wake-word/models/kuule-kratt-v16c/NOTES.md`
 - `wake-word/docs/MODEL_LINEAGE.md`
-- `docs/research/wake-word-evaluation-methodology.md`
+- `docs/evaluation.md`
 
 ## License
 

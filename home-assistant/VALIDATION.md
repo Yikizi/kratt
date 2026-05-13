@@ -55,7 +55,7 @@ Startup smoke:
 .venv-esphome/bin/esphome config hardware/esp32/esphome/voice-satellite-esp32-s3.yaml
 ```
 
-Result: all three configs were valid after changing the Kratt model manifest references from absolute `/Users/...` paths to relative `models/kratt.json`.
+Result: all three configs were valid after changing the Kratt model manifest references from local absolute paths to relative `models/kratt.json`.
 
 Warnings observed and accepted:
 
