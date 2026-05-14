@@ -586,11 +586,7 @@ V18-pere puhastatud positiivsetega mudelid (vt §\ref{sec:v18-results}) saavutas
 
 Hüpoteesi kontrollimiseks treeniti kolm kontrollpunkti-eksperimenti, mis põhinevad v18d-clean96 konfiguratsioonil (puhastatud positiivsed, 11675 negatiivset, 1002 taustaheli klippi, \texttt{pointwise\_filters\,=\,96,96,96,96}, residuaalühendused sees, SpecAugment sees).
 
-Esimene katse kasutas seadistust \texttt{target\_minimization\,=\,2{,}0} (st soovitud taustaheli FAPH-i sihtväärtus oli 2 valeaktiveeringut tunnis sisemise validatsiooni tunnetel). \texttt{clip\_duration\_ms} oli 1500. Treeningujooks lõppes plaanipäraselt ja TFLite eksport tehti automaatselt.
-
-Teine katse kasutas leebemat sihtväärtust \texttt{target\_minimization\,=\,10{,}0} ja pikemat akent \texttt{clip\_duration\_ms\,=\,2000}. SLURM-i tööjada \texttt{922050} jäi aja-piirangust hiljaks ja katkestati enne plaanipärast TFLite-i eksporti, kuid sisemine fail \texttt{best\_weights.weights.h5} oli olemas. Mudel eksporditi käsitsi täiendava SLURM-i tööjadaga \texttt{922275} 2026-04-29. Selle dokumenteeritud käsitsi-eksport on osa eksperimendi loost: ilma võime sõltumatult eksportida olemasolevaid kaalusid jääks osaleva diagnoosi tegemata.
-
-Kolmas katse kasutas veel leebemat sihtväärtust \texttt{target\_minimization\,=\,20{,}0}. Selle eesmärk ei olnud saada uut lõppmudelit, vaid mõõta, kas tuvastamismäär taastub enne kui taustaheli FAPH muutub praktikas liiga kõrgeks. See treeningujooks lõppes plaanipäraselt SLURM-i tööjadaga \texttt{922280} ning mudel eksporditi automaatselt.
+Kolm varianti erinevad ainult kontrollpunkti-sihtväärtuse ja akna pikkuse poolest: \texttt{checkpoint-faph} (\texttt{target\_minimization}\,=\,2{,}0, \texttt{clip\_duration\_ms}\,=\,1500), \texttt{checkpoint-faph10} (10{,}0; 2000) ning \texttt{checkpoint-faph20} (20{,}0; 1500); ülejäänud konfiguratsioon (andmestik, arhitektuur, residuaalühendused, SpecAugment) on identne v18d-clean96-ga.
 
 \subsection{Kontrollpunkti-eksperimentide tulemused}
 \label{sec:checkpoint-results}
