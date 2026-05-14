@@ -502,11 +502,7 @@ V18-pere puhastatud positiivsetega mudelid (vt §\ref{sec:v18-results}) saavutas
 
 \texttt{microWakeWord} treeningraamistik toetab kontrollpunkti valikut kahe metrika kaudu: \texttt{maximization\_metric} (maksimeeritav) ja \texttt{minimization\_metric} (minimeeritav). Senised mudelid v1--v18 olid valinud kontrollpunkti \texttt{maximization\_metric: accuracy} alusel, mis hindab klipitaseme näiteid täpsuse järgi, sõltumata sellest, kas mudel on voogedastusrežiimis stabiilne.
 
-Hüpoteesiks oli, et seadistus \texttt{minimization\_metric: ambient\_false\_positives\_per\_hour} koos sihtväärtusega \texttt{target\_minimization} valib treeningu lõpust kontrollpunkti, kus mudel on juba sisemiselt kalibreeritud madalama taustaheli FAPH-i poole. See peaks andma sama treeningandmestiku ja arhitektuuriga oluliselt madalama juurutus-FAPH-i ilma uut andmestikku või uut mudeliarhitektuuri vajamata.
-
-Hüpoteesi kontrollimiseks treeniti kolm kontrollpunkti-eksperimenti, mis põhinevad v18d-clean96 seadistusel (puhastatud positiivsed, 11675 negatiivset, 1002 taustaheli klippi, \texttt{pointwise\_filters\,=\,96,96,96,96}, residuaalühendused sees, SpecAugment sees).
-
-Kolm varianti erinesid ainult kontrollpunkti sihtväärtuse ja akna pikkuse poolest: \texttt{checkpoint-faph} (\texttt{target\_minimization}\,=\,2{,}0, \texttt{clip\_duration\_ms}\,=\,1500), \texttt{checkpoint-faph10} (10{,}0; 2000) ning \texttt{checkpoint-faph20} (20{,}0; 1500). Ülejäänud seadistus --- andmestik, arhitektuur, residuaalühendused ja SpecAugment --- jäi v18d-clean96-ga samaks.
+Kolm varianti erinevad ainult kontrollpunkti-sihtväärtuse ja akna pikkuse poolest: \texttt{checkpoint-faph} (\texttt{target\_minimization}\,=\,2{,}0, \texttt{clip\_duration\_ms}\,=\,1500), \texttt{checkpoint-faph10} (10{,}0; 2000) ning \texttt{checkpoint-faph20} (20{,}0; 1500); ülejäänud konfiguratsioon (andmestik, arhitektuur, residuaalühendused, SpecAugment) on identne v18d-clean96-ga.
 
 \subsection{Kontrollpunkti-eksperimentide tulemused}
 \label{sec:checkpoint-results}
