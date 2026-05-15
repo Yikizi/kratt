@@ -59,10 +59,10 @@ Iga raporteeritud mõõdiku juurde lisatakse 95\%~usaldusvahemik. Klipi-tasemel 
 \label{subsec:faph-variants}
 Käesolevas töös eristatakse nelja FAPH-i mõõdiku varianti, mille loendusreegel ja käitusloogika erinevad ning mis ei ole otseselt vastastikku võrreldavad \cite{lopezespejo2021deepkws,microwakeword2026,openwakeword2026,esphome2026}:
 \begin{itemize}
-    \item \textbf{raamistiku FAPH} --- ESPHome / microWakeWord vaikeloogika seadme peal: liuakna keskmine, valikuline VAD, järelreset pärast aktiveerimist;
-    \item \textbf{skriptitud taasmängu FAPH} --- taasmäng omaette siluja ja eraldi 2-sekundilise jahtumisajaga; kasutatakse käesoleva töö kõikides tulemuste peatüki tabelites;
-    \item \textbf{välitingimuste FAPH} --- Androidi või seadme logija tulemused tegeliku käitusläve, mikrofoni ja keskkonnaga;
-    \item \textbf{kasutajatesti taasmängu FAPH} --- kasutajatestis kogutud sessioonide taasmäng külmutatud läve juures.
+    \item \textbf{raamistiku FAPH} - ESPHome / microWakeWord vaikeloogika seadme peal: liuakna keskmine, valikuline VAD, järelreset pärast aktiveerimist;
+    \item \textbf{skriptitud taasmängu FAPH} - taasmäng omaette siluja ja eraldi 2-sekundilise jahtumisajaga; kasutatakse käesoleva töö kõikides tulemuste peatüki tabelites;
+    \item \textbf{välitingimuste FAPH} - Androidi või seadme logija tulemused tegeliku käitusläve, mikrofoni ja keskkonnaga;
+    \item \textbf{kasutajatesti taasmängu FAPH} - kasutajatestis kogutud sessioonide taasmäng külmutatud läve juures.
 \end{itemize}
 Muutuv loendusreegel on äratussõna kirjanduses üks levinumaid reprodutseeritavuse auke \cite{lopezespejo2021deepkws}, mistõttu iga käesoleva töö FAPH-tabel ja -joonis identifitseerib kasutatud variandi tabeli pealkirjas või veerus.
 
@@ -84,7 +84,7 @@ Kogu mudeli parameetrite arv on ${\sim}22\,000$, mis on piisavalt väike, et mah
 
 MixedNet on projekteeritud voogedastusrežiimis töötamiseks. Treenimise ajal töödeldakse kogu sisendklipp korraga (mõõtmetega $194 \times 40$), kuid pärast TFLite eksporti töötab mudel ühe spektrogrammikaadri kaupa. Iga uue 10-millisekundilise akna saabumisel uuendab mudel sisemist olekut (\emph{internal state}), kus hoitakse eelmiste kaadrite osalisi konvolutsiooni\-tulemusi. Väljundina antakse üks tõenäosuse väärtus, mis näitab, kas viimase umbes 1,5\nobreakspace{}sekundi jooksul esines äratussõna.
 
-See lähenemine on praktiline põhjusel, et mikrokontroller ei pea puhverdama mitut sekundit heli, vaid töötleb seda reaalajas kaaderhaaval. Lisaks on voogedastusrežiimi arvutuslik kulu konstantne: iga kaader nõuab sama palju arvutusressurssi sõltumata sellest, kui kaua seade on kuulanud.
+See lähenemine on praktiline põhjusel, et mikrokontroller ei pea puhverdama mitut sekundit heli, vaid töötleb seda reaalajas kaaderhaaval. Lisaks on voogedastusrežiimi arvutuslik kulu konstantne: iga kaader nõuab sama arvutusmahtu sõltumata sellest, kui kaua seade on kuulanud.
 
 \subsection{Residuaalühendused}
 \label{subsec:residual}
