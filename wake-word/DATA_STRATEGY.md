@@ -71,7 +71,7 @@ If a v19-style run is attempted, partial and confusable phrases should be first-
 
 ## Avatud probleemid
 
-- 🎯 Real-speaker user-test data: 20-30 participants, labelled trials + optional audio consent.
+- 🎯 Real-speaker user-test pilot data: up to 10 participants, labelled trials + optional audio consent; use as UX/usefulness feedback and limited real-speaker evidence, not as the sole model-validation basis.
 - 🎯 Threshold freeze for final reporting.
 - ⏳ Exact manifests for v17/v18/checkpoint runs should be archived when available.
 - ⏳ Wilson CI / small-N uncertainty should be included in final tables.

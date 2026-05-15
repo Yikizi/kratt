@@ -112,7 +112,7 @@ Vaata ka:
 ## Praegu (2026-04-29)
 
 **Vajab kogumist:**
-- 20-30 user-test participant sessions using `docs/user-testing/ten-minute-shadow-demo-protocol.md` and `kratt user-test`.
+- Up-to-10-participant user-test pilot sessions using `docs/user-testing/ten-minute-shadow-demo-protocol.md` and `kratt user-test`.
 - Threshold-frozen shadow/replay analysis on the recorded user-test audio.
 - Optional only if thesis schedule allows: v19 phrase-selectivity data split with explicit partial/confusable negatives and independent holdout.
 

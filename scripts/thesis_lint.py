@@ -19,6 +19,7 @@ DEFAULT_THESIS_ROOT = REPO_ROOT / "docs" / "thesis" / "thesis-tex-estonian"
 
 CHECKS = {
     "terminology": "thesis_lints.checks.terminology",
+    "abbreviations": "thesis_lints.checks.abbreviations",
     "estonian-style": "thesis_lints.checks.estonian_style",
     "claim-evidence": "thesis_lints.checks.claim_evidence",
     "methodology": "thesis_lints.checks.methodology",
@@ -33,6 +34,7 @@ CHECKS = {
 PROFILES = {
     "quick": [
         "terminology",
+        "abbreviations",
         "claim-evidence",
         "scope",
         "formal-latex",

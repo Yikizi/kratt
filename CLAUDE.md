@@ -16,7 +16,7 @@ Building the **first Estonian wake word model** "Kratt" and integrating it with 
 1. Estonian wake word model with data augmentation methodology
 2. Dual hardware implementation (ESP32C3 + Raspberry Pi)
 3. Home Assistant add-on with Wyoming protocol
-4. User testing with 20-30 participants
+4. Up-to-10-participant pilot for voice-assistant UX/usefulness and limited real-speaker wake-word evidence
 5. (Optional) Opt-in data collection framework
 
 ### Key Insight
@@ -63,7 +63,7 @@ kratt/                          # Monorepo root
 ## 📋 Current Phase: User Testing & Thesis Writing (late April 2026)
 
 **Priority Order**:
-1. 🎯 User testing (20-30 participants, CRITICAL for thesis; `kratt user-test` recorder exists)
+1. 🎯 User-testing pilot (up to 10 participants, CRITICAL for thesis framing; `kratt user-test` recorder exists)
 2. 📝 Thesis writing (chapters 3-5 are critical path before 2026-05-18)
 3. 📊 Freeze model thresholds and replay user-test audio across the fixed shadow set
 4. 🔌 Deployment/demo polish only as needed for the user-test setup

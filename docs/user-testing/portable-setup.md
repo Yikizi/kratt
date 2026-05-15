@@ -48,8 +48,8 @@ Tihe, aga mahub. Kui RAM lõppeb, kaaluda väiksemat LLM mudelit (8B → ~5GB).
 ### Software (ette valmistada)
 - [ ] Docker images pulled: HA, Kiirkirjutaja, Piper
 - [ ] Ollama mudel alla laetud (Gemma 3 12B)
-- [ ] macOS Internet Sharing konfigureeritud ja testitud
-- [x] ESPHome local model copy prepared for pilot default `v16c` at cutoff `0.996` (`kratt prepare-esphome-model v16c --cutoff 0.996`; still compile/flash before ESP32 demo)
+- [ ] macOS Internet Sharing seadistatud ja testitud
+- [x] ESPHome local model copy prepared for pilot default `v16c` at cutoff `0.996` (`kratt prepare-esphome-model v16c --cutoff 0.996`; enne ESP32 demo tuleb veel püsivara koostada ja seadme välkmällu kirjutada)
 - [ ] WiFi pirn seadistatud HA-s (testitud kodus enne)
 - [ ] Google Forms küsimustik loodud + QR-kood prinditud
 - [ ] `kratt user-test` recorder tested (dry-run + real mic)
@@ -61,10 +61,10 @@ Tihe, aga mahub. Kui RAM lõppeb, kaaluda väiksemat LLM mudelit (8B → ~5GB).
 - [ ] Kogu stack üles: AP → ESP32 ühendub → wake word → STT → LLM → pirn
 - [ ] E2E latency mõõta (peaks olema <3s)
 - [ ] False positive test: räägi 2 minutit ilma wake wordita
-- [ ] Aku kestvus: MacBook peaks vastu pidama ~3h (20 osalejat)
+- [ ] Aku kestvus: MacBook peaks vastu pidama ~1,5–2h (kuni 10 osalejat)
 - [ ] iPhone tethering stabiilsus
 
-## Võrgu konfigutratsioon
+## Võrguseadistus
 
 ### macOS Internet Sharing
 1. System Settings → General → Sharing → Internet Sharing

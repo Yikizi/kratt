@@ -78,7 +78,7 @@ Chapter distribution from TOC:
 | Extra appendices numbered, titled, referenced | No extra appendices | PASS | Add none unless necessary. |
 | Summary answers introduction questions | Explicit 4-item answer list | PASS | Keep concise. |
 | AI use described when substantive | Agentic-development section exists | PARTIAL | Consider adding a short formal AI-use declaration if required/preferred. |
-| Personal/audio data handling | Consent/audio opt-in described | PARTIAL | Add retention/publication-limit sentence if user audio remains in scope. |
+| Personal/audio data handling | Consent/audio consent described | PARTIAL | Add retention/publication-limit sentence if user audio remains in scope. |
 | PDF compiles cleanly | `latexmk` successful | PASS | Recompile after all edits. |
 
 ## Remaining P0/P1 actions

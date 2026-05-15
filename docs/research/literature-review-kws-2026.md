@@ -218,7 +218,7 @@ For the thesis, we should:
 1. **Report clean FAPH** on Common Voice ET and Riigikogu (our primary metrics)
 2. **Report at least one ecologically valid FAPH** (e.g., Estonian TV played back through speakers in a room, recorded by the deployment microphone)
 3. **Acknowledge the gap** explicitly in the evaluation chapter, citing Dubois et al. and the MISP challenge
-4. **User testing** (20-30 participants) provides partial ecological validity, but with scripted utterances rather than continuous monitoring
+4. **User testing** (up to 10 participants) provides a pilot-sized check of the complete voice-assistant loop and limited ecological feedback, but with scripted utterances rather than continuous monitoring
 
 ---
 
@@ -534,7 +534,7 @@ For the thesis to make defensible claims about cross-speaker recall:
 - **Minimum**: 50 clips per speaker (CI width ~25 pp at 50% recall)
 - **Recommended**: 100 clips per speaker (CI width ~18 pp at 50% recall)
 - **Current state**: 11 clips (Isa XTTS) and 48 clips (`pos_isa_xtts`) -- the 48-clip set is marginally acceptable
-- **User testing** (20-30 participants x 10 utterances each = 200-300 clips) will provide much better statistical power
+- **User testing** (up to 10 participants x roughly 11-13 wake-containing utterances each = about 110-130 clips) improves real-speaker coverage, but remains pilot-sized; the thesis should not treat it as a substitute for the frozen technical validation sets
 
 The thesis should always report confidence intervals alongside point estimates for small test sets, and should **not draw strong conclusions from N<30 observations**.
 

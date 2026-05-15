@@ -94,7 +94,7 @@ Luua **esimene avalikult kättesaadav eestikeelne äratussõna tuvastuse mudel**
 
 5. **Hindamine ja valideerimine**
    - Tehniline testimine: täpsus, FPR/FNR, latentsus
-   - Kasutajatestid: 20-30 osalejaga reaalsete kasutusjuhtude testimine
+   - Kasutajatestid: kuni 10 osalejaga piloot tervikliku häälassistendi kasutusväärtuse ja kasutuskogemuse kontrollimiseks
    - Võrdlev analüüs: microWakeWord vs openWakeWord
    - Kasutatavuse hindamine
 
@@ -158,7 +158,7 @@ Luua **esimene avalikult kättesaadav eestikeelne äratussõna tuvastuse mudel**
 - Äratussõna mudeli treenimine ja optimeerimine
 - ESP32 ja Raspberry Pi implementatsioonid
 - Home Assistant integratsioon (addon)
-- Kasutajatestid (20-30 inimest)
+- Kasutajatestid (kuni 10 osalejaga piloot)
 - Tehniline ja empiiriline evalueerimine
 - Täielik dokumentatsioon
 
@@ -179,8 +179,8 @@ Luua **esimene avalikult kättesaadav eestikeelne äratussõna tuvastuse mudel**
 3. **Keele varieeruvus**: Üks peamine wake word ("Kratt")
    - Võib lisada alternatiivse variatsiooni ("Kuule Kratt")
 
-4. **Testimine**: 20-30 kasutajat, 1-2 nädalat per kasutaja
-   - Piisav proof-of-concept'i jaoks, kuid mitte pikaajaline uuring
+4. **Testimine**: kuni 10 kasutajat, lühike pilootsessioon osaleja kohta
+   - Piisav proof-of-concept'i ja kasutusväärtuse kontrolliks, kuid mitte pikaajaline uuring
 
 ---
 
@@ -218,7 +218,7 @@ Luua **esimene avalikult kättesaadav eestikeelne äratussõna tuvastuse mudel**
 - Eetika kinnituse hankimine (kui nõutav)
 
 #### Phase 2: Andmete Kogumine (Nädal 3-4)
-- 10-20 osalejat
+- Kuni 10 osalejat
 - Iga osaleja: 20-50 salvestust
 - Kokku: 200-1000 base samples
 - Valideeritakse ja eeltöödeldakse
@@ -247,8 +247,8 @@ Luua **esimene avalikult kättesaadav eestikeelne äratussõna tuvastuse mudel**
 - Local testing
 
 #### Phase 7: Kasutajatestid (Nädal 14-16)
-- 20-30 osalejat
-- 1-2 nädalat per osaleja
+- Kuni 10 osalejat
+- Umbes 10-minutiline pilootsessioon osaleja kohta
 - Data collection (FP/FN, latency, usability)
 - Qualitative feedback
 
@@ -311,7 +311,7 @@ Luua **esimene avalikult kättesaadav eestikeelne äratussõna tuvastuse mudel**
 ### 7.1 Maht
 
 - **Lehekülgi**: 70-90 (ilma lisadeta)
-- **Kood**: ~2000-3000 rida (skriptid, konfiguratsioonid)
+- **Kood**: ~2000-3000 rida (skriptid, seadistused)
 - **Andmed**: 200-1000 audio samples + augmented data
 
 ### 7.2 Struktuuri Eevaade
@@ -350,7 +350,7 @@ Luua **esimene avalikult kättesaadav eestikeelne äratussõna tuvastuse mudel**
 **Lisad**:
 - A: Andmete kogumise protokoll
 - B: Kasutajatestide küsimustik
-- C: Konfiguratsioonide näited
+- C: Seadistuste näited
 - D: Koodinäited
 
 ---
@@ -374,7 +374,7 @@ Kõik tarkvara on open-source ja tasuta kättesaadav.
 ### 8.3 Inimressurss
 
 - **Juhendaja**: Tanel Alumäe (konsultatsioonid)
-- **Testijad**: 20-30 vabatahtlikku (sõbrad, pere, kolleegid)
+- **Testijad**: kuni 10 vabatahtlikku pilootuuringuks (sõbrad, pere, kolleegid)
 
 ---
 

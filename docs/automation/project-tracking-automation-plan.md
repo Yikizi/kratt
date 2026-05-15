@@ -99,7 +99,7 @@ Backfilled themes:
 
 Created two new GitLab issues:
 
-- `#28` — Kasutajatestide pilot ja 20–30 osaleja täistest, estimate **35h**, spent **3h**.
+- `#28` — Kuni 10 osalejaga kasutajatesti piloot ja häälassistendi UX-tagaside, estimate **35h**, spent **3h**.
 - `#29` — Thesis automation ja project tracking automation, estimate **8h**, spent **5h**.
 
 Distributed the same **28:30:00** recent backfill into GitLab issue time tracking:

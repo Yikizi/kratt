@@ -130,7 +130,7 @@ vaid kui "kas see mudel sobib sellesse konkreetsesse pipeline'i".
 4. T04 `mis kell on` → get_state sensor.kellaaeg
 5. T05 `pane magamistoa lamp kinni` → turn_off light.magamistuba (tuba-spetsiifika)
 6. T06 `tee elutoas hämar` → set_brightness (intensiivsus tuletamine)
-7. T07 `elutoas on liiga pime` → turn_on (kaudne käsk, konteksti järeldamine)
+7. T07 `elutoas on liiga pime` → turn_on (kaudne käsk, kontekstist tuletamine)
 8. T08 `pane kohv käima ja elutoa tuli põlema` → mitu actionit ühes lauses
 
 **Tulemused**:
@@ -179,7 +179,7 @@ multilinguality ei kata eesti keelt piisavalt väiksemates mudelites. 26B MoE va
 
 **Keskpikaks tulevikuks**: tasub uurida, kas EuroLLM 9B-d saab saada töötama, kui süsteemprompti
 täiendada few-shot näidetega või kasutada grammar-guided decoding'ut. Kui see õnnestuks, saaks kasutaja
-paremat eesti keelt ja väiksemat mudelit (9B vs 12B → vähem RAM-i, kiirem inference). Samuti väärib
+paremat eesti keelt ja väiksemat mudelit (9B vs 12B → vähem RAM-i, kiirem mudeli käitamine). Samuti väärib
 jälgimist Gemma 4 suurem dense variant (31B), mis nõuab rohkem RAM-i kui meie riistvara pakub.
 
 **Pikaajaliselt**: kasutajatestis mõõta user-satisfaction scores

@@ -6,13 +6,13 @@ Selle tööriistaahela rakendamise käigus ilmnes kiiresti, et väikese keele ä
 
 Töö põhiküsimus on järgmine: kuidas luua ja hinnata eestikeelset äratussõna tuvastust nii, et see oleks usaldusväärne nutikodu mikrokontrolleri piiratud ressursi tingimustes? Selle küsimuse lahendamiseks tuleb vastata mitmele alamküsimusele:
 \begin{itemize}
-    \item kuidas valideerida treeningu- ja hindamistoru enne eestikeelse andmestiku juurde liikumist;
+    \item kuidas valideerida treeningu- ja hindamisahel enne eestikeelse andmestiku juurde liikumist;
     \item millist rolli mängivad positiivsed, negatiivsed ja taustaheli-andmed äratussõna mudeli kvaliteedi hindamisel;
-    \item kuidas eristada andmestikust tulenevaid probleeme toru tehnilistest piirangutest;
+    \item kuidas eristada andmestikust tulenevaid probleeme tööahela tehnilistest piirangutest;
     \item kas treenitud mudel saavutab eestikeelsel taustaheli korpusel pidevvoo FAPH~$<$~1 sihi;
     \item kuivõrd ulatub lähikõne tuvastamismäär $\geq$~0{,}95 sihini ning millised on selle peamised piirangud.
 \end{itemize}
 
-Töö peamine panus on FAPH-põhine pidevvoo hindamisprotokoll ning sellega seotud reprodutseeritav eestikeelse äratussõna treeningu- ja hindamistoru. Seda illustreerivad prototüüpmudel \enquote{Kuule Kratt} ning ESP32-S3 ja Home Assistanti integratsioon lokaalse nutikodu satelliidi näitel. Töö ei käsitle täielikku STT/TTS toru, kasutajauuring on piiratud mahus ning hindamine piirdub ühe äratusfraasiga.
+Töö peamine panus on FAPH-põhine pidevvoo hindamisprotokoll ning sellega seotud reprodutseeritav eestikeelse äratussõna treeningu- ja hindamisahel. Seda illustreerivad prototüüpmudel \enquote{Kuule Kratt} ning ESP32-S3 ja Home Assistanti integratsioon lokaalse nutikodu satelliidi näitel. Töö ei käsitle täielikku STT/TTS-ahelat, kasutajauuring on piiratud mahus ning hindamine piirdub ühe äratusfraasiga.
 
-Töö on üles ehitatud järgmiselt. Metoodika peatükk kirjeldab kasutatud andmekorpusi, tarkvarakomponente ja hindamisloogikat. Tulemuste peatükk võtab kokku seni valideeritud treeningutoru ja avaliku \texttt{marvin}-kontrollkatse. Arutelu ja järelduste peatükk seob senised leiud praktiliste riskide ja järgmiste sammudega. Kokkuvõte võtab töö hetkeseisu lühidalt kokku.
+Töö on üles ehitatud järgmiselt. Metoodika peatükk kirjeldab kasutatud andmekorpusi, tarkvarakomponente ja hindamisloogikat. Tulemuste peatükk esitab treeningu- ja hindamisahela valideerimise ning eestikeelsete mudelikatsete tulemused. Arutelu ja järelduste peatükk seob leiud praktiliste riskide, piirangute ja lõppjäreldustega. Kokkuvõte koondab töö põhivastused.

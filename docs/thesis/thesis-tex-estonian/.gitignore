@@ -16,6 +16,8 @@
 
 # Generated outputs
 *.pdf
+# Source figures referenced from LaTeX are committed explicitly.
+!figures/*.pdf
 
 # Latexmk helper
 *.nav

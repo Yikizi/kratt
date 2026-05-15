@@ -16,7 +16,7 @@ Kratt on bakalaureusetöö projekt, mille eesmärk on luua eestikeelne äratuss�
 - `wake-word/`
   - mudeli arendus, andmete ettevalmistus, treening, evaluatsioon
 - `hardware/esp32/`
-  - ESPHome konfiguratsioonid ja Korvo-2 firmware katsed
+  - ESPHome seadistused ja Korvo-2 firmware katsed
 - `stt-integration/`
   - lokaalse STT poole katsetused ja Kiirkirjutaja sidumine
 - `docs/thesis/`

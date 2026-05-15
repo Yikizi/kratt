@@ -1,17 +1,17 @@
-Käesolev bakalaureusetöö uuris, kuidas luua ja hinnata eestikeelset äratussõna \enquote{Kuule Kratt} tuvastust ESP32-S3 klassi mikrokontrolleril. Töö eesmärk ei olnud tõendada tootmisküpset lõppmudelit, vaid ehitada reprodutseeritav treeningu- ja hindamistoru ning näidata, milliste mõõdikute kaudu saab väikese ressursiga keele äratussõna usaldusväärselt hinnata.
+Käesolev bakalaureusetöö uuris, kuidas luua ja hinnata eestikeelset äratussõna \enquote{Kuule Kratt} tuvastust ESP32-S3 klassi mikrokontrolleril. Töö eesmärk ei olnud tõendada tootmisküpset lõppmudelit, vaid ehitada reprodutseeritav treeningu- ja hindamisahel ning näidata, milliste mõõdikute kaudu saab väikese ressursiga keele äratussõna usaldusväärselt hinnata.
 
 Uurimisküsimustele anti järgmised vastused.
 \begin{enumerate}[nosep]
-    \item Treeningu- ja hindamistoru valideeriti avaliku \texttt{Speech Commands} kontrollkatsega; see näitas, et klipitaseme hindamine ei ole voogedastava äratussõna jaoks piisav.
+    \item Treeningu- ja hindamisahel valideeriti avaliku \texttt{Speech Commands} kontrollkatsega; see näitas, et klipitaseme hindamine ei ole voogedastava äratussõna jaoks piisav.
     \item Positiivsed, negatiivsed ja taustaheli-andmed täidavad eri rolle: sihtfraasi õppimine, mitte-äratuste tõrjumine ja valevallandumiste mõõtmine FAPH-iga.
-    \item Andmestiku ja toru piiranguid eristati kolme metoodikaparandusega: andmeleke, positiivse klassi kvaliteet ja kontrollpunkti valikukriteerium.
+    \item Andmestiku ja tööahela piiranguid eristati kolme metoodikaparandusega: andmeleke, positiivse klassi kvaliteet ja kontrollpunkti valikukriteerium.
     \item FAPH~$<$~1 saavutati ainult kitsastes konsensusseadistustes; samaaegselt kõrge päriskõnelejate tuvastamismäär, madal FAPH ja tugev prefiksi-/segiajamisjuhtumite tõrje jäid saavutamata.
 \end{enumerate}
 
 Töö kõige olulisem tulemus ei olnud üksnes uue mudeliversiooni saamine, vaid hindamismetoodika täpsustamine. Eksperimentide käigus selgus, et varasem klipi-tasemel negatiivsete näidete hindamine andis eksitavalt optimistliku pildi, sest testikomplekt sisaldas treeningus kasutatud näiteid. Selle riski kontrollimiseks koostati sõltumatud kõrvalejäetud hindamiskomplektid ja lisati treening- ja testandmete kattumatuse kontroll.
 
-Korrigeeritud hindamine näitas, et mudelivalik sõltub tugevalt sellest, millist omadust optimeerida: ükski üksikversioon ei domineerinud korraga saagise, FAPH ja raskete negatiivide eristuse osas. Seetõttu katsetati töö praktilise laiendusena ka spetsialiseeritud ekspertmudelite konsensust, mis saavutas Common~Voice eesti keele kõrvalejäetud kõnel FAPH~$=$~0{,}79, kuid saagise arvelt.
+Korrigeeritud hindamine näitas, et mudelivalik sõltub tugevalt sellest, millist omadust optimeerida: ükski üksikversioon ei domineerinud korraga tuvastamismäära, FAPH-i ja sarnaste negatiivnäidete eristuse osas. Seetõttu katsetati töö praktilise laiendusena ka spetsialiseeritud ekspertmudelite konsensust, mis saavutas Common~Voice eesti keele kõrvalejäetud kõnel FAPH~$=$~0{,}79, kuid tuvastamismäära arvelt.
 
-Töö tulemuseks on reprodutseeritav treeningu- ja hindamistoru, dokumenteeritud andmekogumis- ja hindamisprotokoll ning empiiriline alus järgmisteks sammudeks: positiivsete kõnelejate mitmekesisuse kasvatamine ja testiprotokolli külmutamine enne kasutajateste reaalses nutikodu kasutusolukorras.
+Töö tulemuseks on reprodutseeritav treeningu- ja hindamisahel, dokumenteeritud andmekogumis- ja hindamisprotokoll ning empiiriline alus järgmisteks sammudeks: positiivsete kõnelejate mitmekesisuse kasvatamine ja testiprotokolli külmutamine enne kasutajateste reaalses nutikodu kasutusolukorras.
 
 Versioon \texttt{v16c} jääb käesolevas töös valideerimata kandidaadiks: külmutatud kasutajatesti tulemusi reaalses Korvo-2 seadmes pole ning tootmisse rakendatavus on käsitletud piiranguna, mitte tulemusena.

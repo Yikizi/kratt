@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Keep the 20–30 participant user study defensible by separating:
+Keep the up-to-10-participant pilot study defensible by separating:
 
 1. pre-user-test operating-point choices;
 2. final replay at fixed thresholds;
@@ -18,9 +18,9 @@ Keep the 20–30 participant user study defensible by separating:
 | Active threshold/cutoff | `0.996` |
 | Role | Stable single-model baseline / active-demo candidate, not production-ready claim |
 | ESPHome preparation | `kratt prepare-esphome-model v16c --cutoff 0.996` |
-| ESP32 status | local model copy prepared; compile/flash still required before ESP32 demo |
+| ESP32 status | local model copy prepared; firmware build and ESP32 upload still required before ESP32 demo |
 
-If real-mic pilot shows `v16c` is unusable for the visible demo, one pre-full-study switch to `expert-a` is allowed **only before** participant collection begins. Record the reason and new threshold in this file.
+If real-mic pilot shows `v16c` is unusable for the visible demo, one pre-pilot switch to `expert-a` is allowed **only before** participant collection begins. Record the reason and new threshold in this file.
 
 ## Frozen replay set
 

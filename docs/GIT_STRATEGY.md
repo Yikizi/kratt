@@ -91,7 +91,7 @@
 - [ ] User testing preparation
 
 ### Milestone 5: User Testing (Weeks 17-18)
-- [ ] Recruit 20-30 testers
+- [ ] Recruit up to 10 pilot testers
 - [ ] Deploy to test users
 - [ ] Collect feedback
 - [ ] Performance metrics

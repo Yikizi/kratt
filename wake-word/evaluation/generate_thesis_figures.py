@@ -1,8 +1,11 @@
-"""Generate the two thesis Results-chapter figures.
+"""Generate thesis Results-chapter figures.
 
 Each figure backs a specific thesis subsection in
 `docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex`:
 
+- `model_lineage_timeline.pdf` -> `\\subsection{Mudeliversioonid}`. Compact
+  visual summary of the main model-lineage milestones so the Results chapter
+  does not read like a chronological experiment diary.
 - `faph_recall_pareto.pdf` -> `\\subsection{Õiglane võrdlus identsete
   hindamiskomplektidega}`. Single-threshold operating-point scatter of (FAPH on
   faph_cv_et, recall on pos_isa_xtts) at threshold 0.995 across all benchmarked
@@ -14,7 +17,7 @@ Each figure backs a specific thesis subsection in
   four model families that motivated the consensus argument. FRR is pooled over
   the verifiably-disjoint unseen-positive sets (`pos_isa_xtts` + `pos_ode`).
 
-The script is idempotent — running it overwrites the two PDFs.
+The script is idempotent — running it overwrites the PDFs.
 """
 
 from __future__ import annotations
@@ -55,6 +58,119 @@ DET_POSITIVE_SETS = ("pos_isa_xtts", "pos_ode_real")
 # Clip the Pareto x-axis so outliers (e.g. expert-b ~ 8766 FAPH) do not drag
 # the frame; documented in the caption.
 PARETO_FAPH_MAX = 1000.0
+
+
+def _plot_timeline() -> Path:
+    """Render a compact, thesis-facing model lineage timeline.
+
+    The timeline is intentionally milestone-based rather than proportional to
+    calendar time: several decisive events happened within a few April days and
+    would overlap on a strict date axis.
+    """
+    milestones = [
+        {
+            "date": "19.03",
+            "title": "v1–v2",
+            "body": "esimene\näratussõna mudel",
+            "color": "#6c757d",
+        },
+        {
+            "date": "21.03",
+            "title": "v3–v6",
+            "body": "sama-seadme negatiivid\nja TTS-laiendus",
+            "color": "#1f77b4",
+        },
+        {
+            "date": "12.–14.04",
+            "title": "v6-res. / v16c",
+            "body": "residuaalühendused;\nstabiilne üksikmudel",
+            "color": "#2ca02c",
+        },
+        {
+            "date": "21.04",
+            "title": "ühtne hindamine",
+            "body": "kõrvalejäetud komplektid\nja voogedastus-FAPH",
+            "color": "#9467bd",
+        },
+        {
+            "date": "22.–24.04",
+            "title": "expert A+B2",
+            "body": "madal FAPH\nkonsensusena",
+            "color": "#17a2b8",
+        },
+        {
+            "date": "26.–28.04",
+            "title": "v17 → v18",
+            "body": "positiivse klassi\nkvaliteedikontroll",
+            "color": "#d62728",
+        },
+        {
+            "date": "28.–29.04",
+            "title": "checkpoint-FAPH",
+            "body": "ühe mõõdiku siht\nei säilita recall'i",
+            "color": "#ff7f0e",
+        },
+    ]
+
+    fig, ax = plt.subplots(figsize=(FIG_WIDTH_IN, FIG_WIDTH_IN * 0.58), dpi=300)
+    ax.set_xlim(-0.35, len(milestones) - 0.65)
+    ax.set_ylim(-1.2, 1.25)
+    ax.axis("off")
+
+    xs = list(range(len(milestones)))
+    ax.hlines(0, xs[0], xs[-1], color="#adb5bd", linewidth=1.2, zorder=1)
+
+    for idx, item in enumerate(milestones):
+        x = xs[idx]
+        y = 0.66 if idx % 2 == 0 else -0.66
+        va = "bottom" if y > 0 else "top"
+        ax.vlines(x, 0, y * 0.72, color=item["color"], linewidth=1.0, zorder=2)
+        ax.scatter([x], [0], s=42, color=item["color"], edgecolor="white", linewidth=0.8, zorder=3)
+        ax.text(
+            x,
+            y,
+            f"{item['title']}\n{item['body']}",
+            ha="center",
+            va=va,
+            fontsize=6.8,
+            linespacing=1.1,
+            color="#212529",
+        )
+        ax.text(
+            x,
+            -0.18 if y > 0 else 0.18,
+            item["date"],
+            ha="center",
+            va="top" if y > 0 else "bottom",
+            fontsize=6.2,
+            color="#6c757d",
+        )
+
+    ax.text(
+        xs[0],
+        1.1,
+        "Mudelipõlvkondade põhiverstapostid",
+        ha="left",
+        va="center",
+        fontsize=9,
+        weight="bold",
+        color="#212529",
+    )
+    ax.text(
+        xs[-1],
+        -1.05,
+        "Joonis koondab metoodiliselt olulised pöördekohad; see ei ole täielik mudeliregister.",
+        ha="right",
+        va="center",
+        fontsize=6.2,
+        color="#6c757d",
+    )
+
+    out = FIG_DIR / "model_lineage_timeline.pdf"
+    fig.tight_layout(pad=0.2)
+    fig.savefig(out, format="pdf")
+    plt.close(fig)
+    return out
 
 
 def _ensure_input(path: Path) -> Path:
@@ -251,6 +367,7 @@ def main() -> int:
     produced: list[Path] = []
     errors: list[str] = []
     for fn, name in [
+        (_plot_timeline, "timeline"),
         (_plot_pareto, "pareto"),
         (_plot_det, "DET"),
     ]:
