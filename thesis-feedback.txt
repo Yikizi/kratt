@@ -1,0 +1,187 @@
+lyhendite ja moistete sonastik vajab uuendamist ja taiendamist.
+"vs", audit, auditiring jms selline slop keel tuelb eemaldada ja muuta akadeemiliseks ja ilmekaks profesionaalseks eesti keeleks, koik ebavajalik fluff valja
+kogu see "ringide" pohine ylesehitus on kummaline ja jatab veidra mulje lugejale, nagu tervet tood olekski tehtud mingi neljas spurdis
+mida ytleb taltech ametlik juhend jooniste loetelu kohta, mis seal pariselt olema peaks?
+also peaks rohkem olema huvitavaid graafikuid ja pilte ma arvan, nagu kogu mudelite timeline voiks graafikuga kokku votta, pilt ytleb rohkem kui tuhat sona jata meelde, visualisatsioonid meeldivad inimestele, ning kui iga vaikse aja tagant on relevantne pilt mis aitab mingit punkti kokku votta ja ei pikenda asjatult loputood, siis see tuleks sinna panna.
+metoodika eesmark on kirjeldada sellist tooprotsessi, mille abil on voimalik... selle asemel saaks ju lihtsalt oelda. Metoodika eesmark on kirjeldada tooprotsessi mille abil on voimalik ... pole pointi selliseks tuhiseks keeleliseks filleriks nagu sellist, voiks otsida ja korvaldada seda ka mujal toost.
+meil on metoodikas kirjas et vordlusraamistikuna kasutame openwakeword, aga kui tosi see pariselt on, kas meil on datat ja mootmisi ja asju vastavate andmestikega et pariselt vaita et me vordlesime?
+lk 13 on kirjas "jareldamine" mille all moeldakse inference - uuri ekilexist kratt terms commandiga kas see on pariselt see oige sona selle jaoks, ma kahtlen
+also tegelt suuresti arenduse ajal me kasutasime wiz pirne, mockitud mcp servereid, lokaalseid llme ollamaga, peaks mainima et progekeeleks ja scripting keeleks peamiselt python, ning pohjendama seda valikut, voibolla valja tooma mingid alternatiivid, ning miks me neid ei valinud
+lk 14 on kirjas "valevallandumised" kuid moistete ja lyhendite tabelis on miski muu, see tabel tuleks kooskolla viia "valevallandumine" jaagu oige termin
+lk 15 ei ole false rejection rate ja false accepts per hour kaldkirjas, need on inglise keelsed terminid ja peaks olema kaldkirjas
+peame eraldi kokku koguma mingi regexiga koik lyhendid ja acronyymid nagu VAD, KWS jms, ning tegema kindlaks et need on olemas lyhendite tabelis, mul siuke tunne et sealt on palju puudu praegu
+lk 16:
+  kas "Tulemuste" peatyki tabelites, tulemuste peab suure algustahega olema? yle kontrollida
+  kasutajatesti taasmangu FAPH pole enam ju planeeritud, nyyd on see pariselt tehtud, voime selle ara votta (planeeritav) osa sealt
+lk 17: 
+  1.5sekund renderdab s katusega sest math mode overflow, latex bug
+lk 18:
+  - mdash teha tavaliseks kriipsuks, ning "iga kaader nouab sama arvutusmahu ... -> arvutusmahtu ..."
+lk 19:
+  kontekstiakna peatykis 2.7.4 ei ole mitte yhtegi viidet, see on halb, eriti arvestades neid kahte vaidet seal millel pole pohjendust
+  pt 2.7.6 kas "aktivatsioonid" on korrektne termin?
+lk 20:
+  jalle on "jareldamine", "inference" eestikeelseks variandiks peab olema parem ja selgem variant, tuleb uurida ja otsida
+  tensor-arena ei ole eestikeelne sona, samuti compile / flash, need ka ei ole, konfiguratsioon voiks olla ju ka "seadistus"
+  20-30 osalejat on liiga palju, paneme eesmargiks 10, ning see on seetottu, et meie projektil on olemasolevad teaduslikud validatsioonimeetodid olemas, ning kasutajatestid on pigem autori huvist tulenev sidus jatk ja tagasiside kogumine terviklikule haalassistendi systeemile, milles wake wordi lunga taitmiseks esialgselt see projekt yldse alustatigi
+  see kasutajatesti kirjeldus on aegunud, tegelt meie kratt demo on ju hoopis midagi muud praeguseks
+  ma ytleks et see on pigem kontroll yldisele haalassistendi vajalikkusele, mis omakorda pohjendab wake wordi vajalikkust, kuna wake wordi praktiliselt ainuke kasutusala on voice assistant
+  kasurea tooriist kratt cli ei ole otseselt vajalik siin valja tuua, pole otseselt oluline. voibolla metoodikas lyhikeselt mainida seda cli-d mida me ehitasime et selles monorepos kiirelt kasvavat scriptide arvu kuidas vaos hoida ja toovoogusid kiirendada.
+  RMS peaks ka olema lyhendite tabelis
+lk 21:
+  audio opt-in ei ole eestikeelne
+  jutt umuxi lite ja taoliste asjade kohta on outdated, tuleb praeguste repo failide jargi referentsida ja uuendada, ning voibolla saab panna siia tyha ruumi kus praegu on lk 21 all yhe pidli sellest "kratt questionnaire" lehest, et oleks midagi vaadata ka vahelduseks
+lk 22:
+  kas on vaja mainida et esitatakse too hetkeseis? see tundub ilmselge anyway.
+  praegu deadline ja koike arevestades on absoluutselt aeg teha loplikud jareldused
+  mis on pt 3.1 suurem eesmark? lihtsalt mainida et alguses olid asjad katki ja ei saanud hakkama kuni ara fixisime? ma vaga ei nae sygavamat pointi peale selle et me tegime need vead, siia voiks moelda kas see ara votta voi mingi filosoofiline aspekt sisse tuua, mingi oppemoment, praegune sisu on halb.
+  score ei ole eesti keeles, tuleb tolkida
+lk 23:
+  public on tolkimata, speec negative samamoodi
+  voitnudmudelit on bugine latexis, mingi artefaktid mida tuleks ule vaadata.
+  yhesonaga selle toru valideerimise ja vigade tegemise saaks yheks alampeatykiks kokku tommata kindlasti, ehk siis 3.1 3.2 3.3 koik yheks concise jutuks kokku, liiga pikk jahumine praegu
+  jalle mdash, see tuleks tavaliseks kriipsuks teha.
+  positiivsed naited olid ju suuresti ka genereeritud kasutades tartu neurokone, see oleks oluline siin ara markida, sest ainult oelda recorded oleks vale. ning need olid autori enda salvestatud.
+  mingid nimed nagu microwakeword ja common voice jms on mones peatykis kaldkirjas ma mones mitte, me peaksime yhtlustama selle ja igalpool samamoodi tegema.
+  ning yldiselt kuni
+lk 28:
+  disjoint ei ole eestikeelne sona, vaja tolkida
+  RNG vaja lyhendite tabelisse
+  disjoint ja unseen-speaker ka vaja ja tripwire, vaga palju estonglish on seal
+
+lk 29:
+  freim on oige termin? refaktooriperiood on kummaline termin mida ei ole lihtne moista.
+  tabel on liiga tihe, font on jaanud liiga vaikseks ja loetamatuks, tuleb ymber disainida. siin on kirjas valehaire mitte valevallandumine, ebayhtlus
+  mida siin Q1 tahendab?
+  kas XTTS peaks olema valja toodud eraldi kui lyhendite tabelis? mis see x seal ees yldse teeb
+  mis on UV? seda pole ka lyhendite tabelis
+
+lk 30:
+  unseen jalle tolkimata. HN esmakordne kasutus, tundub ebayhtlane, lyhendite tabelis peaks olema olemas
+  okei siin me uuesti kordame jalle seda, et meil ei tohi olla test ja eval andmed treeningus, see on triviaalne ja ei vaja nii suurt rohutamist kindlasti, samuti on bold fonti siis lehel overused heavily, kaotab terve efekti ara.
+  okei siis on lambist jutt hypotees H2, ma ei maleta et me oleks selle kuskil defineerinud? oleksime pidanud hypoteesid kuskil seadma? midagi on kahtlane
+  autor ei leidnud ... on suht akadeemiliselt kole ja nork vaide, voiks kas valideerida voi kuidagi paremini ymber sonastada kuidagi.
+
+lk: 32
+  test-clean on tolkimata, vaja korrektset eesti keelset vastet
+  natuke vahe viiteid paistab olevat siin lk 30 ringis, ja paris palju paris tugevalt sonastatud vaiteid ja avastusi, ehk on moistlik jaada konservatiivsemaks natuke ja voibolla mitte paista liiga tugeva eksperdina, jaame realistlikuks ikkagi, ja hoiame teksti humble ja akadeemiline.
+lk 33:
+  kapatsiteet on estonglish halb vaja ymber tolkida
+  jalle see imelik autor ei leidnud variant, peab olema mingi parem viis seda frame-da voi sonastada.
+lk 34:
+  pooli on moeldud inglise keeles, tuleb korrektselt ymber tolkida
+  see kaskaadne on kole sona, jatta ara ja olgu ainult kasutatakse sageli kaheastmelist...
+  siin on valeaktiveering, jarjekordne drift, peaks olema valevallandumine
+lk 36:
+  siin tuuakse liiga palju tehnilisi parameetrite ja muutujate nimetusi, ning korrutatakse seda, et koik muud parameetrid olid samad mingi 5 korda.
+  jalle see veider freimi, kontrollida see yle
+  nagu milleks tuua lause et treeningkonfiguratsioonide vordlemine ... kinnitas. siin nagu yritataks vaga desparately panna lugejat uskuma et ausona on samad parameetrid, nagu mingil pohjusel autorit ei peaks uskuma, mis on taielikult valjamoeldud eeldus ning siin on sellega ilmselgelt yle punnitatud.
+lk 37:
+  siin on mainitud "loputoo" ei tea kas seda peaks sedasi kasitlema, varem oli kuidagi paremini, et "kaesolev too" voi ilusamini.
+  Auditiring on slop, see ara votta kindlasti.
+  also yldiselt, kui palju me yldse selgitame selgelt ja arusaadavalt mudelite versiooninumbrite semantikat, ehk nagu mis mida tegi ja muutis, sest see laheb paris kahku paris halvasti jalgitavaks, peaks mingi hea systeemi valja motlema, kuidas see arusaadavaks ja lihtsaks muuta
+lk 38:
+  sub-1 on korrektne eesti keel? ma ei arva, peame tolkima.
+  SSML ei ole lahti seletatud ega ei ole lyhendite tabelis ka
+  yldse see haalte kloonimise otsus ei ole sisse juhatatud, see lihtsalt toimus yhel hetkel, metoodikas oleks voinud juttu olla sellest ja ka TTS andmete genereerimise strateegiast ja SSML-ist.
+lk 39:
+  voice-cloning eesti keelde!
+  0.8sekundilised jalle math mode bug sama mis eelnevalt
+  mdash tavaliseks kriipsuks
+  auditiring vaga halb sona, slop, see paremini ilusas eestikeeles ymber nimetada
+lk 40:
+  esimest korda on juttu HPC ja see akronyym ka pole lyhendites, seda oleks akki vaja metoodikas mainida, et taltech andis ligipaasu sellele ning seal on gpu-d ja long running jobs ja slurm kui valitud tehnoloogia mida kasutati? potentisaalselt oluline, aga ei saa lihtsalt sedasi out of the blue mainida
+  nendest kvaliteedikontrollidest ei pea kindlasti nii pikalt mainima, ma arvan et pole isegi vaja eraldi peatykki selle kohta ausalt, terve 3.5.2 voiks olemata olla. 3.5.1 nimetada audit millekski muuks ja siis pt loppu lihtsalt see 3.5.2 esimene lause ja ongi valmis, saab terve lehekyle tyhja juttu minema
+  unseen jalle tolkimata
+lk 41-42:
+  eksplitsiitselt on halb otsetolge, parem eestikeelne sona vajalik
+  vaga kantseliitlik "ei mingit X" muster, vaga mitte akadeemiline. Yldse siin lk ringis paistab et on vahe tood tehtud sonastuse ja ilmeka ning akadeemilise eesti keele kallal
+  phase1 ja phase2 kindlasti ymber nimetada.
+  allikat kui md faili ei tohiks kindlasti olla, vaga imelik muster mis ei klapi eelnevate lehekylgedega, siin on koige rohkem drifti
+  tabel 10 kirjelduse saaks palju arusaadavamaks muuta.
+  tabel 10 ise on ka siin liiga suur liiga pikk, fondi suurus nii vaike et ei nae mitte midagi
+lk 43:
+  pt 3.5.4 ei peaks kindlasti 2 lk pikk olema, siin ei ole nii palju millest raakida isegi, saab oluliselt akadeemilisemalt ja lyhemalt pohilised faktid kohale.
+  jalle see halb (allikas) muster, kindlasti kustutada
+  mis sona on sekventsi? pole kuulnud ka.
+lk 44:
+  auditiring, jalle vaga halb slop sona, kindlasti eemaldada
+  ekstaktset ei ole eestikeelne sona, halb otsetolge, parandada
+  eksplitsiitselt ka ei ole sona, jallegi eestikeelne vaste voi yldse ara jatta, see tuleb selget inglise keelest
+  eksplitiivselt tuleks tervest toost eemaldada, see on inetu.
+lk 45:
+  auditiring, slop, ymber nimetada
+  valeaktiveering -> valevallandumine
+lk 46:
+  lause "treeningujooks loppes plaaniparaselt ja tflite eksport tehti automaatselt" on koige sisutuhjem, aega ja sonu raiskavam lause terves selles loputoos, mis pointi oli see siia kirjutada? toesti, lihtsalt puhas delete, ja proovime tuvastada taolisi fillereid veel ka mujalt.
+  esimene kord kui mainime SLURMI miks nyyd ja miks siin? taiesti out of context mis ei ole loputoo jaoks relevantne, eriti id valja tuua, kindlasti mitte seda teha, see pt peab saama hoolika full rewrite, et matchiks ylejaanud loputoo mustrite ja akadeemilise stiiliga
+  Nagu mida vaikselt lehekyljed edasi alates ytleme lk 40 alates, on see loputoo muutunud tuimaks ja sisutuks toopaevikuks, mis oli see mida me koige enam pidime valtima, see peatykk vajab kindlasti full rewrite et siit insightid valja koguda ja selle pohjal midagi tarka oelda.
+  ilmselt koige moistlikum see kogu asi paari lause voi yhe loiguna kokku votta, vajab kindlasti motlemist ja hoolt
+  tabel 11 liiga pikk ja liiga tais asju, font liiga vaike ja ei nae lugeda, vajab redesigni
+  benchmark, ei ole eestikeelne, vajab terminit korrektset!!
+  samuti voiks iga tabeli jaoks vaadata, et kas me ei loe lihtsalt tabelit ette, vaid teeme sealt pariselt jareldusi ka
+lk 47:
+  yhe-mudeli mudel? imelik sonastus, voiks olla hoopis -> yksik mudel
+  unseen jalle, inglise keel sisse jaanud, korduv muster
+  kas meil metoodikas DiPCO on mainitud? et see on standard korpus mida kasutavad oww ja mww ning on hea vordluspunkt? kui ei siis on vaja lisada
+  see paha (allikas) muster jalle, kindlasti eemaldada
+  on ta sisuliselt vait on konekeelne slang mitte korralik ilmekas akadeemiline eesti keel
+  terve 3.6 pt on liiga pikk ja laialivalgus, seda tuleks distillida mis on siit pariselt oluline ja seda kovasti kokku tommata, mitte lihtsalt toopaevikuna ette anda
+--- // jargmise paeva ylevaatus, vahepeal on backlogi juba taidetud --- siit edasine on uus ja lugemata
+  peatykk 3.6.2 kolab liialt nagu hooplemine, tuleb teha konservatiivsemaks ja akadeemilisemaks, simple concise and present the facts and conclusions.
+lk 48:
+  tabel 12 sama probleem nagu eelnevatel, liialt vaike font
+  igalpool kus on manuaalne -> kasitsi, sest manuaalne on auto kaigukast, mitte too
+  valeaktiveering jalle, -> valevallandumine, voi tegelt akki valeaktiveering on parem, peab motlema ja uurima, aga muuta tuleb igalpool see tapselt samaks, me peame hoidma yhtset joont
+  sulgude kasutamist on kuidagi palju, see jatab natuke koleda mulje, kohati see on sobiv aga enamasti saab lause lihtsalt selgemalt ja ilmekamalt sonastada
+  ja mingeid tavalisi sonu nagu lyhitee (shortcut) ei ole vaja sedasi inglise keelde tolkida, see reserveeritakse ainult vaga domeenispetsiifilistele terminitele
+  metoodikaline ei ole paris korrektne kaanamine sellest sonast, tuleb parandada yhtseks kogu too peale, peaks vist olema "metoodiline"
+lk 49:
+  ma panen tahele et ysna tihti on kirjas "manuaalne kuulmine naitas...", "kuulmiskontrolli tulemusena nais" jne - need on akadeemiliselt norgad argumendid, sest siin ei ole ju mitte midagi ranget maaratud vorreldes mingi konkreetse mootmise voi benchmarkiga. vaga hea on see et yldiselt protsente ja numbreid on vaga palju siin, aga kuidagi tasuks nagu discalimida subtly et subjektiivsel kuulamisel ... voi kuidagi laadselt, et oleks akadeemiliselt korrektne.
+  toos kasutatakse sidekriipse vaga tihti eri sonade vahel, kuhu see ei pruugi sobida, peame leidma hea tooriista nende kontrollimiseks nt "treeningu-domeeni" ja sellised naiteid on tohutult yle terve too
+  komposiitset on rapane otsetolge, sellele peab olema parem sona.
+  suuna seestpoolt on imelik sonastus, voiks paremini olla
+lk 50:
+lk 51:
+  kahe raamistku vorldus on vist natuke nork argument, kuna me ei ole eriti mudeleid teinud oww raamistikus, saame vaid vaita et see kogu systeem on vahem paindlik, ning yldistada probleeme sellele, et suurema parameetritega mudeli treenimine on mahukam too, mis vajab omakorda rohkem andmeid, rohkem aega kaks asja mida on keeruline hankida. aga aususe mottes oleks ilmselt moeldav veel viimased oww vordlusmomendid ja erinevate andmestikega mudelid panna sisse, nagu naiteks teha mingi mudel mis kasutaks meie laialdaselt olemasolevaid negatiivide korpusi eesti keeles, mis meie vaikse mudeli tottu mww raamistikus kasutamatta jaid.
+lk 52:
+  ma ei nae peatyikis 4 siiani praktiliselt mitte yhtegi viidet, eriti suht tugevatele vaidetele, mis voisid kull katsete tulemusena empiiriliselt nii tunduda, kuid see ei ole kindlasti piisav loputoo jaoks
+  siin mainitakse et kogutud positiive ja erinevaid konelejaid oli vahe, kuid seda vist metoodikas vaga ei pohjendatud miks mindi seda teed pidi, sest oleks saanud ju korraldada kaasamisi ja suure rahvahulga kokku ajada, kuid esialgne idee selle tegemiseks oligi ju see, et too vastaks yhele suurele hypoteesile, et kas piiratud konelejate arvu probleemi on voimalik mitigeerida kasutades synteesitud andmeid, praegu loputoos sellest uurimiskysimusest ei ole praktiliselt mitte yldse juttu, kuigi see on suur ja oluline osa.
+  vaga palju kasutatakse toos sona "juurotsus" ja see kolab veidi slop ja mitte akadeemiliselt / yleolevalt, ma arvan see tuleks ara votta, sest et see jaab halvas mottes lugejale silma.
+  juurutuskandidaat on vaga halb slop sona, kindlasti paremini ymber nimetada, puhtassse eesti keelde
+  yldse sona "juur" on halb otsetolge sonast "core" mis ei kanna yldse sama tahendust yle eesti keelde
+lk 54:
+  selleparast X, mitte Y - see on slop muster ja inetu eesti keel, eriti kui see on overused
+  mul oli ka eval sette mis ei olnud ainult XTTS just sellel pohjusel millest siin raagitakse, ja minu ehk autori enda eval set salvestused just adresseerisid seda varieeruvust ytlevuses, ning samuti friend_1 kogu eval set, mis on vaga oluline, ning samuti pole juttu meeste ja naiste soolise andmete tasakaalust ja sellest tulenevatest nuanssidest, kuidas alguses esimesed mudelid olid biased meeste haalte peale, autor soo tottu, ning seejargsed andmestiku taiendused mitigeerisid seda. ning muide selle kohta oli mingi hea viide teisele teadustoole kes tegi KWS mudeli puhtalt synteesitud andmetest ja siis mootsid ja benchmarkisid seda ka ainult genereeritud eval settidel, mis tegelikult ei ytle eriti midagi, ning just seda puudujaaki ma oma toos suuresti parandan, treenides synteesitud andmetega ja testides paris konelejate eval settidega. "tegelt vaga hea, seda on ilusti peatykis 4.4.2 mainitud viimases lauses, aga see viide toole on vist puudu, kui see pole seesama 29"
+  pt 4.4.3 voiks raakida sellest kuidas esimesed mudelid siin vahepeal, mingi v12 aegadel akki, checki yle logidest ja dokumentatsioonist, vallandusid vaga palju naiteks laua pihta virutamisest, ja klaviatuuriklobinast, NING eriti oluline siinkohal on veel see android rakendus mis sai ehitatud et mudeleid paralleelselt pikaajaliselt live audio streami peal jooksutada ja false triggereid koguda, ning nende kogutud false triggerite treening negatiividesse lisamine praktiliselt kohe korvaldas seda klassi valevallandumised, mis on vaga vaartuslik metoodiline leid, et false triggerite kogumine voib natuke pikema perioodi peale juba vaga edukalt mudelit paremaks teha FAPH moodikus.
+lk 55:
+  freim jalle halb sona.
+  miks on kirjas et kaesolevas toos ei moodetud aktivatsiooonimaara sellistel stiimulitel, kui me kasutasime dipico korpust, mis on literally tapselt see, see on ju vale vaide.
+  ma tahan et 4.4.5 pt raagitaks sellest minu tehtud androidi rakendusest kui kavalast viisist korvale hiilida probleemidest mis esineb pikkade salvestuse tegemisel, hoidmisel ja talletamisel ning benchmarkide jooksutamisel, ning kuidas logginguga mitme mudeli paralleelne jooksutamine telefonis mis on paev otsa kaasas autoriga, valdib samuti ka privaatsusega soetud probleeme elegantselt, sest ei toimu mingit salvestamist, lihtsalt logitakse maha kui mudel vallandub, ning konkreetselt tehakse seda ajaraamistikul kus sihtfraazi ei oelda. tuleks ka mainida kompromissist et uuematel mudeliversioonidel ei saa seda benchmarki enam taaskaustada, vaid tuleb teha uus mootmine, aga tundub ka ainuke miinus sellele meetodile.
+  sellele voiks olla viide ka taga muidugi, kui onnestub leida, aga kuna mulle paistab et see on vagagi novel lahendus, me kindlasti ei taha paista hetkel nagu me hoopleks voi vaidaks vaga tugevalt et me selle leiutasime, sest see vaga suure toenaosusega ei ole tosi.
+  pohitode "ground truth" inglisekeelset tolget ei ole vaja, ebavajalik.
+lk 56:
+  agentpohise 4ndas loigus voiks pigem rohkem raakida sellest, et nad ei asenda motlemist ja metoodikat, mis kusjuures on nyyd rohkem kui kunagi varem kriitilise tahtsusega. agendid lasevad rohkemaid ideid katsetada ja kiiremini evidence-i koguda, kuid see tahendab ka seda, et on voimalik palju kiiremini ja tugevamalt vales suunas liikuda.
+  siin voiks valja tuua huvitavamaid punkte selle kohta, kuidas tarkvaraarendus on muutumas ja mis suunas, ning kuidas konkreetselt see loputoo neid fakte kinnitas.
+  praegu tundub palju korrutamist, et see ei asenda paris konelejaid jne, mis on nagu suht ilmselge asi, voibolla yks kord mainida seda, mitte 3 korda korrutada.
+  ning tuua valja seda, et LLM-de toenaosuslik olemus sai siin toos mitigeeritud labi kahe konteptsiooni. esiteks blast radiuse minimeerimisega, ehk voimalikult vaiksed ja detailselt skoopitud ylesanded, mis teevad nii, et kui liikuda vales suunas, siis natuke vales suunas, ning sellest on veel voimalik taastuda. teiseks iteratsioon. kui anda sama prompt piisavalt palju kordi, siis labi puhta toenaosuse, kui igal ringi lasta labi kvaliteedifiltri, siis need koonduvad paremuse poole ning lahevad tulemuslikumaks.
+  mul on siinkohal veel ideid, mida porgatada ja itereerida, niiet see peatykk vajaks veel veidi tood, aga suund on yldiselt ok
+lk 57:
+  ma arvan et loputoos on halb praktika mainida "kaitstavust" kui mingi moodikut, lihtsalt sobimatu praktika
+  4.6 pt yldse annab veidi korrutamise tunnet, me oleks nagu pidevat koigest sellest juba raakinud, ning see istub koige paremini kokkuvottesse, kus see toenaoliselt on jallegi korrutatud.
+  konkuretsivoimeline on ka kummaline meie too kontekstis, ma arvan et me ei pea korrutama seda et jumala eest me ei ole production grade mudel, vaid metoodika ja prototyyp, nagu see tuleb juba pealkirjast valja, seda ei ole vaja lugejale igakord meelde tuletada - kehtib printsiip, et ta ilmselt ei arvanud seda varem, aga nahes niivord tihti vastuvaiteid, voib ta arvata et autoril on mingi pohjus selle ettevaatlikkuse jaoks, mis voib just vastupidiselt soovitud eesmargile panna lugejat arvama et selle too suur eesmark oli olla production grade mudel, mis ei olnud, niiet seda pole motet isegi mainida - kehtib printsiip, et ta ilmselt ei arvanud seda varem, aga nahes niivord tihti vastuvaiteid, voib ta arvata et autoril on mingi pohjus selle ettevaatlikkuse jaoks, mis voib just vastupidiselt soovitud eesmargile panna lugejat arvama et selle too suur eesmark oli olla production grade mudel, mis ei olnud, niiet seda pole motet isegi mainida.
+  4.6 pt lihtsalt korrutab seda "kolm auditiringi" sloppi mida me juba kasitlsesime vaga detailselt tulemuste peatykis, siin ei ole mitte mingit uut novel jareldust ega midagi, puhas lihtlabane korrutamine.
+  4.6 sissejuhatus jalle sama probleem. viimane lause, metoodikaparandused... need ei ole too peamine narratiiv, kui ei ole peamine narratiiv siis miks yldse mainida et ei ole too peamine narratiiv? paneb lugeja kahtlema asjade yle mis on irrelevantsed. sellised igaks juhuks tapsustame yle asju on tihti yle tapsustatud. nagu seda lauset ei ole yldse vaja, yldiselt see lause nagu idee on hea aga teostus halb, vaja kuidagi mitte seda narratiivi konteptsiooni sisse tuua 
+lk 58:
+  4.6.1 on reaalselt tulemust peatykk all over again, taiesti ebavajalik korrutamine, nothing new to add
+  ainuke voibolla hea arutlev osa on 4.6.4 aga selle saaks ka kuidagi palju lyhemalt kokku votta, yldiselt mulle tundub et terve 4.6 pt voiks kustutada ja too muutuks paremaks.
+lk 60:
+  lugeja ei tohi... vaga kantseliitlik ja imelik pattern, kindlasti kustutada.
+  4.7 on ka veider, mis mottes mida saab praegu juba vaita? mida see lugejale juurde peaks andma mida ta ei saanud tulemuste peatykist?
+  4.7 jalle korrutab tulemusi, ei anna otseselt midagi olulist juurde. palju parema meelega raagiks siin nt kuidas oleks saanud veelgi paremaks ja mis tuleviku tood ja potentsiaalsed asjad oleks usaldusvaarsust moodikute osas tostnud ja potentsiaalseid eksperimente mis jaid selle skoobist valja.
+  kaskaadarhitektuuri idee mulle iseenesest meeldib, on hea pt, aga voikski olla edasised suunad kui suurem pt ja sellel yks alampt kaskaadarhitektuur ning tuua vbla 2 veel edasisist suunda metoodika ja handamise ja valideerimise ossa.
+lk 62:
+  kokkuvote on hea pikkusega ja lyhke, aga need uurimuskusimsed tunduvad veidi out of context ja veidrad, nagu ma siin ka varem olen maininud, tegelikud uurimuskysimused on veidi erienvad.
+  ning voibolla saab mainida kokkuvottes ka seda home assistnat integratsiooni mis sai loodud, et sinna sai experimental tag, sest et autori personaalsel kasutamisel esineb ikkagi endiselt valavallandumisi ja muid haireid mis oigustaks asja kasutamiseks ainult eesmargil et seda parandada ja tinkerida, mitte ootusel et see tootab enamus ajast hasti.
+  ning et autor plaanib selle tooga edasi liikuda samuti.
+

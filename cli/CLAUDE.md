@@ -28,7 +28,9 @@ Project CLI tool — `kratt <command>` gateway for common development tasks.
 | `kratt prepare-negative-splits` | Materialize scaled negative train/dev/eval splits (optional/future-work) |
 | `kratt rec` | Record wake word samples |
 | `kratt thesis-dashboard` | Thesis automation/dashboard helper |
+| `kratt thesis-lint` | Run terminology, claim, style, scope, and formal thesis lint checks |
 | `kratt thesis-watch` | Watch LaTeX thesis sources and auto-rebuild/open PDF |
+| `kratt terms` | Check thesis terminology against Ekilex/Sõnaveeb data |
 | `kratt train` | Training wrapper / HPC submit front-end |
 | `kratt tts` | Generate TTS samples |
 | `kratt user-test` | Record labelled 10-minute user-test trials (`trials.jsonl` + WAVs) |

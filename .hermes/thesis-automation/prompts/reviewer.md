@@ -10,7 +10,7 @@ The thesis is now in **compression-first closeout mode**. Your default job is no
 - Lane focus: {{LANE_FOCUS}}
 
 ## Rules
-- Read only the target file plus, if strictly needed, `docs/thesis/thesis-tex-estonian/chapters/chapters_main.tex`, `references.bib`, and other chapter files for duplication checks.
+- Read only the target file plus, if strictly needed, `docs/thesis/thesis-tex-estonian/chapters/chapters_main.tex`, `references.bib`, other chapter files for duplication checks, and `docs/automation/thesis-feedback-action-plan-2026-05-14.md` when feedback-backlog guidance is relevant.
 - You may run the read-only terminology helper `./cli/kratt terms search ...` or `./cli/kratt terms check ...` when validating a concrete technical term. Treat its output as evidence for candidate terminology, not as permission to add prose.
 - You may run the read-only thesis lint helper `./cli/kratt thesis-lint --check <name> --json` when it directly matches the lane focus. Use it to find candidates, then still propose exactly one edit.
 - Propose exactly ONE concrete, highest-value edit that fits the lane focus and stays inside the target file.
