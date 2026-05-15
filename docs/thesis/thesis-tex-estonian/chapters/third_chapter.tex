@@ -72,16 +72,24 @@ Sarnast lähenemist on propageeritud ka kirjanduses. MISP Challenge~\cite{chen20
 
 \section{Agentpõhine arendus kui töövõimendaja, mitte tõendusmaterjali asendaja}
 
-Eelnevalt kirjeldatud stsenaariumipõhine hindamisahel, valevallandumiste logija ja taustaheli korpuse tööriistastik ei oleks üksiku autori jaoks olnud selles mahus jõukohased ilma agentpõhise tarkvaraarenduseta, mistõttu järgnev osa on pigem eelneva metoodikaargumendi tehniline järellugu kui iseseisev kõrvalpõige.
+Käesoleva töö üks keskseid järeldusi on, et tänapäevane agentpõhine tööviis nihutab äratussõna arenduse peamise pudelikaela rakenduselt tõendusmaterjalile: üksi töötav autor saab ehitada lühikese ajaga oluliselt laiema tehnilise süsteemi kui varem, kuid lõppjärelduste tugevus sõltub endiselt pärisandmete kogumisest, hindamismetoodikast ning esialgsete tulemuste eristamisest lõplikest väidetest. Järgnev osa on selle järelduse tehniline kõrvalepõige eelnevale metoodikaargumendile.
 
-See kiirendus ei ole käesolevas töös pelgalt tootlikkuse detail, vaid sisuline uurimist kujundanud tegur. Konkreetselt võimaldas Androidi-põhine valevallandumiste logija koguda päris kasutusolukorra negatiivnäiteid, mida avalikest korpustest ei saa, ning paralleelselt arendatud hindamis- ja analüüsiskriptid lubasid avastada andmelekkeid ja korrata hindamist sõltumatutel testikomplektidel sama nädala jooksul.
+Agentpõhine arendus võimaldas selles töös kolm tegevust, mis oleksid üksiku autori jaoks muidu jäänud mahult kättesaamatuks: Androidi-põhine valevallandumiste logija päris kasutusolukorra negatiivnäidete kogumiseks, stsenaariumipõhine hindamisahel sõltumatu taustaheli FAPH mõõtmiseks ning paralleelselt arendatud hindamis- ja analüüsiskriptid, mis lubasid avastada andmelekkeid ja korrata hindamist sõltumatutel testikomplektidel sama nädala jooksul. Need ei ole pelgalt tootlikkuse näitajad, vaid uurimist sisuliselt kujundavad tegurid: ilma logijata poleks taustaheli FAPH-i saanud kalibreerida päris koduakustika peal ning ilma kiire iteratsioonita poleks andmelekked jõudnud avastatuks.
 
-Samas ei tohi agentpõhise arenduse mõju üle tõlgendada. Kui tehisagendid vähendavad märkimisväärselt rakendusliku töö, skriptimise ja prototüüpimise kulu, siis nad ei vähenda samal määral tõendusmaterjali hankimise kulu. Tehisagendid ei loo juurde päris kõnelejaid, ei asenda sõltumatuid testikomplekte ega lahenda välise valiidsuse probleemi. Käesoleva töö üks keskseid järeldusi ongi, et tänapäevane agentpõhine tööviis nihutab peamise pudelikaela rakenduselt tõendusmaterjalile: üksi töötav autor võib ehitada lühikese ajaga oluliselt laiema tehnilise süsteemi kui varem, kuid lõppjärelduste tugevus sõltub endiselt pärisandmete kogumisest, hindamismetoodikast ja esialgsete tulemuste eristamisest lõplikest väidetest.
+Mõju ei tohi siiski üle tõlgendada. Tehisagendid vähendavad rakendusliku töö, skriptimise ja prototüüpimise kulu, kuid ei vähenda samal määral tõendusmaterjali hankimise kulu: nad ei loo juurde päriskõnelejaid, ei asenda sõltumatuid testikomplekte ega lahenda välise valiidsuse probleemi. Just see asümmeetria --- süsteemiehituse kiirenemine ilma tõendusmaterjali kiirenemiseta --- on käesoleva peatüki teesi tehniline alus.
 
 \section{Mitmemõõtmeline hindamisprotokoll kui töö metoodiline põhipanus}
 \label{sec:eval-evolution}
 
-Käesoleva töö kõige kindlamini kaitstav teaduslik panus ei ole konkreetne mudel, vaid väikese ressursiga keele kohaliku äratussõna hindamisprotokoll. Üksiku eestikeelse äratussõnamudeli peale on äratussõnade kontekstis suurematel rühmadel oluliselt rohkem ressursse (vt §\ref{sec:benchmark-gap}); seetõttu pole töö konkurentsivõimeline väitega \enquote{parim eesti äratussõna}. Töö konkurentsivõimeline väide on, et eesti äratussõna juurutatavust tuleb hinnata mitme üksteist täiendava kriteeriumi kaudu: sõltumatu taustaheli FAPH, päriskõnelejate tuvastamismäär, TTS-allikate tuvastamismäär, sarnaste negatiivnäidete FPR ning fraasistruktuuri kontrollivad prefiksi-, üksiku sõna, pööratud järjekorra ja kuule/kule segiajamise mõõdikud. Metoodikaparandused on selles peatükis viis näidata, kuidas selline kriteeriumide kogum empiiriliselt põhjendati; need ei ole töö peamine narratiiv.
+Käesoleva töö metoodiline põhipanus ei ole konkreetne mudel, vaid väikese ressursiga keele kohaliku äratussõna mitmemõõtmeline hindamisprotokoll. Üksiku eestikeelse äratussõnamudeli peale on äratussõnade kontekstis suurematel rühmadel oluliselt rohkem ressursse (vt §\ref{sec:benchmark-gap}); seetõttu pole töö konkurentsivõimeline väitega \enquote{parim eesti äratussõna}. Töö konkurentsivõimeline väide on, et eesti äratussõna juurutatavust tuleb hinnata mitme üksteist täiendava kriteeriumi kaudu:
+\begin{itemize}
+    \item sõltumatu taustaheli FAPH,
+    \item päriskõnelejate tuvastamismäär,
+    \item TTS-allikate tuvastamismäär,
+    \item sarnaste negatiivnäidete FPR,
+    \item fraasistruktuuri kontrollivad mõõdikud: prefiks, üksik sõna, pööratud järjekord ning \enquote{kuule}/\enquote{kule} segiajamine.
+\end{itemize}
+Selle peatüki ülejäänud osa näitab, kuidas eelnev kriteeriumide kogum kolme valideerimiskihi kaudu empiiriliselt põhjendati.
 
 \subsection{Kolm valideerimiskihti: muster}
 \label{sec:three-rounds}
