@@ -51,24 +51,24 @@ Dubois et al.~\cite{dubois2020triggers} demonstreerisid seda lahknevust empiiril
 
 \subsection{Põhjus 3: klipitaseme ja koduheli testid ei kajasta kogu voogedastuskonteksti}
 
-Foneetiliselt sarnaste fraaside eristamist testiti isoleeritud klippidena. Mudel, mis korrektselt tõrjub üksiku klipi \enquote{kuule rott}, võib reageerida teisiti, kui sama fraas tuleb lause kontekstis: \enquote{kuule, rott on köögis}. Voogedastusrežiimis on mudeli sisemine olek eelmiste kaadrite mõjutatud, koartikulatsioon muudab akustilist pilti ja ajastus varieerub. Klipitaseme hindamine ignoreerib neid efekte täielikult.
+Foneetiliselt sarnaste fraaside eristamist testiti isoleeritud klippidena. Mudel, mis korrektselt tõrjub üksiku klipi \enquote{kuule rott}, võib reageerida teisiti, kui sama fraas tuleb lause kontekstis: \enquote{kuule, rott on köögis}. Voogedastusrežiimis on mudeli sisemine olek eelmiste kaadrite mõjutatud, koartikulatsioon muudab akustilist signaali ja ajastus varieerub. Klipitaseme hindamine ei kajasta neid efekte.
 
-Teine katvusprobleem puudutab mittekõnelisi koduhelisid. Standardsed KWS võrdlusalused sisaldavad kõnet ja vahel keskkondlikke helisid (nt MUSAN müra \cite{musan2015}), kuid ei sisalda konkreetseid koduse keskkonna stiimuleid, nagu nõude kolin, kaugelt kostev televisioon või juhuslik muusika. Käesolevas töös ei mõõdetud süstemaatiliselt aktivatsioonimäära sellistel stiimulitel ning ükski kasutatud standardne võrdlusalus neid juhtumeid ei kata.
+Teine katvusprobleem puudutab mittekõnelisi koduhelisid. Standardsed KWS võrdlusalused sisaldavad kõnet ja vahel ka keskkonnahelisid (nt MUSAN müra \cite{musan2015}), kuid ei sisalda konkreetseid koduse keskkonna stiimuleid, nagu nõude kolin, kaugelt kostev televisioon või juhuslik muusika. Ükski kasutatud standardne võrdlusalus neid juhtumeid süstemaatiliselt ei kata; just see lõhe motiveeris käesoleva töö stsenaariumpõhist hindamisvoogu, mida kirjeldab järgmine alajaotus.
 
 \subsection{Lahendusena: stsenaariumpõhine testimisvoog}
 
-Eelneva analüüsi põhjal väidab autor, et äratussõna mudelite usaldusväärne hindamine nõuab standardsete mõõdikute kõrvale täiendavat \emph{stsenaariumpõhist testimisvoogu}. Konkreetselt tähendab see 2-tunnist annoteeritud salvestust, mis sisaldab reaalseid kasutusolukordi:
+Eelnev analüüs viitab sellele, et äratussõnamudelite usaldusväärne hindamine nõuab standardsete mõõdikute kõrvale täiendavat \emph{stsenaariumpõhist testimisvoogu}: mitmetunnist annoteeritud salvestust, mis sisaldab nelja tüüpi reaalseid kasutusolukordi:
 
 \begin{enumerate}
     \item pikk vaikus (elutuba ilma aktiivsuseta),
     \item taustamuusika ja televisioon,
-    \item loomulik vestlus, kuhu on põimitud foneetiliselt sarnased fraasid lausekontekstis,
+    \item skriptitud lausekontekstid, mis matkivad loomulikku kõnet ja sisaldavad foneetiliselt sarnaseid fraase,
     \item mitme kõneleja äratussõna ütlused erinevatel kaugustel ja helitugevustel.
 \end{enumerate}
 
-Salvestust hinnatakse voogedastusrežiimis, mitte klipilõikamisega, ja tulemus võrreldakse ajaliselt märgendatud põhitõega. Selline metoodika mõõdab mudeli kvaliteeti viisil, mis on isomorfne tegeliku kasutajakogemusega.
+Salvestust hinnatakse voogedastusrežiimis, mitte klipilõikamisega, ja tulemus võrreldakse ajaliselt märgendatud põhitõega. Selline metoodika mõõdab mudeli kvaliteeti viisil, mis on ökoloogiliselt valiidsem kui klipitaseme hindamine ja lähem tegelikule kasutajakogemusele.
 
-Sarnast lähenemist on propageeritud ka kirjanduses. MISP Challenge~\cite{chen2022misp} loodi spetsiaalselt selleks, et ületada standardsete võrdlusaluste ja reaalse kasutuse vahelist lõhet mandariini keele puhul, ning hõlmab multimodaalseid salvestusi reaalsetest eluruumidest. Käesoleva töö ettepanek on kitsamalt fokusseeritud --- ühe keele üks sõna ---, kuid põhimõte on sama: hindamine peab peegeldama kasutusolukordi, mitte laboritingimusi.
+Sarnast lähenemist on propageeritud ka kirjanduses. MISP Challenge~\cite{chen2022misp} loodi spetsiaalselt selleks, et ületada standardsete võrdlusaluste ja reaalse kasutuse vahelist lõhet mandariini keele puhul, ning hõlmab multimodaalseid salvestusi reaalsetest eluruumidest. Käesoleva töö ettepanek erineb mahult --- üks keel, üks äratussõna ---, kuid metoodiline põhimõte on sama: hindamine peab peegeldama kasutusolukordi, mitte laboritingimusi.
 
 \section{Agentpõhine arendus kui töövõimendaja, mitte tõendusmaterjali asendaja}
 
