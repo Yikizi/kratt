@@ -216,19 +216,19 @@ Hüpotees H2 väitis, et kui mudel õpib foneetilise sisu tunnuseid, peaks ta ü
 
 Testimise käigus ilmnes, et mudel:
 \begin{itemize}
-    \item tuvastas \enquote{Kuule Kratt} erinevate hääldusvariatsioonidega (Mac-mikrofoni kõrvalejäetud komplekti tuvastamismäär 100,0\%, vt Mac-mikrofoni tuvastusrida tabelis~\ref{tab:fair-comparison-holdout});
-    \item ei vallandunud vaikuse, taustamüra ega üksiku sõna \enquote{kuule} või \enquote{kratt} peale selle informaalse sessiooni jooksul;
-    \item ei vallandunud sarnaste fraaside peale nagu \enquote{Hei Kratt} või \enquote{Tere Kratt} sama sessiooni piires.
+    \item tuvastas \enquote{Kuule Kratt} erinevate hääldusvariatsioonidega (Mac-mikrofoni kõrvalejäetud komplekti tuvastamismäär 100,0\%, $N=30$, Wilsoni 95\% UV [88,6--100,0]; vt Mac-mikrofoni tuvastusrida tabelis~\ref{tab:fair-comparison-holdout});
+    \item ei vallandunud informaalse sessiooni jooksul vaikuse, taustamüra ega üksiku sõna \enquote{kuule} või \enquote{kratt} peale --- sessiooni kestust ega ärritajate hulka ei mõõdetud, mistõttu tegu on kvalitatiivse vaatluse, mitte mahulise väitega;
+    \item ei vallandunud sarnaste fraaside peale nagu \enquote{Hei Kratt} või \enquote{Tere Kratt} sama sessiooni piires (samuti loendamata).
 \end{itemize}
 
-See tulemus andis \emph{esialgse} kinnituse hüpoteesile H2: mudel on õppinud äratussõna foneetilist struktuuri ja suudab seda tuvastada treeningandmetest erineval seadmel. Hilisem süstemaatilisem testimine (pikem tavakõne ja sarnaste negatiivnäidete komplekt) näitas selle mulje piire --- vt §\ref{sec:cross-mic-asymmetry} ja Tabel~\ref{tab:fair-comparison-holdout} (read \enquote{FPR HN (Mac, real)} ja \textbf{FAPH}).
+See informaalne sessioon andis vihje H2 kasuks: mudel paistis tundvat äratussõna foneetilist struktuuri ka treeningandmetest erineval seadmel. Vihje piiratust näitab kohe järgmine alapeatükk, kus pikem tavakõne ja struktureeritud sarnaste negatiivnäidete komplekt (Tabeli~\ref{tab:fair-comparison-holdout} read \enquote{FPR HN (Mac, real)} ja \textbf{FAPH}) toovad esile, et positiivse tuvastuse üldistumisest hoolimata jääb negatiivse poole üldistus puudulikuks.
 
 \subsection{Ristmikrofoni üldistumise asümmeetria}
 \label{sec:cross-mic-asymmetry}
 
-Pikema reaalajas testimise käigus ilmnes nüanss. Kui v6 mudelit jooksutati MacBook~Pro mikrofoni peal 40-minutilise tavakõne ajal (kus äratussõna kordagi ei öeldud), registreeriti umbes 50 valevallandumist tunnis (FAPH~$\approx$~50). Samas tuvastas mudel päris äratussõna ütlusi usaldusväärselt.
+Pikema reaalajas testimise käigus ilmnes nüanss. Kui v6 mudelit jooksutati MacBook~Pro sisemikrofoni peal ühe 40-minutilise tavakõne sessiooni ajal (kus äratussõna kordagi ei öeldud), registreeriti $\sim$33 valevallandumist, mis tunnile projitseeritult annab FAPH~$\approx$~50. Samal mudelil oli Mac-mikrofoni positiivse kõrvalejäetud komplekti tuvastamismäär 100,0\% ($N=30$, vt Tabel~\ref{tab:fair-comparison-holdout}), st päris äratussõna ütlused tuvastati. Vaatlus põhineb ühel sessioonil, ühel seadmel, ühes ruumis ja ühe kõnelejaga: tunnile ekstrapoleeritud FAPH kannab seetõttu laia, mitteraporteeritud usaldusvahemikku, mistõttu järgnev väide üldistumise asümmeetria kohta on hüpotees, mitte kvantitatiivselt kinnitatud järeldus. Range kontroll nõuaks teist seadet ja teist kõnelejat ning jääb käesoleva töö ulatusest välja.
 
-See tulemus viitab \textbf{üldistumise asümmeetriale}. Suuremõõtmeliste süsteemide (nt Apple \enquote{Hey Siri}) puhul on domeeni\-spetsiifiliste ja mitmekeelsete negatiivide vajalikkust kaudselt tunnistatud: treeningusse kaasatakse \enquote{tuhandeid tunde} sihtdomeeni ja sihtkeelte mitte-äratus\-kõnet \cite{apple-heysiri2017}. Autor ei leidnud avaldatud eesti\-keelset ega võrreldava mahuga KWS-uuringut, mis sama asümmeetria eraldi raporteeriks:
+See tulemus viitab \textbf{üldistumise asümmeetriale}. Suuremõõtmeliste süsteemide (nt Apple \enquote{Hey Siri}) puhul on domeeni\-spetsiifiliste ja mitmekeelsete negatiivide vajalikkust kaudselt tunnistatud: treeningusse kaasatakse \enquote{tuhandeid tunde} sihtdomeeni ja sihtkeelte mitte-äratus\-kõnet \cite{apple-heysiri2017}. Mahu erinevus on käesoleva tööga mitu suurusjärku --- Apple'i süsteem on miljonite parameetritega, käesolev mudel 22\,000 parameetrit ja $\sim$5 tundi eestikeelset Common~Voice negatiivi ---, mistõttu otsene metoodikaülekanne pole võimalik; kirjandus toetab käesolevat juhtumit ainult põhimõttelise probleemi ühtimise kaudu. Eestikeelse äratussõna- ega võrreldava mahuga KWS-uuringut, mis sama asümmeetria eraldi raporteeriks, autor 2026.~aasta mai seisuga ei leidnud (otsing: Google Scholar ja ETIS märksõnadega \enquote{eesti keele äratussõna}, \enquote{Estonian wake word}, \enquote{Estonian keyword spotting}):
 \begin{itemize}
     \item \textbf{Tuvastamismäär üldistub}: mudel tunneb \enquote{Kuule Kratt} foneetilise struktuuri ära sõltumata mikrofonist. Positiivne tuvastus toimib ristseadmel.
     \item \textbf{FPR ei üldistu}: mudel ei oska tõrjuda MacBooki mikrofoni kaudu kuuldavat tavakõnet, sest negatiivne treeningmaterjal pärineb teisest akustilisest domeenist (Korvo-2 ja Common~Voice).
