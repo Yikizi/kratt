@@ -126,13 +126,13 @@ Osalejale nähtav aktiivne süsteem külmutatakse enne pilootandmete kogumist. P
 
 Salvestusahel loob iga katse kohta ühe märgendatud rea failis \texttt{trials.jsonl} ja helisalvestise nõusoleku korral vastava 16~kHz mono WAV-klipi. Pärast sessiooni kontrollitakse katsete arvu, WAV-failide olemasolu, kanalite ja diskreetimissageduse vastavust ning liiga madala RMS-i hoiatusi. Sama heli taasesitatakse hiljem külmutatud lävega mudelitele ning koondtulemused raporteeritakse tuvastamismäära ja FPR-ina koos Wilsoni usaldusvahemikega. Seega on kasutajatesti heli esmalt hindamisandmestik, mitte treeningandmestik; seda ei lisata enne lõplikku hindamist mudeli treeningusse.
 
-Nõusolekumudel on kaheastmeline. Minimaalne nõusolek lubab kasutada pseudonüümseid tehnilisi tulemusi ja küsimustiku vastuseid; eraldi helisalvestise nõusolek lubab säilitada ja analüüsida lühikesi märgendatud heliklippe. Kasutajatesti vormis nimetatakse neid valikuid eestikeelselt \texttt{ainult mõõdikud} ja \texttt{mõõdikud + helisalvestis}. Lähtefailides vastavad sellele \texttt{docs/user-testing/} kataloogi nõusolekutekst, lukustatud küsimustik ja lokaalne küsimustikuvorm.
+Nõusolekumudel on kaheastmeline. Minimaalne nõusolek lubab kasutada pseudonüümseid tehnilisi tulemusi ja küsimustiku vastuseid; eraldi helisalvestise nõusolek lubab säilitada ja analüüsida lühikesi märgendatud heliklippe. Kasutajatesti vormis nimetatakse neid valikuid eestikeelselt \texttt{ainult mõõdikud} ja \texttt{mõõdikud + helisalvestis} (vt joonis~\ref{fig:kratt-questionnaire-setup}). Lähtefailides vastavad sellele \texttt{docs/user-testing/} kataloogi nõusolekutekst, lukustatud küsimustik ja lokaalne küsimustikuvorm.
 
-Küsimustik on lõppversioonis teadlikult lühike. Võrreldava kasutatavusnäitajana kasutatakse kahte UMUX-Lite väidet ja ühte SEQ ülesande-lihtsuse hinnangut \cite{lewis2013umuxlite,sauro2009seq}. Lisaks kogutakse neli 5-punktist Krati-spetsiifilist diagnostilist hinnangut süsteemi usaldusväärsuse, kiiruse, käskude loomulikkuse ja kodus kasutamise valmisoleku kohta ning üks avatud kommentaar. Diagnostilisi väiteid ei liideta UMUX-Lite koondtulemusse ega käsitleta valideeritud kasutatavusskaalana.
-
-\begin{figure}[!htbp]
+\begin{figure}[!ht]
     \centering
-    \includegraphics[width=0.92\linewidth]{figures/kratt-questionnaire-setup.png}
-    \caption{Lokaalse kasutajatesti küsimustiku operaatorivaade. Vorm töötab samas arvutis ja salvestab vastused pseudonüümse osalejatunnusega; nõusolekuvalikud on eestikeelsed.}
+    \includegraphics[width=0.75\linewidth]{figures/kratt-questionnaire-setup.png}
+    \caption{Kasutajatesti sessiooni alustamise vorm. Operaator sisestab enne sessiooni pseudonüümse osalejatunnuse ja valib ühe kahest nõusolekutasemest; vorm käivitub kohapeal operaatori arvutis ilma võrguühenduseta. Näidisidentifikaator \texttt{P01} illustreerib pseudonüümistamise skeemi.}
     \label{fig:kratt-questionnaire-setup}
 \end{figure}
+
+Küsimustik on lõppversioonis teadlikult lühike. Võrreldava kasutatavusnäitajana kasutatakse kahte UMUX-Lite väidet ja ühte SEQ ülesande-lihtsuse hinnangut \cite{lewis2013umuxlite,sauro2009seq}. Lisaks kogutakse neli 5-punktist Krati-spetsiifilist diagnostilist hinnangut süsteemi usaldusväärsuse, kiiruse, käskude loomulikkuse ja kodus kasutamise valmisoleku kohta ning üks avatud kommentaar. Diagnostilisi väiteid ei liideta UMUX-Lite koondtulemusse ega käsitleta valideeritud kasutatavusskaalana.
