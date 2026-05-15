@@ -20,6 +20,9 @@
 \usepackage[greek, english, estonian]{babel}        % Add Estonian / English language support & Greek for Euro Symbol (babel makes the last language to be the main one)
 \usepackage[T2A,T1]{fontenc}                        % Selecting font encodings (T1 - for western European languages (õ, ü, ö); T2 - for Cyrillic characters)
 \usepackage[utf8]{inputenc}                         % Accept utf8 input encoding
+% IPA vahemärgid pdfLaTeX-i jaoks (ilma tipa paketita): pika vokaali tähis ja paar levinumat IPA märki kaardistame ASCII vasteteks.
+\DeclareUnicodeCharacter{02D0}{:}                   % ː (IPA pikkuse märk) -> tavaline koolon
+\DeclareUnicodeCharacter{02D1}{\textperiodcentered} % ˑ (IPA poolpika märk) -> kesktäpp
 %% ==== RECONFIGURE STOCK FONT SIZE MACROS ==== %%
 \renewcommand\Large{\@setfontsize\Large{16pt}{18}}
 \renewcommand\large{\@setfontsize\large{14pt}{12}}
