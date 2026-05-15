@@ -443,16 +443,18 @@ Pere koosneb kuuest variandist, mis erinevad arhitektuuri laiuse, SpecAugmenti j
 
 \begin{table}[H]
 \centering
-\caption{V18 perekonna tulemused puhastatud positiivsete andmetega (lävi\,=\,0,995). Pre-FPR mõõdab prefiksi, 1K-FPR üksiku Krati, Rev-FPR pööratud järjekorra ja Conf-FPR kuule/kule segiajamise riski. Tuvastusveerud esitavad Kõneleja A XTTS ($N=48$) ja Kõneleja D ($N=145$) tulemused Wilsoni 95\% usaldusvahemikuga.}
+\caption{V18 perekonna tulemused puhastatud positiivsete andmetega (lävi\,=\,0,995). Tuvastusmäärad on Wilsoni 95\% usaldusvahemikuga (UV). \textbf{HN-FPR} (\emph{hard negatives}, vt §\ref{sec:phrase-selectivity-metrics}) tähistab sihtfraasiga sarnaste negatiivnäidete FPR-i: Mac = Macbook-mikrofon, A XTTS = Kõneleja A süntees\-hääl. \textbf{Fraasiselektiivsuse FPR-id} (samuti §\ref{sec:phrase-selectivity-metrics}): \emph{Pre} prefiksifragmendid (nt ainult \enquote{Kuule}), \emph{1K} üksik \enquote{Kratt}, \emph{Rev} pööratud järjekord, \emph{Conf} kule-ga segiajamine. \textbf{FAPH CV} = vale-vallandumiste arv tunnis Common~Voice ET skriptitud taasmängul. NB: UV-de mittekattumine on \emph{vajalik}, mitte piisav tingimus mudelite eristamiseks; tugevamad paaritestid (nt McNemar) on selle töö skoobist väljas.}
 \label{tab:v18-family-results}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l r l r l r r r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Tuv. Kõneleja A} & \textbf{Kõneleja A [95\% UV]} & \textbf{Tuv. Kõneleja D} & \textbf{Kõneleja D [95\% UV]} & \textbf{HN Mac} $\downarrow$ & \textbf{HN Kõneleja A} $\downarrow$ & \textbf{Pre-FPR} $\downarrow$ & \textbf{1K-FPR} $\downarrow$ & \textbf{Rev-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(taasmäng)} $\downarrow$ \\
+ & \multicolumn{2}{c}{\textbf{Kõneleja A XTTS} ($N=48$)} & \multicolumn{2}{c}{\textbf{Kõneleja D real} ($N=145$)} & \multicolumn{2}{c}{\textbf{HN-FPR} $\downarrow$} & \multicolumn{4}{c}{\textbf{Fraasiselektiivsuse FPR} $\downarrow$} & \\
+\cline{2-3}\cline{4-5}\cline{6-7}\cline{8-11}
+\textbf{Mudel} & Tuv.\,\% & [95\% UV] & Tuv.\,\% & [95\% UV] & Mac & A XTTS & Pre & 1K & Rev & Conf & \textbf{FAPH CV/h} $\downarrow$ \\
 \hline
-v18a-clean48 & 100,0 & [92,6--100,0] & 93,1 & [87,8--96,2] & 86,7 & 71,7 & 97,1 & 99,5 & 98,4 & 99,3 & 515 \\
+v18a-clean48 & 100,0 & [92,6--100,0]$^{\dagger}$ & 93,1 & [87,8--96,2] & 86,7 & 71,7 & 97,1 & 99,5 & 98,4 & 99,3 & 515 \\
 v18b-clean48-sa & 95,8 & [86,0--98,8] & 92,4 & [86,9--95,7] & 93,3 & 56,7 & 100,0 & 98,4 & 98,4 & 99,0 & 132 \\
 v18c-clean48-hn & 31,2 & [19,9--45,3] & 84,1 & [77,3--89,2] & 40,0 & 13,3 & 82,3 & 100,0 & 93,8 & 94,3 & 85 \\
 v18d-clean96 & 97,9 & [89,1--99,6] & 97,9 & [94,1--99,3] & 80,0 & 76,7 & 100,0 & 100,0 & 93,8 & 99,8 & 536 \\
@@ -460,12 +462,15 @@ v18e-clean48-tts-hn & 75,0 & [61,2--85,1] & 90,3 & [84,4--94,2] & 33,3 & 45,0 & 
 v18f-clean48-tts-hn-fast & 52,1 & [38,3--65,5] & 66,2 & [58,2--73,4] & 46,7 & 36,7 & 88,2 & 76,9 & 79,7 & 78,8 & 250 \\
 \hline
 \end{tabular}%
-}
+}\\[3pt]
+{\footnotesize\raggedright $^{\dagger}$ UV ülemine piir on klipitud Wilsoni meetodi laeefekti tõttu ($\hat p=1{,}0$); tegelik määramatus on suurem kui näidatud vahemik viitab.\par}
 \end{table}
 
-Kõneleja D valimi $N=145$ kitsendab UV-d 5--10 protsendipunkti laiusele, mistõttu v18a (93,1\% [87,8--96,2]) ja v18b (92,4\% [86,9--95,7]) ei ole reaalsete kõnelejate tuvastamismäära järgi statistiliselt usaldusväärselt eristatavad, samas kui v18d (97,9\% [94,1--99,3]) ja v18f (66,2\% [58,2--73,4]) on selgelt erinevad. Kõneleja A XTTS real ($N=48$) on UV-d laiemad ja sama tuvastamismäära-järjestus kannab vaid osaliselt: v18d (97,9\% [89,1--99,6]) ja v18a (100,0\% [92,6--100,0]) UV-d kattuvad, mistõttu Kõneleja A rea baasil neid kahte mudelit eristada ei saa.
+V18-pere keskne tulemus on, et \emph{positiivsete puhastamine üksi ei lahendanud prefiks- ega segiajamis-vallandumist}. Kõige selgemini näitab seda v18d-clean96: ta säilitab kõrge tuvastamismäära kõigil reaalsete kõnelejate komplektidel (Kõneleja A 97,9\%, Kõneleja D 97,9\%, Kõneleja B 100\%, autor 100\%), kuid samaaegselt on ta prefiksi-FPR 100\% ja segiajamis-FPR 99,8\% --- mudel vallandub praktiliselt iga sobiva esimese silbi või kule-variandi peale. Sama muster --- kõrge tuvastamismäär (92--100\%) koos prefiksi-FPR-iga 97--100\% --- kehtib ka v18a ja v18b kohta.
 
-V18-pere keskmine järeldus on, et \emph{positiivsete puhastamine üksi ei lahendanud prefiks- ega segiajamis-vallandumist}. Tuvastamismäär reaalsete kõnelejate peal jäi kõrgeks (Kõneleja D 92--98\% mudelitel v18a, v18b, v18d), mis tähendab, et karantiini pandud andmehulga eemaldamine ei rikkunud mudeli võimet täisfraasi tuvastada. Samas on prefiksi-FPR endiselt 97--100\% kõigil mudelitel, mis säilitavad kasuliku tuvastamismäära. v18a, v18b ja v18d ei ole Kõneleja D tuvastamismäära järgi statistiliselt usaldusväärselt eristatavad. v18d-clean96 säilitab kõrge tuvastamismäära kõigil komplektidel (Kõneleja A 98\%, Kõneleja D 98\%, Kõneleja B 100\%, autor 100\%), kuid samaaegselt on ta prefiksi-FPR 100\% ja segiajamis-FPR 99,8\% --- mudel vallandub praktiliselt iga sobiva esimese silbi peale. v18-pere tulemused näitavad, et puhtad positiivsed üksi ei sunni mudelit eristama täisfraasi prefiksist; sama järeldus on dokumenteeritud Apple'i DNN-HMM töös, kus partial-keyword negatiivid lisati selleks, et mudel ei vallanduks osafraasidel \cite{shrivastava2021optimize}.
+Tulemuste statistiline tugevus erineb kahel reaalsete kõnelejate komplektil oluliselt. Kõneleja D valimi $N=145$ kitsendab UV-d 5--10 protsendipunkti laiusele, mistõttu v18a (93,1\% [87,8--96,2]) ja v18b (92,4\% [86,9--95,7]) ei ole tuvastamismäära järgi statistiliselt usaldusväärselt eristatavad, samas kui v18d (97,9\% [94,1--99,3]) ja v18f (66,2\% [58,2--73,4]) on selgelt erinevad. Kõneleja A XTTS rida ($N=48$) on tugevateks järeldusteks liiga väike: ühe vale tuvastuse muutus liigutab tulemust ligi 2 protsendipunkti, mitme mudeli UV-d kattuvad ulatuslikult ning v18a UV ülemine piir on klipitud laeefekti tõttu (vt joonealune märkus tabelis). Kasutatud UV-de kattumise reegel on \emph{konservatiivne mitte-erinevuse kriteerium}: ta välistab usaldusväärselt eristamise, kuid ei tõesta võrdsust. Allpool toodud kokkuvõte toetub seetõttu primaarselt Kõneleja D reale ja kasutab Kõneleja A rida üksnes toetava viitena.
+
+Karantiini pandud andmehulga eemaldamine ei rikkunud täisfraasi tuvastamise võimet enamikul mudelitel --- Kõneleja D tuvastamismäär jäi 92--98\% mudelitel v18a, v18b, v18d. Ainus selge erand on v18f, mille Kõneleja D tuvastamismäär kukkus 66,2\%-le; selles variandis kombineeriti puhastatud positiivsed sarnaste negatiividega ja kiirema arhitektuuriga, mille koosmõjul tuvastamisvõime degradeerus. Prefiksi-FPR seevastu jäi 97--100\% kõigil neil mudelitel, mis säilitavad kasuliku tuvastamismäära. Sama leid --- et puhtad positiivsed üksi ei kodeeri täisfraasi järjestust ning eristamiseks on vaja kas partial-keyword negatiive või eraldi verifitseerivat etappi --- on tööstuses dokumenteeritud Apple'i DNN-HMM-mudelis \cite{shrivastava2021optimize}, kaheastmelises kõnetriggeris \cite{gruenstein2017cascade} ja mitmeülesandelises trigger-detektoris \cite{sigtia2020multitask}.
 
 Ainsad variandid, mis prefiksi-FPR-i mõõdetavalt langetavad, on need, kus kasutatakse sihtfraasiga sarnaseid negatiivnäiteid (\texttt{v18c}, \texttt{v18e}, \texttt{v18f}). Need toovad prefiksi-FPR-i tasemele 82--88\%, mis on parem, kuid endiselt juurutuskõlbmatu, ja teevad seda kõrge hinnaga: \texttt{v18c} kaotab Kõneleja A tuvastamismäära 31\%-le, \texttt{v18e} 75\%-le. See on otsene kompromiss: praeguses andmestikus saab fraasiselektiivsust tõsta ainult tuvastamismäära hinnaga.
 
