@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-05-07_222644",
+  "project_name": "Kratt",
+  "project_root": "/Users/mattias/kratt",
+  "review_kind": "follow_up_post_remediation",
+  "previous_review": "2026-05-07_221335",
+  "overall_readiness_0_to_10": 7.0,
+  "scores": {
+    "problem_framing": 4,
+    "research_questions_and_scope": 3,
+    "related_work_and_positioning": 5,
+    "methodology_rigor": 4,
+    "implementation_or_artifact_clarity": 4,
+    "evaluation_and_evidence": 4,
+    "discussion_and_limitations": 5,
+    "ethics_privacy_reproducibility": 3,
+    "structure_and_coherence": 4,
+    "language_and_academic_style": 4,
+    "formal_compliance": 4,
+    "defense_readiness": 3
+  },
+  "summary": "The immediate blocker from the previous review is resolved: active thesis chapter sources no longer contain TODO/TBD/FIXME/platsihoidja markers, and the user-test results section is now an explicit limitation/status section. The thesis is again defensible as methodology/prototype work, but not as a completed production-quality or completed user-study thesis unless frozen-threshold participant data is added.",
+  "top_strengths": [
+    "User-test TODO regression fixed in second_chapter.tex:679-686.",
+    "PROJECT_TODO.md now contains a single-location rule for open thesis work.",
+    "Automation prompts now discourage or reject TODO/platsihoidja placeholders in active thesis chapters.",
+    "LaTeX build remains healthy and active thesis draft marker grep is clean.",
+    "Audit-ring methodology remains strong and honestly framed."
+  ],
+  "top_risks": [
+    "Introduction still frames work too much as a model/integration delivery target with FAPH < 1 and recall >= 0.95.",
+    "User-test evidence is absent; broad user validation must remain a limitation/future-work claim unless data appears.",
+    "Statistical contract is stronger than some tables: several FPR/FAPH values remain point estimates.",
+    "Threshold freeze remains only a candidate with blank final fields.",
+    "Some project/user-test docs remain stale or inconsistent."
+  ],
+  "hard_findings": [
+    {
+      "severity": "resolved",
+      "finding": "Prior critical blocker is fixed: active thesis chapter sources no longer contain user-test TODO placeholders.",
+      "evidence": "Marker grep over thesis chapters/misc returns no TODO/FIXME/TBD/placeholder/platsihoid/poolik/§X hits; second_chapter.tex:679-686 is now a status/limitation section."
+    },
+    {
+      "severity": "major",
+      "finding": "Introduction still invites an unmet product-readiness reading.",
+      "evidence": "introduction.tex:14-17 asks whether the model reaches FAPH < 1 and recall >= 0.95 and lists model/method/integration as parallel contributions."
+    },
+    {
+      "severity": "major",
+      "finding": "Statistical reporting contract remains inconsistent.",
+      "evidence": "first_chapter.tex:60 promises 95% intervals for reported metrics; several FPR/Pre-FPR/Conf-FPR/FAPH values remain point estimates only."
+    },
+    {
+      "severity": "major",
+      "finding": "User-test evidence is scoped honestly but still absent.",
+      "evidence": "second_chapter.tex:679-686 states the final 20-30 participant dataset is not formed; PROJECT_TODO.md still lists pilot/full collection/analysis pending."
+    },
+    {
+      "severity": "major",
+      "finding": "Threshold freeze is not finalized.",
+      "evidence": "docs/user-testing/frozen-threshold-policy.md remains a pilot freeze candidate with blank final fields."
+    },
+    {
+      "severity": "minor",
+      "finding": "Stale/inconsistent wording remains.",
+      "evidence": "PROJECT_TODO.md has T-11 header but T-14 next-action heading; intro/results roadmap wording remains stale; third_chapter uses käimasolev kasutajatest while final dataset is not formed."
+    },
+    {
+      "severity": "minor",
+      "finding": "Language/layout polish remains.",
+      "evidence": "second_chapter.tex contains corpus'tel; LaTeX log has overfull boxes; third_chapter.tex:46 has trailing whitespace."
+    }
+  ],
+  "next_actions": [
+    "Rewrite intro contribution paragraph so methodology is primary and model/integration are supporting artifacts.",
+    "Fix statistical-contract mismatch by adding intervals or marking diagnostic FPR rows point-estimate-only.",
+    "If no participant data is added, make every user-test reference planned/future/limitation rather than ongoing.",
+    "Finalize or quarantine threshold-freeze language depending on whether user-test results are used.",
+    "Quick polish: corpus'tel, stale T-14 heading, stale roadmap sentences, overfull boxes, trailing whitespace."
+  ],
+  "comparison_to_previous": {
+    "overall_delta": 0.4,
+    "resolved": [
+      "Active TODO/platsihoidja blocks removed from thesis chapter sources.",
+      "User-test results section no longer has empty subsections and now states the evidence limitation.",
+      "Open user-test result block requirements moved to PROJECT_TODO.md.",
+      "Automation prompts now discourage reintroducing thesis placeholders."
+    ],
+    "still_open": [
+      "User testing itself is not done.",
+      "Intro contribution/pass-fail framing remains misaligned with the safest thesis claim.",
+      "CI/statistical reporting consistency still needs a pass.",
+      "Threshold freeze remains unfinished."
+    ]
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "timestamp": "2026-05-11_041742",
+  "project_name": "Kratt",
+  "project_root": "/Users/mattias/kratt",
+  "review_kind": "follow_up_pre_deadline",
+  "previous_review": "2026-05-07_222644",
+  "deadline": "2026-05-18",
+  "days_to_deadline": 7,
+  "overall_readiness_0_to_10": 7.2,
+  "scores": {
+    "problem_framing": 4,
+    "research_questions_and_scope": 3,
+    "related_work_and_positioning": 5,
+    "methodology_rigor": 4,
+    "implementation_or_artifact_clarity": 4,
+    "evaluation_and_evidence": 4,
+    "discussion_and_limitations": 5,
+    "ethics_privacy_reproducibility": 3,
+    "structure_and_coherence": 4,
+    "language_and_academic_style": 4,
+    "formal_compliance": 4,
+    "defense_readiness": 3
+  },
+  "summary": "Seven days from the hard deadline the thesis remains defensible as a methodology/prototype thesis. Forty+ tightening commits since the previous review removed local redundancy and stale glosses, and contribution (a) is now framed as a pipeline with an example model rather than a finished product. The statistical-reporting contract from §1.50-69 is now genuinely honored in §2 result tables (Wilson + Poisson CIs appear on the major recall/FAPH tables). What did not move: the introduction still asks the FAPH < 1 / recall >= 0.95 success question and presents three parallel contributions, the user-test dataset is still not formed, the threshold-freeze file is still a pilot candidate, and small polish items (corpus'tel typo, PROJECT_TODO T-11/T-14 header drift, 9 overfull-hbox warnings, stale built PDF) persist. The headline risk going into the last week is unchanged: if no participant data lands, the safest defense story is methodology-as-primary and v16c-as-case-study, but the intro still invites a product-readiness reading.",
+  "top_strengths": [
+    "Contribution (a) reframed as `reprodutseeritav eestikeelse äratussõna treening- ja hindamistoru koos näidismudeliga` — closer to the abstract's framing (introduction.tex:17).",
+    "Statistical contract from first_chapter.tex:58 is consistently honored in second_chapter.tex result tables (Wilson 95% UV for recall, Poisson/Garwood + rule-of-three for FAPH).",
+    "§3.7 (sec:eval-evolution) explicitly names the multidimensional validation protocol as the strongest defended contribution (third_chapter.tex:88) and §3.7.3 honestly distinguishes 'methodology is the contribution' from 'first Estonian wake word' (third_chapter.tex:120-121).",
+    "Honest scoping retained: §2.user-test-results-status still states the 20-30 participant dataset is not formed (second_chapter.tex:675), §3.benchmark-gap explicitly softens to 'piiratud tõendus' with 'kasutajatestimine vajalik täiendus, mitte asendaja' (third_chapter.tex:38).",
+    "Audit-ring methodology unchanged and still strong: three-round narrative covers data leakage, positive-label audit, and composite checkpoint criterion."
+  ],
+  "top_risks": [
+    "Introduction still frames the work with FAPH < 1 and recall >= 0.95 as the deciding sub-question and lists model/method/integration as parallel contributions — invites a product-readiness reading the rest of the thesis does not support.",
+    "User-test evidence is still absent at T-7. With one week left, the realistic plan is one self-pilot + 2-3 friend pilots; a 20-30 participant study cannot complete + analyze + write up by 2026-05-18. The thesis text correctly hedges, but the abstracts/intro still mention 'kasutajauuring on piiratud mahus' rather than 'kasutajauuring on piirangute peatükis kirjeldatud kavandatav järelkiht'.",
+    "Threshold freeze remains a pilot candidate (frozen-threshold-policy.md:3) — only blocking if user-test rows are added; otherwise should be reframed as scoped-out.",
+    "PROJECT_TODO.md is dated 2026-05-10 but still has the 'T-14 days, ordered' subhead under a 'T-11 days' top heading — minor inconsistency, but visible in the file most automation reads.",
+    "Build artifact is stale: docs/thesis/thesis-tex-estonian/main.pdf last built 2026-05-07 22:20; 40+ commits later the PDF does not reflect current source. main.log shows 9 overfull-hbox warnings.",
+    "corpus'tel typo persists (second_chapter.tex:238 caption)."
+  ],
+  "hard_findings": [
+    {
+      "severity": "major",
+      "finding": "Introduction sub-question 4 still encodes a pass/fail product target.",
+      "evidence": "introduction.tex:14 — 'kas treenitud mudel saavutab eestikeelsel taustaheli korpusel pidevvoo FAPH < 1 ja lähikõne tuvastamismäära >= 0.95 sihi.' The rest of the thesis (abstract, §3.7) frames this as one of several criteria in a multidimensional protocol, not a binary success target."
+    },
+    {
+      "severity": "major",
+      "finding": "Three-part contribution list still implies model, methodology, and integration are co-equal deliverables.",
+      "evidence": "introduction.tex:17 — '(a) reprodutseeritav eestikeelse äratussõna treening- ja hindamistoru koos näidismudeliga ... (b) FAPH-põhine pidevvoo hindamismetoodika ... (c) ESP32-S3 ja Home Assistanti integratsioonimuster.' The abstract correctly demotes the model to 'näide' and elevates methodology to the headline contribution; the intro has not been brought into alignment."
+    },
+    {
+      "severity": "major",
+      "finding": "User-test evidence is honestly scoped but still absent, and the planning timeline is tight against the deadline.",
+      "evidence": "second_chapter.tex:675 states the final dataset is not formed; docs/PROJECT_TODO.md lists real-mic self-pilot, 2-3 pilot users, and full collection as still pending under the T-11 banner; abstract-estonian.tex carries no warning that user-test is future work."
+    },
+    {
+      "severity": "minor",
+      "finding": "Threshold-freeze file still labelled pilot freeze candidate with blank final fields.",
+      "evidence": "docs/user-testing/frozen-threshold-policy.md:3 — 'pilot freeze candidate ... Convert to final freeze only after the real-mic self-pilot confirms the active path is usable.' If user-test results do not land, this should be re-labelled as scoped-out rather than left as a half-filled draft."
+    },
+    {
+      "severity": "minor",
+      "finding": "Built PDF and current source are out of sync.",
+      "evidence": "main.pdf mtime 2026-05-07 22:20; 40+ docs(thesis) commits since (af9b83d ... 943ddee). main.log records 9 overfull-hbox warnings — fixable polish, but only after a clean rebuild."
+    },
+    {
+      "severity": "minor",
+      "finding": "PROJECT_TODO header drift.",
+      "evidence": "docs/PROJECT_TODO.md:19 says T-11, line 62 still says 'Next actions (T-14 days, ordered).' Cosmetic but the file is treated as source-of-truth by automation."
+    },
+    {
+      "severity": "minor",
+      "finding": "corpus'tel typo persists.",
+      "evidence": "second_chapter.tex:238 — caption of V6 FAPH cross-corpus table."
+    },
+    {
+      "severity": "minor",
+      "finding": "Ethics/privacy not yet visible in the active LaTeX text.",
+      "evidence": "No GDPR/consent paragraph appears in chapters/*.tex despite user-test involving recorded voice from minors-or-adults; only present in docs/user-testing/ working notes. If the user-test stays as 'planned' this is acceptable, but the thesis text should still cite the planned consent procedure."
+    }
+  ],
+  "soft_critique_answers": {
+    "strongest_actual_contribution": "Multidimensional validation protocol for low-resource keyword spotting: independent streaming FAPH + held-out real-speaker recall + similar-negatives/prefix/confusable FPR reported together, demonstrated via the three audit rings (data leakage, positive-label, composite checkpoint).",
+    "biggest_current_risk": "Intro framing vs. evidence mismatch — the intro still asks whether the model meets FAPH < 1 + recall >= 0.95, while no current model meets all deploy criteria simultaneously and user-test data will not arrive in time to settle the question.",
+    "most_likely_overclaim": "Implicit claim that 'first Estonian wake word' is a primary contribution. §3.7.3 explicitly denies this in favor of methodology, but the intro and the kratt-named artifact still read as a finished model.",
+    "most_likely_committee_question": "If the user test was central to the methodology design and is repeatedly referenced in §1.5 and §3.7.4, why is no participant data presented, and what exactly does the thesis claim instead?",
+    "highest_roi_next_step": "Rewrite introduction.tex:9-17 so sub-question 4 reads as 'milline mõõdikute kogum eristab tugevat mudelit lühitee-mudelist' rather than a binary FAPH/recall target, and reorder contributions so methodology is (a). One self-contained edit; large defense-readiness payoff."
+  },
+  "defense_risk_analysis": {
+    "probable_questions": [
+      "Why are FAPH < 1 and recall >= 0.95 still in the introduction if you defend methodology as the primary contribution?",
+      "Where is the user-test evidence the methodology section so heavily references?",
+      "Why is the threshold-freeze document still a 'pilot candidate' on the day of submission?",
+      "Given v16c's high confusable/prefix FPR, why is it the active demo baseline rather than the MoE consensus that achieved 0.79 FAPH?",
+      "What does the Estonian wake-word community actually inherit from this work if no model is claimed as production-ready?"
+    ],
+    "weak_answers_if_unfixed": [
+      "Answering 'we kept the operational target for transparency' will only land if the answer explicitly demotes it from a success criterion to a deployment criterion.",
+      "Without a polished 'methodology is the contribution' one-liner, the user-test absence will dominate Q&A.",
+      "Without a scoped-out freeze document, the threshold-freeze question becomes a Gotcha rather than a non-issue."
+    ],
+    "suggested_preparation": [
+      "Rehearse a single 90-second answer: 'Töö kaitstav panus on mitmemõõtmeline hindamisprotokoll, mida prototüüp Kratt v16c illustreerib. Kasutajatest on kavandatav neljas valideerimiskiht, mitte tõestatud panus; selle puudumine on dokumenteeritud piirang, mitte väite kandev kiht.'",
+      "Have the §3.7 (sec:eval-evolution) page tabbed and the three audit rings memorized.",
+      "Have a one-paragraph answer ready for 'why not freeze thresholds without user-test data' — i.e. they only need to be frozen if user-test rows are being claimed."
+    ]
+  },
+  "next_actions": [
+    "P0 (today): rewrite introduction.tex contribution paragraph and sub-question 4 to match the abstract; promote methodology to (a) and demote FAPH/recall target from binary success to deployment criterion.",
+    "P0 (today): rebuild main.pdf and skim for overfull-hbox lines now flagged in main.log (9 cases) — these are likely 1-2 character fixes.",
+    "P1 (this week): decide whether self-pilot + 2-3 friend pilots can be replayed and included as Appendix-level evidence or whether the user-test stays as scoped-out future work; align the threshold-freeze file with that decision (finalize OR re-label as scoped-out).",
+    "P1 (this week): align PROJECT_TODO.md header (T-11 vs T-14) and abstract-estonian.tex's 'piiratud mahus kasutajauuring' wording with whichever decision above is taken.",
+    "P2 (polish before submission): fix corpus'tel, re-check footnotes/glossary, and add a one-line ethics/consent reference in §1.user-test-methodology that points at the consent form, even for a scoped-out study."
+  ],
+  "comparison_to_previous": {
+    "overall_delta": 0.2,
+    "resolved": [
+      "Contribution (a) reframed as pipeline with example model (was: bare model deliverable).",
+      "§3 benchmark-gap framing softened to acknowledge limited evidence (50e4f87).",
+      "§3 fourth-layer text now points to user-test methodology section instead of stand-alone open question (285eea4).",
+      "Many local redundancies removed (40+ tightening commits) without changing the underlying claims — produces a denser, less repetitive read."
+    ],
+    "still_open": [
+      "Intro success-criteria framing (FAPH < 1 / recall >= 0.95) unchanged.",
+      "Three-part parallel contribution list unchanged.",
+      "User-test evidence still absent and unlikely to land in volume before 2026-05-18.",
+      "Threshold-freeze file still pilot candidate with blank final fields.",
+      "corpus'tel typo and PDF/log staleness unchanged."
+    ]
+  }
+}

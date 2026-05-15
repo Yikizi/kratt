@@ -1,0 +1,101 @@
+{
+  "timestamp": "2026-05-07_221335",
+  "project_name": "Kratt",
+  "project_root": "/Users/mattias/kratt",
+  "review_kind": "follow_up",
+  "previous_review": "2026-05-04_210025",
+  "overall_readiness_0_to_10": 6.6,
+  "scores": {
+    "problem_framing": 4,
+    "research_questions_and_scope": 3,
+    "related_work_and_positioning": 5,
+    "methodology_rigor": 4,
+    "implementation_or_artifact_clarity": 4,
+    "evaluation_and_evidence": 3,
+    "discussion_and_limitations": 5,
+    "ethics_privacy_reproducibility": 3,
+    "structure_and_coherence": 3,
+    "language_and_academic_style": 4,
+    "formal_compliance": 2,
+    "defense_readiness": 3
+  },
+  "summary": "The thesis remains defendable as methodological work, but readiness dropped from 7.1 to 6.6 because active chapter sources now contain explicit user-test TODO placeholders and the promised participant study is still not executed. The strongest defensible contribution is a multidimensional validation protocol for low-resource wake-word detection, demonstrated on Estonian Kuule Kratt.",
+  "top_strengths": [
+    "Abstracts and discussion now align better around methodology, reproducible pipeline, and evidence discipline.",
+    "The three audit-ring story remains strong: leakage, positive-label/fraasi-terviklikkus, and checkpoint-FAPH shortcut failures each produce a concrete metric expansion.",
+    "User-test tooling/protocol state improved: recorder, validator, replay, summarizer, two-tier consent, and questionnaire docs exist.",
+    "LaTeX build is healthy: 86-page PDF, no undefined refs/citations found; remaining issues are mostly overfull boxes and text placeholders.",
+    "Discussion is honest about negative results and does not treat low FAPH as equivalent to usability."
+  ],
+  "top_risks": [
+    "Active results chapter contains TODO placeholders for user-test results.",
+    "20-30 participant final user test is still promised but not run.",
+    "Contribution hierarchy remains split between model, FAPH methodology, ESP32/HA integration, and methodological validation protocol.",
+    "Methodology promises CIs for every metric, but several tables still report point estimates only.",
+    "Threshold/user-test freeze policy is still a candidate with blank final freeze fields."
+  ],
+  "hard_findings": [
+    {
+      "severity": "critical",
+      "finding": "Active thesis source contains user-test TODO placeholders.",
+      "evidence": "docs/thesis/thesis-tex-estonian/chapters/second_chapter.tex:682-717"
+    },
+    {
+      "severity": "critical",
+      "finding": "User testing is still promised as final evidence but not executed.",
+      "evidence": "first_chapter.tex:129-137 defines a 20-30 participant test; second_chapter.tex:690 says it has not been run; PROJECT_TODO.md still lists pilot/full collection/analysis pending."
+    },
+    {
+      "severity": "major",
+      "finding": "Introduction still invites an unmet pass/fail reading around FAPH < 1 and recall >= 0.95.",
+      "evidence": "introduction.tex:14-17 vs later results showing no model/combination satisfies recall + FAPH + selectivity together."
+    },
+    {
+      "severity": "major",
+      "finding": "Main contribution hierarchy is still split.",
+      "evidence": "introduction.tex:17 lists three parallel contributions; third_chapter.tex:91-129 argues methodology is the main scientific contribution."
+    },
+    {
+      "severity": "major",
+      "finding": "Statistical reporting is inconsistent with the stated methodology.",
+      "evidence": "first_chapter.tex:60 promises 95% CIs for every metric; several FPR/FAPH rows remain point estimates only."
+    },
+    {
+      "severity": "major",
+      "finding": "Deployment wording risks overclaiming current evidence.",
+      "evidence": "first_chapter.tex:6 and third_chapter.tex:28 suggest real microcontroller/HA deployment more strongly than current frozen active-model validation supports."
+    },
+    {
+      "severity": "minor",
+      "finding": "Intro/results roadmap and historical wording are stale.",
+      "evidence": "introduction.tex:19, second_chapter.tex:1, second_chapter.tex:52"
+    },
+    {
+      "severity": "minor",
+      "finding": "Residual language/layout issues remain.",
+      "evidence": "second_chapter.tex:247 has corpus'tel; main.log contains 9 overfull hboxes and 1 underfull hbox."
+    }
+  ],
+  "next_actions": [
+    "Decide user-test scope immediately and rewrite second_chapter.tex:679-720; do not leave TODO sections in final source.",
+    "Align introduction with abstracts/discussion: make methodological validation protocol the main contribution and demote model/integration to supporting artifacts.",
+    "Fill final freeze fields in docs/user-testing/frozen-threshold-policy.md with model, thresholds, commit, date, and pilot session.",
+    "Run a CI/table consistency pass so every table either has Wilson/Poisson intervals or explicitly states why it is point-estimate-only.",
+    "Final polish: remove corpus'tel, update stale roadmap/interim wording, address overfull boxes, update PROJECT_TODO/source-of-truth to current T-11 state."
+  ],
+  "comparison_to_previous": {
+    "overall_delta": -0.5,
+    "improved": [
+      "User-test tooling and protocol appear more complete.",
+      "Evaluation harness drift is less visible in current git status.",
+      "Discussion contribution framing is clearer and agentic section is better subordinated.",
+      "Abstracts and summary remain conservative."
+    ],
+    "regressed_or_more_acute": [
+      "Visible TODO placeholders returned to active chapter sources.",
+      "User-test absence is more serious at T-11 than at T-14.",
+      "Formal compliance dropped despite a clean LaTeX build.",
+      "Project/source-of-truth docs are stale relative to current date and working tree."
+    ]
+  }
+}
