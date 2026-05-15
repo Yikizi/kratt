@@ -60,16 +60,16 @@ Tallinn \Year
 \chapter{Sissejuhatus}
 
 \section{Probleem}
-Lokaalse nutikodu hääljuhtimise kasutatavus sõltub suurel määral sellest, kas äratussõna tuvastus on stabiilne ja usaldusväärne. Eesti keele ja teiste väikeste keeleruumide kontekstis on tegemist olulise probleemiga, kuna spetsiifiliste treeningandmete vähesus takistab olemasolevate lahenduste otsekasutamist ja need ei taga samaaegselt piisavat mudeli kvaliteeti, süsteemi lihtsat lõimitavust ja reprodutseeritavat kasutuselevõttu.
+Lokaalse nutikodu hääljuhtimise kasutatavus sõltub suurel määral sellest, kas äratussõna tuvastus on stabiilne ja usaldusväärne. Eesti keele ja teiste väikeste keeleruumide kontekstis on tegemist olulise probleemiga, kuna spetsiifiliste treeningandmete vähesus takistab olemasolevate lahenduste otsekasutamist ning olemasolevad lahendused ei taga samaaegselt piisavat mudeli kvaliteeti, süsteemi lihtsat lõimitavust ja reprodutseeritavat kasutuselevõttu.
 
-Käesoleva töö keskne uurimisküsimus on, kuidas töötada välja eestikeelse äratussõna lahendus, mis on ühtaegu tehniliselt täpne, süsteemselt lõimitav ja praktiliseks kasutuseks sobiv. Eesmärk ei ole üksnes näidata mudeli tööd isoleeritud testkeskkonnas, vaid luua standardsetele protokollidele toetuv terviklahendus, mis on kasutatav modulaarse nutikodu komponendina. Reaalne integreerimisrada on siiani tõendatud ESPHome + \texttt{home\_assistant}/\texttt{voice\_assistant} liidesega.
+Käesoleva töö keskne uurimisküsimus on, kuidas töötada välja eestikeelse äratussõna lahendus, mis on ühtaegu tehniliselt täpne, süsteemselt lõimitav ja praktiliseks kasutuseks sobiv. Eesmärk ei ole üksnes näidata mudeli tööd isoleeritud testkeskkonnas, vaid luua standardsetele protokollidele toetuv terviklahendus, mis on kasutatav modulaarse nutikodu komponendina. Reaalne integreerimisrada on siiani tõendatud ESPHome + \texttt{home\_assistant}/\texttt{voice\_assistant}-liidesega.
 
 \section{Töö eesmärk}
-Töö eesmärk on töötada välja eestikeelne äratussõna mudel fraasile ,,Kuule Kratt'' ja hinnata selle sobivust Home Assistanti lokaalse hääljuhtimise osana.
+Töö eesmärk on töötada välja eestikeelne äratussõnamudel fraasile ,,Kuule Kratt'' ja hinnata selle sobivust Home Assistanti lokaalse hääljuhtimise osana.
 
 Eesmärgi saavutamiseks käsitletakse töös kolme omavahel seotud osa:
 \begin{itemize}
-    \item mudeliarendus, mis hõlmab eestikeelse treeningandmestiku koostamist ja äratussõna mudeli treenimist,
+    \item mudeliarendus, mis hõlmab eestikeelse treeningandmestiku koostamist ja äratussõnamudeli treenimist,
     \item süsteemi lõimimine, mis hõlmab mudeli rakendamist demonstreerival riistvaral ja integreerimist Home Assistanti lokaalsesse kõnetöötlusahelasse standardiseeritud protokollide abil,
     \item empiiriline valideerimine, mis hõlmab lahenduse tehnilist mõõtmist ja kasutajapõhist hindamist erinevate kõnelejatega.
 \end{itemize}
@@ -80,10 +80,10 @@ Eesmärgi saavutamiseks käsitletakse töös kolme omavahel seotud osa:
 Töös analüüsitakse olemasolevaid avatud lähtekoodiga äratussõna tuvastuse lähenemisi, nagu microWakeWord [2] ja openWakeWord [3], ning hinnatakse nende sobivust väikese keeleruumi tingimustes. Eraldi käsitletakse süsteemseid nõudeid, mis tulenevad Home Assistanti hääljuhtimise arhitektuurist.
 
 \section{Andmestiku koostamine ja mudeli arendamine}
-Töö käigus koostatakse eestikeelne treeningmaterjal. Andmepuuduse ületamiseks kombineeritakse inimeste häälenäidiseid lokaalsete kõnesünteesi lahendustega, kasutades muuhulgas Tartu Neurokõne mudelit, ning rakendatakse andmete rikastamise tehnikate abil nende sünteetilist paljundamist. Pärast genereeritud andmete kvaliteedikontrolli treenitakse mikrokontrolleritele optimeeritud ja reaalajas voogedastust toetav äratussõna mudel. Arenduses rakendatakse MixConv kihtidel põhinevat mixednet arhitektuuri, et saavutada mälupiirangutega seadmetel piisav tuvastustäpsus.
+Töö käigus koostatakse eestikeelne treeningmaterjal. Andmepuuduse ületamiseks kombineeritakse inimeste häälenäidiseid lokaalsete kõnesünteesi lahendustega, kasutades muu hulgas Tartu Neurokõne mudelit, ning rakendatakse andmete rikastamise tehnikaid nende sünteetiliseks paljundamiseks. Pärast genereeritud andmete kvaliteedikontrolli treenitakse mikrokontrolleritele optimeeritud ja reaalajas voogedastust toetav äratussõna mudel. Arenduses rakendatakse MixConv-kihtidel põhinevat MixedNeti arhitektuuri, et saavutada mälupiirangutega seadmetel piisav tuvastustäpsus.
 
 \section{Tehniline teostus ja süsteemi lõimimine}
-Mudeli arenduse järel kvantiseeritakse mudeli kaalud, et muuta see käivitatavaks ESP32-S3-Korvo-2 arendusplaadil. Seejärel lõimitakse valminud mudel ESPHome'i \texttt{voice\_assistant} liidese abil Home Assistanti kõnetöötlusahelasse. Tehnilise teostuse eesmärk on tagada, et lahendus oleks rakendatav ilma erilahendusi nõudva käsitööta.
+Mudeli arenduse järel kvantiseeritakse mudeli kaalud, et muuta see käivitatavaks ESP32-S3-Korvo-2 arendusplaadil. Seejärel lõimitakse valminud mudel ESPHome'i \texttt{voice\_assistant}-liidese abil Home Assistanti kõnetöötlusahelasse. Tehnilise teostuse eesmärk on tagada, et lahendus oleks rakendatav ilma erilahendusi nõudva käsitööta.
 
 \section{Tulemuste valideerimine}
 Valideerimine toimub kahel tasandil. Esimene tasand on tehniline valideerimine, mille käigus hinnatakse tuvastuse kvaliteeti, valekäivituste ja möödalaskmiste esinemissagedust, latentsust ning töökindlust erinevates tingimustes.
@@ -96,7 +96,7 @@ Lisaks valideerimise tulemustele tuuakse välja ka lahenduse piirangud, riskid j
 Töö panus on kahetine. Esiteks annab töö tehnilise panuse eestikeelse äratussõna tuvastuse ja Home Assistanti lõimimise valdkonda. Teiseks loob töö praktilise väärtuse, pakkudes avatud lähtekoodiga treenitud mudelit, sünteesitud andmete genereerimise koodibaasi ning valmis integratsioonilahendusi, vältides toorsalvestuste avalikustamisest tulenevaid privaatsusriske.
 
 \chapter{Töö piiritlemine}
-Töö fookus on äratussõna tuvastusel ja selle süsteemsel hindamisel. Töö ei käsitle uute kõnetuvastuse ega kõnesünteesi mudelite algusest peale välja töötamist. Neid, eeskätt Kiirkirjutaja kõnetuvastusmudelit [1], kasutatakse toetavate komponentidena ulatuses, mis on vajalik terviklahenduse valideerimiseks.
+Töö fookus on äratussõna tuvastusel ja selle süsteemsel hindamisel. Töö ei käsitle uute kõnetuvastus- ega kõnesünteesimudelite algusest peale välja töötamist. Neid, eeskätt Kiirkirjutaja kõnetuvastusmudelit [1], kasutatakse toetavate komponentidena ulatuses, mis on vajalik terviklahenduse valideerimiseks.
 
 \chapter{Esialgsed allikad}
 \begin{enumerate}[label={[\arabic*]}]
