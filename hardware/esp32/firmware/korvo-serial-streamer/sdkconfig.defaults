@@ -1,0 +1,10 @@
+CONFIG_IDF_TARGET="esp32s3"
+CONFIG_IDF_TARGET_ESP32S3=y
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+
+# Match the host-side Korvo serial PCM reader.
+CONFIG_ESP_CONSOLE_UART_BAUDRATE=921600
+
+# Keep logs quiet after boot; the app sends framed binary PCM over UART0.
+CONFIG_LOG_DEFAULT_LEVEL_ERROR=y
+CONFIG_LOG_DEFAULT_LEVEL=1

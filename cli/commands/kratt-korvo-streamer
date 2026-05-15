@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# DESC: Build/flash Korvo-2 UART PCM streamer firmware for demo audio input
+# USAGE: kratt korvo-streamer [--build] [--flash] [--monitor] [--port PATH] [--baud N]
+# ARGS: --build    Build firmware (default action when no action is given)
+# ARGS: --flash    Flash firmware after building
+# ARGS: --monitor  Open idf.py monitor after build/flash
+# ARGS: --port PATH Serial port. Default: auto-detect /dev/cu.usbserial-*
+# ARGS: --baud N   App stream/monitor baud. Default: 921600
+# EXAMPLES: kratt korvo-streamer --build
+# EXAMPLES: kratt korvo-streamer --flash --port /dev/cu.usbserial-2130
+# EXAMPLES: kratt korvo-streamer --monitor --port /dev/cu.usbserial-2130
+set -euo pipefail
+
+APP_DIR="${KRATT_ROOT}/hardware/esp32/firmware/korvo-serial-streamer"
+PORT=""
+BAUD="921600"
+DO_BUILD=false
+DO_FLASH=false
+DO_MONITOR=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --build) DO_BUILD=true; shift ;;
+    --flash) DO_FLASH=true; DO_BUILD=true; shift ;;
+    --monitor) DO_MONITOR=true; shift ;;
+    --port) PORT="$2"; shift 2 ;;
+    --baud) BAUD="$2"; shift 2 ;;
+    --help|-h)
+      sed -n '1,18p' "$0" | sed 's/^# \{0,1\}//'
+      exit 0
+      ;;
+    --*) echo "Unknown: $1" >&2; exit 2 ;;
+    *) echo "Unexpected arg: $1" >&2; exit 2 ;;
+  esac
+done
+
+if [[ "${DO_BUILD}" == false && "${DO_FLASH}" == false && "${DO_MONITOR}" == false ]]; then
+  DO_BUILD=true
+fi
+
+if [[ -z "${PORT}" ]]; then
+  PORT=$(find /dev -maxdepth 1 -name 'cu.usbserial-*' -print 2>/dev/null | sort | head -1 || true)
+fi
+
+if [[ "${DO_FLASH}" == true || "${DO_MONITOR}" == true ]]; then
+  if [[ -z "${PORT}" ]]; then
+    echo "No USB serial device found. Pass --port /dev/cu.usbserial-..." >&2
+    exit 1
+  fi
+fi
+
+if [[ -z "${IDF_PATH:-}" ]]; then
+  export IDF_PATH="${HOME}/esp/esp-idf"
+fi
+if [[ ! -f "${IDF_PATH}/export.sh" ]]; then
+  echo "ESP-IDF export.sh not found at ${IDF_PATH}/export.sh" >&2
+  exit 1
+fi
+
+# shellcheck source=/dev/null
+source "${IDF_PATH}/export.sh" >/dev/null || true
+
+# On this Mac the auto-created ESP-IDF Python 3.14 env can trip truststore's
+# macOS-version parser. Prefer the known-good 3.12 IDF env when present.
+IDF_PYTHON="${IDF_PYTHON:-${HOME}/.espressif/python_env/idf5.5_py3.12_env/bin/python}"
+if [[ ! -x "${IDF_PYTHON}" ]]; then
+  IDF_PYTHON="$(command -v python3)"
+fi
+IDF_PY=("${IDF_PYTHON}" "${IDF_PATH}/tools/idf.py")
+
+if [[ "${DO_BUILD}" == true ]]; then
+  (cd "${APP_DIR}" && "${IDF_PY[@]}" build)
+fi
+
+if [[ "${DO_FLASH}" == true ]]; then
+  (cd "${APP_DIR}" && "${IDF_PY[@]}" -p "${PORT}" -b 460800 flash)
+fi
+
+if [[ "${DO_MONITOR}" == true ]]; then
+  echo "Opening monitor at ${BAUD}. Binary PCM frames will look like noise; Ctrl+] exits."
+  (cd "${APP_DIR}" && "${IDF_PY[@]}" -p "${PORT}" -b "${BAUD}" monitor)
+fi
+
+echo "Korvo streamer ready. Demo command:"
+echo "  ./cli/kratt demo --audio-source korvo-serial${PORT:+ --serial-port ${PORT}}"

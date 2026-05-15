@@ -20,6 +20,7 @@ hardware/
 │       ├── mic-test/               # I2S mic verification
 │       ├── speaker-test/           # DAC/speaker check
 │       ├── slideshow-clicker/      # BLE HID clicker (demo utility)
+│       ├── korvo-serial-streamer/  # Korvo-2 mic → USB serial PCM for Python demo
 │       └── wake-word-logger/       # Standalone wake word trigger logger
 │
 └── raspberry-pi/
@@ -42,4 +43,8 @@ hardware/
 
 # ESP-IDF firmware (e.g. recorder)
 (cd hardware/esp32/firmware/recorder && idf.py build flash monitor)
+
+# Korvo-2 mic as Python demo input
+./cli/kratt korvo-streamer --flash --port /dev/cu.usbserial-2130
+./cli/kratt demo --audio-source korvo-serial --serial-port /dev/cu.usbserial-2130
 ```

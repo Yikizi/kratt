@@ -18,6 +18,7 @@ dependencies = [
   "python-dotenv>=1.0.0",
   "gradio-client>=2.4.0",
   "bleak>=0.22.0",
+  "pyserial>=3.5",
   "setuptools>=82.0.1",
 ]
 
@@ -27,6 +28,7 @@ minimal = [
   "soundfile>=0.12.1",
   "numpy>=1.24.0,<2.0.0",
   "tqdm>=4.66.0",
+  "pyserial>=3.5",
 ]
 datasets = [
   "huggingface_hub>=0.20.0",
