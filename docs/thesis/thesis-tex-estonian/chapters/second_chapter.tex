@@ -545,26 +545,30 @@ Tulemused jagunevad kaheks selgelt eristuvaks pildiks. \texttt{checkpoint-faph} 
 \subsection{Konsensuskombinatsioonid: madalaim taustaheli FAPH projekti ajaloos}
 \label{sec:checkpoint-consensus}
 
-Eraldi huvi pakkus küsimus, kas \texttt{checkpoint-faph10} või \texttt{checkpoint-faph20} saaks toimida konsensussüsteemi \enquote{taustaheli väravavahina}, kombineerituna mõne teise mudeliga, mis annab parema fraasitäielikkuse signaali. Tabel~\ref{tab:checkpoint-consensus} esitab kõige kompaktsemad konsensustulemused samade võrdlusmõõtmiste põhjal.
+Eraldi huvi pakkus küsimus, kas \texttt{checkpoint-faph10} või \texttt{checkpoint-faph20} saaks toimida konsensussüsteemi taustaheli-väravana (\emph{background gate} või \emph{false-positive gate}), kombineerituna mõne teise mudeliga, mis annab parema fraasitäielikkuse signaali. Tabel~\ref{tab:checkpoint-consensus} esitab kuue konsensuskonfiguratsiooni tulemused samade mõõtmismetoodika ja läve all, mida kasutati eelnevates §\ref{sec:expert-consensus}-s ja §\ref{sec:phrase-selectivity-metrics}-s. Reaalsete kõnelejate tuvastamismäära veergudes esitatakse Kõneleja~A (autorile lähedane, XTTS-genereeritud variandid) ja Kõneleja~D (ainus treeningust eraldi hoitud reaalne kõneleja, $N=145$); see on sama kõnelejavalim, mida kasutati tabelis~\ref{tab:checkpoint-headline} ja kogu kontrollpunkti-FAPH analüüsis.
 
 \begin{table}[H]
 \centering
-\caption{Kontrollpunkti-FAPH konsensuskombinatsioonid muude mudelitega (lävi\,=\,0,995/0,995). FAPH 0,00 tähendab, et 3,82--5,62-tunnistel taustaheli voogedastusradadel ei registreeritud ühtegi valevallandumist. Pre-FPR mõõdab prefiksi- ja Conf-FPR segiajamisriski; FAPH on skriptitud taasmängu mõõdik.}
+\caption{Kontrollpunkti-FAPH konsensuskombinatsioonid muude mudelitega (lävi\,=\,0,995/0,995). Tuvastamismäärad veergudes \emph{Kõneleja~A} ja \emph{Kõneleja~D} on protsendid; Pre-FPR on prefiksi-, Conf-FPR segiajamis-FPR komplekti \texttt{neg\_kuule\_kule\_confusables} ($N=600$) peal. Kõik FAPH-veerud on mõõdetud skriptitud taasmängu režiimis (\enquote{(taasmäng)}). Punkthinnang \emph{FAPH 0,00} tähendab, et vastaval 3,82--5,62\,h voogedastusrajal ei registreeritud ühtegi valevallandumist; nurksulgudes $[<x]$ on null-sündmuse Poissoni 95\% ühepoolne ülempiir $u_{95}$ vastava korpuse eksposuuriaja juures (vt teksti). Viimase rea (\emph{Ekspert~A~+~B~v2}) kriipsud (\enquote{---}) tähistavad mõõdikuid, mida MoE-eksperdivoog antud eksperimendis ei tooda --- see rida on toodud üksnes võrdluseks taustaheli FAPH-i osas (vt §\ref{sec:expert-consensus}).}
 \label{tab:checkpoint-consensus}
 \scriptsize
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l r r r r r r r r}
 \hline
-\textbf{Seadistus} & \textbf{Tuv. Kõneleja A} & \textbf{Tuv. Kõneleja D} & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV}\,\emph{(taasmäng)} $\downarrow$ & \textbf{FAPH LS}\,\emph{(taasmäng)} $\downarrow$ & \textbf{FAPH Mac}\,\emph{(taasmäng)} $\downarrow$ & \textbf{FAPH DiPCo}\,\emph{(taasmäng)} $\downarrow$ \\
+\textbf{Seadistus} & \textbf{Tuv. Kõneleja A} & \textbf{Tuv. Kõneleja D} & \textbf{Pre-FPR} $\downarrow$ & \textbf{Conf-FPR} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ & \textbf{FAPH LS} $\downarrow$ & \textbf{FAPH Mac} $\downarrow$ & \textbf{FAPH DiPCo} $\downarrow$ \\
 \hline
+\multicolumn{9}{l}{\emph{checkpoint-faph10 konsensus-kombinatsioonid}} \\
 faph10 + v16c & 72,9 & 20,7 & 57,3 & 85,8 & \textbf{0,26} & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
 faph10 + expert-a & 66,7 & 21,4 & 57,3 & 85,8 & 0,26 & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
 faph10 + v6-residual & 72,9 & 21,4 & 53,2 & 85,5 & \textbf{0,00\,$[<{\,}0{,}78]$} & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
+\noalign{\vspace{2pt}}
+\multicolumn{9}{l}{\emph{checkpoint-faph20 konsensus-kombinatsioonid}} \\
 faph20 + v16c & 72,9 & 40,0 & 68,2 & 78,2 & 0,52 & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
 faph20 + expert-a & 66,7 & 41,4 & 69,1 & 78,3 & 0,26 & 0,00\,$[<{\,}0{,}53]$ & 1,71 & 0,00\,$[<{\,}0{,}55]$ \\
 faph20 + v6-residual & 72,9 & 42,1 & 63,2 & 78,2 & 0,26 & 0,00\,$[<{\,}0{,}53]$ & 0,00\,$[<{\,}u_{95}]$ & 0,00\,$[<{\,}0{,}55]$ \\
 \hline
-Ekspert A + B v2 (võrdluseks) & --- & --- & --- & --- & 0,80 & --- & 0,00\,$[<{\,}u_{95}]$ & --- \\
+\multicolumn{9}{l}{\emph{Võrdlus eelmisest peatükist}} \\
+Ekspert A + B v2 & --- & --- & --- & --- & 0,80 & --- & 0,00\,$[<{\,}u_{95}]$ & --- \\
 \hline
 \end{tabular}%
 }
@@ -572,7 +576,7 @@ Ekspert A + B v2 (võrdluseks) & --- & --- & --- & --- & 0,80 & --- & 0,00\,$[<{
 
 Konsensus \texttt{checkpoint-faph10 + v6-residual} ei registreerinud üheski neljast taustakorpusest ühtegi valevallandumist: Common~Voice ET 3,82\,h voogedastusrajal, LibriSpeechi 5,62\,h, MacBooki tausta 1,17\,h ja DiPCo 3,32\,h lõigul. Punkthinnang FAPH\,=\,0,00 tuleb aga lugeda eksposuuriajaga kalibreerituna: null-sündmuse Poissoni 95\% ühepoolne ülempiir on CV-l $u_{95}\,\approx\,0{,}78$, LibriSpeechil $u_{95}\,\approx\,0{,}53$, MacBooki taustal $u_{95}\,\approx\,2{,}56$ ning DiPCo-l $u_{95}\,\approx\,0{,}90$ (sama notatsioon nagu tabel~\ref{tab:expert-consensus}-s). Võrdluseks: §\ref{sec:expert-consensus}-s kirjeldatud Ekspert~A + B~v2 punkthinnang oli 0,8\,FAPH usaldusvahemikuga [0,16,~2,30] --- see vahemik kattub käesoleva konsensuse CV ülempiiriga, ja MacBooki tausta ülempiir 2,56 on samas suurusjärgus. Statistiliselt eristumist seetõttu ei toimu; punkthinnang 0,00 on parem ainult numeriliselt ning vähemalt MacBooki tausta lühikese eksposuuriaja juures (1,17\,h) tuleb seda lugeda kui \enquote{0 sündmust antud akna piires}, mitte kui projektitasemel tippnumbrit.
 
-Tulemust ei saa seetõttu tõlgendada juurutuskõlblikkusena. Konsensus säilitab \texttt{checkpoint-faph}-perekonna mudelist päritud nõrkused: \texttt{checkpoint-faph10}-ga kombinatsioonides jääb Kõneleja D tuvastamismäär 20--21\% juurde (vt tabel~\ref{tab:checkpoint-consensus}; Kõneleja D kõrvalejäetud komplekt $N=145$), mis tähendab, et umbes neli viiest reaalse kõneleja positiivsest näitest jääksid tuvastamata. \texttt{checkpoint-faph20} tõstab sama tuvastamismäära 40--42\%-ni, kuid ka see on üldiseks äratussõnaks ebapiisav. Mõlemal juhul jääb prefiksi-FPR kümnete protsentide tasemele ja segiajamis-FPR ligikaudu 78--86\% juurde komplekti \texttt{neg\_kuule\_kule\_confusables} ($N=600$) peal, mis sisaldab \enquote{kuule}- või \enquote{kule}-ga algavaid, kuid muu jätkusõnaga fraase (näiteks \enquote{kuule, mis sa arvad}; vt §\ref{sec:phrase-selectivity-metrics}). Konsensus saavutab oma madala FAPH-i seetõttu, et \texttt{checkpoint-faph}-mudel on taustaheli radadel niivõrd vait, et mistahes kombineeritud teine mudel pärib selle vaikuse. \emph{Madal taustaheli FAPH ei tähenda, et mudel on osanud äratusfraasi --- see võib tähendada lihtsalt seda, et mudel on osanud vait olla.}
+Tulemust ei saa seetõttu tõlgendada juurutuskõlblikkusena. Konsensus säilitab \texttt{checkpoint-faph}-perekonna mudelist päritud nõrkused: \texttt{checkpoint-faph10}-ga kombinatsioonides jääb Kõneleja D tuvastamismäär 20--21\% juurde (vt tabel~\ref{tab:checkpoint-consensus}; Kõneleja D kõrvalejäetud komplekt $N=145$), mis tähendab, et umbes neli viiest reaalse kõneleja positiivsest näitest jääksid tuvastamata. \texttt{checkpoint-faph20} tõstab sama tuvastamismäära 40--42\%-ni, kuid ka see on üldiseks äratussõnaks ebapiisav. Mõlemal juhul jääb prefiksi-FPR kümnete protsentide tasemele ja segiajamis-FPR ligikaudu 78--86\% juurde komplekti \texttt{neg\_kuule\_kule\_confusables} ($N=600$) peal, mis sisaldab \enquote{kuule}- või \enquote{kule}-ga algavaid, kuid muu jätkusõnaga fraase (näiteks \enquote{kuule, mis sa arvad}; vt §\ref{sec:phrase-selectivity-metrics}). Konsensus saavutab oma madala FAPH-i seetõttu, et \texttt{checkpoint-faph}-mudel on taustaheli radadel niivõrd vait, et mis tahes kombineeritud teine mudel pärib selle vaikuse. \emph{Madal taustaheli FAPH ei tähenda, et mudel on osanud äratusfraasi --- see võib tähendada lihtsalt seda, et mudel on osanud vait olla.} Selle hüpoteesi kontrollimiseks --- kas vaikus tuleneb fraasi-eristusest või domeenipõhisest lühiteest --- on järgmises alajaotuses §\ref{sec:checkpoint-listening} esitatud MacBooki tausta valevallandumiste käsitsi kuulamise tulemused.
 
 \subsection{Käsitsi kuulamine ja akustiline lühitee}
 \label{sec:checkpoint-listening}
