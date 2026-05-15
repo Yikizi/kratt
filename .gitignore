@@ -144,6 +144,9 @@ wake-word/evaluation/*.pdf
 !wake-word/evaluation/reports/**
 output/
 
+# Screenshots / local UI captures
+screenshots/
+
 # Audio test samples
 *.m4a
 
