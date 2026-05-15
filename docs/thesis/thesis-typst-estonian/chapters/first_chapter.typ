@@ -35,8 +35,8 @@ Oluline metoodiline otsus oli lisada torusse automaatne raportikiht, mis toodab 
 
 == Hindamismootdikud
 Wake word mudeli hindamine erineb tavalisest klassifikatsioonist selle poolest, et olulised on nii tabamused kui ka valevallandumised pidevas voos. Seetottu kasutatakse siin lisaks recall'ile ja precision'ile ka streaming-eval'i mootdikuid:
-- `FRR` ehk false rejection rate, mis naitab kui suur osa tegelikest aratussona juhtudest jaab tabamata;
-- `FAPH` ehk false accepts per hour, mis naitab kui palju valevallandumisi tekib tunni kohta;
+- `FRR` ehk _false rejection rate_, mis naitab kui suur osa tegelikest aratussona juhtudest jaab tabamata;
+- `FAPH` ehk _false accepts per hour_, mis naitab kui palju valevallandumisi tekib tunni kohta;
 - ROC-laadne kover, kus vaadeldakse `FRR` ja `FAPH` vahelist seost eri threshold'ide korral.
 - Mudelivõrdluste puhul hoitakse võrdlusfaasis threshold ühtsena ja raporteeritakse lisaks `FAPH`-le ning `recall`ile ka hard-negative `FPR`; väikesem valim või lühiajalised ambient-sektsioonid lisavad tulemuste juurde ebakindlust, mistõttu väärtused loetakse eelkõige võrdluslikult, mitte absoluutsete väidetena.
 
