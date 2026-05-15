@@ -4116,3 +4116,88 @@ timestamp,model,test_set,kind,threshold,metric,value,n,duration_h,combo
 2026-05-05T16:33:04Z,v19a-kratt-only,faph_dipco,ambient,0.99,faph,0.0000,6,3.32,
 2026-05-05T16:33:04Z,v19a-kratt-only,faph_dipco,ambient,0.995,faph,0.0000,6,3.32,
 2026-05-05T16:33:04Z,v19a-kratt-only,faph_dipco,ambient,0.999,faph,0.0000,6,3.32,
+2026-05-11T21:39:06Z,v16c,faph_praam_quick_20260510,ambient,0.97,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v16c,faph_praam_quick_20260510,ambient,0.99,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v16c,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v16c,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v16c,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,expert-a,faph_praam_quick_20260510,ambient,0.97,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,expert-a,faph_praam_quick_20260510,ambient,0.99,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,expert-a,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,expert-a,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,expert-a,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,expert-b2,faph_praam_quick_20260510,ambient,0.97,faph,4.2824,1,0.70,
+2026-05-11T21:39:06Z,expert-b2,faph_praam_quick_20260510,ambient,0.99,faph,4.2824,1,0.70,
+2026-05-11T21:39:06Z,expert-b2,faph_praam_quick_20260510,ambient,0.995,faph,2.8550,1,0.70,
+2026-05-11T21:39:06Z,expert-b2,faph_praam_quick_20260510,ambient,0.996,faph,2.8550,1,0.70,
+2026-05-11T21:39:06Z,expert-b2,faph_praam_quick_20260510,ambient,0.999,faph,2.8550,1,0.70,
+2026-05-11T21:39:06Z,v6-residual,faph_praam_quick_20260510,ambient,0.97,faph,2.8550,1,0.70,
+2026-05-11T21:39:06Z,v6-residual,faph_praam_quick_20260510,ambient,0.99,faph,2.8550,1,0.70,
+2026-05-11T21:39:06Z,v6-residual,faph_praam_quick_20260510,ambient,0.995,faph,2.8550,1,0.70,
+2026-05-11T21:39:06Z,v6-residual,faph_praam_quick_20260510,ambient,0.996,faph,2.8550,1,0.70,
+2026-05-11T21:39:06Z,v6-residual,faph_praam_quick_20260510,ambient,0.999,faph,2.8550,1,0.70,
+2026-05-11T21:39:06Z,v10,faph_praam_quick_20260510,ambient,0.97,faph,2.8550,1,0.70,
+2026-05-11T21:39:06Z,v10,faph_praam_quick_20260510,ambient,0.99,faph,1.4275,1,0.70,
+2026-05-11T21:39:06Z,v10,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v10,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v10,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v15,faph_praam_quick_20260510,ambient,0.97,faph,1.4275,1,0.70,
+2026-05-11T21:39:06Z,v15,faph_praam_quick_20260510,ambient,0.99,faph,1.4275,1,0.70,
+2026-05-11T21:39:06Z,v15,faph_praam_quick_20260510,ambient,0.995,faph,1.4275,1,0.70,
+2026-05-11T21:39:06Z,v15,faph_praam_quick_20260510,ambient,0.996,faph,1.4275,1,0.70,
+2026-05-11T21:39:06Z,v15,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v11,faph_praam_quick_20260510,ambient,0.97,faph,4.2824,1,0.70,
+2026-05-11T21:39:06Z,v11,faph_praam_quick_20260510,ambient,0.99,faph,4.2824,1,0.70,
+2026-05-11T21:39:06Z,v11,faph_praam_quick_20260510,ambient,0.995,faph,4.2824,1,0.70,
+2026-05-11T21:39:06Z,v11,faph_praam_quick_20260510,ambient,0.996,faph,4.2824,1,0.70,
+2026-05-11T21:39:06Z,v11,faph_praam_quick_20260510,ambient,0.999,faph,4.2824,1,0.70,
+2026-05-11T21:39:06Z,v18b-clean48-sa,faph_praam_quick_20260510,ambient,0.97,faph,39.9694,1,0.70,
+2026-05-11T21:39:06Z,v18b-clean48-sa,faph_praam_quick_20260510,ambient,0.99,faph,22.8397,1,0.70,
+2026-05-11T21:39:06Z,v18b-clean48-sa,faph_praam_quick_20260510,ambient,0.995,faph,19.9847,1,0.70,
+2026-05-11T21:39:06Z,v18b-clean48-sa,faph_praam_quick_20260510,ambient,0.996,faph,18.5572,1,0.70,
+2026-05-11T21:39:06Z,v18b-clean48-sa,faph_praam_quick_20260510,ambient,0.999,faph,14.2748,1,0.70,
+2026-05-11T21:39:06Z,checkpoint-faph10-v18d-clean96-pw96x4,faph_praam_quick_20260510,ambient,0.97,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,checkpoint-faph10-v18d-clean96-pw96x4,faph_praam_quick_20260510,ambient,0.99,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,checkpoint-faph10-v18d-clean96-pw96x4,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,checkpoint-faph10-v18d-clean96-pw96x4,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,checkpoint-faph10-v18d-clean96-pw96x4,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v19a-kratt-only,faph_praam_quick_20260510,ambient,0.97,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v19a-kratt-only,faph_praam_quick_20260510,ambient,0.99,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v19a-kratt-only,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v19a-kratt-only,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,v19a-kratt-only,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,
+2026-05-11T21:39:06Z,ex3a,faph_praam_quick_20260510,ambient,0.97,faph,1.4275,1,0.70,
+2026-05-11T21:39:06Z,ex3a,faph_praam_quick_20260510,ambient,0.99,faph,1.4275,1,0.70,
+2026-05-11T21:39:06Z,ex3a,faph_praam_quick_20260510,ambient,0.995,faph,1.4275,1,0.70,
+2026-05-11T21:39:06Z,ex3a,faph_praam_quick_20260510,ambient,0.996,faph,1.4275,1,0.70,
+2026-05-11T21:39:06Z,ex3a,faph_praam_quick_20260510,ambient,0.999,faph,1.4275,1,0.70,
+2026-05-11T21:39:06Z,expert-a + expert-b2,faph_praam_quick_20260510,ambient,0.97,faph,0.0000,1,0.70,expert-a + expert-b2
+2026-05-11T21:39:06Z,expert-a + expert-b2,faph_praam_quick_20260510,ambient,0.99,faph,0.0000,1,0.70,expert-a + expert-b2
+2026-05-11T21:39:06Z,expert-a + expert-b2,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,expert-a + expert-b2
+2026-05-11T21:39:06Z,expert-a + expert-b2,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,expert-a + expert-b2
+2026-05-11T21:39:06Z,expert-a + expert-b2,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,expert-a + expert-b2
+2026-05-11T21:39:06Z,v18b-clean48-sa + expert-a,faph_praam_quick_20260510,ambient,0.97,faph,0.0000,1,0.70,v18b-clean48-sa + expert-a
+2026-05-11T21:39:06Z,v18b-clean48-sa + expert-a,faph_praam_quick_20260510,ambient,0.99,faph,0.0000,1,0.70,v18b-clean48-sa + expert-a
+2026-05-11T21:39:06Z,v18b-clean48-sa + expert-a,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,v18b-clean48-sa + expert-a
+2026-05-11T21:39:06Z,v18b-clean48-sa + expert-a,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,v18b-clean48-sa + expert-a
+2026-05-11T21:39:06Z,v18b-clean48-sa + expert-a,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,v18b-clean48-sa + expert-a
+2026-05-11T21:39:06Z,checkpoint-faph10-v18d-clean96-pw96x4 + v16c,faph_praam_quick_20260510,ambient,0.97,faph,0.0000,1,0.70,checkpoint-faph10-v18d-clean96-pw96x4 + v16c
+2026-05-11T21:39:06Z,checkpoint-faph10-v18d-clean96-pw96x4 + v16c,faph_praam_quick_20260510,ambient,0.99,faph,0.0000,1,0.70,checkpoint-faph10-v18d-clean96-pw96x4 + v16c
+2026-05-11T21:39:06Z,checkpoint-faph10-v18d-clean96-pw96x4 + v16c,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,checkpoint-faph10-v18d-clean96-pw96x4 + v16c
+2026-05-11T21:39:06Z,checkpoint-faph10-v18d-clean96-pw96x4 + v16c,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,checkpoint-faph10-v18d-clean96-pw96x4 + v16c
+2026-05-11T21:39:06Z,checkpoint-faph10-v18d-clean96-pw96x4 + v16c,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,checkpoint-faph10-v18d-clean96-pw96x4 + v16c
+2026-05-11T21:39:06Z,v6-residual + expert-a,faph_praam_quick_20260510,ambient,0.97,faph,0.0000,1,0.70,v6-residual + expert-a
+2026-05-11T21:39:06Z,v6-residual + expert-a,faph_praam_quick_20260510,ambient,0.99,faph,0.0000,1,0.70,v6-residual + expert-a
+2026-05-11T21:39:06Z,v6-residual + expert-a,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,v6-residual + expert-a
+2026-05-11T21:39:06Z,v6-residual + expert-a,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,v6-residual + expert-a
+2026-05-11T21:39:06Z,v6-residual + expert-a,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,v6-residual + expert-a
+2026-05-11T21:39:06Z,ex3a + expert-a,faph_praam_quick_20260510,ambient,0.97,faph,0.0000,1,0.70,ex3a + expert-a
+2026-05-11T21:39:06Z,ex3a + expert-a,faph_praam_quick_20260510,ambient,0.99,faph,0.0000,1,0.70,ex3a + expert-a
+2026-05-11T21:39:06Z,ex3a + expert-a,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,ex3a + expert-a
+2026-05-11T21:39:06Z,ex3a + expert-a,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,ex3a + expert-a
+2026-05-11T21:39:06Z,ex3a + expert-a,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,ex3a + expert-a
+2026-05-11T21:39:06Z,ex3a + expert-a + expert-b2,faph_praam_quick_20260510,ambient,0.97,faph,0.0000,1,0.70,ex3a + expert-a + expert-b2
+2026-05-11T21:39:06Z,ex3a + expert-a + expert-b2,faph_praam_quick_20260510,ambient,0.99,faph,0.0000,1,0.70,ex3a + expert-a + expert-b2
+2026-05-11T21:39:06Z,ex3a + expert-a + expert-b2,faph_praam_quick_20260510,ambient,0.995,faph,0.0000,1,0.70,ex3a + expert-a + expert-b2
+2026-05-11T21:39:06Z,ex3a + expert-a + expert-b2,faph_praam_quick_20260510,ambient,0.996,faph,0.0000,1,0.70,ex3a + expert-a + expert-b2
+2026-05-11T21:39:06Z,ex3a + expert-a + expert-b2,faph_praam_quick_20260510,ambient,0.999,faph,0.0000,1,0.70,ex3a + expert-a + expert-b2
