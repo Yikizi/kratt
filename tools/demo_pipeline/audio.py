@@ -39,9 +39,9 @@ class SpeechRecognizer:
 
 
 def record_until_silence(
-    max_seconds: float = 8.0,
-    silence_threshold: float = 0.01,
-    silence_duration: float = 1.5,
+    max_seconds: float = 14.0,
+    silence_threshold: float = 0.008,
+    silence_duration: float = 1.6,
     initial_silence_timeout: float = 3.0,
     speech_start_grace: float = 0.4,
     cancel_event: threading.Event | None = None,
@@ -49,29 +49,38 @@ def record_until_silence(
     frame_size = int(SAMPLE_RATE * 0.032)
     chunks = []
     silent_frames = 0
+    speech_frames = 0
     seen_voice = False
+    pre_voice_energies: list[float] = []
     frames_for_silence = int(silence_duration / 0.032)
     initial_silence_frames = int(initial_silence_timeout / 0.032)
     max_frames = int(max_seconds / 0.032)
     done = threading.Event()
 
     def callback(indata, frames, time_info, status):
-        nonlocal silent_frames, seen_voice
+        nonlocal silent_frames, speech_frames, seen_voice
         if cancel_event is not None and cancel_event.is_set():
             done.set()
             return
         chunks.append(indata[:, 0].copy())
-        energy = np.sqrt(np.mean(indata**2))
+        energy = float(np.sqrt(np.mean(indata**2)))
         elapsed_s = len(chunks) * 0.032
-        if energy < silence_threshold:
-            silent_frames += 1
-        else:
+        if not seen_voice:
+            pre_voice_energies.append(energy)
+            del pre_voice_energies[:-40]
+        noise_floor = float(np.median(pre_voice_energies)) if pre_voice_energies else 0.0
+        speech_threshold = max(silence_threshold, min(0.018, noise_floor * 2.0))
+        is_speech = energy >= speech_threshold
+        if is_speech:
             silent_frames = 0
-            # Ignore a short post-trigger tail from the wake phrase itself; a
-            # user command that starts immediately will still be recorded and
-            # marked as speech on subsequent frames.
-            if elapsed_s >= speech_start_grace:
+            speech_frames += 1
+            # Require a few consecutive above-threshold frames so fan/noise
+            # does not turn initial silence into a max-length blank recording.
+            if elapsed_s >= speech_start_grace and speech_frames >= 3:
                 seen_voice = True
+        else:
+            silent_frames += 1
+            speech_frames = 0
         if seen_voice and silent_frames >= frames_for_silence:
             done.set()
         elif not seen_voice and len(chunks) >= initial_silence_frames:
@@ -101,12 +110,13 @@ def record_until_silence(
 
 def record_and_transcribe_streaming(
     stt: SpeechRecognizer,
-    max_seconds: float = 8.0,
-    silence_threshold: float = 0.01,
-    silence_duration: float = 1.0,
+    max_seconds: float = 14.0,
+    silence_threshold: float = 0.008,
+    silence_duration: float = 1.6,
     initial_silence_timeout: float = 3.0,
     speech_start_grace: float = 0.4,
     cancel_event: threading.Event | None = None,
+    use_stt_endpoint: bool = False,
 ) -> tuple[np.ndarray, str, float]:
     """Record one utterance while feeding audio into sherpa-onnx online STT.
 
@@ -122,7 +132,9 @@ def record_and_transcribe_streaming(
     audio_q: queue.Queue[np.ndarray] = queue.Queue(maxsize=128)
     chunks: list[np.ndarray] = []
     silent_frames = 0
+    speech_frames = 0
     seen_voice = False
+    pre_voice_energies: list[float] = []
     decode_time_s = 0.0
     stream = stt.recognizer.create_stream()
     is_endpoint = getattr(stt.recognizer, "is_endpoint", None)
@@ -157,15 +169,24 @@ def record_and_transcribe_streaming(
             chunks.append(chunk)
             energy = float(np.sqrt(np.mean(chunk**2)))
             elapsed_s = len(chunks) * 0.032
-            if energy < silence_threshold:
-                silent_frames += 1
-            else:
+            if not seen_voice:
+                pre_voice_energies.append(energy)
+                del pre_voice_energies[:-40]
+            noise_floor = float(np.median(pre_voice_energies)) if pre_voice_energies else 0.0
+            speech_threshold = max(silence_threshold, min(0.018, noise_floor * 2.0))
+            is_speech = energy >= speech_threshold
+            if is_speech:
                 silent_frames = 0
+                speech_frames += 1
                 # Ignore a short post-trigger tail from the wake phrase itself;
                 # otherwise "Kuule Kratt <pause> command" can endpoint on that
-                # tail and return an empty command transcript.
-                if elapsed_s >= speech_start_grace:
+                # tail and return an empty command transcript. Requiring a few
+                # frames avoids max-length blank recordings on room noise.
+                if elapsed_s >= speech_start_grace and speech_frames >= 3:
                     seen_voice = True
+            else:
+                silent_frames += 1
+                speech_frames = 0
 
             t_decode = time.monotonic()
             stream.accept_waveform(SAMPLE_RATE, chunk)
@@ -173,7 +194,7 @@ def record_and_transcribe_streaming(
                 stt.recognizer.decode_stream(stream)
             decode_time_s += time.monotonic() - t_decode
 
-            if seen_voice and callable(is_endpoint) and is_endpoint(stream):
+            if use_stt_endpoint and seen_voice and callable(is_endpoint) and is_endpoint(stream):
                 break
             if seen_voice and silent_frames >= frames_for_silence:
                 break

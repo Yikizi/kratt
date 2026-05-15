@@ -13,6 +13,7 @@ Usage:
 
 import argparse
 import json
+import re
 import socket
 import sys
 import logging
@@ -185,6 +186,22 @@ class WizDeviceRegistry:
 # --- Globals ---
 registry: WizDeviceRegistry = None  # initialized in main()
 
+
+def resolve_targets(entity_id: str) -> tuple[list[dict], str | None]:
+    """Resolve one entity_id or the demo-default 'all' target."""
+    target = (entity_id or "").strip().lower()
+    if target in ("all", "light.all", "*"):
+        bulbs = registry.all()
+        if not bulbs:
+            return [], "Ühtegi lampi ei leitud."
+        return bulbs, None
+
+    bulb = registry.get(entity_id)
+    if not bulb:
+        return [], f"Viga: lampi '{entity_id}' ei leitud. Kasuta list_devices."
+    return [bulb], None
+
+
 # --- Brightness conversion ---
 # Pipeline uses 0-255 (HA style), WiZ uses 10-100%
 
@@ -219,6 +236,81 @@ COLOR_TEMP_MAP = {
     "night": 2200,
 }
 
+HEX_COLOR_RE = re.compile(r"^#?([0-9a-fA-F]{6})$")
+RGB_COLOR_RE = re.compile(r"^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$")
+
+RGB_COLOR_MAP = {
+    "punane": (255, 0, 0),
+    "red": (255, 0, 0),
+    "roheline": (0, 255, 0),
+    "green": (0, 255, 0),
+    "sinine": (0, 0, 255),
+    "blue": (0, 0, 255),
+    "kollane": (255, 255, 0),
+    "yellow": (255, 255, 0),
+    "lilla": (180, 0, 255),
+    "purple": (180, 0, 255),
+    "oranž": (255, 120, 0),
+    "oranz": (255, 120, 0),
+    "orange": (255, 120, 0),
+    "roosa": (255, 30, 140),
+    "pink": (255, 30, 140),
+    "valge": (255, 255, 255),
+    "white": (255, 255, 255),
+}
+
+
+def _clamp_rgb(values) -> tuple[int, int, int]:
+    r, g, b = values[:3]
+    return (max(0, min(255, int(r))), max(0, min(255, int(g))), max(0, min(255, int(b))))
+
+
+def parse_rgb_color(value) -> tuple[int, int, int] | None:
+    if isinstance(value, (list, tuple)) and len(value) >= 3:
+        try:
+            return _clamp_rgb([int(value[0]), int(value[1]), int(value[2])])
+        except (TypeError, ValueError):
+            return None
+    if isinstance(value, dict):
+        try:
+            return _clamp_rgb([int(value["r"]), int(value["g"]), int(value["b"])])
+        except (KeyError, TypeError, ValueError):
+            return None
+    text = str(value or "").strip()
+    match = RGB_COLOR_RE.match(text)
+    if match:
+        return _clamp_rgb([int(match.group(1)), int(match.group(2)), int(match.group(3))])
+    return None
+
+
+def parse_hex_color(value) -> tuple[int, int, int] | None:
+    text = str(value or "").strip()
+    match = HEX_COLOR_RE.match(text)
+    if not match:
+        return None
+    raw = match.group(1)
+    return (int(raw[0:2], 16), int(raw[2:4], 16), int(raw[4:6], 16))
+
+
+def apply_wiz_color(params: dict, color: str | None = None, *, rgb=None, hex_color=None) -> str | None:
+    rgb_tuple = parse_rgb_color(rgb) or parse_hex_color(hex_color) or parse_rgb_color(color) or parse_hex_color(color)
+    if rgb_tuple is not None:
+        params.update({"r": rgb_tuple[0], "g": rgb_tuple[1], "b": rgb_tuple[2]})
+        return None
+
+    normalized = (color or "").strip().lower()
+    if not normalized:
+        return "Värv puudub."
+    if normalized in COLOR_TEMP_MAP:
+        params["temp"] = COLOR_TEMP_MAP[normalized]
+        return None
+    if normalized in RGB_COLOR_MAP:
+        r, g, b = RGB_COLOR_MAP[normalized]
+        params.update({"r": r, "g": g, "b": b})
+        return None
+    return f"Tundmatu värv: {color or rgb or hex_color}"
+
+
 # --- Tool definitions ---
 
 TOOLS = [
@@ -240,7 +332,18 @@ TOOLS = [
                 },
                 "color": {
                     "type": "string",
-                    "description": "Värvitoon: 'soe valge', 'külm valge', 'päevavalgus', 'öövalgus'",
+                    "description": "Preset-värv või #RRGGBB/RGB, nt 'soe valge', 'lilla', '#ff00aa', 'rgb(255,0,170)'",
+                },
+                "rgb": {
+                    "type": "array",
+                    "items": {"type": "integer", "minimum": 0, "maximum": 255},
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "RGB kolmik tundmatu värvi ligikaudseks esitamiseks",
+                },
+                "hex": {
+                    "type": "string",
+                    "description": "Hex värv #RRGGBB tundmatu värvi ligikaudseks esitamiseks",
                 },
             },
             "required": ["entity_id"],
@@ -292,7 +395,18 @@ TOOLS = [
                 },
                 "color": {
                     "type": "string",
-                    "description": "Värvitoon: 'soe valge', 'külm valge', 'päevavalgus', 'neutraalne'",
+                    "description": "Preset-värv või #RRGGBB/RGB, nt 'soe valge', 'lilla', '#ff00aa', 'rgb(255,0,170)'",
+                },
+                "rgb": {
+                    "type": "array",
+                    "items": {"type": "integer", "minimum": 0, "maximum": 255},
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "RGB kolmik tundmatu värvi ligikaudseks esitamiseks",
+                },
+                "hex": {
+                    "type": "string",
+                    "description": "Hex värv #RRGGBB tundmatu värvi ligikaudseks esitamiseks",
                 },
             },
             "required": ["entity_id", "color"],
@@ -328,81 +442,108 @@ TOOLS = [
 def execute_tool(name: str, args: dict) -> str:
     if name == "turn_on":
         entity_id = args.get("entity_id", "")
-        bulb = registry.get(entity_id)
-        if not bulb:
-            return f"Viga: lampi '{entity_id}' ei leitud. Kasuta list_devices."
+        bulbs, error = resolve_targets(entity_id)
+        if error:
+            return error
         params: dict = {"state": True}
         if "brightness" in args:
             params["dimming"] = ha_brightness_to_wiz(args["brightness"])
-        if "color" in args:
-            color = args["color"].lower()
-            temp = COLOR_TEMP_MAP.get(color)
-            if temp:
-                params["temp"] = temp
-        resp = wiz_send(bulb["ip"], "setPilot", params)
-        if resp.get("result", {}).get("success"):
-            result = f"✓ {bulb['friendly_name']} on nüüd SEES"
-            if "dimming" in params:
-                result += f" (heledus: {params['dimming']}%)"
-            if "temp" in params:
-                result += f" (värvus: {params['temp']}K)"
-            log.info("TURN_ON %s (%s) → %s", entity_id, bulb["ip"], result)
-            return result
-        return f"Viga: {resp}"
+        if any(key in args for key in ("color", "rgb", "hex")):
+            color_error = apply_wiz_color(params, args.get("color"), rgb=args.get("rgb"), hex_color=args.get("hex"))
+            if color_error:
+                return color_error
+        results = []
+        for bulb in bulbs:
+            resp = wiz_send(bulb["ip"], "setPilot", params)
+            if resp.get("result", {}).get("success"):
+                result = f"✓ {bulb['friendly_name']} on nüüd SEES"
+                if "dimming" in params:
+                    result += f" (heledus: {params['dimming']}%)"
+                if "temp" in params:
+                    result += f" (värvus: {params['temp']}K)"
+                if all(k in params for k in ("r", "g", "b")):
+                    result += f" (RGB: {params['r']},{params['g']},{params['b']})"
+                log.info("TURN_ON %s (%s) → %s", entity_id, bulb["ip"], result)
+                results.append(result)
+            else:
+                results.append(f"Viga {bulb['friendly_name']}: {resp}")
+        return "; ".join(results)
 
     elif name == "turn_off":
         entity_id = args.get("entity_id", "")
-        bulb = registry.get(entity_id)
-        if not bulb:
-            return f"Viga: lampi '{entity_id}' ei leitud."
-        resp = wiz_send(bulb["ip"], "setPilot", {"state": False})
-        if resp.get("result", {}).get("success"):
-            result = f"✓ {bulb['friendly_name']} on nüüd VÄLJAS"
-            log.info("TURN_OFF %s (%s) → %s", entity_id, bulb["ip"], result)
-            return result
-        return f"Viga: {resp}"
+        bulbs, error = resolve_targets(entity_id)
+        if error:
+            return error
+        results = []
+        for bulb in bulbs:
+            resp = wiz_send(bulb["ip"], "setPilot", {"state": False})
+            if resp.get("result", {}).get("success"):
+                result = f"✓ {bulb['friendly_name']} on nüüd VÄLJAS"
+                log.info("TURN_OFF %s (%s) → %s", entity_id, bulb["ip"], result)
+                results.append(result)
+            else:
+                results.append(f"Viga {bulb['friendly_name']}: {resp}")
+        return "; ".join(results)
 
     elif name == "set_brightness":
         entity_id = args.get("entity_id", "")
-        bulb = registry.get(entity_id)
-        if not bulb:
-            return f"Viga: lampi '{entity_id}' ei leitud."
+        bulbs, error = resolve_targets(entity_id)
+        if error:
+            return error
         dimming = ha_brightness_to_wiz(args.get("brightness", 255))
-        resp = wiz_send(bulb["ip"], "setPilot", {"state": True, "dimming": dimming})
-        if resp.get("result", {}).get("success"):
-            result = f"✓ {bulb['friendly_name']} heledus on nüüd {dimming}%"
-            log.info("SET_BRIGHTNESS %s → %s", entity_id, result)
-            return result
-        return f"Viga: {resp}"
+        results = []
+        for bulb in bulbs:
+            resp = wiz_send(bulb["ip"], "setPilot", {"state": True, "dimming": dimming})
+            if resp.get("result", {}).get("success"):
+                result = f"✓ {bulb['friendly_name']} heledus on nüüd {dimming}%"
+                log.info("SET_BRIGHTNESS %s → %s", entity_id, result)
+                results.append(result)
+            else:
+                results.append(f"Viga {bulb['friendly_name']}: {resp}")
+        return "; ".join(results)
 
     elif name == "set_color":
         entity_id = args.get("entity_id", "")
-        bulb = registry.get(entity_id)
-        if not bulb:
-            return f"Viga: lampi '{entity_id}' ei leitud."
-        color = args.get("color", "").lower()
-        temp = COLOR_TEMP_MAP.get(color, 4000)
-        resp = wiz_send(bulb["ip"], "setPilot", {"state": True, "temp": temp})
-        if resp.get("result", {}).get("success"):
-            result = f"✓ {bulb['friendly_name']} värvus on nüüd {temp}K ({color})"
-            log.info("SET_COLOR %s → %s", entity_id, result)
-            return result
-        return f"Viga: {resp}"
+        bulbs, error = resolve_targets(entity_id)
+        if error:
+            return error
+        color = args.get("color", "")
+        params = {"state": True}
+        color_error = apply_wiz_color(params, color, rgb=args.get("rgb"), hex_color=args.get("hex"))
+        if color_error:
+            return color_error
+        results = []
+        for bulb in bulbs:
+            resp = wiz_send(bulb["ip"], "setPilot", params)
+            if resp.get("result", {}).get("success"):
+                if "temp" in params:
+                    result = f"✓ {bulb['friendly_name']} värvus on nüüd {params['temp']}K ({color})"
+                else:
+                    result = f"✓ {bulb['friendly_name']} värvus on nüüd RGB({params['r']},{params['g']},{params['b']}) ({color})"
+                log.info("SET_COLOR %s → %s", entity_id, result)
+                results.append(result)
+            else:
+                results.append(f"Viga {bulb['friendly_name']}: {resp}")
+        return "; ".join(results)
 
     elif name == "get_state":
         entity_id = args.get("entity_id", "")
-        bulb = registry.get(entity_id)
-        if not bulb:
-            return f"Viga: lampi '{entity_id}' ei leitud."
-        state = registry.get_state(bulb["ip"])
-        if state["on"]:
-            return (
-                f"{bulb['friendly_name']} on SEES "
-                f"(heledus: {state['dimming']}%, "
-                f"värvus: {state['temperature_k']}K, "
-                f"signaal: {state['rssi']}dBm)"
-            )
-        return f"{bulb['friendly_name']} on VÄLJAS"
+        bulbs, error = resolve_targets(entity_id)
+        if error:
+            return error
+        results = []
+        for bulb in bulbs:
+            state = registry.get_state(bulb["ip"])
+            if state["on"]:
+                results.append(
+                    f"{bulb['friendly_name']} on SEES "
+                    f"(heledus: {state['dimming']}%, "
+                    f"värvus: {state['temperature_k']}K, "
+                    f"signaal: {state['rssi']}dBm)"
+                )
+            else:
+                results.append(f"{bulb['friendly_name']} on VÄLJAS")
+        return "; ".join(results)
 
     elif name == "list_devices":
         lines = []

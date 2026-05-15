@@ -257,10 +257,55 @@ def normalize_place_et(place: str | None) -> str:
     }
     return known.get(lower, name)
 
-def weather_response_et(place: str | None = None, mode: str = "current") -> str:
-    """Fetch current weather / simple rain forecast via Open-Meteo, no API key required."""
+def relative_day_phrase_et(offset_days: int) -> str:
+    if offset_days == 0:
+        return "täna"
+    if offset_days == 1:
+        return "homme"
+    if offset_days == 2:
+        return "ülehomme"
+    if offset_days == -1:
+        return "eile"
+    if offset_days > 0:
+        return f"{offset_days} päeva pärast"
+    return f"{abs(offset_days)} päeva tagasi"
+
+
+def _daily_value(daily: dict[str, Any], key: str, index: int, default: Any = None) -> Any:
+    values = daily.get(key) or []
+    if not values or index < 0 or index >= len(values):
+        return default
+    value = values[index]
+    return default if value is None else value
+
+
+def _format_temp_range_et(temp_min: int, temp_max: int) -> str:
+    if temp_min == temp_max:
+        return f"{temp_max} kraadi"
+    return f"{temp_min} kuni {temp_max} kraadi"
+
+
+def _weather_window_limit(offset_days: int) -> str | None:
+    if offset_days > 15:
+        return "Saan ilmaennustust vaadata kuni 15 päeva ette."
+    if offset_days < -7:
+        return "Saan hiljutist ilma vaadata kuni 7 päeva tagasi."
+    return None
+
+
+def weather_response_et(place: str | None = None, mode: str = "current", offset_days: int = 0) -> str:
+    """Fetch current weather or a relative-day forecast via Open-Meteo, no API key required."""
     place = normalize_place_et(place or DEFAULT_WEATHER_LOCATION) or DEFAULT_WEATHER_LOCATION
     mode = (mode or "current").strip().lower()
+    try:
+        offset_days = int(offset_days or 0)
+    except (TypeError, ValueError):
+        offset_days = 0
+
+    limit_message = _weather_window_limit(offset_days)
+    if limit_message:
+        return limit_message
+
     try:
         geo = WEATHER_SESSION.get(
             "https://geocoding-api.open-meteo.com/v1/search",
@@ -274,57 +319,118 @@ def weather_response_et(place: str | None = None, mode: str = "current") -> str:
         loc = results[0]
         loc_name = loc.get("name") or place
         loc_phrase = place_inessive_et(loc_name)
+        forecast_days = max(1, offset_days + 1) if offset_days >= 0 else 1
+        past_days = max(0, -offset_days)
+        forecast_params: dict[str, Any] = {
+            "latitude": loc["latitude"],
+            "longitude": loc["longitude"],
+            "current": "temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m",
+            "daily": (
+                "weather_code,temperature_2m_max,temperature_2m_min,"
+                "apparent_temperature_max,apparent_temperature_min,"
+                "precipitation_probability_max,precipitation_sum,wind_speed_10m_max"
+            ),
+            "forecast_days": forecast_days,
+            "timezone": "auto",
+        }
+        if past_days:
+            forecast_params["past_days"] = past_days
         forecast = WEATHER_SESSION.get(
             "https://api.open-meteo.com/v1/forecast",
-            params={
-                "latitude": loc["latitude"],
-                "longitude": loc["longitude"],
-                "current": "temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m",
-                "daily": "precipitation_probability_max,precipitation_sum",
-                "forecast_days": 1,
-                "timezone": "auto",
-            },
+            params=forecast_params,
             timeout=4,
         )
         forecast.raise_for_status()
         data = forecast.json()
         current = data.get("current") or {}
         daily = data.get("daily") or {}
-        temp = round(float(current.get("temperature_2m")))
-        apparent = round(float(current.get("apparent_temperature", temp)))
-        wind_kmh = float(current.get("wind_speed_10m", 0) or 0)
+        target_date = (datetime.now().astimezone().date() + timedelta(days=offset_days)).isoformat()
+        dates = daily.get("time") or []
+        try:
+            daily_index = dates.index(target_date)
+        except ValueError:
+            daily_index = min(max(offset_days + past_days, 0), max(len(dates) - 1, 0))
+
+        rain_prob_raw = _daily_value(daily, "precipitation_probability_max", daily_index)
+        rain_prob = int(round(float(rain_prob_raw))) if rain_prob_raw is not None else None
+        rain_mm = float(_daily_value(daily, "precipitation_sum", daily_index, 0.0) or 0.0)
+
+        if offset_days == 0:
+            temp = round(float(current.get("temperature_2m")))
+            apparent = round(float(current.get("apparent_temperature", temp)))
+            wind_kmh = float(current.get("wind_speed_10m", 0) or 0)
+            wind_ms = round(wind_kmh / 3.6, 1)
+            precipitation = float(current.get("precipitation", 0) or 0)
+            description = _weather_code_et(current.get("weather_code"))
+
+            if mode == "rain":
+                if rain_prob is not None:
+                    return f"{loc_phrase} on täna vihma tõenäosus umbes {rain_prob} protsenti ja sademeid {rain_mm:g} millimeetrit."
+                rain_now = "Praegu sajab." if precipitation > 0 else "Praegu sademeid ei ole."
+                return f"{loc_phrase}: {rain_now}"
+
+            if mode == "clothing":
+                rain_hint = rain_prob is not None and rain_prob >= 40
+                if apparent <= 5:
+                    advice = "Pane soe jope."
+                elif apparent <= 13:
+                    advice = "Pane kerge jope või paksem pusa."
+                elif apparent <= 20:
+                    advice = "Pusa või õhuke jakk on hea mõte."
+                else:
+                    advice = "Kerge riietus sobib."
+                if rain_hint:
+                    advice += " Võta vihmavari ka."
+                return f"{loc_phrase} on {temp} kraadi, tundub nagu {apparent}. {advice}"
+
+            rain_part = " Sajab." if precipitation > 0 else " Sademeid hetkel ei ole."
+            return (
+                f"{loc_phrase} on {temp} kraadi ja {description}. "
+                f"Tundub nagu {apparent}. Tuul {wind_ms:g} meetrit sekundis."
+                f"{rain_part}"
+            )
+
+        day_phrase = relative_day_phrase_et(offset_days)
+        verb = "oli" if offset_days < 0 else "on"
+        temp_max = round(float(_daily_value(daily, "temperature_2m_max", daily_index, 0)))
+        temp_min = round(float(_daily_value(daily, "temperature_2m_min", daily_index, temp_max)))
+        apparent_max = round(float(_daily_value(daily, "apparent_temperature_max", daily_index, temp_max)))
+        apparent_min = round(float(_daily_value(daily, "apparent_temperature_min", daily_index, temp_min)))
+        wind_kmh = float(_daily_value(daily, "wind_speed_10m_max", daily_index, 0) or 0)
         wind_ms = round(wind_kmh / 3.6, 1)
-        precipitation = float(current.get("precipitation", 0) or 0)
-        precip_probs = daily.get("precipitation_probability_max") or []
-        precip_sums = daily.get("precipitation_sum") or []
-        rain_prob = int(round(float(precip_probs[0]))) if precip_probs else None
-        rain_mm = float(precip_sums[0]) if precip_sums else 0.0
-        description = _weather_code_et(current.get("weather_code"))
+        description = _weather_code_et(_daily_value(daily, "weather_code", daily_index))
+        temp_range = _format_temp_range_et(temp_min, temp_max)
+        apparent_range = _format_temp_range_et(apparent_min, apparent_max)
 
         if mode == "rain":
             if rain_prob is not None:
-                return f"{loc_phrase} on täna vihma tõenäosus umbes {rain_prob} protsenti ja sademeid {rain_mm:g} millimeetrit."
-            rain_now = "Praegu sajab." if precipitation > 0 else "Praegu sademeid ei ole."
-            return f"{loc_phrase}: {rain_now}"
+                return f"{loc_phrase} {verb} {day_phrase} vihma tõenäosus umbes {rain_prob} protsenti ja sademeid {rain_mm:g} millimeetrit."
+            return f"{loc_phrase} {verb} {day_phrase} sademeid umbes {rain_mm:g} millimeetrit."
 
         if mode == "clothing":
             rain_hint = rain_prob is not None and rain_prob >= 40
-            if apparent <= 5:
-                advice = "Pane soe jope."
-            elif apparent <= 13:
-                advice = "Pane kerge jope või paksem pusa."
-            elif apparent <= 20:
+            if apparent_max <= 5:
+                advice = "Soe jope sobib."
+            elif apparent_max <= 13:
+                advice = "Kerge jope või paksem pusa sobib."
+            elif apparent_max <= 20:
                 advice = "Pusa või õhuke jakk on hea mõte."
             else:
                 advice = "Kerge riietus sobib."
+            if apparent_min <= 5 and apparent_max > 5:
+                advice += " Jahedamaks osaks võta lisakiht."
             if rain_hint:
-                advice += " Võta vihmavari ka."
-            return f"{loc_phrase} on {temp} kraadi, tundub nagu {apparent}. {advice}"
+                advice += " Vihmavari tasub kaasa võtta."
+            return f"{loc_phrase} {verb} {day_phrase} {temp_range}, tundub nagu {apparent_range}. {advice}"
 
-        rain_part = " Sajab." if precipitation > 0 else " Sademeid hetkel ei ole."
+        rain_part = ""
+        if rain_prob is not None:
+            rain_part = f" Vihma tõenäosus umbes {rain_prob} protsenti."
+        elif rain_mm > 0:
+            rain_part = f" Sademeid umbes {rain_mm:g} millimeetrit."
         return (
-            f"{loc_phrase} on {temp} kraadi ja {description}. "
-            f"Tundub nagu {apparent}. Tuul {wind_ms:g} meetrit sekundis."
+            f"{loc_phrase} {verb} {day_phrase} {temp_range} ja {description}. "
+            f"Tuul kuni {wind_ms:g} meetrit sekundis."
             f"{rain_part}"
         )
     except Exception:

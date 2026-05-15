@@ -25,9 +25,19 @@ HELPER_HOLDING_PHRASES = [
 ]
 
 CAPABILITY_RESPONSES = [
-    "Kõige paremini oskan ma lampi kamandada: värvid, heledus, sisse-välja ja väike disko. Lisaks ütlen ilma ja kellaaega ning keerulisemate küsimuste jaoks saan suurema mudeli appi kutsuda.",
-    "Ma olen praegu eeskätt valguse kratt: panen tule põlema, muudan värvi, timmin heledust ja teen efekte. Boonusena oskan ilma, kuupäeva ja kellaaega öelda ning üldisemate küsimuste puhul abi küsida.",
-    "Valgustus on minu koduväljak: värvid, heledus, olek ja efektid. Kui küsid midagi muud, näiteks retsepti või nõu, saan selleks targema mudeli käest abi paluda.",
+    "Mu põhitöö on WiZ lamp: sisse ja välja, värvid, soe või külm valge, heledus, olek, disko, värvide läbikäimine ja vilgutamine. Lisaks ütlen kellaaega, kuupäeva ja ilma, ka homse või ülehomse kohta.",
+    "Ma oskan praegu juhtida valgust: põlema, kustu, värv, heledus, olek ja lühikesed efektid nagu disko või vilgutamine. Veel oskan öelda kellaaega, kuupäeva, ilma ja vajadusel küsida abimudelilt lühikest nõu.",
+    "Valgustus on minu koduväljak: värvid, heledus, soe ja külm valge, olek ning efektid. Kõrvalt oskan vastata aja, kuupäeva ja ilma kohta ning üldküsimuse puhul saan targema mudeli appi kutsuda.",
+]
+
+AIRFRYER_CAPABILITY_RESPONSES = [
+    "Selles režiimis juhin õhufritüüri: saan küpsetamise käivitada temperatuuri ja ajaga, peatada ning olekut vaadata.",
+    "Praegu olen õhufritüüri kratt. Ütle toit või temperatuur ja minutid, ning saan küpsetamise käivitada, peatada või olekut kontrollida.",
+]
+
+SMARTHOME_CAPABILITY_RESPONSES = [
+    "Saan juhtida WiZ lampi: sisse, välja, värv, heledus ja efektid. Lisaks saan õhufritüüri käivitada temperatuuri ja ajaga, peatada ning olekut vaadata.",
+    "Praegu oskan nii lampi kui õhufritüüri: valguse värvid, heledus ja efektid; õhufritüüril küpsetamine, stopp ja staatus. Lisaks ütlen kellaaega, kuupäeva ja ilma.",
 ]
 
 CLARIFY_COLOR_QUESTIONS = [
@@ -42,7 +52,11 @@ def holding_phrase(transcript: str | None = None) -> str:
     return choose_variant(HELPER_HOLDING_PHRASES, "holding", transcript)
 
 
-def capabilities_response(turn_seq: int = 0) -> str:
+def capabilities_response(turn_seq: int = 0, *, mode: str = "lights") -> str:
+    if mode == "smarthome":
+        return choose_variant(SMARTHOME_CAPABILITY_RESPONSES, "capabilities_smarthome", turn_seq)
+    if mode == "airfryer":
+        return choose_variant(AIRFRYER_CAPABILITY_RESPONSES, "capabilities_airfryer", turn_seq)
     return choose_variant(CAPABILITY_RESPONSES, "capabilities", turn_seq)
 
 
@@ -64,6 +78,9 @@ def soften_weather_response(response: str, *, mode: str = "current", turn_seq: i
         return f"{choose_variant(prefixes, text, turn_seq)} {text}"
     if mode == "clothing":
         prefixes = ["Riietuse mõttes ütleks nii:", "Mina paneks nii:", "Õue minnes arvestaks sellega:"]
+        return f"{choose_variant(prefixes, text, turn_seq)} {text}"
+    if mode == "forecast":
+        prefixes = ["Ennustuse järgi:", "Selle päeva kohta:", "Ilmateade ütleb:"]
         return f"{choose_variant(prefixes, text, turn_seq)} {text}"
     # Current weather is already compact; only avoid every answer starting identically.
     prefixes = ["Praegu on nii:", "Ilm ütleb praegu:", "Väljas paistab nii:"]

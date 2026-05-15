@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# DESC: Benchmark local English→Estonian translation models for demo responses
+# USAGE: kratt translation-bench [options]
+# ARGS: --models Model keys: opus-ct2-int8 opus opus-big nllb-600m
+# ARGS: --include-large Also run NLLB-200 distilled 600M (~2.5GB download)
+# ARGS: --limit Limit number of benchmark cases; 0/all by default
+# ARGS: --protect-placeholders Guard <ENTITY_1>-style placeholders before MT
+# ARGS: --beams Beam size. Default: 1 for latency
+# ARGS: --repeat Translate each case N times and use median latency
+# EXAMPLES: kratt translation-bench --limit 10
+# EXAMPLES: kratt translation-bench --models opus-ct2-int8 opus --protect-placeholders
+# EXAMPLES: kratt translation-bench --include-large --limit 12
+set -euo pipefail
+
+if [[ -z "${KRATT_ROOT:-}" ]]; then
+  KRATT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+fi
+export KRATT_ROOT
+
+PYTHON="${KRATT_ROOT}/.venv/bin/python"
+SCRIPT="${KRATT_ROOT}/tools/demo-pipeline/bench_translation_models.py"
+
+if [[ ! -x "${PYTHON}" ]]; then
+  echo "Project venv not found: ${PYTHON}" >&2
+  exit 1
+fi
+
+exec "${PYTHON}" "${SCRIPT}" "$@"

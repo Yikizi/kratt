@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import ipaddress
+import re
 import threading
 import time
 from typing import Any
@@ -21,6 +22,9 @@ WIZ_BRIDGE_EFFECT_PALETTE = [
     "oranž",
     "valge",
 ]
+
+HEX_COLOR_RE = re.compile(r"^#?([0-9a-fA-F]{6})$")
+RGB_COLOR_RE = re.compile(r"^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$")
 
 WIZ_BRIDGE_COLOR_MAP = {
     "soe valge": 2700,
@@ -192,10 +196,51 @@ def brightness_to_wiz(value: int) -> int:
     return max(10, min(100, round((value / 255) * 100)))
 
 
-def apply_wiz_color(params: dict[str, Any], raw_color: Any) -> str | None:
-    color = WIZ_BRIDGE_COLOR_MAP.get(str(raw_color).lower())
+def _clamp_rgb(values: list[int] | tuple[int, int, int]) -> tuple[int, int, int]:
+    r, g, b = values[:3]
+    return (max(0, min(255, int(r))), max(0, min(255, int(g))), max(0, min(255, int(b))))
+
+
+def parse_rgb_color(value: Any) -> tuple[int, int, int] | None:
+    if isinstance(value, (list, tuple)) and len(value) >= 3:
+        try:
+            return _clamp_rgb([int(value[0]), int(value[1]), int(value[2])])
+        except (TypeError, ValueError):
+            return None
+    if isinstance(value, dict):
+        try:
+            return _clamp_rgb([int(value["r"]), int(value["g"]), int(value["b"])])
+        except (KeyError, TypeError, ValueError):
+            return None
+    text = str(value or "").strip()
+    match = RGB_COLOR_RE.match(text)
+    if match:
+        return _clamp_rgb([int(match.group(1)), int(match.group(2)), int(match.group(3))])
+    return None
+
+
+def parse_hex_color(value: Any) -> tuple[int, int, int] | None:
+    text = str(value or "").strip()
+    match = HEX_COLOR_RE.match(text)
+    if not match:
+        return None
+    raw = match.group(1)
+    return (int(raw[0:2], 16), int(raw[2:4], 16), int(raw[4:6], 16))
+
+
+def apply_wiz_color(params: dict[str, Any], raw_color: Any = None, *, rgb: Any = None, hex_color: Any = None) -> str | None:
+    rgb_tuple = parse_rgb_color(rgb)
+    if rgb_tuple is None:
+        rgb_tuple = parse_hex_color(hex_color)
+    if rgb_tuple is None:
+        rgb_tuple = parse_rgb_color(raw_color) or parse_hex_color(raw_color)
+    if rgb_tuple is not None:
+        params.update({"r": rgb_tuple[0], "g": rgb_tuple[1], "b": rgb_tuple[2]})
+        return None
+
+    color = WIZ_BRIDGE_COLOR_MAP.get(str(raw_color or "").strip().lower())
     if color is None:
-        return f"Unsupported color: {raw_color}"
+        return f"Unsupported color: {raw_color or rgb or hex_color}"
     if isinstance(color, tuple):
         params.update({"r": color[0], "g": color[1], "b": color[2]})
     else:
@@ -208,8 +253,8 @@ def build_wiz_payload(action_name: str, action: dict[str, Any]) -> tuple[dict[st
         params: dict[str, int | bool] = {"state": True}
         if "brightness" in action:
             params["dimming"] = brightness_to_wiz(int(action["brightness"]))
-        if "color" in action:
-            color_error = apply_wiz_color(params, action["color"])
+        if any(key in action for key in ("color", "rgb", "hex")):
+            color_error = apply_wiz_color(params, action.get("color"), rgb=action.get("rgb"), hex_color=action.get("hex"))
             if color_error:
                 return {}, color_error
         return {"method": "setPilot", "params": params}, None
@@ -225,7 +270,7 @@ def build_wiz_payload(action_name: str, action: dict[str, Any]) -> tuple[dict[st
 
     if action_name == "set_color":
         params: dict[str, Any] = {"state": True}
-        color_error = apply_wiz_color(params, action.get("color", ""))
+        color_error = apply_wiz_color(params, action.get("color"), rgb=action.get("rgb"), hex_color=action.get("hex"))
         if color_error:
             return {}, color_error
         return {"method": "setPilot", "params": params}, None
@@ -278,6 +323,7 @@ def _send_effect_to_target(
     effect = str(action.get("effect") or "").strip().lower()
     duration_s = max(0.5, min(12.0, float(action.get("duration_seconds", 6) or 6)))
     step_s = max(0.12, min(2.0, float(action.get("step_seconds", 0.35) or 0.35)))
+    brightness = int(action["brightness"]) if action.get("brightness") is not None else None
 
     if effect == "color_cycle":
         colors = WIZ_BRIDGE_EFFECT_PALETTE
@@ -286,7 +332,7 @@ def _send_effect_to_target(
         for color in colors[:max_steps]:
             if stop_event.is_set():
                 return f"{target}: color cycle cancelled", True
-            payload, err = _color_payload(color)
+            payload, err = _color_payload(color, brightness=brightness)
             if err:
                 return err, False
             if not send(target, payload, port=WIZ_BRIDGE_DEFAULT_PORT):
@@ -303,7 +349,7 @@ def _send_effect_to_target(
             if stop_event.is_set():
                 return f"{target}: disco cancelled", True
             color = colors[steps % len(colors)]
-            payload, err = _color_payload(color)
+            payload, err = _color_payload(color, brightness=brightness)
             if err:
                 return err, False
             if not send(target, payload, port=WIZ_BRIDGE_DEFAULT_PORT):
@@ -318,10 +364,12 @@ def _send_effect_to_target(
         end = time.monotonic() + duration_s
         steps = 0
         high = True
+        high_brightness = brightness if brightness is not None else 255
+        low_brightness = max(10, min(80, int(high_brightness * 0.15)))
         while time.monotonic() < end:
             if stop_event.is_set():
                 return f"{target}: pulse cancelled", True
-            payload, err = _color_payload(color, brightness=255 if high else 25)
+            payload, err = _color_payload(color, brightness=high_brightness if high else low_brightness)
             if err:
                 return err, False
             if not send(target, payload, port=WIZ_BRIDGE_DEFAULT_PORT):

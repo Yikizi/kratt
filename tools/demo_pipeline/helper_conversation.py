@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from tools.demo_pipeline.llm_backends import DEFAULT_HELPER_RPC_TIMEOUT, get_pi_rpc_client
+from tools.demo_pipeline.llm_backends import DEFAULT_HELPER_RPC_TIMEOUT, request_pi_rpc_json
 from tools.demo_pipeline.prompts import SYSTEM_PROMPT_HELPER_ASSISTANT
 
 ConversationMessage = dict[str, str]
@@ -64,8 +64,25 @@ def ask_helper_assistant(
     *,
     timeout_s: float = DEFAULT_HELPER_RPC_TIMEOUT,
 ) -> dict[str, Any]:
-    client = get_pi_rpc_client(SYSTEM_PROMPT_HELPER_ASSISTANT)
-    return normalize_helper_result(client.request_json(_build_helper_prompt(messages), timeout_s=timeout_s))
+    prompt = _build_helper_prompt(messages)
+    try:
+        raw = request_pi_rpc_json(
+            SYSTEM_PROMPT_HELPER_ASSISTANT,
+            prompt,
+            timeout_s=timeout_s,
+        )
+    except TimeoutError:
+        # A pi RPC turn can occasionally hang even though a fresh RPC process
+        # answers immediately. Retry once with a short cap to rescue the demo
+        # without returning to the old 45-second silence.
+        if timeout_s <= 6:
+            raise
+        raw = request_pi_rpc_json(
+            SYSTEM_PROMPT_HELPER_ASSISTANT,
+            prompt,
+            timeout_s=6.0,
+        )
+    return normalize_helper_result(raw)
 
 
 def warm_helper_assistant(*, timeout_s: float = 20.0) -> dict[str, Any]:

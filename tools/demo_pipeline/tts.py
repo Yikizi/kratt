@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import subprocess
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -49,6 +50,8 @@ class TextToSpeech:
         self.session = requests.Session()
         self.cache_dir = PROJECT_ROOT / "output" / "tts-cache"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self._play_proc: subprocess.Popen | None = None
+        self._play_lock = threading.Lock()
 
     def is_available(self) -> bool:
         if self._available is None:
@@ -130,7 +133,20 @@ class TextToSpeech:
             except Exception:
                 pass
 
-    def speak(self, text: str) -> float:
+    def stop(self) -> None:
+        with self._play_lock:
+            proc = self._play_proc
+        if proc is not None and proc.poll() is None:
+            try:
+                proc.terminate()
+                proc.wait(timeout=0.4)
+            except Exception:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+
+    def speak(self, text: str, *, stop_event: threading.Event | None = None) -> float:
         """Synthesize/cache and play text. Returns duration in seconds."""
         if not text or not self.is_available():
             return 0.0
@@ -140,6 +156,24 @@ class TextToSpeech:
         if not play_path:
             return 0.0
 
-        # Play audio (blocks until done)
-        subprocess.run(["sox", str(play_path), "-d"], capture_output=True)
+        proc = subprocess.Popen(["sox", str(play_path), "-d"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        with self._play_lock:
+            self._play_proc = proc
+        try:
+            while proc.poll() is None:
+                if stop_event is not None and stop_event.is_set():
+                    try:
+                        proc.terminate()
+                        proc.wait(timeout=0.4)
+                    except Exception:
+                        try:
+                            proc.kill()
+                        except Exception:
+                            pass
+                    break
+                time.sleep(0.05)
+        finally:
+            with self._play_lock:
+                if self._play_proc is proc:
+                    self._play_proc = None
         return time.monotonic() - t0

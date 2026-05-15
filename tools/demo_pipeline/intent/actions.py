@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 ALLOWED_INTENT_ACTIONS = {
@@ -14,9 +15,81 @@ ALLOWED_INTENT_ACTIONS = {
     "get_weather",
     "get_capabilities",
     "run_effect",
+    "cook",
+    "stop",
+    "status",
 }
 
 ENTITY_ACTIONS = {"turn_on", "turn_off", "set_brightness", "set_color", "get_state", "run_effect"}
+AIRFRYER_ACTIONS = {"cook", "stop", "status"}
+
+_HEX_COLOR_RE = re.compile(r"^#?([0-9a-fA-F]{6})$")
+_RGB_STRING_RE = re.compile(r"^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$")
+
+
+def _clamp_rgb(values: list[int] | tuple[int, int, int]) -> list[int]:
+    return [max(0, min(255, int(v))) for v in values[:3]]
+
+
+def parse_rgb_value(value: Any) -> list[int] | None:
+    if isinstance(value, (list, tuple)) and len(value) >= 3:
+        try:
+            return _clamp_rgb([int(value[0]), int(value[1]), int(value[2])])
+        except (TypeError, ValueError):
+            return None
+    if isinstance(value, dict):
+        try:
+            return _clamp_rgb([int(value["r"]), int(value["g"]), int(value["b"])])
+        except (KeyError, TypeError, ValueError):
+            return None
+    text = str(value or "").strip()
+    match = _RGB_STRING_RE.match(text)
+    if match:
+        return _clamp_rgb([int(match.group(1)), int(match.group(2)), int(match.group(3))])
+    return None
+
+
+def parse_hex_color(value: Any) -> list[int] | None:
+    text = str(value or "").strip()
+    match = _HEX_COLOR_RE.match(text)
+    if not match:
+        return None
+    raw = match.group(1)
+    return [int(raw[0:2], 16), int(raw[2:4], 16), int(raw[4:6], 16)]
+
+
+def normalize_color_fields(raw: dict[str, Any], action: dict[str, Any]) -> bool:
+    """Copy supported color fields from raw LLM JSON into normalized action.
+
+    Supports named colors/temperature strings, RGB triples, and #RRGGBB hex.
+    Returns True if at least one color representation was found.
+    """
+    found = False
+    if "rgb" in raw:
+        rgb = parse_rgb_value(raw.get("rgb"))
+        if rgb is not None:
+            action["rgb"] = rgb
+            found = True
+    if "hex" in raw:
+        rgb = parse_hex_color(raw.get("hex"))
+        if rgb is not None:
+            action["hex"] = "#" + "".join(f"{v:02x}" for v in rgb)
+            action["rgb"] = rgb
+            found = True
+    if "color" in raw:
+        color = str(raw.get("color") or "").strip()
+        if color:
+            rgb = parse_rgb_value(color) or parse_hex_color(color)
+            if rgb is not None:
+                action["rgb"] = rgb
+                if color.lstrip().startswith("#") or _HEX_COLOR_RE.match(color):
+                    action["hex"] = "#" + "".join(f"{v:02x}" for v in rgb)
+                found = True
+            else:
+                action["color"] = color
+                found = True
+    return found
+
 
 def normalize_intent_actions(
     raw_actions: Any,
@@ -49,6 +122,20 @@ def normalize_intent_actions(
                 continue
             action["entity_id"] = entity_id
 
+        if action_name == "cook":
+            try:
+                temperature_c = int(raw.get("temperature_c", raw.get("temp", raw.get("temperature"))))
+            except (TypeError, ValueError):
+                errors.append(f"action #{i} has invalid temperature_c: {raw.get('temperature_c')!r}")
+                continue
+            try:
+                time_minutes = int(raw.get("time_minutes", raw.get("minutes", raw.get("time"))))
+            except (TypeError, ValueError):
+                errors.append(f"action #{i} has invalid time_minutes: {raw.get('time_minutes')!r}")
+                continue
+            action["temperature_c"] = max(40, min(200, temperature_c))
+            action["time_minutes"] = max(1, min(60, time_minutes))
+
         if action_name in {"turn_on", "set_brightness"} and "brightness" in raw:
             try:
                 brightness = int(raw["brightness"])
@@ -60,16 +147,11 @@ def normalize_intent_actions(
             errors.append(f"action #{i} missing brightness")
             continue
 
-        if action_name in {"turn_on", "set_color"} and "color" in raw:
-            color = str(raw.get("color") or "").strip()
-            if color:
-                action["color"] = color
-            elif action_name == "set_color":
-                errors.append(f"action #{i} missing color")
+        if action_name in {"turn_on", "set_color"}:
+            has_color = normalize_color_fields(raw, action)
+            if action_name == "set_color" and not has_color:
+                errors.append(f"action #{i} missing color/rgb/hex")
                 continue
-        elif action_name == "set_color":
-            errors.append(f"action #{i} missing color")
-            continue
 
         if action_name == "get_time":
             try:
@@ -88,6 +170,11 @@ def normalize_intent_actions(
             mode = str(raw.get("mode") or "current").strip().lower()
             if mode not in {"current", "rain", "clothing"}:
                 mode = "current"
+            try:
+                action["offset_days"] = int(raw.get("offset_days", 0) or 0)
+            except (TypeError, ValueError):
+                errors.append(f"action #{i} has invalid offset_days: {raw.get('offset_days')!r}")
+                continue
             action["location"] = location
             action["mode"] = mode
         elif action_name == "run_effect":
@@ -120,10 +207,14 @@ def normalize_intent_actions(
                 continue
             action["duration_seconds"] = max(0.5, min(12.0, duration_seconds))
             action["step_seconds"] = max(0.12, min(2.0, step_seconds))
-            if "color" in raw:
-                color = str(raw.get("color") or "").strip()
-                if color:
-                    action["color"] = color
+            if "brightness" in raw:
+                try:
+                    brightness = int(raw["brightness"])
+                except (TypeError, ValueError):
+                    errors.append(f"action #{i} has invalid brightness: {raw.get('brightness')!r}")
+                    continue
+                action["brightness"] = max(0, min(255, brightness))
+            normalize_color_fields(raw, action)
 
         normalized.append(action)
 

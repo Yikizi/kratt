@@ -21,6 +21,8 @@ class InteractionLogger:
         llm_model: str,
         wake_models: list[str],
         wake_threshold: float,
+        shadow_models: list[str] | None = None,
+        shadow_threshold: float | None = None,
     ):
         self.enabled = enabled
         self.participant_id = participant_id
@@ -28,6 +30,7 @@ class InteractionLogger:
         self.session_start = datetime.now(timezone.utc).isoformat()
         self.llm_model = llm_model
         self.wake_threshold = wake_threshold
+        self.participant_segment = 1
         self._interaction_seq = 0
         self._current_task: str | None = None
 
@@ -44,10 +47,13 @@ class InteractionLogger:
                 "type": "session_start",
                 "session_id": self.session_id,
                 "participant_id": participant_id,
+                "participant_segment": self.participant_segment,
                 "timestamp": self.session_start,
                 "llm_model": llm_model,
                 "wake_threshold": wake_threshold,
                 "wakeword_models": wake_models,
+                "shadow_wakeword_models": shadow_models or [],
+                "shadow_wake_threshold": shadow_threshold,
                 "stt_model": STT_MODEL_DIR.name,
                 "host": os.uname().nodename,
             }
@@ -61,9 +67,29 @@ class InteractionLogger:
                 {
                     "type": "task_change",
                     "task_id": task_id,
+                    "participant_segment": self.participant_segment,
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
             )
+
+    def mark_participant_boundary(self, *, reason: str = "operator_key") -> int:
+        """Start a new participant segment inside the same demo process."""
+        previous_segment = self.participant_segment
+        self.participant_segment += 1
+        if self.enabled:
+            self._write(
+                {
+                    "type": "participant_boundary",
+                    "session_id": self.session_id,
+                    "participant_id": self.participant_id,
+                    "previous_participant_segment": previous_segment,
+                    "participant_segment": self.participant_segment,
+                    "task_id": self._current_task,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "reason": reason,
+                }
+            )
+        return self.participant_segment
 
     def log_interaction(self, record: dict):
         if not self.enabled:
@@ -73,12 +99,29 @@ class InteractionLogger:
             "type": "interaction",
             "session_id": self.session_id,
             "participant_id": self.participant_id,
+            "participant_segment": self.participant_segment,
             "task_id": self._current_task,
             "seq": self._interaction_seq,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             **record,
         }
         self._write(record)
+
+    def log_event(self, event_type: str, record: dict | None = None):
+        """Write a non-interaction event, e.g. passive shadow wake telemetry."""
+        if not self.enabled:
+            return
+        self._write(
+            {
+                "type": event_type,
+                "session_id": self.session_id,
+                "participant_id": self.participant_id,
+                "participant_segment": self.participant_segment,
+                "task_id": self._current_task,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                **(record or {}),
+            }
+        )
 
     def _write(self, record: dict):
         with self.path.open("a", encoding="utf-8") as f:
@@ -93,6 +136,7 @@ class InteractionLogger:
                 "session_id": self.session_id,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "interaction_count": self._interaction_seq,
+                "final_participant_segment": self.participant_segment,
             }
         )
 

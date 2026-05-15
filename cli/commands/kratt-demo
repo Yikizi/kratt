@@ -2,34 +2,60 @@
 # DESC: Full voice demo pipeline: wake word → STT → LLM → smart home
 # USAGE: kratt demo [options]
 # ARGS: --profile      Optional preset: demo, wiz-claude, wiz-claude-safe, wiz-manual, wiz-7b
-# ARGS: --models       One or more wake word model tags. Default: v16c
-# ARGS: --threshold    Detection threshold(s). Default: 0.996
-# ARGS: --consensus    Min models that must agree. Default: all
+# ARGS: --models       One or more active wake word model tags. Default: v16c
+# ARGS: --threshold    Active detection threshold(s). Default: 0.996
+# ARGS: --shadow-models Passive shadow model tags to score/log without changing UX
+# ARGS: --shadow-threshold Passive shadow detection threshold. Default: 0.996
+# ARGS: --consensus    Min active models that must agree. Default: all
 # ARGS: --wake-hold-frames Consecutive above-threshold frames required. Default: 5
 # ARGS: --wake-model-cooldown Per-model trigger cooldown seconds. Default: 4
 # ARGS: --post-trigger-cooldown Cooldown before listening again. Default: 2
 # ARGS: --initial-silence-timeout Seconds to wait for speech after wake. Default: 3
+# ARGS: --speech-start-grace Seconds after wake before speech can start. Default: 0.15
+# ARGS: --utterance-max-seconds Max command recording length. Default: 14
+# ARGS: --utterance-silence-duration Trailing silence before stop. Default: 1.6
+# ARGS: --vad-silence-threshold RMS silence threshold; lower is more forgiving. Default: 0.008
 # ARGS: --no-wakeword  Manual trigger mode (press Enter)
 # ARGS: --no-false-trigger-key Disable Space key false-trigger override
+# ARGS: --no-wake-beep Disable audible wake-ready cue
+# ARGS: --mute-key     Toggle wake listening while teaching. Default: m
+# ARGS: --no-mute-key  Disable wake-listening mute toggle
 # ARGS: --streaming-stt/--no-streaming-stt Stream audio into STT while recording (default: on)
+# ARGS: --audio-source host|korvo-serial Microphone source. Default: host
+# ARGS: --serial-port PATH Korvo serial port for --audio-source korvo-serial. Default: auto
+# ARGS: --serial-baud N Korvo PCM baud. Default: 921600
+# ARGS: --serial-gain N Software gain for Korvo command audio before VAD/STT. Default: 1
+# ARGS: --serial-channel mic1|mic2|mix Korvo channel for wake/STT. Default: mic1
 # ARGS: --wiz/--no-wiz Use real WiZ bulbs. Default: on via BLE bridge; use --no-wiz for mock HA
 # ARGS: --wiz-bash     Legacy WiZ CLI command mode (safe allowlist; no raw shell)
 # ARGS: --ble-bridge   Send WiZ JSON to bulbs over BLE bridge (default demo transport)
+# ARGS: --airfryer     Also enable Philips airfryer MCP server alongside lights
 # ARGS: --bulbs        Comma-separated WiZ bulb IPs (default: KRATT_WIZ_BULBS or /tmp cache)
-# ARGS: --llm          Ollama model name. Default: qwen2.5:7b
+# ARGS: --llm          Ollama model name. Default: qwen3:8b
 # ARGS: --pi-cli       Use pi RPC instead of local Ollama (dev/debug)
+# ARGS: --pi-tools     Enable pi built-in tools for pi RPC (all=read,bash,edit,write,grep,find,ls)
+# ARGS: --no-pi-tools  Disable pi built-in tools, useful for safer participant demos
 # ARGS: --no-helper    Disable pi/Codex helper for general questions
 # ARGS: --helper-warmup/--no-helper-warmup Background warm helper after local LLM startup (default: on)
-# ARGS: --helper-timeout Timeout for one helper turn. Default: 45
+# ARGS: --helper-timeout Timeout for one helper turn. Default: 15
 # ARGS: --helper-max-turns Max helper follow-up turns. Default: 10
 # ARGS: --claude-code  Use Claude Code instead of local Ollama (dev/debug)
 # ARGS: --claude-session-id Reuse a specific Claude Code session UUID
 # ARGS: --log          Enable per-interaction JSONL telemetry
 # ARGS: --participant  Participant ID for log naming
 # ARGS: --task         Initial task ID tag for telemetry logs
+# ARGS: --response-mode Spoken response mode: direct-et or en-mt (English→Estonian MT). Default: direct-et
+# ARGS: --translate-responses Shortcut for --response-mode en-mt
 # ARGS: --no-tts       Disable voice output
 # ARGS: --no-tts-effects Disable sox voice effects
 # EXAMPLES: kratt demo                         # BLE bridge + v16c default
+# EXAMPLES: kratt demo smart                   # cloud/pi conversational Kratt + pi tools; default BLE bridge
+# EXAMPLES: kratt demo sw                      # smart mode + direct WiZ LAN/MCP, no BLE bridge
+# EXAMPLES: kratt demo chat                    # smart manual chat + pi tools, no smart-home backend
+# EXAMPLES: kratt demo smart p=m04             # smart mode + telemetry participant m04
+# EXAMPLES: kratt demo sm                      # same as smart, but manual trigger
+# EXAMPLES: kratt demo manual                  # local demo, manual trigger
+# EXAMPLES: kratt demo --audio-source korvo-serial --serial-port /dev/cu.usbserial-2130
 # EXAMPLES: kratt demo --no-wakeword           # BLE bridge + manual trigger
 # EXAMPLES: kratt demo --profile wiz-claude-safe
 # EXAMPLES: kratt demo --wiz --no-wakeword
@@ -37,11 +63,15 @@
 # EXAMPLES: kratt demo --wiz --models v15
 # EXAMPLES: kratt demo --wiz --ble-bridge
 # EXAMPLES: kratt demo --wiz --ble-bridge --no-wakeword
-# EXAMPLES: kratt demo --profile wiz-7b              # higher-accuracy LLM (qwen2.5:7b ~98%, ~700ms)
+# EXAMPLES: kratt demo --airfryer                  # BLE lights + airfryer
+# EXAMPLES: kratt demo --airfryer --no-wiz          # airfryer only
+# EXAMPLES: kratt demo --profile wiz-7b              # backward-compatible profile, now qwen3:8b
+# EXAMPLES: kratt demo --profile wiz-7b --log --participant P01 --shadow-models v16c expert-a expert-b2 v6-residual v10 v15
 # EXAMPLES: kratt demo --wiz --models v10 v15 --consensus 2
 # EXAMPLES: kratt demo --wiz --bulbs 192.168.68.56,192.168.68.57 --models v15
 # EXAMPLES: kratt demo --wiz-bash --models v15 --llm qwen3:8b
 # EXAMPLES: kratt demo --claude-code --wiz --models v16c
+# EXAMPLES: kratt demo --translate-responses --llm qwen2.5:3b --no-wakeword
 # EXAMPLES: kratt demo --log --participant P01 --task T1_turn_on
 set -euo pipefail
 
@@ -77,6 +107,86 @@ for arg in "$@"; do
   fi
 done
 
+# Short modes so the common demos do not require memorising long flag sets.
+# Extra arguments after the mode are passed through, e.g. `kratt demo smart --participant m04`.
+if [[ "$#" -gt 0 ]]; then
+  mode="$1"
+  case "${mode}" in
+    smart|s|cloud|tark|targem|pi)
+      shift
+      set -- \
+        --pi-conversation \
+        --pi-tools all \
+        --pi-rpc-timeout "${KRATT_SMART_PI_TIMEOUT:-60}" \
+        --pi-model "${KRATT_SMART_PI_MODEL:-openai-codex/gpt-5.5}" \
+        --pi-thinking "${KRATT_SMART_PI_THINKING:-low}" \
+        "$@"
+      ;;
+    sw|smart-wiz|cloud-wiz)
+      shift
+      set -- \
+        --wiz \
+        --pi-conversation \
+        --pi-tools all \
+        --pi-rpc-timeout "${KRATT_SMART_PI_TIMEOUT:-60}" \
+        --pi-model "${KRATT_SMART_PI_MODEL:-openai-codex/gpt-5.5}" \
+        --pi-thinking "${KRATT_SMART_PI_THINKING:-low}" \
+        "$@"
+      ;;
+    chat|c|smart-chat)
+      shift
+      set -- \
+        --no-wakeword \
+        --no-wiz \
+        --pi-conversation \
+        --pi-tools all \
+        --pi-rpc-timeout "${KRATT_SMART_PI_TIMEOUT:-60}" \
+        --pi-model "${KRATT_SMART_PI_MODEL:-openai-codex/gpt-5.5}" \
+        --pi-thinking "${KRATT_SMART_PI_THINKING:-low}" \
+        "$@"
+      ;;
+    sm|smart-manual|cloud-manual|pm)
+      shift
+      set -- \
+        --no-wakeword \
+        --pi-conversation \
+        --pi-tools all \
+        --pi-rpc-timeout "${KRATT_SMART_PI_TIMEOUT:-60}" \
+        --pi-model "${KRATT_SMART_PI_MODEL:-openai-codex/gpt-5.5}" \
+        --pi-thinking "${KRATT_SMART_PI_THINKING:-low}" \
+        "$@"
+      ;;
+    manual|m)
+      shift
+      set -- --no-wakeword "$@"
+      ;;
+    local|private|privaatne)
+      shift
+      set -- "$@"
+      ;;
+  esac
+fi
+
+# Tiny argument shorthands for live testing.
+#   p=m04 / p:m04  -> --log --participant m04
+#   t=T1 / t:T1    -> --task T1
+expanded_args=()
+for arg in "$@"; do
+  case "${arg}" in
+    p=*) expanded_args+=(--log --participant "${arg#p=}") ;;
+    p:*) expanded_args+=(--log --participant "${arg#p:}") ;;
+    t=*) expanded_args+=(--task "${arg#t=}") ;;
+    t:*) expanded_args+=(--task "${arg#t:}") ;;
+    *) expanded_args+=("${arg}") ;;
+  esac
+done
+# macOS ships bash 3.2; with `set -u`, expanding an empty array can error.
+if [[ ${#expanded_args[@]} -gt 0 ]]; then
+  set -- "${expanded_args[@]}"
+else
+  set --
+fi
+
 # Default backend is local Ollama. Skip this for explicit Claude/pi modes and
 # for profiles that select Claude Code inside pipeline.py.
 use_pi_cli=false
@@ -93,7 +203,7 @@ for arg in "$@"; do
   case "${arg}" in
     --profile) expect_profile=true ;;
     --profile=*) profile="${arg#--profile=}" ;;
-    --pi-cli|--pi-gpt) use_pi_cli=true ;;
+    --pi-cli|--pi-gpt|--pi-conversation|--cloud-agent|--smart-kratt) use_pi_cli=true ;;
     --claude-code) explicit_claude_code=true ;;
     --no-claude-code) explicit_no_claude_code=true ;;
   esac
