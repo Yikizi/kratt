@@ -1,7 +1,7 @@
 # Kratt - Project TODO
 
 > **Persistent task list** - source of truth for ongoing work across coding-agent sessions.  
-> Last updated: 2026-05-04
+> Last updated: 2026-05-13
 
 ## Status legend
 
@@ -14,9 +14,9 @@
 
 ---
 
-## 0. Current thesis-critical state (2026-05-04)
+## 0. Current thesis-critical state (2026-05-13)
 
-**Hard deadline:** thesis document submission **2026-05-18** (T-14 days). User testing + thesis writing outrank new training ideas unless they directly unblock the thesis. The user-test recorder, validator, replay scorer, and aggregate summarizer all exist; the open blocker is **frozen thresholds + a real-mic pilot run**, not tooling.
+**Hard deadline:** thesis document submission **2026-05-18** (T-5 days). User testing + thesis writing outrank new training ideas unless they directly unblock the thesis. The user-test tooling and modular Home Assistant packaging are now landed in main (commits `91158ba`, `ee0d414`). The open blocker is no longer core tooling or HA packaging; it is **defensible evidence and cleanup**: a finalized threshold-freeze policy, full real-mic protocol sessions if any are used, consent-safe pilot data, and thesis wording that does not overclaim from limited pilot/demo logs.
 
 **Model state, in one sentence:** `v16c` remains the stable single-model demo/baseline candidate, but the v17/v18/checkpoint experiments showed that no current single model is a production-quality exact two-word detector; newer runs are diagnostic evidence, not replacements.
 
@@ -58,28 +58,23 @@ Goal: collect real-speaker wake-word evidence + one-bulb UX data with 20-30 part
 - ✅ Synthetic fixture path added and smoke-tested: `kratt user-test-fixtures` + `kratt user-test --audio-fixture-dir ... --auto-advance` (infrastructure smoke only, not user-study evidence)
 - ✅ ESPHome local model copy prepared as `v16c` at cutoff `0.996` via `kratt prepare-esphome-model v16c --cutoff 0.996`; compile/flash still pending before ESP32 demo
 - ✅ Pilot freeze candidate drafted: `docs/user-testing/frozen-threshold-policy.md`
+- ✅ Modular Home Assistant add-on stack committed in main (`ee0d414`): public repo metadata, STT/TTS add-ons, Docker compose stack, quickstart/validation docs, and v16c ESPHome manifest.
+- ✅ Real-mic recorder path exercised on `output/user-tests/mattias/` self-pilot; **only 4 positive trials**, no hard negatives/session end, so this is smoke evidence only.
+- ✅ 2026-05-13 demo/pilot log analysis produced for questionnaire-matched `m01`, `f02`, `m03`: `output/user-test-analysis/demo-log-analysis-20260513/README.md`. Use as limited UX/demo evidence only, not wake-word recall/FPR evidence.
 
-### Next actions (T-14 days, ordered)
+### Next actions (T-5 days, ordered)
 
-- 🎯 ⏳ **BLOCKER** Commit user-test tooling/docs changes (`kratt replay-user-test`, `kratt summarize-user-test`, `kratt user-test-fixtures`, consent/protocol docs) before full participant collection.
-- 🎯 ⏳ **BLOCKER** Decide what to do with uncommitted ESP32 captive-portal change (`hardware/esp32/firmware/recorder/main/main.c` +76 lines, `sdkconfig.defaults` +3 lines, new `components/dns_server/`) — commit, stash, or revert before user-test demo touches firmware. Owner: firmware agent.
-- 🎯 ⏳ Decide what to do with uncommitted recorder/CLI tweaks (`run_user_test.py` +34 lines, `cli/commands/kratt-user-test` +3 lines) — commit before pilot.
-- 🎯 ⏳ Choose a non-zero-RMS input device with `kratt user-test --list-devices` + `kratt user-test --mic-smoke-test --device <id>`
-- 🎯 ⏳ Run real-mic self-pilot end-to-end with `kratt user-test TEST_REAL --new-session-subdir --device <id>`
-- 🎯 ⏳ Validate each real-mic session immediately with `kratt validate-user-test <session_dir>`
-- 🎯 ⏳ Replay each real-mic session immediately with `kratt replay-user-test <session_dir>`
-- 🎯 ⏳ Aggregate replay outputs with `kratt summarize-user-test output/user-test-replay`
-- 🎯 ⏳ Finalize `docs/user-testing/frozen-threshold-policy.md` after real-mic self-pilot by filling commit/date/path fields. Once finalized, do not retune for the rest of the study.
-  - recommended active model for pilot: `v16c`
-  - shadow/replay set: `v16c`, `expert-a`, `expert-b2`, `v6-residual`, `v10`, `v15`
-- 🎯 ⏳ Run 2-3 participant pilot sessions
-- 🎯 ⏳ Full user testing: 20-30 participants
-- 🎯 ⏳ Analyze:
-  - wake recall on positive trials
-  - hard-negative FPR on human voices
-  - end-to-end task success / latency
-  - UX questionnaire results
-- 🎯 ⏳ Write user-study method + results into thesis §3/§5
+- 🎯 ⏳ **BLOCKER** Resolve the 2026-05-13 consent issue before using pilot logs: `f02` is marked metrics-only but has a matched WAV segment. Quarantine/delete/exclude the audio or correct consent with an auditable note.
+- 🎯 ⏳ **BLOCKER** Finalize `docs/user-testing/frozen-threshold-policy.md` by filling date, commit, active model path, threshold, and pilot-session evidence. If not finalized, thesis must present it as a policy candidate/limitation, not as a completed freeze.
+- 🎯 ⏳ Run one complete real-mic 17-trial self-pilot with non-zero RMS input, including hard negatives and `session_end`; validate, replay, and summarize immediately.
+- 🎯 ⏳ If time permits, run 2-3 complete participant pilot sessions under the frozen policy; otherwise use the 2026-05-13 demo logs only as limited UX/prototype evidence with caveats.
+- 🎯 ⏳ Decide explicitly whether the thesis will claim a full 20-30 participant study. Current evidence does **not** support that; absent new data, write it as planned/future/limitation.
+- 🎯 ⏳ Analyze only consent-safe, protocol-complete data:
+  - wake recall on positive trials;
+  - hard-negative FPR on human voices;
+  - end-to-end task success / latency;
+  - UMUX-Lite/SEQ and diagnostic questionnaire results.
+- 🎯 ⏳ Write user-study method/results into the actual thesis chapter structure (`Metoodika`, `Tulemused`, `Arutelu`), with caveats if only pilot/demo data exists.
 
 ---
 
@@ -89,15 +84,29 @@ Goal: collect real-speaker wake-word evidence + one-bulb UX data with 20-30 part
 
 | Chapter | Status | Current focus |
 |---|---|---|
-| §1 Sissejuhatus | 🔄 draft evolving | Tighten problem statement and contribution claims. |
-| §2 Taust ja eksperimendid | 🔄 partially corrected | Keep methodology-audit narrative; avoid obsolete “breakthrough” claims. |
-| §3 Metoodika | 🎯 🔄 in_progress | Evaluation protocol, user-test protocol, threshold policy, data quality gate. |
-| §4 Implementatsioon | ⏳ draft | ESP32/Android/demo pipeline + training/eval tooling. |
-| §5 Evalueerimine | 🎯 ⏳ pending data | v16/v17/v18/checkpoint results + user-test results. |
-| §6 Kokkuvõte | ⏳ draft | Conservative conclusion: feasible prototype + known limitations. |
+| Sissejuhatus | 🔄 mostly tightened | Keep contribution framed as methodology/prototype, not production model. |
+| Metoodika | 🎯 🔄 in_progress | Freeze policy, evaluation protocol, user-test protocol, data quality gates. |
+| Tulemused | 🎯 🔄 in_progress | Conservative model/eval results + only consent-safe pilot/demo evidence. |
+| Arutelu ja järeldused | 🎯 🔄 in_progress | Limitations, feasibility, deployment reflection, no overclaiming. |
+| Kokkuvõte | 🔄 draft tightened | Short final answer to research questions and known limitations. |
 
 ### Specific TODO
 
+#### Review-derived closeout priorities (from 2026-05-07 agent review batch)
+
+Tracked review action plan: `docs/automation/thesis-review-deficiencies-2026-05-07.md`; runtime automation steering copy: `.hermes/thesis-automation/memory/review-deficiencies-2026-05-07.md`.
+
+- 🎯 ⏳ Reframe the thesis claim everywhere: primary contribution is a **multidimensional evaluation protocol + prototype**, not a production-ready Estonian wake-word model.
+- 🎯 ⏳ Add or tighten a compact research-question answer mapping: question → answer → evidence → status. Explicitly state that FAPH < 1 and recall ≥ 0.95 are not achieved together with all selectivity requirements by any current model.
+- 🎯 ⏳ Keep user-test evidence honest: if frozen participant data is absent, all user-test wording must be planned/future/limitation; if data appears, add only factual results from tracked sessions/replay summaries.
+- 🎯 ⏳ Fix the statistical-reporting contract: either add Wilson/Poisson intervals where data is available, or narrow wording/captions so diagnostic FPR/FAPH rows are clearly point estimates.
+- 🎯 ⏳ Finalize or quarantine threshold-freeze language: fill `docs/user-testing/frozen-threshold-policy.md` before using user-test results, otherwise treat it as a limitation/policy candidate.
+- ⏳ Reflect on the ESP32-S3-Korvo-2 firmware/deployment work and integrate it into the thesis only as a **high-quality concise implementation reflection** (target: ~0.5--1 page, or a tight subsection). It should connect the ESPHome voice-satellite test, custom ESP-IDF recorder firmware, same-device data collection, and v16c deployment packaging to the main evaluation/prototype narrative; it must not become a low-level debug diary. Source notes: `notes/experiments/2026-02-12-esp32-s3-korvo2-voice-satellite.md`, `notes/experiments/2026-03-16-korvo2-recorder-firmware.md`, `hardware/esp32/esphome/`, `hardware/esp32/firmware/recorder/`.
+- ⏳ Add/compact a metric-threshold register and validation-ring table only if they replace scattered prose rather than expanding the thesis.
+- ⏳ Continue language cleanup flagged by review: remove English/Estonian hybrids, avoid colloquial `peal`, and standardize `valevallandumine`, `tuvastamismäär`, and `mittekattuvuse kontroll`.
+
+- 🎯 ⏳ **Single TODO location rule:** do not keep TODO/platsihoidja blocks in active thesis chapter sources (`docs/thesis/thesis-tex-estonian/chapters/*.tex`). Track open thesis work here only, so automation can find it and the PDF never silently carries placeholders.
+- 🎯 ⏳ If user-test data is added before submission, fill `second_chapter.tex` §`sec:user-test-results` with exactly these result blocks: participant/session overview; frozen-threshold per-model wake recall with Wilson 95% CI; human-spoken similar-negative/prefix FPR; one-bulb end-to-end task success + latency; short questionnaire/UMUX-Lite results. If no sufficient data arrives, keep it as an explicit limitation/future-work paragraph, not empty subsections.
 - 🎯 ⏳ Write the corrected evaluation contract: report **FAPH + recall + hard-negative/confusable FPR** together at frozen thresholds.
 - 🎯 ⏳ Explain data leakage and the April methodology fix clearly, without overstating earlier results.
 - 🎯 ⏳ Add the positive-data quality incident (v17) as a methodological lesson.
@@ -208,11 +217,12 @@ Goal: collect real-speaker wake-word evidence + one-bulb UX data with 20-30 part
 - ✅ Android false-trigger logger exists and supports bundled/selectable models.
 - ✅ `kratt user-test` recorder exists for labelled trial capture.
 - ✅ Demo pipeline tooling exists.
+- ✅ Modular Home Assistant v0.1 install path committed in `ee0d414`: repo-root add-on repository metadata, `kratt-kiirkirjutaja-stt/`, `kratt-neurokone-tts/`, `docker/kratt-stack.yml`, public ESPHome v16c manifest, quickstart, validation docs, and public-repo legal docs.
+- 🔄 Follow-up HA add-on changes are now in the working tree after `ee0d414` (Dockerfile base-image simplification, pip retry settings, version `0.1.2`, deleted `build.yaml`). Validate against Home Assistant add-on build expectations before committing; otherwise restore the committed `build.yaml` path and docs.
 
 ### Pending
 
 - 🎯 ⏳ Decide the active model for the user-test demo; default: `v16c` unless pilot proves worse than `expert-a`.
-- 🎯 ⏳ Resolve uncommitted ESP32 captive-portal change before user-test: `hardware/esp32/firmware/recorder/main/main.c` (+76 lines, adds `dns_server.h`, captive-portal DHCP option, AP netif key constant) and `sdkconfig.defaults` (+3 lines, softap/dhcps/httpd settings), plus untracked `hardware/esp32/firmware/recorder/components/dns_server/`. Owner: firmware agent. Decide commit/stash/revert before any participant uses the satellite.
 - ⏳ Verify ESP32/Android/demo configs point to the intended active model and threshold before testing.
 - ⏳ Capture enough logs to separate wake-word failures from STT/intent/bulb failures.
 - ⏳ Document deployment path and limitations in thesis §4.
@@ -224,13 +234,17 @@ Goal: collect real-speaker wake-word evidence + one-bulb UX data with 20-30 part
 ```text
 2026-04-29..30  │ docs/source-of-truth refresh │ self-pilot │ freeze protocol/model/thresholds │  (done in part)
 2026-05-01..04  │ Wilson/Poisson CI integration │ literature review folded in │ replay/validator tooling │  (done)
-2026-05-05..07  │ land replay/summarizer commits │ ESP32 captive-portal decision │ self-pilot real-mic │ freeze thresholds │ 2-3 pilot users │
-2026-05-08..12  │ full user testing │ replay/shadow scoring │ thesis §3/§4 drafting │
-2026-05-13..16  │ analysis tables/figures │ thesis §5 │ intro/summary tighten │
+2026-05-05..07  │ replay/summarizer/validator commits │ ESP32 captive-portal closed │ thesis review-deficiency action plan drafted │  (done)
+2026-05-08..11  │ Android dev voice bridge │ terminology lint workflow │ thesis pruning sweeps │ TalTech best-practices delta │  (done)
+2026-05-12      │ docs refresh │ HA add-on stack drafted │ partial self-pilot smoke │
+2026-05-13      │ HA add-on stack committed │ limited N=3 demo-log analysis │ consent issue found │ hook/time backlog found │
+2026-05-14..16  │ freeze thresholds or demote freeze claim │ protocol-complete pilot if possible │ analysis tables/figures │ thesis closeout │
 2026-05-17..18  │ final edits │ formatting │ submission │
 ```
 
 **Rule:** after 2026-05-05, reject new experiments that do not directly improve the submitted thesis. Do not start additional training runs; only monitor/evaluate the already-submitted `v19a-kratt-only` diagnostic if it does not displace user testing or writing.
+
+**Slippage as of 2026-05-13:** original schedule put full user testing in 2026-05-08..12; only tooling, thesis writing, HA packaging, and limited demo/pilot evidence happened in that window. Treat any further side-quest tooling (translation MT, intent regression, questionnaire server, airfryer/MCP experiments) as out of scope unless a submitted-thesis sentence depends on it.
 
 ---
 
@@ -251,3 +265,35 @@ Goal: collect real-speaker wake-word evidence + one-bulb UX data with 20-30 part
 - **2026-05-03**: Porcupine excluded from baseline comparison with rationale (commits `758e33c`, `b2da6cf`); operating-point convention pinned (commit `39c3325`).
 - **2026-05-04**: 9-doc literature review with 50+ citations integrated (commit `d49aad6`); model lineage archived for diagnostic families (commit `470019c`); kratt-only segment workflow added (commit `4b249ec`); live-model selection improved (commit `0b3ca7e`); user-test recorder smoke validated; consent script v1, validator, replay scorer, and summarizer staged untracked.
 - **2026-05-04**: `Kratt`-only diagnostic side branch advanced: reviewed clean positive set `positive_kratt_only_v19a` finalized (551 accepted / 52 rejected), `kratt train-kratt-only` wrapper added, and HPC diagnostic run `v19a-kratt-only` submitted as job `923301`. This does not change the active two-word target policy or user-test baseline.
+- **2026-05-05..07**: user-test tooling + protocol + consent docs landed (commit `91158ba`); ESP32 captive-portal change closed in `hardware/esp32/firmware/`; thesis review batch produced `docs/automation/thesis-review-deficiencies-2026-05-07.md` action plan and three `.hermes/thesis-quality-reviews/` review artifacts.
+- **2026-05-10**: BLE voice pipeline checkpoint and helper-routing/persona demo work landed (commits `4fae836`, `97d1c9d`); translation MT benchmark scaffold and quick FAPH spot check were produced (`notes/experiments/2026-05-10-translation-mt-benchmark.md`, `tools/demo-pipeline/bench_translation_models.py`, `tools/demo_pipeline/translation.py`, `benchmark_faph_praam_quick_20260510.csv`). Treat these as side-quest evidence unless explicitly cited.
+- **2026-05-11**: Android dev voice bridge landed (commit `a5b0170`); githook/project-tracking automation improved (commits `ea17215`, `dc0f703`).
+- **2026-05-12**: terminology lint workflow landed (commit `40028fb`); agent token usage stats landed (commit `5b53374`); TalTech thesis best-practices research artifacts produced under `docs/research/`.
+- **2026-05-13**: modular Home Assistant add-on stack and public packaging committed (`ee0d414`). Limited demo/pilot log analysis created for `m01`, `f02`, `m03`; it supports UX/prototype caveats, not wake-word recall/FPR. Consent issue found for `f02` metrics-only audio. Time-tracking hook misconfiguration found and local `core.hooksPath` restored to `.githooks` for future commits.
+
+---
+
+## 9. SCOPE DECISIONS NEEDED (side quests in working tree, 2026-05-13)
+
+Tooling/material exists outside critical path; decide commit + thesis scope before submission window closes. Do not let these displace threshold/evidence/thesis closeout.
+
+- ⏳ Translation MT benchmark (`tools/demo-pipeline/bench_translation_models.py`, `tools/demo_pipeline/translation.py`, `cli/commands/kratt-translation-bench`, `notes/experiments/2026-05-10-translation-mt-benchmark.md`) — decide: commit + ignore for thesis, commit + reference as future work, or stash. Default: out of scope unless one thesis paragraph cites a result.
+- ⏳ Intent regression harness (`tools/demo-pipeline/intent_regression.py`, `tools/demo-pipeline/intent-regression-cases.json`, `cli/commands/kratt-demo-intent-test`) — same decision; commit only if it backs an implementation/eval paragraph.
+- ⏳ Questionnaire server + Google Forms artifacts (`tools/user-testing/questionnaire_server.py`, `cli/commands/kratt-questionnaire`, `docs/user-testing/questionnaire-v1` Google variants, `pilot-run-sheet-v1.md`, `create-google-form-v1.gs`, `google-forms-build-sheet-v1.md`) — keep only if pilot actually uses Google Forms; otherwise leave on disk and use the existing markdown questionnaire.
+- ⏳ Korvo serial streamer / serial-audio path (`hardware/esp32/firmware/korvo-serial-streamer/`, `cli/commands/kratt-korvo-streamer`, `tools/demo_pipeline/serial_audio.py`) — useful for demo capture, but commit only with a concise validation note.
+- ⏳ Airfryer/MCP side quest (`scripts/mcp/airfryer.py`, `tools/airfryer-server/`) — quarantine unless explicitly needed; it controls a physical appliance and is outside thesis scope.
+- ⏳ `cli/CLAUDE.md` staged edits add `kratt thesis-lint` and `kratt terms` but **not** `kratt-translation-bench`, `kratt-questionnaire`, `kratt-demo-intent-test`; sync the CLI table to whichever commands actually land.
+- ⏳ Loose root files: `research.md` and `false` look accidental/out-of-place — move/delete before next commit so they do not get accidentally added.
+
+---
+
+## 10. TIME TRACKING / GIT HOOK HYGIENE
+
+- ✅ Local git hook path restored on 2026-05-13: `git config core.hooksPath .githooks`. Future commits should again append to `~/.kratt-time-log/commits.jsonl` and generate proposals.
+- ⚠️ Time hooks were inactive because `core.hooksPath` pointed at `.git/hooks`; the local commit log/proposal stream effectively stopped around 2026-05-12 11:07. This is why recent thesis/HA/demo work is under-logged.
+- ⏳ Pending proposal backlog: `.githooks/lib/apply_proposals.py --since 2026-05-12 --dry-run` reports 8 applyable records / **0h50m** from existing proposals. Apply only after confirming no manual duplicate entries.
+- ⏳ Manual backfill still needed for commits and uncommitted work after the hook cutoff, especially:
+  - thesis polishing commits after `5b53374` (`#19` / `#23` / `#25`);
+  - Home Assistant public packaging commit `ee0d414` (`#20`);
+  - 2026-05-13 demo/pilot runs, questionnaire handling, and log analysis (`#28` / `#20`);
+  - this repo-audit/TODO/time-hook cleanup (`#29`).
