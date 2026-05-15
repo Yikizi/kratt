@@ -70,7 +70,7 @@ Salvestust hinnatakse voogedastusrežiimis, mitte klipilõikamisega, ja tulemus 
 
 Sarnast lähenemist on propageeritud ka kirjanduses. MISP Challenge~\cite{chen2022misp} loodi spetsiaalselt selleks, et ületada standardsete võrdlusaluste ja reaalse kasutuse vahelist lõhet mandariini keele puhul, ning hõlmab multimodaalseid salvestusi reaalsetest eluruumidest. Käesoleva töö ettepanek erineb mahult --- üks keel, üks äratussõna ---, kuid metoodiline põhimõte on sama: hindamine peab peegeldama kasutusolukordi, mitte laboritingimusi.
 
-\section{Agentpõhine arendus kui töövõimendaja, mitte tõendusmaterjali asendaja}
+\section{Agentpõhine arendus töövõimendajana}
 
 Käesoleva töö üks keskseid järeldusi on, et tänapäevane agentpõhine tööviis nihutab äratussõna arenduse peamise pudelikaela rakenduselt tõendusmaterjalile: üksi töötav autor saab ehitada lühikese ajaga oluliselt laiema tehnilise süsteemi kui varem, kuid lõppjärelduste tugevus sõltub endiselt pärisandmete kogumisest, hindamismetoodikast ning esialgsete tulemuste eristamisest lõplikest väidetest. Järgnev osa on selle järelduse tehniline kõrvalepõige eelnevale metoodikaargumendile.
 
@@ -78,7 +78,7 @@ Agentpõhine arendus võimaldas selles töös kolm tegevust, mis oleksid üksiku
 
 Mõju ei tohi siiski üle tõlgendada. Tehisagendid vähendavad rakendusliku töö, skriptimise ja prototüüpimise kulu, kuid ei vähenda samal määral tõendusmaterjali hankimise kulu: nad ei loo juurde päriskõnelejaid, ei asenda sõltumatuid testikomplekte ega lahenda välise valiidsuse probleemi. Just see asümmeetria --- süsteemiehituse kiirenemine ilma tõendusmaterjali kiirenemiseta --- on käesoleva peatüki teesi tehniline alus.
 
-\section{Mitmemõõtmeline hindamisprotokoll kui töö metoodiline põhipanus}
+\section{Mitmemõõtmeline hindamisprotokoll}
 \label{sec:eval-evolution}
 
 Käesoleva töö metoodiline põhipanus ei ole konkreetne mudel, vaid väikese ressursiga keele kohaliku äratussõna mitmemõõtmeline hindamisprotokoll. Üksiku eestikeelse äratussõnamudeli peale on äratussõnade kontekstis suurematel rühmadel oluliselt rohkem ressursse (vt §\ref{sec:benchmark-gap}); seetõttu pole töö konkurentsivõimeline väitega \enquote{parim eesti äratussõna}. Töö konkurentsivõimeline väide on, et eesti äratussõna juurutatavust tuleb hinnata mitme üksteist täiendava kriteeriumi kaudu:
@@ -91,7 +91,7 @@ Käesoleva töö metoodiline põhipanus ei ole konkreetne mudel, vaid väikese r
 \end{itemize}
 Selle peatüki ülejäänud osa näitab, kuidas eelnev kriteeriumide kogum kolme valideerimiskihi kaudu empiiriliselt põhjendati.
 
-\subsection{Kolm valideerimiskihti: muster}
+\subsection{Kolm valideerimiskihti}
 \label{sec:three-rounds}
 
 Hindamisprotokoll kujunes kolme selgelt eristuva valideerimiskihi kaudu. Iga kiht vastab ühele praktilisele kvaliteediküsimusele: kas tulemus üldistub sõltumatule taustahelile, kas positiivne klass kirjeldab õiget fraasi ning kas kontrollpunkti valik säilitab samal ajal madala FAPH-i ja kasutatava tuvastamismäära.
@@ -102,7 +102,7 @@ Hindamisprotokoll kujunes kolme selgelt eristuva valideerimiskihi kaudu. Iga kih
 
 \textbf{Kolmas valideerimiskiht --- kontrollpunkti valikukriteerium.} Pärast positiivsete näidete puhastust prooviti valida treeningu käigus mudeliseis, mis minimeerib taustaheli valevallandumisi. Mõned seadistused jõudsid valitud taustaradadel nulli lähedase FAPH-ini, kuid see ei tähendanud praktiliselt paremat mudelit. Statistiliselt ei tõenda mõnetunnisel rajal nähtud null sündmust tegelikku nullmäära --- nn \emph{kolme-reegel} annab nulli ülemiseks 95\%-piiriks ligikaudu $3/n$ tundi\textsuperscript{-1} \cite{garwood1936fiducial,hanley1983ruleofthree}; lisaks langes sama seadistuse päris kõnelejate tuvastamismäär madalaks ja sarnaste fraaside segiajamise määr jäi kõrgeks. Kolmanda valideerimiskihi järeldus on seega, et kontrollpunkti valikukriteerium peab olema \emph{koondatud}: see peab arvestama samaaegselt taustaheli FAPH-i, reaalsete kõnelejate tuvastamismäära ja fraasistruktuuri eksimusi.
 
-\subsection{Üldine printsiip: hindamise piirid kui treenitavad lühiteed}
+\subsection{Hindamise piirid treenitavate lühiteedena}
 \label{sec:general-principle}
 
 Kolm valideerimiskihti paljastavad ühe ja sama mehhanismi erinevatel tasanditel. Iga hindamisviis tõmbab piiri selle vahele, mida peetakse kasutuskõlblikuks ja mida mitte. Kui see piir on liiga kitsas, võib treeningprotsess leida viisi, kuidas mõõdiku järgi hästi näida, ilma et kasutajakogemus tegelikult paraneks. Täpsemalt:
