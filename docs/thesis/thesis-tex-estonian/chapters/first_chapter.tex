@@ -98,11 +98,11 @@ Residuaalühenduste tõhusust väikestes äratussõna mudelites on näidanud Cho
 \subsection{Kontekstiaken}
 \label{subsec:clip-duration}
 
-Kontekstiaken (\texttt{clip\_duration\_ms}) määrab, kui pika ajalõigu põhjal mudel otsuse teeb. \texttt{microWakeWord} treeninguseadistuses kasutatud 1500\,ms aknalaius annab $194 \times 40$ spektrogrammi (194 ajakaadrit, 40 mel-sagedusribal) \cite{microwakeword2026}. Pärast konvolutsioonikihtide ajalise vähendamise (\emph{temporal reduction}) mõju jääb viimase kihi sisendiks 148 ajakaadrit.
+Kontekstiaken (\texttt{clip\_duration\_ms}) määrab, kui pika ajalõigu põhjal mudel otsuse teeb. \texttt{microWakeWord} treeninguseadistuses kasutatud 1500\,ms aknalaius annab $194 \times 40$ spektrogrammi (194 ajakaadrit, 40 mel-sagedusribal) \cite{microwakeword2026}. Pärast konvolutsioonikihtide ajalise vähendamise (\emph{temporal reduction}) mõju jääb viimase kihi sisendiks 148 ajakaadrit. Ajalise konteksti kasutamine on äratussõnatuvastuses tavapärane, sest mudel peab otsuse tegema mitte üksiku kaadri, vaid järjestikuste foneetiliste sündmuste põhjal \cite{sainath2015cnn,alvarez2019svdf,lopezespejo2021deepkws}.
 
-Äratussõna \enquote{Kuule Kratt} loomulik kestus on ligikaudu 0{,}8--1{,}2\,s, sõltuvalt kõneleja tempost ja hääldusvariatsioonist. Seega jätab 1500\,ms aken 300--700\,ms eelkonteksti (\emph{pre-context}), mis sisaldab vaikuseperioodi või eelnevat taustheli. See eelkontekst on oluline, sest mudel saab selle abil eristada äratussõna algust taustmürast.
+Äratussõna \enquote{Kuule Kratt} loomulik kestus on ligikaudu 0{,}8--1{,}2\,s, sõltuvalt kõneleja tempost ja hääldusvariatsioonist. Seega jätab 1500\,ms aken 300--700\,ms eelkonteksti (\emph{pre-context}), mis sisaldab vaikuseperioodi või eelnevat taustheli. Selline varasem kontekst aitab voogedastusmudelil hinnata, kas fraasi algus eristub ümbritsevast helivoost, mitte ei ole üksik müraline kaader või juhuslik kõnefragment \cite{alvarez2019svdf,lopezespejo2021deepkws}.
 
-Pikem kontekstiaken (nt 2000\,ms) annaks rohkem eelkonteksti ja lubaks mudelil paremini diskrimineerida pikemaid sarnaseid fraase, kuid nõuab ka rohkem mälu sisemise oleku hoidmiseks.
+Pikem kontekstiaken (nt 2000\,ms) annaks rohkem eelkonteksti ja võiks aidata pikemaid sarnaseid fraase eristada, kuid suurendaks voogedastusmudeli ajalist olekut ja seega mikrokontrolleril hoitavate vahetulemuste hulka \cite{chen2014smallfootprint,alvarez2019svdf}.
 
 \subsection{SpecAugment}
 \label{subsec:specaugment}
@@ -114,7 +114,7 @@ Käesolevas töös kasutati SpecAugment'i valikuliselt alates v7 katsetest, rake
 \subsection{Kvantiseerimine}
 \label{subsec:quantization}
 
-Treenitud mudel kvantiseeritakse TensorFlow Lite täisarvulisse vormingusse (\emph{full integer quantization}), kus nii kaalud kui ka aktivatsioonid teisendatakse INT8 esitlusse \cite{tensorflow2015, jacob2018quantization}. See vähendab mudeli mahtu ja kiirendab mudeli käitamist, sest INT8 aritmeetika on mikrokontrolleri protsessoril kordades efektiivsem kui ujukomaarvutus.
+Treenitud mudel kvantiseeritakse TensorFlow Lite täisarvulisse vormingusse (\emph{full integer quantization}), kus nii kaalud kui ka vaheaktivatsioonid ehk kihtide arvutatud väljundid teisendatakse INT8 esitlusse \cite{tensorflow2015, jacob2018quantization}. See vähendab mudeli mahtu ja kiirendab mudeli käitamist, sest INT8 aritmeetika on mikrokontrolleri protsessoril kordades efektiivsem kui ujukomaarvutus.
 
 Piloodi aktiivseks kandidaadiks valitud \texttt{v16c} kvantiseeritud TFLite-mudeli maht on 148\,KB; varasemad väiksemad mudelid olid umbes 57\,KB. Mõlemad mahuvad ESP32-S3 välkmällu. Mudeli käitamise ajal vajab ESPHome manifest lisaks 45--50\,KB tööpuhvrit (\texttt{tensor\_arena}), kuhu paigutatakse vahetulemused. Seega jääb \texttt{v16c} mudeli ja tööpuhvri suurusjärk alla 200\,KB ning sobib ESP32-S3 mälupiirangutesse, kuigi lõplik kompileerimise ja seadmele laadimise kontroll tehakse kasutajatesti aktiivse seadistuse peal.
 
