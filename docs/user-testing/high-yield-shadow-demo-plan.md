@@ -35,7 +35,7 @@ Collect only what is needed:
 - participant ID
 - Estonian native / second language / other
 - smart-home experience: yes/no
-- audio recording consent: metrics only / metrics + audio
+- audio recording consent: ainult mõõdikud / mõõdikud + helisalvestis
 - optional: accent/dialect note
 
 ### 2. Scripted wake positives

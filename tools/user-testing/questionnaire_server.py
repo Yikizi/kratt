@@ -25,6 +25,22 @@ from urllib.parse import parse_qs, urlparse
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "output" / "user-tests" / "questionnaires"
 
+CONSENT_METRICS_ONLY = "ainult mõõdikud"
+CONSENT_AUDIO_ALLOWED = "mõõdikud + helisalvestis"
+CONSENT_LEVELS = (CONSENT_METRICS_ONLY, CONSENT_AUDIO_ALLOWED)
+CONSENT_LEVEL_ALIASES = {
+    "metrics only": CONSENT_METRICS_ONLY,
+    "basic": CONSENT_METRICS_ONLY,
+    "basic consent": CONSENT_METRICS_ONLY,
+    "ainult moodikud": CONSENT_METRICS_ONLY,
+    "audio opt-in": CONSENT_AUDIO_ALLOWED,
+    "audio opt in": CONSENT_AUDIO_ALLOWED,
+    "metrics + audio": CONSENT_AUDIO_ALLOWED,
+    "heli salvestamine lubatud": CONSENT_AUDIO_ALLOWED,
+    "helisalvestise nõusolek": CONSENT_AUDIO_ALLOWED,
+    "helisalvestise nousolek": CONSENT_AUDIO_ALLOWED,
+}
+
 REQUIRED_FIELDS = {
     "participant_id",
     "date",
@@ -81,8 +97,18 @@ def _int_field(data: dict[str, Any], key: str, lo: int, hi: int) -> int:
     return value
 
 
+def normalize_consent_level(value: str) -> str:
+    cleaned = str(value or "").strip()
+    if not cleaned:
+        return ""
+    if cleaned in CONSENT_LEVELS:
+        return cleaned
+    return CONSENT_LEVEL_ALIASES.get(cleaned.lower(), cleaned)
+
+
 def normalize_submission(raw: dict[str, Any]) -> dict[str, Any]:
     data = {str(k): (str(v).strip() if v is not None else "") for k, v in raw.items()}
+    data["consent_level"] = normalize_consent_level(data.get("consent_level", ""))
     missing = sorted(key for key in REQUIRED_FIELDS if not data.get(key))
     if missing:
         raise ValueError("Missing required fields: " + ", ".join(missing))
@@ -138,6 +164,7 @@ def page_html(
 ) -> str:
     if today is None:
         today = datetime.now().strftime("%Y-%m-%d")
+    consent_level = normalize_consent_level(consent_level)
     return (
         _PAGE_TEMPLATE
         .replace("__PARTICIPANT__", json.dumps(participant_id))
@@ -672,7 +699,7 @@ _PAGE_TEMPLATE = r"""<!doctype html>
       let body = '';
 
       if (step.kind === 'setup') {
-        const consents = ['ainult mõõdikud', 'audio opt-in'];
+        const consents = ['ainult mõõdikud', 'mõõdikud + helisalvestis'];
         const consentBtns = consents.map((c, j) => {
           const isSel = state.consent_level === c ? ' selected' : '';
           return `<button type="button" class="option${isSel}" data-consent="${esc(c)}" data-key="${j+1}">
@@ -1202,10 +1229,15 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR, help=f"Output dir. Default: {DEFAULT_OUTPUT_DIR}")
     parser.add_argument("--participant-id", default="", help="Optional prefill for first participant; in-browser setup is the source of truth.")
     parser.add_argument("--session-id", default="", help="Optional session ID prefill")
-    parser.add_argument("--consent-level", default="", choices=("", "ainult mõõdikud", "audio opt-in"),
-                        help="Optional consent-level prefill: 'ainult mõõdikud' or 'audio opt-in'")
+    parser.add_argument(
+        "--consent-level",
+        default="",
+        choices=("", *CONSENT_LEVELS, "metrics only", "audio opt-in", "metrics + audio"),
+        help="Optional consent-level prefill: 'ainult mõõdikud' or 'mõõdikud + helisalvestis'",
+    )
     parser.add_argument("--no-open", action="store_true", help="Do not open the browser automatically")
     args = parser.parse_args()
+    args.consent_level = normalize_consent_level(args.consent_level)
 
     QuestionnaireHandler.output_dir = args.output_dir
     try:

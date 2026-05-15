@@ -12,7 +12,7 @@ Use one pseudonymous participant ID, for example `P01`. Do not write the partici
    ./cli/kratt user-test P01 --active-model v16c --new-session-subdir --audio-consent yes
    ```
 
-   If the participant chooses metrics-only consent, use `--audio-consent no`.
+   If the participant chooses `ainult mõõdikud`, use `--audio-consent no`.
 
 2. Read the consent summary:
 

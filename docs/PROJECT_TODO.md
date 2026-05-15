@@ -38,7 +38,7 @@
 
 ## 1. USER TESTING (critical path)
 
-Goal: collect real-speaker wake-word evidence + one-bulb UX data with 20-30 participants.
+Goal: collect limited real-speaker wake-word evidence and one-bulb voice-assistant UX/usefulness data with an up-to-10-participant pilot.
 
 ### Completed
 
@@ -50,13 +50,13 @@ Goal: collect real-speaker wake-word evidence + one-bulb UX data with 20-30 part
 - ✅ Session validator implemented: `tools/user-testing/validate_user_test_session.py` / `kratt validate-user-test <session_dir>` (untracked, 2026-05-04)
 - ✅ Offline replay scorer implemented and smoke-tested: `tools/user-testing/replay_user_test.py` / `kratt replay-user-test` (dry-run + synthetic fixture replay, 2026-05-04)
 - ✅ Replay aggregate summarizer implemented: `tools/user-testing/summarize_user_test_replay.py` / `kratt summarize-user-test` (excludes dry-run/synthetic fixture rows by default)
-- ✅ Protocol supports two consent levels: metrics-only vs audio opt-in
+- ✅ Protocol supports two Estonian consent levels: `ainult mõõdikud` vs `mõõdikud + helisalvestis`
 - ✅ Participant-facing consent script drafted: `docs/user-testing/consent-script-v1.md` (untracked, 2026-05-04)
 - ✅ Dry-run recorder smoke validated: 17 trial rows + 17 WAVs (2026-05-04)
 - ✅ No-audio consent smoke validated: 17 trial rows + 0 WAVs (2026-05-04)
 - ✅ Microphone smoke-test mode added: `kratt user-test --mic-smoke-test --device <id>`
 - ✅ Synthetic fixture path added and smoke-tested: `kratt user-test-fixtures` + `kratt user-test --audio-fixture-dir ... --auto-advance` (infrastructure smoke only, not user-study evidence)
-- ✅ ESPHome local model copy prepared as `v16c` at cutoff `0.996` via `kratt prepare-esphome-model v16c --cutoff 0.996`; compile/flash still pending before ESP32 demo
+- ✅ ESPHome local model copy prepared as `v16c` at cutoff `0.996` via `kratt prepare-esphome-model v16c --cutoff 0.996`; firmware build and ESP32 upload still pending before ESP32 demo
 - ✅ Pilot freeze candidate drafted: `docs/user-testing/frozen-threshold-policy.md`
 - ✅ Modular Home Assistant add-on stack committed in main (`ee0d414`): public repo metadata, STT/TTS add-ons, Docker compose stack, quickstart/validation docs, and v16c ESPHome manifest.
 - ✅ Real-mic recorder path exercised on `output/user-tests/mattias/` self-pilot; **only 4 positive trials**, no hard negatives/session end, so this is smoke evidence only.
@@ -64,11 +64,11 @@ Goal: collect real-speaker wake-word evidence + one-bulb UX data with 20-30 part
 
 ### Next actions (T-5 days, ordered)
 
-- 🎯 ⏳ **BLOCKER** Resolve the 2026-05-13 consent issue before using pilot logs: `f02` is marked metrics-only but has a matched WAV segment. Quarantine/delete/exclude the audio or correct consent with an auditable note.
+- 🎯 ⏳ **BLOCKER** Resolve the 2026-05-13 consent issue before using pilot logs: `f02` is marked `ainult mõõdikud` but has a matched WAV segment. Quarantine/delete/exclude the audio or correct consent with an auditable note.
 - 🎯 ⏳ **BLOCKER** Finalize `docs/user-testing/frozen-threshold-policy.md` by filling date, commit, active model path, threshold, and pilot-session evidence. If not finalized, thesis must present it as a policy candidate/limitation, not as a completed freeze.
 - 🎯 ⏳ Run one complete real-mic 17-trial self-pilot with non-zero RMS input, including hard negatives and `session_end`; validate, replay, and summarize immediately.
 - 🎯 ⏳ If time permits, run 2-3 complete participant pilot sessions under the frozen policy; otherwise use the 2026-05-13 demo logs only as limited UX/prototype evidence with caveats.
-- 🎯 ⏳ Decide explicitly whether the thesis will claim a full 20-30 participant study. Current evidence does **not** support that; absent new data, write it as planned/future/limitation.
+- 🎯 ⏳ Keep the thesis aligned to an up-to-10-participant pilot framing. Current evidence does **not** support a full user study claim; absent protocol-complete data, write user testing as planned/future/limitation and use demo logs only as limited UX/prototype evidence.
 - 🎯 ⏳ Analyze only consent-safe, protocol-complete data:
   - wake recall on positive trials;
   - hard-negative FPR on human voices;
@@ -269,7 +269,7 @@ Tracked review action plan: `docs/automation/thesis-review-deficiencies-2026-05-
 - **2026-05-10**: BLE voice pipeline checkpoint and helper-routing/persona demo work landed (commits `4fae836`, `97d1c9d`); translation MT benchmark scaffold and quick FAPH spot check were produced (`notes/experiments/2026-05-10-translation-mt-benchmark.md`, `tools/demo-pipeline/bench_translation_models.py`, `tools/demo_pipeline/translation.py`, `benchmark_faph_praam_quick_20260510.csv`). Treat these as side-quest evidence unless explicitly cited.
 - **2026-05-11**: Android dev voice bridge landed (commit `a5b0170`); githook/project-tracking automation improved (commits `ea17215`, `dc0f703`).
 - **2026-05-12**: terminology lint workflow landed (commit `40028fb`); agent token usage stats landed (commit `5b53374`); TalTech thesis best-practices research artifacts produced under `docs/research/`.
-- **2026-05-13**: modular Home Assistant add-on stack and public packaging committed (`ee0d414`). Limited demo/pilot log analysis created for `m01`, `f02`, `m03`; it supports UX/prototype caveats, not wake-word recall/FPR. Consent issue found for `f02` metrics-only audio. Time-tracking hook misconfiguration found and local `core.hooksPath` restored to `.githooks` for future commits.
+- **2026-05-13**: modular Home Assistant add-on stack and public packaging committed (`ee0d414`). Limited demo/pilot log analysis created for `m01`, `f02`, `m03`; it supports UX/prototype caveats, not wake-word recall/FPR. Consent issue found for `f02` `ainult mõõdikud` audio. Time-tracking hook misconfiguration found and local `core.hooksPath` restored to `.githooks` for future commits.
 
 ---
 

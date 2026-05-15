@@ -111,19 +111,14 @@ Per participant, approximately:
 - 11–13 total positive wake-containing utterances
 - subjective UX ratings
 
-With 20 participants:
+With up to 10 participants:
 
-- ~220–260 positive wake-containing utterances
-- 100 hard-negative utterances
-- 120 scripted smart-home commands
-- 20–40 natural Estonian smart-home commands
+- ~110–130 positive wake-containing utterances
+- 50 hard-negative utterances
+- 60 scripted smart-home commands
+- 10–20 natural Estonian smart-home commands
 
-With 30 participants:
-
-- ~330–390 positive wake-containing utterances
-- 150 hard-negative utterances
-- 180 scripted smart-home commands
-- 30–60 natural commands
+This sample size is appropriate for a pilot-sized UX/usefulness check and limited real-speaker feedback, not for replacing the main technical wake-word validation.
 
 ## Metrics to compute
 
@@ -190,8 +185,8 @@ threshold
 
 Use two consent levels:
 
-1. **Basic:** anonymous metrics and logs may be used in thesis.
-2. **Audio opt-in:** audio clips may be stored and used for wake-word evaluation/model improvement.
+1. **Ainult mõõdikud:** anonymous metrics and logs may be used in thesis.
+2. **Mõõdikud + helisalvestis:** audio clips may be stored and used for wake-word evaluation/model improvement.
 
 Participants who decline audio storage can still contribute UX and aggregate metrics.
 
@@ -207,4 +202,4 @@ Participants who decline audio storage can still contribute UX and aggregate met
 
 A concise description:
 
-> The user study was designed as a short high-information session. Each participant performed controlled wake-word trials, phonetically similar negative phrases, and smart-bulb control tasks. The participant interacted with one active system, while timestamped audio enabled multiple wake-word models and consensus combinations to be evaluated on the same input in shadow mode. This allowed user experience and model comparison to be separated while keeping participant burden low.
+> The user study was designed as a short pilot-sized check of the complete local voice-assistant loop. Each participant performed controlled wake-word trials, phonetically similar negative phrases, and smart-bulb control tasks. The participant interacted with one active system, while timestamped audio enabled multiple wake-word models and consensus combinations to be evaluated on the same input in shadow mode. This allowed user experience, voice-assistant usefulness, and limited model comparison to be separated while keeping participant burden low.

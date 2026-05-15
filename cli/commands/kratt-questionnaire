@@ -5,12 +5,12 @@
 # ARGS: --port Bind port. Default: 8877; falls back to a free port if busy
 # ARGS: --output-dir Where responses are saved. Default: output/user-tests/questionnaires
 # ARGS: --participant-id Participant ID, e.g. P01 (required to open the form)
-# ARGS: --consent-level Consent level captured before the demo: "ainult mõõdikud" or "audio opt-in" (required)
+# ARGS: --consent-level Consent level captured before the demo: "ainult mõõdikud" or "mõõdikud + helisalvestis" (required)
 # ARGS: --session-id Session ID copied from session.json (optional)
 # ARGS: --no-open Do not open browser automatically
-# EXAMPLES: kratt questionnaire --participant-id P01 --consent-level "audio opt-in"
+# EXAMPLES: kratt questionnaire --participant-id P01 --consent-level "mõõdikud + helisalvestis"
 # EXAMPLES: kratt questionnaire --participant-id P01 --consent-level "ainult mõõdikud" --session-id 20260510-abc
-# EXAMPLES: kratt questionnaire --participant-id P01 --consent-level "audio opt-in" --host 0.0.0.0 --port 8877
+# EXAMPLES: kratt questionnaire --participant-id P01 --consent-level "mõõdikud + helisalvestis" --host 0.0.0.0 --port 8877
 set -euo pipefail
 
 SCRIPT="${KRATT_ROOT}/tools/user-testing/questionnaire_server.py"

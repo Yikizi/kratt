@@ -17,7 +17,7 @@ Use this as a short intro before the free-form part of the demo, or as the first
 - `participant_id` — same pseudonymous ID as recorder session, e.g. `P01`.
 - `date` — YYYY-MM-DD.
 - `session_id` — copy from `session.json` if convenient.
-- consent level — metrics only / audio opt-in.
+- nõusoleku tase — ainult mõõdikud / mõõdikud + helisalvestis.
 
 ### Background
 
@@ -61,6 +61,6 @@ Scale for all four: **1 = üldse ei nõustu**, **5 = nõustun täielikult**.
 
 - Report UMUX-Lite as the comparable short usability measure.
 - Report SEQ as the post-task ease measure.
-- For N≈20-30, report median + interquartile range for each item.
+- For N≈10 pilot participants, report median + interquartile range for each item; for smaller N, treat the values as descriptive pilot evidence.
 - Treat the four Kratt-specific ratings as diagnostic project-specific feedback, not as a validated UX scale.
 - Link subjective reliability to objective wake recall / task success, but do not merge them into one score.

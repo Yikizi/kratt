@@ -30,8 +30,8 @@ Use Google Forms for participant answers. Keep `docs/user-testing/mini-questionn
    - Type: multiple choice
    - Required: yes
    - Options:
-     - `metrics only`
-     - `audio opt-in`
+     - `ainult mõõdikud`
+     - `mõõdikud + helisalvestis`
 
 ## Section 2 - Background
 

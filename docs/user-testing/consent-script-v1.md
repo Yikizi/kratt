@@ -5,8 +5,8 @@
 ## Operator note
 
 - Default thesis user-test mode should be local/offline. If the demo uses any external/cloud service for transcript, intent parsing, LLM, or telemetry, do **not** use this consent text unchanged; add explicit external-processing consent first.
-- If participant chooses metrics-only, run `kratt user-test ... --audio-consent no` or delete raw WAVs immediately after extracting allowed non-identifying metrics.
-- Voice is potentially identifying personal data. Treat audio opt-in as stronger consent than basic metrics consent.
+- If participant chooses `ainult mõõdikud`, run `kratt user-test ... --audio-consent no` or delete raw WAVs immediately after extracting allowed non-identifying metrics.
+- Voice is potentially identifying personal data. Treat the `mõõdikud + helisalvestis` choice as stronger consent than `ainult mõõdikud`.
 
 ## Short spoken introduction
 
@@ -16,7 +16,7 @@ Testis palun Sul öelda mõned etteantud fraasid, mõned sarnased fraasid, mis e
 
 Osalemine on vabatahtlik. Võid igal ajal pausi teha, küsimusele vastamata jätta või testi katkestada.
 
-## What is collected
+## Mida kogutakse
 
 Kogume vähemalt järgmisi pseudonüümseid andmeid:
 
@@ -25,22 +25,22 @@ Kogume vähemalt järgmisi pseudonüümseid andmeid:
 - lühike tagasisideküsimustik;
 - tehnilised logid, mis aitavad eristada äratussõna, kõnetuvastuse, käsu mõistmise ja pirni juhtimise vigu.
 
-Kui annad eraldi audio nõusoleku, salvestame ka lühikesed WAV-heliklipid testifraasidega. Neid kasutatakse äratussõna mudelite võrdlemiseks ja vajadusel mudeli edasiseks parandamiseks.
+Kui valid variandi `mõõdikud + helisalvestis`, salvestame ka lühikesed WAV-heliklipid testifraasidega. Neid kasutatakse äratussõna mudelite võrdlemiseks ja vajadusel mudeli edasiseks parandamiseks.
 
-## Consent choices
+## Nõusoleku valikud
 
 Palun vali üks kahest variandist.
 
-### Variant A — basic / metrics-only consent
+### Variant A — ainult mõõdikud
 
 Nõustun, et minu anonüümseid/pseudonüümseid testitulemusi ja tehnilisi logisid kasutatakse Kratt bakalaureusetöös.
 
 - Toorheli ei säilitata.
 - Lõputöös esitatakse ainult koondtulemused või pseudonüümsed näited.
 
-**Participant choice:** metrics-only / basic consent: yes / no
+**Osaleja valik:** ainult mõõdikud: jah / ei
 
-### Variant B — audio opt-in consent
+### Variant B — mõõdikud + helisalvestis
 
 Lisaks Variant A-le nõustun, et minu testifraaside lühikesi heliklippe salvestatakse ja kasutatakse äratussõna hindamiseks ning võimaliku mudeli parandamiseks.
 
@@ -48,7 +48,7 @@ Lisaks Variant A-le nõustun, et minu testifraaside lühikesi heliklippe salvest
 - Heliklipid seotakse ainult osaleja ID-ga, mitte nimega.
 - Võin hiljem paluda oma heliklipid kustutada, kuni need pole koondanalüüsiks lõplikult anonümiseeritud.
 
-**Participant choice:** audio opt-in: yes / no
+**Osaleja valik:** mõõdikud + helisalvestis: jah / ei
 
 ## Withdrawal / deletion
 
@@ -59,8 +59,7 @@ Kui soovid hiljem oma andmete kustutamist, anna operaatorile oma osaleja ID. Enn
 ```text
 participant_id: P__
 date: YYYY-MM-DD
-basic_metrics_consent: yes/no
-audio_opt_in: yes/no
+consent_level: ainult mõõdikud / mõõdikud + helisalvestis
 language note (optional): native Estonian / second-language Estonian / other
 smart-home experience (optional): none / occasional / regular
 operator notes (optional):

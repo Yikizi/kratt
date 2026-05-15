@@ -23,7 +23,7 @@ function createKrattPilotFeedbackForm() {
 
   form.addMultipleChoiceItem()
     .setTitle("consent_level")
-    .setChoiceValues(["metrics only", "audio opt-in"])
+    .setChoiceValues(["ainult mõõdikud", "mõõdikud + helisalvestis"])
     .setRequired(true);
 
   form.addPageBreakItem().setTitle("Taust");

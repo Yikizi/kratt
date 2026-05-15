@@ -1,8 +1,9 @@
 # 10-minute shadow-demo user test protocol
 
-**Status:** current protocol for self-pilot / pilot freeze (updated 2026-05-12)  
-**Target duration:** 10 minutes per participant  
-**Primary goal:** collect real-speaker wake-word evidence while keeping the session short and engaging through a one-bulb smart-home demo.  
+**Status:** current protocol for self-pilot / pilot freeze (updated 2026-05-12)
+**Target duration:** 10 minutes per participant
+**Target sample:** up to 10 participants
+**Primary goal:** check the usefulness and UX of the complete local voice-assistant loop while collecting limited real-speaker wake-word evidence through a one-bulb smart-home demo.
 **Recorder:** `./cli/kratt user-test <participant_id> --active-model v16c --new-session-subdir`
 
 ## Core design
@@ -15,7 +16,7 @@ This separates three concerns:
 2. **Model comparison:** many models are evaluated offline on identical audio.
 3. **Future analysis:** thresholds and MoE combinations can be swept after the session without asking the participant to repeat anything.
 
-## Candidate set to freeze before full collection
+## Candidate set to freeze before pilot collection
 
 Primary candidates for final reporting:
 
@@ -183,19 +184,14 @@ Per participant:
 - 11–13 wake-containing positive utterances total;
 - one short subjective UX response set.
 
-With 20 participants:
+With up to 10 participants:
 
-- approximately 220–260 positive wake-containing utterances;
-- 100 hard-negative utterances;
-- 120 scripted smart-home commands;
-- 20–40 natural command attempts.
+- approximately 110–130 positive wake-containing utterances;
+- 50 hard-negative utterances;
+- 60 scripted smart-home commands;
+- 10–20 natural command attempts.
 
-With 30 participants:
-
-- approximately 330–390 positive wake-containing utterances;
-- 150 hard-negative utterances;
-- 180 scripted smart-home commands;
-- 30–60 natural command attempts.
+This is intentionally a pilot-sized UX and usefulness check, not a replacement for the main wake-word validation protocol. The main model-quality claims remain tied to frozen thresholds, streaming FAPH, real-speaker recall, and hard-negative/confusable FPR.
 
 ## Logging schema
 
@@ -325,8 +321,8 @@ Participant-facing consent draft: `docs/user-testing/consent-script-v1.md`. Mini
 
 Use two consent levels:
 
-1. **Basic consent:** anonymous metrics and logs may be used in the thesis.
-2. **Audio opt-in:** labelled audio clips may be stored and used for wake-word evaluation/model improvement.
+1. **Ainult mõõdikud:** anonymous metrics and logs may be used in the thesis.
+2. **Mõõdikud + helisalvestis:** labelled audio clips may be stored and used for wake-word evaluation/model improvement.
 
 Participants who decline audio storage may still contribute UX/questionnaire data. If audio consent is declined, do not retain raw WAV files; retain only aggregate/non-identifying outcomes where allowed by the consent form.
 
@@ -334,20 +330,20 @@ Participants who decline audio storage may still contribute UX/questionnaire dat
 
 - Keep controlled wake-word metrics separate from end-to-end demo metrics.
 - Do not attribute STT/LLM/WiZ failures to the wake-word model.
-- Freeze the final candidate set and main thresholds before full data collection.
+- Freeze the final candidate set and main thresholds before pilot data collection.
 - Treat extra threshold sweeps and extra MoE combinations as exploratory.
 - Use one smart bulb intentionally to keep tasks repeatable and scope controlled.
 
 ## Pilot checklist
 
-Before full data collection:
+Before pilot data collection:
 
 - [x] Run one dry-run recorder smoke test: `kratt user-test TEST_AUTO --dry-run --new-session-subdir` (2026-05-04).
 - [x] Verify dry-run creates 17 WAVs + 17 `trial` JSONL rows (2026-05-04, `kratt validate-user-test`).
 - [x] Verify `--audio-consent no` retains no WAVs but keeps trial metadata (2026-05-04).
 - [x] Add microphone smoke-test command: `kratt user-test --mic-smoke-test --device <id>` (2026-05-04).
 - [x] Add synthetic fixture injection path: `kratt user-test-fixtures` + `kratt user-test --audio-fixture-dir ... --auto-advance` (2026-05-04).
-- [x] Prepare ESPHome local active model copy as `v16c` at cutoff `0.996` with `kratt prepare-esphome-model v16c --cutoff 0.996` (2026-05-04; compile/flash still required before ESP32 demo).
+- [x] Prepare ESPHome local active model copy as `v16c` at cutoff `0.996` with `kratt prepare-esphome-model v16c --cutoff 0.996` (2026-05-04; firmware build and ESP32 upload still required before ESP32 demo).
 - [ ] Run one real-mic self-pilot with audio consent enabled.
 - [ ] Validate real-mic self-pilot immediately with `kratt validate-user-test <session_dir>`.
 - [ ] Replay real-mic self-pilot with `kratt replay-user-test <session_dir>`.

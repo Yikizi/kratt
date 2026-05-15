@@ -144,7 +144,7 @@ TODO: Selgitada välja kust HA voice pipeline'is timestampe kätte saab:
 
 - [ ] Osalejad annavad suulise nõusoleku enne testi
 - [ ] Selgitada mida logitakse
-- [ ] Audio salvestatakse ainult opt-in korras (eraldi nõusolek)
+- [ ] Audio salvestatakse ainult eraldi helisalvestise nõusolekuga
 - [ ] Andmed pseudonümiseeritud (P01, P02, ...)
 - [ ] GDPR-konformne: osaleja saab paluda oma andmete kustutamist
 
