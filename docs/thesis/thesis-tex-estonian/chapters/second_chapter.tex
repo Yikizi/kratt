@@ -1,16 +1,16 @@
-Peatükk esitab töö empiirilised tulemused ja nendest tehtavad metoodilised järeldused. Tulemusi tõlgendatakse eelkõige hindamisprotokolli kaudu: mudeliversiooni number on sisukas ainult siis, kui sama helisisend, sama lävi ja sama loendusreegel võimaldavad seda teiste versioonidega võrrelda.
+Peatükk esitab töö empiirilised tulemused: v1--v18 eestikeelse äratussõna mudeliseeria, konsensuskatse ning kontrollpunkti valiku katsed. Kõik mudeliversioonide võrdlused tehakse Peatükis~\ref{chapter:method} kirjeldatud hindamisprotokolli sees --- ühe katseploki sees on hindamiskomplekt, lävi ja loendusreegel fikseeritud.
 
-\section{Tõendusbaasi rekonstrueerimine}
-Hindamis- ja treeninguahela rekonstrueerimise mõte ei ole pelgalt näidata, et esimesed katsed sisaldasid tehnilisi vigu. Selle osa sisuline järeldus on, et väikese andmemahuga äratussõna projektis võib mõõtesüsteemi viga näida mudeli veana või vastupidi. Enne arhitektuuri, andmestiku või läve üle otsustamist tuleb seetõttu eraldada kaks küsimust: kas mudel käitub halvasti või kas kasutatav hindamine ei mõõda veel seda käitumist, mida juurutuses vaja on.
+\section{Esialgse hindamisprotokolli puudused}
+Varase v1--v6 mudeliseeria katsete ajal ei olnud veel selge, kas halvad tulemused tulenevad mudelist või hindamisahelast endast. Sessioonilogide hilisem ülevaatamine näitas, et väikese andmemahuga eestikeelse äratussõna projektis võis mõõtesüsteemi viga näida mudeli veana ja vastupidi. Enne arhitektuuri, andmestiku või läve üle otsustamist tuli seetõttu eraldada kaks küsimust: kas mudel käitub halvasti või kas kasutatav hindamine ei mõõda veel seda käitumist, mida juurutuses vaja on.
 
-Varasem \enquote{Kratt} treeningukatse ei loonud piisavat tõendusbaasi, millelt mudeli üldistusvõimet hinnata. Hilisem sessioonilogide rekonstrueerimine näitas, et piirang ei olnud ainult mudeli kvaliteedis, vaid kogu väikese andmemahuga eestikeelse äratussõna hindamisprotokollis. Eristusid vähemalt kolm riskiklassi:
+Varane v1--v6 \enquote{Kuule Kratt} treeningukatse ei loonud piisavat tõendusbaasi, millelt mudeli üldistusvõimet hinnata. Sessioonilogide ülevaatamisel selgus, et piirang ei olnud ainult mudeli kvaliteedis, vaid kogu väikese andmemahuga eestikeelse äratussõna hindamisprotokollis. Eristusid kolm sõltumatut riskiklassi:
 \begin{itemize}
-    \item treeningukoodis ilmnes TensorFlow ja NumPy ühilduvusprobleem;
-    \item hindamises puudus korrektselt moodustatud \texttt{testing\_ambient} kogum;
-    \item andmestiku domeen ei kattunud reaalse seadme kasutusolukorraga.
+    \item \textbf{Kood:} treeningukoodis ilmnes TensorFlow ja NumPy versioonide ühilduvusprobleem, mis raskendas treeningujooksude reprodutseerimist ja tuli enne mõõdetavate katsete käivitamist lahendada;
+    \item \textbf{Hindamine:} hindamiskomplektist puudus korrektselt moodustatud \texttt{testing\_ambient} kogum --- pikkadest taustaheli segmentidest moodustatud negatiivnäidiste hulk, mille peal arvutatakse FAPH-i (vt~Peatükk~\ref{chapter:method}). Selle puudumine tähendas, et raporteeritud klipitaseme FPR ei kirjeldanud voogedastava kasutuse riski;
+    \item \textbf{Andmestik:} negatiivsed klipid pärinesid peamiselt Common~Voice korpusest, mille mikrofon, ruumiakustika ja signaalitase erinesid sihtseadme (ESP32-S3-Korvo-2 arendusplaat ning MacBook~Pro sisemikrofon) tegelikust kasutusprofiilist.
 \end{itemize}
 
-Rekonstrueerimise tulemusena muudeti treeningu- ja raportiskriptid kontrollitavaks ning täiendati hindamistuge nii, et taustaheli andmete puudumine või vigane moodustamine oleks selgelt nähtav. Õppetund edasiste katsete jaoks oli järgmine: mudelit ei tohi optimeerida enne, kui on teada, et hindamisahel ei premeeri mõõteviga, andmeleket ega liiga kitsast domeeni.
+Rekonstrueerimise käigus viidi treeningu- ja raportiskriptid reprodutseeritavasse vormi ning hindamistugi muudeti selliseks, et taustaheliandmete puudumine või vigane moodustamine paistab kohe välja. Edasiste katsete eeltingimuseks seati, et hindamisahel ei premeeriks mõõteviga, andmeleket ega liiga kitsast domeeni.
 
 \section{Avaliku kontrollkatse tulemus}
 Pärast kohaliku tööahela täpsustamist käivitati nullist kontrollkatse \texttt{Speech Commands} korpuse \texttt{marvin} sihtsõna peal \cite{speechcommands2018}. Selle katse eesmärk ei olnud lahendada eestikeelset ülesannet, vaid kontrollida, kas kohalik tööahel töötab otsast lõpuni avaliku kontrollitava sisendi peal.
