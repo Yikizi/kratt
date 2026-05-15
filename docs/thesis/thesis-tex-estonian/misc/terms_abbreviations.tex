@@ -1,14 +1,37 @@
-\begin{longtable}{p{3cm}p{10cm}}  % Begins a longtable environment. The 'p{3cm}' and 'p{10cm}' specify column widths.
-API&Rakendusliides (\textit{Application Programming Interface})\\ % Adds a row to the table: first column is "API" and second column is "Rakendusliides (Application Programming Interface)", where \textit italicizes the text inside it.
-CPU&Keskseade (\textit{Central Processing Unit})\\ % Adds another row
-DSP&Digitaalne signaalitöötlus (\textit{Digital Signal Processing})\\
-ESP&Espressif Systems mikrokontrollerite perekond\\
-FAPH&Valetriggerid tunni kohta (\textit{False Accepts Per Hour})\\
-FRR&Valetagasiloikamise määr (\textit{False Rejection Rate})\\
-IOT&Asjade internet (\textit{Internet of Things})\\
-ROC&Lävekõver (\textit{Receiver Operating Characteristic})\\
-STT&Kõne tekstiks teisendamine (\textit{Speech to Text})\\
-TFLite&TensorFlow Lite mudelivorming servaseadmetele\\
-TTS&Teksti kõneks teisendamine (\textit{Text to Speech})\\
+\begin{longtable}{p{3cm}p{10cm}}
+API & Rakendusliides (\textit{Application Programming Interface}).\\
+ASR & Automaatne kõnetuvastus (\textit{Automatic Speech Recognition}).\\
+CV & Mozilla Common Voice; käesolevas töös ka lühend Common Voice'i eestikeelse kõrvalejäetud komplekti kohta.\\
+DiPCo & Distant-Party Conversation korpus; mitme mikrofoniga koosolekukõne andmestik.\\
+DSP & Digitaalne signaalitöötlus (\textit{Digital Signal Processing}).\\
+ESP32-S3 & Espressifi mikrokontrolleriperekond, mida kasutatakse töö sihtseadmena.\\
+FAPH & Valevallandumised tunnis (\textit{False Accepts Per Hour}).\\
+FPR & Valepositiivsete määr (\textit{False Positive Rate}); negatiivsete näidete osakaal, mille mudel ekslikult äratussõnaks loeb.\\
+FRR & Valetõrjete määr (\textit{False Rejection Rate}); positiivsete näidete osakaal, mille mudel jätab tuvastamata.\\
+HN & Sarnane negatiivnäide; äratusfraasile foneetiliselt lähedane, kuid mitte kehtiv fraas.\\
+HPC & Kõrgjõudlusega arvutusressurss (\textit{High Performance Computing}); töös TalTechi GPU-klaster.\\
+INT8 & 8-bitine täisarvuline esitus, mida kasutatakse kvantiseeritud TensorFlow Lite mudelis.\\
+IoT & Asjade internet (\textit{Internet of Things}).\\
+KWS & Võtmesõna- või äratussõnatuvastus (\textit{Keyword Spotting}).\\
+LS & LibriSpeechi kõrvalejäetud ingliskeelse kõne komplekt tulemuste tabelites.\\
+MCP & Mudelikonteksti protokoll (\textit{Model Context Protocol}); arenduses kasutatud abiteenuste liidestusviis.\\
+MoE & Ekspertmudelite segu või konsensus (\textit{Mixture of Experts}).\\
+RMS & Ruutkeskmine amplituud (\textit{Root Mean Square}); helisignaali taseme mõõdik.\\
+RNG & Juhuarvugeneraator (\textit{Random Number Generator}).\\
+ROC & Lävikõver (\textit{Receiver Operating Characteristic}).\\
+SA & SpecAugment; spektrogrammi aja- ja sagedusmaskidel põhinev augmentatsioon.\\
+SEQ & Ühe küsimuse lihtsushinnang (\textit{Single Ease Question}).\\
+SLURM & Kõrgjõudlusega arvutusklastri tööde ajastaja.\\
+SSML & Kõnesünteesi märgenduskeel (\textit{Speech Synthesis Markup Language}).\\
+STT & Kõne tekstiks teisendamine (\textit{Speech to Text}).\\
+SVDF & Lahutatud ajalise ja sagedusliku filtri kiht (\textit{Singular Value Decomposition Filter}).\\
+TFLite & TensorFlow Lite mudelivorming servaseadmetele.\\
+TTS & Teksti kõneks teisendamine (\textit{Text to Speech}).\\
+UMUX-Lite & Kahe väitega kasutatavuse lühiskaala.\\
+UV & Usaldusvahemik.\\
+VAD & Kõneaktiivsuse tuvastus (\textit{Voice Activity Detection}).\\
+WAV & Tihendamata helifaili vorming.\\
+XML & Laiendatav märgistuskeel (\textit{Extensible Markup Language}).\\
+XTTS & Coqui XTTS teksti-kõneks mudel, mida kasutatakse sünteetiliste kõneklippide loomiseks.\\
 \end{longtable}
-\addtocounter{table}{-1} % Decreases the table counter by 1 so that it doesn't increment the table number in the document
+\addtocounter{table}{-1}

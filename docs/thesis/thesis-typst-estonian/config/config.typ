@@ -3,8 +3,8 @@
   lang: "EST",
 
   // Thesis titles.
-  thesis_title_eng: "Kratt: Estonian Wake Word Detection for Smart Home Microcontrollers",
-  thesis_title_est: "Kratt: eestikeelne äratussõnatuvastus nutikodu mikrokontrolleritele",
+  thesis_title_eng: "Kratt: Development and Evaluation of an Estonian Wake Word Detection Prototype for Smart Home Microcontrollers",
+  thesis_title_est: "Kratt: eestikeelse äratussõnatuvastuse prototüübi arendamine ja hindamine nutikodu mikrokontrolleritel",
 
   // Allowed values: "Bachelor's Thesis" or "Master's Thesis".
   thesis_type: "Bachelor's Thesis",

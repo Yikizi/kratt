@@ -9,7 +9,7 @@
   Mattias Linholm 233408IAIB
 
   #v(1.5cm)
-  #text(size: 20pt, weight: "bold")[Kratt: eestikeelne äratussõnatuvastus nutikodu mikrokontrolleritele]
+  #text(size: 20pt, weight: "bold")[Kratt: eestikeelse äratussõnatuvastuse prototüübi arendamine ja hindamine nutikodu mikrokontrolleritel]
 
   #v(1.5cm)
   Bakalaureusetöö ülesandepüstitus

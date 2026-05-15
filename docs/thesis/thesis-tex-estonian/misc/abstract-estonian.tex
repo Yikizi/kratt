@@ -1,17 +1,12 @@
-Käesoleva bakalaureusetöö eesmärk on uurida, kuidas luua ja hinnata eestikeelset äratussõna tuvastust piiratud ressursiga nutikodu mikrokontrolleril. Töö keskmes on projekt \enquote{Kratt}, mille sihiks on fraasi \enquote{Kuule Kratt} tuvastamine ESP32-S3 klassi seadmel lokaalselt, ilma pilveteenust kasutamata. Töö praktiline lähtekoht on väikeste keelte häälassistentide toe lünk: eestikeelse kõnetuvastuse jaoks leidub juba sobivaid mudeleid, kuid kohalik äratussõna tuvastus määrab kogu hääljuhtimise kasutatavuse.
+Käesoleva bakalaureusetöö eesmärk on uurida, kuidas luua ja hinnata eestikeelset äratussõna tuvastust piiratud ressursiga nutikodu mikrokontrolleril. Töö keskmes on projekt \enquote{Kratt}, mille siht on fraasi \enquote{Kuule Kratt} lokaalne tuvastamine ESP32-S3 klassi seadmel ilma pilveteenust kasutamata.
 
-Töös rekonstrueeriti ja täpsustati \texttt{microWakeWord} põhine treeningu- ja hindamistoru ning valideeriti see avaliku \texttt{Speech Commands} andmestiku kontrollkatsega. Esialgne klipi-tasemel hindamine andis eksitavalt optimistliku pildi negatiivsete näidete andmelekke tõttu. Selle riski maandamiseks koostati sõltumatud kõrvalejäetud testikomplektid, lisati treeningandmete disjointsuskontroll ning võeti keskseks voogedastushindamise mõõdikuks FAPH ehk valevallandumiste arv tunnis.
+Töös rekonstrueeriti \texttt{microWakeWord}il põhinev treeningu- ja hindamistoru ning valideeriti see avaliku \texttt{Speech Commands} kontrollkatsega. Esialgne klipitasemel hindamine osutus andmelekke tõttu eksitavaks, mistõttu koostati sõltumatud kõrvalejäetud testikomplektid, lisati treening- ja testandmete mittekattuvuse kontroll ning võeti keskseks mõõdikuks voogedastusrežiimi FAPH ehk valevallandumiste arv tunnis.
 
-Täpsustatud hindamine näitas, et üksiku mudeli kvaliteeti ei kirjelda piisavalt ei tuvastamismäär ega klipi-taseme valepositiivsete määr eraldi: parimad mudelid jagunesid eri mõõdikute lõikes. Diagnostilistes katsetes suutsid spetsialiseeritud ekspertmudelite konsensus ja kontrollpunktide kombineerimine taustakõnel mõõdetud FAPH-i oluliselt vähendada, kuid ükski praegune mudel ega kombinatsioon ei täitnud korraga kõiki eesmärke.
+Tulemused näitavad, et ükski praegune mudel ega mudelite kombinatsioon ei täida korraga kõiki sihte: madalat FAPH-i, kõrget päriskõnelejate tuvastamismäära ja täpset fraasieristust. Töö peamine panus on seetõttu mitte tootmisküps mudel, vaid reprodutseeritav hindamisprotokoll ja empiiriline kirjeldus kompromissidest, mis tekivad väikese ressursiga keele lokaalse äratussõna arendamisel.
 
-Töö peamine panus on näidata, et väikese keele lokaalse äratussõna arenduses on keskne probleem mitte ainult mudeli treenimine, vaid metodoloogiliselt korrektne hindamine ja tõendusdistsipliin. Töö tulemuseks on reprodutseeritav toru, dokumenteeritud andmestiku- ja hindamisprotokoll ning empiiriline kirjeldus kompromissidest tuvastamismäära, sihtfraasiga sarnaste negatiivnäidete eristuse, prefiksi- ja segiajamisjuhtumite valepositiivse määra ning valevallandumiste vahel eestikeelse äratussõna \enquote{Kuule Kratt} näitel.
-
-
-
-% No need to change this
 Lõputöö on kirjutatud \langEst~keeles ning sisaldab teksti \calculatepages leheküljel, 
 \total{totalchapters} peatükki\ifthenelse{\equal{\totvalue{figure}}{0}}{}{% If no figures, do nothing
-, \total{figure} \ifnum\totvalue{figure}=1 joonis\else joonist\fi%
-}\ifthenelse{\equal{\totvalue{table}}{0}}{}{% If no tables, do nothing
-, \total{table} \ifnum\totvalue{table}=1 tabel\else tabelit\fi%
-}.
+, \total{figure} joonist}%
+\ifthenelse{\equal{\totvalue{table}}{0}}{}{% If no tables, do nothing
+, \total{table} tabelit}%
+.
