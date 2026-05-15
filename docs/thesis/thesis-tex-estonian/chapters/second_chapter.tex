@@ -319,13 +319,13 @@ Residuaalühenduste mõju eristatakse andmestiku ja regulaarimise muudatustest e
 
 \begin{table}[H]
 \centering
-\caption{Residuaalühenduste mõju võrdlus: v6 (OFF) ja v6-residual (ON), lävi\,=\,0,995. Andmestik ja treeninguseadistus on samad; muutub ainult \texttt{residual\_connection}.}
+\caption{Residuaalühenduste mõju võrdlus: v6 (OFF) ja v6-residual (ON), lävi\,=\,0,995. Andmestik ja treeninguseadistus on samad; muutub ainult \texttt{residual\_connection}. Veerud \enquote{Tuv. A} ja \enquote{Tuv. B} on Kõneleja~A XTTS ($N=48$) ja Kõneleja~B ($N=11$) kõrvalejäetud klippide tuvastamismäär (\%, kõrgem parem); \enquote{HN Mac} ja \enquote{HN A} on sarnaste negatiivnäidete vale-vallandumise määr (\%, madalam parem) vastavalt Maci $\sim$Kratt-prefiksinäidetel ja Kõneleja~A XTTS sarnastel klippidel; \enquote{FAPH CV} on voogedastusrežiimi valehäirete arv tunnis Common~Voice ET kõrvalejäetud komplektil.}
 \label{tab:residual-ablation}
 \scriptsize
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l r r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Res.} & \textbf{Tuv. A} & \textbf{Tuv. B} & \textbf{HN Mac} $\downarrow$ & \textbf{HN A} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
+\textbf{Mudel} & \textbf{Res.} & \textbf{Tuv. A} $\uparrow$ & \textbf{Tuv. B} $\uparrow$ & \textbf{HN Mac} $\downarrow$ & \textbf{HN A} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
 \hline
 v6 & OFF & 98,0 & 82,0 & 100,0 & 60,0 & 25,4 \\
 v6-residual & ON & 100,0 & 91,0 & 100,0 & 73,0 & 14,4 \\
@@ -334,26 +334,26 @@ v6-residual & ON & 100,0 & 91,0 & 100,0 & 73,0 & 14,4 \\
 }
 \end{table}
 
-Võrdlus näitab, et residuaalühendused parandasid selles seadistuses eelkõige voogedastuslikku stabiilsust: Common~Voice ET FAPH langes 25,4-lt 14,4-le, säilitades või parandades samal ajal positiivsete klippide tuvastamismäära. Samas jäi Maci sarnaste negatiivnäidete FPR 100\% tasemele ning Kõneleja~A XTTS sarnaste negatiivnäidete FPR isegi halvenes 60\%-lt 73\%-le. Seega on residuaalühendused kasulik arhitektuurivalik ja neid kasutati hilisemates tugevamates kandidaatides, kuid täpse fraasieristuse probleem jäi endiselt andmestiku ja sihtfunktsiooni lahendada.
+Võrdlus näitab kahesuunalist mõju. Esiteks paranesid voogedastuslik stabiilsus ja positiivsete klippide tuvastamismäär: Common~Voice ET FAPH langes 25,4-lt 14,4-le, Kõneleja~B tuvastamismäär tõusis 82\%-lt 91\%-le ning Kõneleja~A XTTS tuvastamismäär jõudis 100\%-ni. Teiseks ei paranenud sarnaste negatiivnäidete eristamine: Maci komplekti vale-vallandumise määr jäi 100\% tasemele ning Kõneleja~A XTTS sarnaste negatiivnäidete määr isegi halvenes 60\%-lt 73\%-le. Praktiline tasakaal kallutab kasuks --- FAPH-i 11,0-ühikuline langus ja tuvastamismäära paranemine kaaluvad üles ühe sarnaste negatiivnäidete komplekti regressiooni ---, mistõttu residuaalühendused võeti üle hilisemates tugevamates kandidaatides (\texttt{v13a/v13b}-paar, \texttt{v16}-pere ja \texttt{v6-residual} ise kasutuse-pilootmudelina). Kuna täpse fraasieristuse probleem residuaaliga ei lahene, vaadeldakse järgnevalt §\ref{sec:specaug-ablation}-s, kas spektrogrammi-tasandi regulariseerimine parandab sarnaste negatiivnäidete eristamist.
 
 \subsection{SpecAugmenti mõju ühe muutujaga võrdlus: v13a ja v13b}
 \label{sec:specaug-ablation}
 
-SpecAugmenti kasutuselevõtt toimus esmalt süsteemivariandina, mitte eraldiseisva põhjusliku katsena. v7 puhul lülitati SpecAugment sisse samal ajal, kui lisati 6090 uut TTS sihtfraasiga sarnast negatiivklippi ja 826 SSML-laiendusega positiivset; seetõttu kirjeldab v7 tulemus tervikseadistuse mõju, mitte ainult augmentatsiooni mõju. SpecAugmenti eraldi hindamiseks kasutati hiljem v13a/v13b paari, kus andmestik, arhitektuur, treeningusammud ja klassikaalud olid samad ning muutus ainult aja- ja sagedusmaskide kasutamine.
+SpecAugment lisati esmalt versioonis v7 koos 6090 uue TTS-sihtfraasiga sarnase negatiivklipi ja 826 SSML-laiendusega positiivse näitega; v7 tulemus kirjeldab seetõttu tervikseadistuse, mitte üksnes augmentatsiooni mõju. Selle puuduse kõrvaldamiseks tehti hilisem kontrollitud ablatsioon v13a/v13b paariga, kus andmestik, arhitektuur, treeningusammud ja klassikaalud olid identsed ning muutus ainult aja- ja sagedusmaskide kasutamine.
 
-Mõlemad mudelid treeniti samadel andmetel: 3343 positiivset näidet, 17203 negatiivset näidet ja 1002 taustaheli klippi (kogukestus ${\sim}12{,}18$\,h), kasutades sama \texttt{features\_dir} sõrmejälge ja sama juhuslike alamhulkade jaotust. Arhitektuur oli mõlemal sama: \texttt{mixednet 4$\times$48f}, \texttt{first\_conv\_filters\,=\,32}, residuaalühendused sees (\texttt{residual\_connection\,=\,1,1,1,1}), \texttt{negative\_class\_weight\,=\,20}, \texttt{positive\_sampling\_weight\,=\,2}. Treeningu ja optimeerija parameetrid (10\,000 sammu, $\eta\,=\,0{,}001$, batch 128) olid samuti identsed. Ainsaks erinevuseks oli SpecAugmenti maskide arv ja suurus: v13a-l \texttt{freq\_mask\_count\,=\,[0]} ja \texttt{time\_mask\_count\,=\,[0]} (väljas), v13b-l \texttt{freq\_mask\_count\,=\,[2]}, \texttt{freq\_mask\_max\_size\,=\,[3]} mel-binni, \texttt{time\_mask\_count\,=\,[2]} ja \texttt{time\_mask\_max\_size\,=\,[10]} kaadrit (sees, parameetrid kooskõlas Park et al. \cite{park2019specaugment} algupärase ettepanekuga). Treeninguseadistuste võrdlemine \texttt{analysis/training\_config\_snapshot.json} fail-haaval kinnitas, et muid erinevusi pole.
+Mõlemad mudelid treeniti samadel andmetel: 3343 positiivset näidet, 17\,203 negatiivset näidet ja 1002 taustaheli klippi (kogukestus 12,18\,h), kasutades sama \texttt{features\_dir} sõrmejälge ja sama juhuslike alamhulkade jaotust. Arhitektuur oli mõlemal sama: \texttt{mixednet 4$\times$48f}, \texttt{first\_conv\_filters\,=\,32}, residuaalühendused sees (\texttt{residual\_connection\,=\,1,1,1,1}), \texttt{negative\_class\_weight\,=\,20}, \texttt{positive\_sampling\_weight\,=\,2}. Treeningu ja optimeerija parameetrid (10\,000 sammu, $\eta\,=\,0{,}001$, batch 128) olid samuti identsed. Ainsaks erinevuseks oli SpecAugmenti maskide arv ja suurus: v13a-l olid mõlemad maskiloendurid nullis (\texttt{freq\_mask\_count\,=\,0}, \texttt{time\_mask\_count\,=\,0}; augmentatsioon välja lülitatud), v13b-l aga \texttt{freq\_mask\_count\,=\,2} maksimaalse laiusega 3 mel-binni ja \texttt{time\_mask\_count\,=\,2} maksimaalse laiusega 10 kaadrit, kooskõlas Park et al. \cite{park2019specaugment} algupärase ettepanekuga. Treeninguseadistuste võrdlemine \texttt{analysis/training\_config\_snapshot.json} fail-haaval kinnitas, et muid erinevusi pole.
 
 Tabel~\ref{tab:specaug-ablation} esitab tulemused 2026-04-21 ühtsel kõrvalejäetud hindamisel lävega 0,995.
 
 \begin{table}[H]
 \centering
-\caption{SpecAugmenti mõju võrdlus: v13a (SA OFF) ja v13b (SA ON), lävi\,=\,0,995. Andmestik ja arhitektuur on identsed; tuvastusveerud mõõdavad Kõneleja A XTTS ($N=48$) ja Kõneleja B ($N=11$) kõrvalejäetud klippe.}
+\caption{SpecAugmenti mõju võrdlus: v13a (SA OFF) ja v13b (SA ON), lävi\,=\,0,995. Andmestik ja arhitektuur on identsed; tuvastusveerud mõõdavad Kõneleja~A XTTS ($N=48$) ja Kõneleja~B ($N=11$) kõrvalejäetud klippide tuvastamismäära (\%); veerudefinitsioonid samad mis tabelis~\ref{tab:residual-ablation}.}
 \label{tab:specaug-ablation}
 \scriptsize
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l r r r r r}
 \hline
-\textbf{Mudel} & \textbf{Tuv. A} & \textbf{Tuv. B} & \textbf{HN Mac} $\downarrow$ & \textbf{HN A} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
+\textbf{Mudel} & \textbf{Tuv. A} $\uparrow$ & \textbf{Tuv. B} $\uparrow$ & \textbf{HN Mac} $\downarrow$ & \textbf{HN A} $\downarrow$ & \textbf{FAPH CV} $\downarrow$ \\
 \hline
 v13a (SA OFF) & 85,0 & 45,0 & 87,0 & 82,0 & 134 \\
 v13b (SA ON) & 69,0 & 73,0 & 67,0 & 22,0 & \phantom{0}88 \\
