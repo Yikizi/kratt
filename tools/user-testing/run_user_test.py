@@ -65,10 +65,13 @@ def default_trials() -> list[TrialSpec]:
         TrialSpec(
             "FREE_FILM_01",
             "free_form_command",
-            "Oma sõnadega: tee valgus selliseks, nagu tahaksid õhtul filmi vaadata.",
-            "<free-form film-evening lighting command>",
+            (
+                "Avastamise osa: proovi ühte toetatud piiri. "
+                "Näiteks heledus/värv/efekt/olek, ilm homme teises linnas või poolik käsk 'pane tuli teist värvi'."
+            ),
+            "<free-form supported exploration command>",
             True,
-            "free_form_lighting_mood",
+            "free_form_supported_exploration",
             duration_s=8.0,
         ),
     ]

@@ -92,6 +92,7 @@ def read_scores(path: Path) -> list[dict[str, Any]]:
     for row in objects:
         if row.get("type") == "replay_score":
             row["_source_file"] = str(path)
+            row["_replay_session_dir"] = str(session_dir or "")
             row.setdefault("session_dry_run", session_meta.get("dry_run"))
             row.setdefault("session_audio_fixture_dir", session_meta.get("audio_fixture_dir"))
             rows.append(row)
@@ -99,12 +100,25 @@ def read_scores(path: Path) -> list[dict[str, Any]]:
 
 
 def is_smoke_row(row: dict[str, Any]) -> bool:
-    """Return True for dry-run/synthetic fixture rows that must not enter thesis tables."""
+    """Return True for dry-run/synthetic fixture rows that must not enter thesis tables.
+
+    Current replay rows carry explicit dry-run/fixture metadata. Older smoke
+    artifacts did not, so also exclude clearly synthetic participant IDs and
+    temporary smoke-session paths when summarizing an existing output tree.
+    """
     if row.get("session_dry_run") is True:
         return True
     if row.get("audio_source") in {"dry_run", "fixture"}:
         return True
     if row.get("session_audio_fixture_dir"):
+        return True
+
+    participant = str(row.get("participant_id") or "").upper()
+    if participant.startswith(("TEST", "SYNTH", "SMOKE")):
+        return True
+
+    session_dir = str(row.get("_replay_session_dir") or "")
+    if "/kratt-fixture" in session_dir or "/kratt-user-test-smoke" in session_dir:
         return True
     return False
 

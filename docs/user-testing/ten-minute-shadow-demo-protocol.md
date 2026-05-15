@@ -1,6 +1,6 @@
 # 10-minute shadow-demo user test protocol
 
-**Status:** current protocol for self-pilot / pilot freeze (updated 2026-04-29)  
+**Status:** current protocol for self-pilot / pilot freeze (updated 2026-05-12)  
 **Target duration:** 10 minutes per participant  
 **Primary goal:** collect real-speaker wake-word evidence while keeping the session short and engaging through a one-bulb smart-home demo.  
 **Recorder:** `./cli/kratt user-test <participant_id> --active-model v16c --new-session-subdir`
@@ -75,7 +75,7 @@ The thesis should clearly distinguish:
 | 2:30–3:30 | 5 hard negatives | confusable-phrase rejection |
 | 3:30–7:30 | 6 scripted bulb commands | end-to-end task success + more positive wake attempts |
 | 7:30–9:00 | 1 free-form bulb task | natural Estonian smart-home phrasing |
-| 9:00–10:00 | 4 ratings + 1 open comment | subjective UX |
+| 9:00–10:00 | locked mini questionnaire | UMUX-Lite, SEQ, diagnostic UX |
 
 ## Trial script
 
@@ -133,11 +133,11 @@ Purpose:
 - wake + STT + intent + action decomposition;
 - additional positive wake attempts.
 
-### D. Free-form task
+### D. Free-form exploration task
 
 Prompt:
 
-> Proovi nüüd oma sõnadega teha valgus selliseks, nagu tahaksid õhtul filmi vaadata.
+> Nüüd on avastamise osa. Proovi ühte toetatud, aga loomulikult sõnastatud või veidi poolikut käsku. Hea siht on valgus: värv, heledus, efekt või olek. Näiteks: "tuba on liiga hele", "tee diskot", "vilguta roosalt", "mis värvi tuli on" või "pane tuli teist värvi" ja vasta Krati täpsustusele ilma uut äratussõna ütlemata. Võid küsida ka infot, näiteks "mis ilm homme Tartus on" või "mis päev kahe päeva pärast on", või ühe lühikese üldküsimuse. Taimerid, muusika, uksed ja muud seadmed ei ole selle demo võimekused.
 
 Rule:
 
@@ -148,19 +148,25 @@ maximum 2 command attempts
 Purpose:
 
 - natural Estonian smart-home command phrasing;
-- repair behaviour;
-- subjective system flexibility.
+- light repair behaviour and follow-up commands;
+- subjective system flexibility;
+- richer edge cases than repeated simple bulb commands.
 
-### E. Mini questionnaire
+### E. Locked mini questionnaire
 
 Use the short form in `docs/user-testing/mini-questionnaire-form-v1.md`.
 
-Rate 1–5:
+Comparable measures:
 
-1. Süsteem reageeris piisavalt usaldusväärselt.
-2. Süsteem reageeris piisavalt kiiresti.
-3. Käskude sõnastamine tundus loomulik.
-4. Kasutaksin sellist süsteemi kodus.
+- UMUX-Lite, two 7-point items.
+- SEQ, one 7-point post-task ease item.
+
+Diagnostic Kratt-specific ratings, 1–5:
+
+- Süsteem reageeris piisavalt usaldusväärselt.
+- Süsteem reageeris piisavalt kiiresti.
+- Käskude sõnastamine tundus loomulik.
+- Kasutaksin sellist süsteemi kodus.
 
 Open question:
 

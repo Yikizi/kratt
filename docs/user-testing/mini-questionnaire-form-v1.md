@@ -1,40 +1,36 @@
-# Kratt mini questionnaire for 10-minute user test v1
+# Kratt locked mini questionnaire for pilot user test v1
 
-**Status:** short form for `ten-minute-shadow-demo-protocol.md`. Use when participant burden must stay under ~1 minute. The longer question bank remains `questionnaire-v1.md`.
+**Status:** locked pilot rating items for the first real participant runs, 2026-05-07. Exploration cue added 2026-05-12; core question wording unchanged. Use this form for every pilot participant unless a pilot failure forces a documented change.
+
+**Purpose:** collect one comparable short usability score plus Kratt-specific diagnostic feedback. The UMUX-Lite and SEQ items are the defensible comparable measures; the Kratt-specific ratings are reported separately and are not a validated combined scale.
+
+## Participant-facing exploration cue
+
+Use this as a short intro before the free-form part of the demo, or as the first text on the questionnaire:
+
+> Kratt juhib selles demos ühte WiZ lampi ja oskab kõrvalt väikseid infopäringuid. Proovi toetatud piire: pane tuli põlema või kustu; muuda värvi (sinine, punane, roosa, soe valge, külm valge, neutraalne); ütle heleduse kohta loomulikult "liiga hele", "tee hämaramaks" või "tee valgemaks"; proovi efekte "tee diskot", "käi värvid läbi" või "vilguta roosalt"; küsi tule olekut, kellaaega, kuupäeva või ilma teise päeva ja linna kohta (nt "mis ilm homme Tartus on?"). Üks hea test on anda poolik käsk "pane tuli teist värvi" ja vaadata, kas Kratt küsib täpsustust. Soovi korral küsi ka lühike üldküsimus, näiteks retsepti või nõu, see läheb abimudelile ja võib olla aeglasem. Taimerid, muusika, uksed ja muud seadmed ei ole selles demos toetatud.
 
 ## Required fields
 
 ### Metadata
 
 - `participant_id` — same pseudonymous ID as recorder session, e.g. `P01`.
-- `session_id` — optional; copy from `session.json` if convenient.
 - `date` — YYYY-MM-DD.
+- `session_id` — copy from `session.json` if convenient.
+- consent level — metrics only / audio opt-in.
 
-### Diagnostic ratings
-
-Scale for all four: **1 = üldse ei nõustu**, **5 = nõustun täielikult**.
-
-1. Süsteem reageeris piisavalt usaldusväärselt.
-2. Süsteem reageeris piisavalt kiiresti.
-3. Käskude sõnastamine tundus loomulik.
-4. Kasutaksin sellist süsteemi kodus.
-
-### Open comment
-
-5. Mis oli kõige häirivam või üllatavam?
-
-## Optional metadata if time allows
+### Background
 
 - Eesti keele tase: emakeel / C1-C2 / B1-B2 / A1-A2 / muu / ei soovi öelda.
 - Varasem häälassistendi kasutus: mitte kunagi / harva / iganädalaselt / iga päev.
 - Nutikodu kasutus: ei kasuta / aeg-ajalt / regulaarselt.
 
-## Optional UMUX-Lite add-on
+### UMUX-Lite usability items
 
-Use only if the form can keep the session short. Scale: **1 = ei nõustu üldse**, **7 = nõustun täielikult**.
+Scale for both: **1 = ei nõustu üldse**, **7 = nõustun täielikult**.
 
-- Selle süsteemi võimekused vastavad mu nõudmistele.
-- Seda süsteemi on lihtne kasutada.
+1. Selle süsteemi võimekused vastavad mu nõudmistele.
+2. Seda süsteemi on lihtne kasutada.
 
 Scoring:
 
@@ -42,10 +38,29 @@ Scoring:
 UMUX-Lite normalized = ((mean(item1, item2) - 1) / 6) * 100
 ```
 
-If these two items are not collected, do **not** report a UMUX-Lite score; report the four required diagnostic ratings separately instead.
+### Single Ease Question
+
+Scale: **1 = väga raske**, **7 = väga lihtne**.
+
+3. Kui lihtne oli Kratiga etteantud ülesandeid lõpule viia?
+
+### Diagnostic ratings
+
+Scale for all four: **1 = üldse ei nõustu**, **5 = nõustun täielikult**.
+
+4. Süsteem reageeris piisavalt usaldusväärselt.
+5. Süsteem reageeris piisavalt kiiresti.
+6. Käskude sõnastamine tundus loomulik.
+7. Kasutaksin sellist süsteemi kodus.
+
+### Open comment
+
+8. Mis oli kõige häirivam või üllatavam?
 
 ## Reporting guidance
 
-- For N≈20-30, report median + interquartile range for each rating.
-- Treat the four required ratings as diagnostic project-specific feedback, not as a validated UX scale.
+- Report UMUX-Lite as the comparable short usability measure.
+- Report SEQ as the post-task ease measure.
+- For N≈20-30, report median + interquartile range for each item.
+- Treat the four Kratt-specific ratings as diagnostic project-specific feedback, not as a validated UX scale.
 - Link subjective reliability to objective wake recall / task success, but do not merge them into one score.

@@ -32,7 +32,7 @@ LOCAL_TTS_SPEAKER = "meelis"
 
 def fixture_text(expected_text: str) -> str:
     if expected_text.startswith("<"):
-        return "Kuule Kratt, tee valgus filmiõhtuks sobivaks."
+        return "Kuule Kratt, tuba on liiga hele."
     return expected_text
 
 
