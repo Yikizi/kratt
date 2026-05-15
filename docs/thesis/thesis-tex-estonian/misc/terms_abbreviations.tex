@@ -1,21 +1,43 @@
-\begin{longtable}{p{3cm}p{10cm}}
+\begin{longtable}{p{4cm}p{9cm}}
+1K-FPR & Üksiku sõna \enquote{Kratt} valepositiivsete määr; mõõdab, kas mudel vallandub ainult sihtfraasi teise sõna peale.\\
 API & Rakendusliides (\textit{Application Programming Interface}).\\
 ASR & Automaatne kõnetuvastus (\textit{Automatic Speech Recognition}).\\
-CV & Mozilla Common Voice; käesolevas töös ka lühend Common Voice'i eestikeelse kõrvalejäetud komplekti kohta.\\
+BC-ResNet & Broadcasted Residual Network; residuaalühendustega kompaktne KWS-arhitektuur, mida kasutatakse kirjanduse võrdlusena.\\
+CC-BY-SA & Creative Commons Attribution--ShareAlike litsents; töös Riigikogu audio-stenogrammide litsentsina.\\
+Conf-FPR & Segiajamisfraaside valepositiivsete määr; käesolevas töös eeskätt \enquote{kuule/kule} ja sarnaste fraaside eristamise mõõdik.\\
+CV & Mozilla Common Voice; käesolevas töös ka Common Voice'i eestikeelse kõrvalejäetud komplekti lühend.\\
+DET-kõver & Tuvastusvea kompromissi kõver (\textit{Detection Error Tradeoff}), kus võrreldakse valetõrjete ja valevallandumiste suhet eri lävedel.\\
 DiPCo & Distant-Party Conversation korpus; mitme mikrofoniga koosolekukõne andmestik.\\
+DNN-HMM & Süva-närvivõrgu ja varjatud Markovi mudeli ühendmudel (\textit{Deep Neural Network--Hidden Markov Model}).\\
 DSP & Digitaalne signaalitöötlus (\textit{Digital Signal Processing}).\\
+ERR & Eesti Rahvusringhääling; töös ühe võimaliku eestikeelse kõnekorpuse allikana.\\
 ESP32-S3 & Espressifi mikrokontrolleriperekond, mida kasutatakse töö sihtseadmena.\\
-FAPH & Valevallandumised tunnis (\textit{False Accepts Per Hour}).\\
+ESP32-S3-Korvo-2 & ESP32-S3 põhine Espressifi arendusplaat, mida kasutati Krati heli kogumiseks ja sihtseadme prototüübina.\\
+ESPHome & Avatud lähtekoodiga püsivara- ja automatsiooniraamistik ESP-põhistele nutikodu seadmetele.\\
+ET & Eesti keele kood; töös tähistab näiteks Common Voice ET eestikeelset korpust.\\
+FA/h & Valevallandumised tunnis (\textit{False Accepts per Hour}); sama ühik, mida FAPH väljendab.\\
+FAPH & Valevallandumised tunnis (\textit{False Accepts Per Hour}); pideva negatiivse heli põhjal arvutatud valevallandumiste sagedus.\\
 FPR & Valepositiivsete määr (\textit{False Positive Rate}); negatiivsete näidete osakaal, mille mudel ekslikult äratussõnaks loeb.\\
 FRR & Valetõrjete määr (\textit{False Rejection Rate}); positiivsete näidete osakaal, mille mudel jätab tuvastamata.\\
 HN & Sarnane negatiivnäide; äratusfraasile foneetiliselt lähedane, kuid mitte kehtiv fraas.\\
 HPC & Kõrgjõudlusega arvutusressurss (\textit{High Performance Computing}); töös TalTechi GPU-klaster.\\
 INT8 & 8-bitine täisarvuline esitus, mida kasutatakse kvantiseeritud TensorFlow Lite mudelis.\\
 IoT & Asjade internet (\textit{Internet of Things}).\\
+Kontrollpunkt & Treeningu käigus salvestatud mudeliseis, mille valik sõltub määratud optimeerimis- või valideerimiskriteeriumist.\\
+Konsensusmudel & Otsustusviis, kus äratus loetakse tuvastatuks ainult siis, kui mitu eraldi mudelit ületavad oma läve.\\
+Kõrvalejäetud hindamiskomplekt & Testikomplekt, mida ei kasutata mudeli treenimisel ega läve valimisel ning mille eesmärk on mõõta üldistusvõimet.\\
+K-2 & Korvo-2 sama-seadme andmete lühend tulemuste tabelites.\\
 KWS & Võtmesõna- või äratussõnatuvastus (\textit{Keyword Spotting}).\\
+KWS-Net & Google'i võtmesõnatuvastuse arhitektuuripere, mille ideedel põhineb MixedNeti SVDF-kihtide kasutus.\\
 LS & LibriSpeechi kõrvalejäetud ingliskeelse kõne komplekt tulemuste tabelites.\\
+Lävi & Mudeli väljundväärtuse piir, mille ületamisel loetakse äratussõna tuvastatuks.\\
 MCP & Mudelikonteksti protokoll (\textit{Model Context Protocol}); arenduses kasutatud abiteenuste liidestusviis.\\
+MISP & Multimodal Information based Speech Processing; reaalsetele kodukeskkondadele suunatud kõnetöötluse võrdlusülesannete sari.\\
 MoE & Ekspertmudelite segu või konsensus (\textit{Mixture of Experts}).\\
+Mudeli käitamine & Masinõppemudeli rakendamine uuele sisendile väljundi saamiseks (\textit{inference}); see eristab mudeli tööfaasi loogika- ja statistikakontekstis kasutatavast \textit{inference}-tähendusest.\\
+MUSAN & Muusika, kõne ja müra korpus (\textit{Music, Speech, and Noise}), mida kasutatakse negatiivse ja taustaheli allikana.\\
+Pre-FPR & Prefiksifraaside valepositiivsete määr; mõõdab, kas mudel vallandub fraasi alguse, näiteks \enquote{kuule} või \enquote{kule}, peale ilma täisfraasita.\\
+Rev-FPR & Pööratud sõnajärjega fraaside valepositiivsete määr; mõõdab vallandumist näiteks kujul \enquote{Kratt kuule}.\\
 RMS & Ruutkeskmine amplituud (\textit{Root Mean Square}); helisignaali taseme mõõdik.\\
 RNG & Juhuarvugeneraator (\textit{Random Number Generator}).\\
 ROC & Lävikõver (\textit{Receiver Operating Characteristic}).\\
@@ -25,11 +47,15 @@ SLURM & Kõrgjõudlusega arvutusklastri tööde ajastaja.\\
 SSML & Kõnesünteesi märgenduskeel (\textit{Speech Synthesis Markup Language}).\\
 STT & Kõne tekstiks teisendamine (\textit{Speech to Text}).\\
 SVDF & Lahutatud ajalise ja sagedusliku filtri kiht (\textit{Singular Value Decomposition Filter}).\\
-TFLite & TensorFlow Lite mudelivorming servaseadmetele.\\
+Taustaheli & Pikk negatiivne helivoog, kus äratusfraasi ei öelda; seda kasutatakse valevallandumiste sageduse mõõtmiseks.\\
+TFLite & TensorFlow Lite; kerge raamistik ja mudelivorming mudelite käitamiseks serva- ja mobiiliseadmetel.\\
 TTS & Teksti kõneks teisendamine (\textit{Text to Speech}).\\
 UMUX-Lite & Kahe väitega kasutatavuse lühiskaala.\\
 UV & Usaldusvahemik.\\
 VAD & Kõneaktiivsuse tuvastus (\textit{Voice Activity Detection}).\\
+Valevallandumine & Olukord, kus äratussõnamudel vallandub ilma tegeliku sihtfraasita; FAPH loendab selliseid sündmusi tunni kohta.\\
+Voogedastushindamine & Hindamisviis, kus mudelit käitatakse järjestikuses helivoos pideva kuulamisrežiimi simuleerimiseks, mitte ainult eraldiseisvatel klippidel.\\
+VOiCES & Voices Obscured in Complex Environmental Settings; kaugkõne ja ruumiakustikaga kõnekorpus.\\
 WAV & Tihendamata helifaili vorming.\\
 XML & Laiendatav märgistuskeel (\textit{Extensible Markup Language}).\\
 XTTS & Coqui XTTS teksti-kõneks mudel, mida kasutatakse sünteetiliste kõneklippide loomiseks.\\

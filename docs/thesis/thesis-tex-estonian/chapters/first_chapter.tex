@@ -1,12 +1,12 @@
-Metoodika eesmärk on kirjeldada tööprotsessi, mille abil eristatakse äratussõna mudeli arenduses töötlustoru tehnilisi piiranguid andmestikust või mudeli üldistusvõimest tulenevatest probleemidest. See on oluline, sest vastasel juhul võib nõrk tulemus jääda valesti kas andmete, juurutamise või treeningukoodi arvele. Järgnevalt kirjeldatakse toru tehnilised komponendid, võrdlusraam, andme- ja hindamiskiht ning mudeli arhitektuur.
+Metoodika kirjeldab treeningu-, hindamis- ja juurutuskontrollide töövoogu, mille abil eristatakse mudeli arhitektuurist, andmestiku koostisest ja kasutuskeskkonnast tulenevaid mõjusid. See on oluline, sest vastasel juhul võib nõrk tulemus jääda ekslikult kas andmete, juurutamise või treeningukoodi arvele. Järgnevalt kirjeldatakse tööahela tehnilised komponendid, võrdlusraam, andme- ja hindamiskiht ning mudeli arhitektuur.
 
 \section{Kasutatud tehnoloogiad}
 Töö praktiline baas koosneb neljast peamisest komponendist. Esmaseks mikrokontrolleri-suunaliseks treeninguraamistikuks kasutatakse \texttt{microWakeWord} projekti \cite{microwakeword2026}, mille all töötab TensorFlow \cite{tensorflow2015}. Taustavõrdluseks käsitletakse \texttt{openWakeWord} raamistikku \cite{openwakeword2026}, sest selle ümber on aktiivne kasutuspraktika Home Assistanti ökosüsteemis. Mudeli sihtformaadiks on TensorFlow Lite ning sihtseadmeks ESP32-S3 põhine arendusplaat. Seadmel käitamiseks ja Home Assistantiga sidumiseks kasutatakse ESPHome'i \cite{esphome2026}. Nutikodu automaatikakihi ja sündmuste orkestreerimise eest vastutab Home Assistant \cite{homeassistant2026}.
 
-See tehnoloogiline valik võimaldab hoida toru lokaalsena: treening toimub arendusmasinas, mudeli eksport tehakse TFLite vormingusse ning mudel töötab füüsilisel mikrokontrolleril ilma välise pilveteenuseta. Katse- ja demoautomaatika kirjutati peamiselt Pythonis, sest sama keel kattis andmetöötluse, treeningu ettevalmistuse, hindamise ja prototüübi juhtloogika. Demoarenduses kasutati WiZ nutipirni, vajaduse korral mockitud MCP-teenuseid ja lokaalseid Ollama-põhiseid keelemudeleid; need olid abivahendid äratussõna ning ühe nutipirni stsenaariumi kontrollimiseks.
+See tehnoloogiline valik võimaldab hoida tööahela lokaalsena: treening toimub arendusmasinas, mudeli eksport tehakse TFLite vormingusse ning mudelit käitatakse füüsilisel mikrokontrolleril ilma välise pilveteenuseta. Katse- ja demoautomaatika kirjutati peamiselt Pythonis, sest sama keel kattis andmetöötluse, treeningu ettevalmistuse, hindamise ja prototüübi juhtloogika. Alternatiividena kaaluti C/C++-i, TypeScripti/Node.js-i ja shell-skripte. C/C++ jäi seadmelähedaseks kihiks, TypeScript/Node.js sobinuks MCP- ja veebiliidesteks ning shell-skriptid lihtsateks käsurea ümbristeks, kuid ükski neist ei katnud sama hästi heli- ja masinõppetöötlust, analüüsi ning kiiret prototüüpimist. Demoarenduses kasutati WiZ nutipirne, simuleeritud MCP-servereid ja lokaalseid Ollama-põhiseid keelemudeleid; need olid abivahendid äratussõna ning ühe nutipirni stsenaariumi kontrollimiseks.
 
 \section{Võrdlusraamistik}
-Peamine kommertsalternatiiv Picovoice Porcupine \cite{picovoice-guide2026} jäetakse võrdlusest välja, sest tegemist on suletud lähtekoodiga litsentsipõhise lahendusega, mis ei toeta eesti keelt ega luba kohalikku treeningut sünteetilisel andmestikul.
+Peamine kommertsalternatiiv Picovoice Porcupine \cite{picovoice-guide2026} jäetakse võrdlusest välja, sest see on suletud lähtekoodiga litsentsipõhine lahendus, mis ei toeta eesti keelt ega luba kohalikku treeningut sünteetilisel andmestikul.
 
 Võrdlus viiakse läbi neljal teljel:
 \begin{itemize}
@@ -27,14 +27,14 @@ Võrdlus viiakse läbi neljal teljel:
 Positiivsed klipid õpetavad mudelile sihtsõna akustilist kuju. Negatiivsed klipid aitavad mudelil õppida, mida mitte pidada äratussõnaks. Taustaheli andmed täidavad teistsugust rolli: nende abil hinnatakse, kui tihti mudel tekitab valevallandumisi olukorras, kus seade kuulab pidevat helivoogu.
 
 \section{Avalikud andmekorpused}
-Enne eestikeelse \enquote{Kratt} andmestiku juurde liikumist otsustati kohalik treeningu- ja hindamistoru valideerida avaliku andmestiku peal. Selleks valiti \texttt{Speech Commands} korpus ja sihtsõna \texttt{marvin} \cite{speechcommands2018}. Tegemist on kontrollitava baasülesandega, mille peal on võimalik hinnata, kas treening, eksport ja evaluatsioon töötavad otsast lõpuni.
+Enne eestikeelse \enquote{Kratt} andmestiku juurde liikumist otsustati kohalik treeningu- ja hindamisahel valideerida avaliku andmestiku peal. Selleks valiti \texttt{Speech Commands} korpus ja sihtsõna \texttt{marvin} \cite{speechcommands2018}. See on kontrollitav baasülesanne, mille peal saab hinnata, kas treening, eksport ja hindamine töötavad otsast lõpuni.
 
-Taustaheli ja kõnepõhiste negatiivsete allikatena lisatakse torusse \texttt{MUSAN}, \texttt{VOiCES} ja \texttt{Common Voice} korpused \cite{musan2015,voices2018,commonvoice2020}. Nende rollid on erinevad. \texttt{MUSAN} pakub müra, muusikat ja kõnet. \texttt{VOiCES} toob sisse kaugkõne, ruumiakustika ja realistlikumad kuulamistingimused. \texttt{Common Voice} on vajalik eelkõige kõnepõhiste negatiivsete näidete jaoks ning hiljem ka eestikeelse mudeli taustamaterjalina.
+Taustaheli ja kõnepõhiste negatiivsete allikatena lisatakse tööahelasse \texttt{MUSAN}, \texttt{VOiCES} ja \texttt{Common Voice} korpused \cite{musan2015,voices2018,commonvoice2020}. Nende rollid on erinevad. \texttt{MUSAN} pakub müra, muusikat ja kõnet. \texttt{VOiCES} toob sisse kaugkõne, ruumiakustika ja realistlikumad kuulamistingimused. \texttt{Common Voice} on vajalik eelkõige kõnepõhiste negatiivsete näidete jaoks ning hiljem ka eestikeelse mudeli taustamaterjalina.
 
 \section{Tunnused ja andmevorming}
 Andmed teisendatakse spektraalseteks tunnusteks ja salvestatakse \texttt{mmap} vormingus. See võimaldab töödelda suuri andmehulkasid nii, et kogu korpust ei pea korraga muutmällu laadima. See on oluline nii treeningukiiruse kui ka stabiilsuse jaoks.
 
-Praktilises torus moodustatakse eraldi järgmised andmekogumid:
+Praktilises tööahelas moodustatakse eraldi järgmised andmekogumid:
 \begin{itemize}
     \item \texttt{training};
     \item \texttt{validation};
@@ -60,9 +60,9 @@ Iga raporteeritud mõõdiku juurde lisatakse 95\%~usaldusvahemik. Klipi-tasemel 
 Käesolevas töös eristatakse nelja FAPH-i mõõdiku varianti, mille loendusreegel ja käitusloogika erinevad ning mis ei ole otseselt vastastikku võrreldavad \cite{lopezespejo2021deepkws,microwakeword2026,openwakeword2026,esphome2026}:
 \begin{itemize}
     \item \textbf{raamistiku FAPH} --- ESPHome / microWakeWord vaikeloogika seadme peal: liuakna keskmine, valikuline VAD, järelreset pärast aktiveerimist;
-    \item \textbf{skriptitud taasmängu FAPH} --- taasmäng omaette siluja ja eraldi 2-sekundilise jahtumisajaga; kasutatakse käesoleva töö kõikides Tulemuste peatüki tabelites;
+    \item \textbf{skriptitud taasmängu FAPH} --- taasmäng omaette siluja ja eraldi 2-sekundilise jahtumisajaga; kasutatakse käesoleva töö kõikides tulemuste peatüki tabelites;
     \item \textbf{välitingimuste FAPH} --- Androidi või seadme logija tulemused tegeliku käitusläve, mikrofoni ja keskkonnaga;
-    \item \textbf{kasutajatesti taasmängu FAPH} --- osalejate või pilootsessioonide taasmäng külmutatud läve juures.
+    \item \textbf{kasutajatesti taasmängu FAPH} --- kasutajatestis kogutud sessioonide taasmäng külmutatud läve juures.
 \end{itemize}
 Muutuv loendusreegel on äratussõna kirjanduses üks levinumaid reprodutseeritavuse auke \cite{lopezespejo2021deepkws}, mistõttu iga käesoleva töö FAPH-tabel ja -joonis identifitseerib kasutatud variandi tabeli pealkirjas või veerus.
 
@@ -93,7 +93,7 @@ Residuaalühendused (\emph{residual connections}) on lühisühendused, mis liida
 
 Residuaalühenduste tõhusust väikestes äratussõna mudelites on näidanud Choi~et~al., kelle BC-ResNet arhitektuur saavutab \texttt{Speech Commands} andmestikul 96,9\% täpsuse vaid ${\sim}9200$~parameetriga \cite{choi2021bcresnet}. See tulemus viitab sellele, et residuaalõpe võimaldab kompaktsetes mudelites iga parameetrit tõhusamalt ära kasutada.
 
-\texttt{microWakeWord} raamistik toetab residuaalühenduste lubamist plokipõhiselt parameetri \texttt{residual\_connection} kaudu. Töö algfaasis hoiti v1--v8 põhiseerias residuaalühendused väljas (\texttt{0,0,0,0}), et esmalt fikseerida arhitektuur ja keskenduda andmestiku ning hindamistoru vigade leidmisele. Pärast kõrvalejäetud hindamiskomplektide kasutuselevõttu kontrolliti sama parameetrit eraldi ühe muutujaga võrdlusena: \texttt{v6-residual} kordas v6 andme- ja treeninguseadistust, kuid lülitas residuaalühendused sisse (\texttt{1,1,1,1}). See vähendas ühtsel 2026-04-21 hindamisel Common~Voice ET voogedastus-FAPH-i 25,4-lt 14,4-le, kuid ei lahendanud sarnaste negatiivnäidete eristamise probleemi. Seetõttu kasutavad hilisemad tugevamad kandidaadid (nt \texttt{v16c} ja ekspertmudelid) residuaalühendusi, ent neid käsitletakse ühe kasuliku arhitektuurivalikuna, mitte iseseisva lahendusena fraasi täpsele eristamisele.
+\texttt{microWakeWord} raamistik toetab residuaalühenduste lubamist plokipõhiselt parameetri \texttt{residual\_connection} kaudu. Töö algfaasis hoiti v1--v8 põhiseerias residuaalühendused väljas (\texttt{0,0,0,0}), et esmalt fikseerida arhitektuur ja keskenduda andmestiku ning hindamisahela vigade leidmisele. Pärast kõrvalejäetud hindamiskomplektide kasutuselevõttu kontrolliti sama parameetrit eraldi ühe muutujaga võrdlusena: \texttt{v6-residual} kordas v6 andme- ja treeninguseadistust, kuid lülitas residuaalühendused sisse (\texttt{1,1,1,1}). See vähendas ühtsel 2026-04-21 hindamisel Common~Voice ET voogedastus-FAPH-i 25,4-lt 14,4-le, kuid ei lahendanud sarnaste negatiivnäidete eristamise probleemi. Seetõttu kasutavad hilisemad tugevamad kandidaadid (nt \texttt{v16c} ja ekspertmudelid) residuaalühendusi, ent neid käsitletakse ühe kasuliku arhitektuurivalikuna, mitte iseseisva lahendusena fraasi täpsele eristamisele.
 
 \subsection{Kontekstiaken}
 \label{subsec:clip-duration}
@@ -124,6 +124,6 @@ Kasutajatest on kavandatud lühikese, umbes 10-minutilise ühe-nutipirni piloots
 
 Osalejale nähtav aktiivne süsteem külmutatakse enne täismahus kogumist. Piloodi vaikevalik on \texttt{v16c}, kuna see on stabiilne üksikmudeli baasjoon, mitte lõplik tootmiskvaliteedi väide. Kõik salvestatud WAV-klipid taasesitatakse hiljem samade külmutatud lävedega mitme varimudeli peal (\texttt{v16c}, \texttt{expert-a}, \texttt{expert-b2}, \texttt{v6-residual}, \texttt{v10}, \texttt{v15} ning konsensus \texttt{expert-a+expert-b2}). See väldib olukorda, kus osalejad peaksid iga mudeliversiooni jaoks samu fraase kordama, ning tagab, et mudelite võrdlus toimub identse helisisendi peal.
 
-Salvestustoru loob iga katse kohta ühe märgendatud rea failis \texttt{trials.jsonl} ja helisalvestise nõusoleku korral vastava 16~kHz mono WAV-klipi. Pärast sessiooni kontrollitakse katsete arvu, WAV-failide olemasolu, kanalite ja diskreetimissageduse vastavust ning liiga madala RMS-i hoiatusi. Sama heli taasesitatakse hiljem külmutatud lävega mudelitele ning koondtulemused raporteeritakse tuvastamismäära ja FPR-ina koos Wilsoni usaldusvahemikega. Seega on kasutajatesti heli esmalt hindamisandmestik, mitte treeningandmestik; seda ei lisata enne lõplikku hindamist mudeli treeningusse.
+Salvestusahel loob iga katse kohta ühe märgendatud rea failis \texttt{trials.jsonl} ja helisalvestise nõusoleku korral vastava 16~kHz mono WAV-klipi. Pärast sessiooni kontrollitakse katsete arvu, WAV-failide olemasolu, kanalite ja diskreetimissageduse vastavust ning liiga madala RMS-i hoiatusi. Sama heli taasesitatakse hiljem külmutatud lävega mudelitele ning koondtulemused raporteeritakse tuvastamismäära ja FPR-ina koos Wilsoni usaldusvahemikega. Seega on kasutajatesti heli esmalt hindamisandmestik, mitte treeningandmestik; seda ei lisata enne lõplikku hindamist mudeli treeningusse.
 
 Nõusolekumudel on kaheastmeline. Minimaalne nõusolek lubab kasutada pseudonüümseid tehnilisi tulemusi ja küsimustiku vastuseid; eraldi helisalvestise nõusolek lubab säilitada ja analüüsida lühikesi märgendatud heliklippe. Sessioonijärgne küsimustik kasutab kahte UMUX-Lite väidet ja ühte SEQ lihtsushinnangut võrreldava lühiskaalana \cite{lewis2013umuxlite,sauro2009seq}; lisaks raporteeritakse eraldi neli Krati-spetsiifilist diagnostilist hinnangut süsteemi usaldusväärsuse, kiiruse, käskude loomulikkuse ja kodus kasutamise valmisoleku kohta ning üks avatud kommentaar.
