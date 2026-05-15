@@ -47,7 +47,7 @@ Arendus koosnes mitmest mudelipõlvkonnast. Joonis~\ref{fig:model-lineage-timeli
 
 \begin{table}[H]
 \centering
-\caption{Mudeliversioonide andmestiku koosseis. K-2 = Korvo-2 sama-seadme andmed, TTS = Neurokõne sünteetiline kõne.}
+\caption{Mudeliversioonide andmestiku koosseis (klippide arv). \textbf{Pos.} = Korvo-2 sama-seadme ühe kõneleja positiivsed klipid; \textbf{Pos. TTS} = Neurokõne TTS-iga sünteesitud positiivsed klipid 12 kõnelejaga; \textbf{Neg CV} = Common~Voice eestikeelsed negatiivsed klipid; \textbf{Neg K-2} = Korvo-2 sama-seadme negatiivsed klipid; \textbf{Neg TTS} = TTS-iga sünteesitud sihtfraasiga sarnased negatiivsed klipid; \textbf{Neg kokku} = negatiivsete klippide summa.}
 \label{tab:model-versions}
 \begin{tabular}{l r r r r r r}
 \hline
@@ -62,15 +62,15 @@ v6 & 915 & 1560 & 3928 & 4656 & 1644 & 10228 \\
 \end{tabular}
 \end{table}
 
-Versiooni v1 ja v2 andmestik oli identne; v2 erines ainult heli eeltöötluse poolest (vaikuse trimmimine klippide algusest ja lõpust). Kõik versioonid kasutasid sama treeninguseadistust: \texttt{negative\_class\_weight\,=\,20}, \texttt{negative\_sampling\_weight\,=\,10}, \texttt{positive\_sampling\_weight\,=\,2}. Versioonidest v3 alates kasutati lisaks MUSAN-ile ka 6,0\,tundi Korvo-2 taustaheli salvestust.
+Versiooni v1 ja v2 andmestik oli identne; v2 erines ainult heli eeltöötluse poolest (vaikuse trimmimine klippide algusest ja lõpust) ning andis v1-ga identsed hindamistulemused, mistõttu seda tabelis~\ref{tab:model-versions} eraldi reana ei esitata. Kõik versioonid kasutasid sama treeninguseadistust: \texttt{negative\_class\_weight\,=\,20}, \texttt{negative\_sampling\_weight\,=\,10}, \texttt{positive\_sampling\_weight\,=\,2} --- need on \texttt{microWakeWord} raamistiku näidisjuhendi (\emph{basic\_training\_notebook}) väärtused, mille eesmärk on suunata mudelit valepositiivseid karmimalt karistama \cite{microwakeword2026}. Versioonidest v3 alates lisati \texttt{microWakeWord}-i taustahelirajale (\texttt{background\_paths}) MUSAN-i kõrvale ka 6,0\,tundi Korvo-2 sama-seadme taustaheli salvestust; see roll on eraldi negatiivklassi rollist ja kasutab samu lähtefaile, kuid teenib treeningus erinevat eesmärki (positiivsete näidete segamine taustaheliga).
 
-Korvo-2 negatiivsed pärinesid kahest salvestussessioonist. Esimene sessioon sisaldas 14\,minutit tahtlikku kõnet ja 6,2\,tundi taustahelisid, millest Silero VAD tuvastas kokku 1311 kõnesegmenti. Teine sessioon oli 2,8-tunnine pidev kõnesalvestus, mis lõigati 3-sekundilisteks tükkideks (3345 klippi).
+Negatiivse klassi Korvo-2 klipid (tabeli~\ref{tab:model-versions} veerus \enquote{Neg K-2}) pärinesid kahest salvestussessioonist. Esimene sessioon sisaldas 14\,minutit tahtlikku kõnet ja 6,2\,tundi taustahelisid; viimasest 6,0\,tundi võeti kasutusele eelmises lõigus mainitud taustahelirajal ning kõnest eraldas Silero VAD 1311 kõnesegmenti, mis lisati v3--v5 negatiivklassi. Teine sessioon oli 2,8-tunnine pidev kõnesalvestus, mis lõigati 3-sekundilisteks tükkideks (3345 klippi) ning lisati alles v6-s negatiivklassi --- seetõttu tõuseb veeru \enquote{Neg K-2} väärtus 1311-lt (v5) 4656-le (v6).
 
 Versioonidest v5 alates lisati kaks täiendavat andmeallikat. Positiivsete hulka lisati 1560 Neurokõne TTS-iga sünteesitud \enquote{Kuule Kratt} klippi 12 eesti kõnelejaga. Negatiivsete hulka lisati 1644 TTS-iga sünteesitud sihtfraasiga sarnast negatiivklippi --- fraase, mis sisaldavad sõna \enquote{Kratt}, kuid ei ole äratussõna: \enquote{Hei Kratt}, \enquote{Tere Kratt}, \enquote{Kratt} üksikult, \enquote{Kratt Kuule} jm. Nende eesmärk oli sundida mudelit eristama täpset fraasi \enquote{Kuule Kratt} lähisugulastest.
 
-\subsection{Esialgne eksitav tulemus}
+\subsection{Esialgne eksitav võrdlus}
 
-Esialgne v3 tulemus näis katastroofiline: klipi-taseme valepositiivsete määr (FPR) tõusis v1 66,4\%-lt 94,0\%-le. Kuid selle võrdluse aluseks olnud hindamiskomplektid erinesid. V1 negatiivne testikomplekt sisaldas ainult Common~Voice klippe, v3 oma aga ka Korvo-2 negatiivseid. Ambient-hindamine toimus v1 puhul 6,2\,tunni ja v3 puhul 12,2\,tunni heli peal.
+Esialgne v3 tulemus näis tugevalt halvenenud: klipi-taseme valepositiivsete määr (FPR) tõusis v1 66,4\%-lt 94,0\%-le. Kuid selle võrdluse aluseks olnud hindamiskomplektid erinesid omavahel. V1 negatiivne testikomplekt sisaldas ainult Common~Voice klippe, v3 oma aga ka Korvo-2 negatiivseid. Ambient-hindamine toimus v1 puhul 6,2\,tunni ja v3 puhul 12,2\,tunni heli peal. Tegelikku andmestiku osakaalu mõju mudelile käsitletakse allpool §\ref{subsec:degradatsiooni-org}.
 
 See kogemus viis olulise metoodilise järelduseni: \textbf{mudeliversioone tohib võrrelda ainult identsete hindamiskomplektide peal}. Vastasel juhul võib andmestiku koosseisu muutus maskeerida tegelikku mudeli käitumise muutust.
 
@@ -106,6 +106,7 @@ Sama \enquote{õiglase võrdluse} loogika laiendab Joonis~\ref{fig:faph-recall-p
 \end{figure}
 
 \subsection{Degradatsiooni org}
+\label{subsec:degradatsiooni-org}
 
 See tulemus on kooskõlas Park~et~al. \cite{park2024adversarial} leiuga, mille kohaselt tekib märksõnatuvastuse (\emph{keyword spotting}, KWS) mudelites \emph{degradatsiooni org} (\emph{valley of degradation}): kui domeeni\-siseste andmete osakaal jääb vahemikku 2--10\% koguandmestikust, halveneb mudeli kvaliteet võrreldes nii puhta domeenivälise kui ka piisavalt suure domeenisisese andmehulgaga.
 
