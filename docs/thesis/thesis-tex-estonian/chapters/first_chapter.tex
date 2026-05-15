@@ -82,7 +82,7 @@ Kogu mudeli parameetrite arv on ${\sim}22\,000$, mis on piisavalt väike, et mah
 \subsection{Voogedastusrežiim}
 \label{subsec:streaming}
 
-MixedNet on projekteeritud voogedastusrežiimis töötamiseks. Treenimise ajal töödeldakse kogu sisendklipp korraga (mõõtmetega $194 \times 40$), kuid pärast TFLite eksporti töötab mudel ühe spektrogrammikaadri kaupa. Iga uue 10-millisekundilise akna saabumisel uuendab mudel sisemist olekut (\emph{internal state}), kus hoitakse eelmiste kaadrite osalisi konvolutsiooni\-tulemusi. Väljundina antakse üks tõenäosuse väärtus, mis näitab, kas viimase umbes 1{,}5\,sekundi jooksul esines äratussõna.
+MixedNet on projekteeritud voogedastusrežiimis töötamiseks. Treenimise ajal töödeldakse kogu sisendklipp korraga (mõõtmetega $194 \times 40$), kuid pärast TFLite eksporti töötab mudel ühe spektrogrammikaadri kaupa. Iga uue 10-millisekundilise akna saabumisel uuendab mudel sisemist olekut (\emph{internal state}), kus hoitakse eelmiste kaadrite osalisi konvolutsiooni\-tulemusi. Väljundina antakse üks tõenäosuse väärtus, mis näitab, kas viimase umbes 1,5\nobreakspace{}sekundi jooksul esines äratussõna.
 
 See lähenemine on praktiline põhjusel, et mikrokontroller ei pea puhverdama mitut sekundit heli, vaid töötleb seda reaalajas kaaderhaaval. Lisaks on voogedastusrežiimi arvutuslik kulu konstantne: iga kaader nõuab sama palju arvutusressurssi sõltumata sellest, kui kaua seade on kuulanud.
 
