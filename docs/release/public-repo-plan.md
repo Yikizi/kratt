@@ -87,10 +87,9 @@ kratt/
 │
 ├── kratt-neurokone-tts/
 │   ├── config.yaml
-│   ├── build.yaml
 │   ├── Dockerfile
 │   ├── run.sh
-│   ├── wyoming_neurokone.py
+│   ├── wyoming_tartunlp_local.py
 │   ├── requirements.txt
 │   ├── README.md
 │   ├── DOCS.md

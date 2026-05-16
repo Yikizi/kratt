@@ -14,6 +14,7 @@ Project CLI tool — `kratt <command>` gateway for common development tasks.
 |---------|---------|
 | `kratt android` | Build/install/pull/analyze Android false-trigger logger |
 | `kratt benchmark` | Benchmark helpers |
+| `kratt build-esphome-firmware` | Build prebuilt ESPHome firmware artifact for Kratt wake-word satellite |
 | `kratt bg` | Background / field-run helpers |
 | `kratt compare` | Side-by-side held-out model comparison |
 | `kratt demo` | Run demo pipeline |

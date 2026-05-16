@@ -2,9 +2,9 @@
 #
 # Examples:
 #   docker compose -f docker/kratt-stack.yml --profile stt up -d
+#   docker compose -f docker/kratt-stack.yml --profile stt --profile tartunlp up -d
 #   docker compose -f docker/kratt-stack.yml --profile stt --profile piper up -d
-#   docker compose -f docker/kratt-stack.yml --profile stt --profile neurokone up -d
-#   docker compose -f docker/kratt-stack.yml --profile ha --profile stt --profile piper up -d
+#   docker compose -f docker/kratt-stack.yml --profile ha --profile stt --profile tartunlp up -d
 
 services:
   homeassistant:
@@ -32,20 +32,22 @@ services:
     environment:
       MODEL_BASE_URL: ${MODEL_BASE_URL:-https://huggingface.co/TalTechNLP/streaming-zipformer.et-en/resolve/main}
 
-  neurokone-tts:
+  # Local TartuNLP text-to-speech-worker based Wyoming TTS. The legacy
+  # `neurokone` profile name is kept as a compatibility alias.
+  tartunlp-tts:
     build:
       context: ../kratt-neurokone-tts
       dockerfile: Dockerfile
-    container_name: kratt-neurokone-tts
+    container_name: kratt-tartunlp-tts
     restart: unless-stopped
-    profiles: ["neurokone"]
+    profiles: ["tartunlp", "neurokone"]
     ports:
       - "10301:10301"
     volumes:
-      - neurokone-data:/data
+      - tartunlp-data:/data
     environment:
-      NEUROKONE_VOICE: ${NEUROKONE_VOICE:-mari}
-      NEUROKONE_SPEED: ${NEUROKONE_SPEED:-1.0}
+      TARTUNLP_TTS_VOICE: ${TARTUNLP_TTS_VOICE:-meelis}
+      TARTUNLP_TTS_SPEED: ${TARTUNLP_TTS_SPEED:-1.0}
 
   piper-tts:
     image: rhasspy/wyoming-piper:latest
@@ -65,5 +67,5 @@ services:
 volumes:
   ha-config:
   kiirkirjutaja-data:
-  neurokone-data:
+  tartunlp-data:
   piper-data:
