@@ -6,25 +6,20 @@ Töö praktiline baas jaguneb nelja kihti: treeninguraamistik, mudeli sihtformaa
 Valitud tehniline lahendus hoiab äratussõna tuvastamise lõppseadmes: mudel eksporditakse TFLite-vormingusse ja töötab ESP32-S3 mikrokontrolleril ilma pilveteenuseta. Treening toimus TalTechi jagatud graafikakiirenditega arvutusklastris, samal ajal kui lõppkasutaja vaates jäävad tuvastus ja Home~Assistanti integratsioon kohalikuks. Katse- ja demoautomaatika kirjutati peamiselt Pythonis (versioon 3.9; sõltuvusi hallati projektipõhiselt \texttt{uv}-ga), sest sama tööriist sobis andmetöötluseks, treeningu ettevalmistuseks, hindamiseks ja prototüübi juhtloogikaks; C/C++, TypeScript/Node.js ja shell-skriptid katsid vastavalt seadmelähedase koodi, MCP- ja veebiliidesed ning käsurea ümbrised. Demo piirdus ühe WiZ nutipirni juhtimisega; mudeli tulemused põhinevad eraldi hindamisprotokollidel (vt §\ref{sec:user-test-results}).
 
 \section{Võrdlusraamistik}
-Peamine kommertsalternatiiv Picovoice Porcupine \cite{picovoice-guide2026} jäetakse võrdlusest välja, sest see on suletud lähtekoodiga litsentsipõhine lahendus, mis ei toeta eesti keelt ega luba kohalikku treeningut sünteetilisel andmestikul.
+Peamine kommertsalternatiiv Picovoice Porcupine \cite{picovoice-guide2026} jäetakse võrdlusest välja eeskätt reprodutseeritavuse tõttu: treeningprotsess ja mudeli sisemine ehitus on suletud ning eesti keele jaoks valmis mudelit ei pakuta. Seetõttu ei saa selle raamistikuga kontrollida andmestiku koostist, teha ühe muutujaga ablatsioone ega võrrelda kohalikku sünteetilist treeningut samadel alustel; litsentsipõhisus on selles töös sekundaarne piirang.
 
-Võrdlus viiakse läbi neljal teljel:
-\begin{itemize}
-    \item treenimise praktiline keerukus, sealhulgas andmete ettevalmistuse maht, hüperparameetrite tundlikkus ja tööriistade kasutusmugavus;
-    \item mudeli kvaliteet, sealhulgas äratussõna tabamine ja valeaktiveeringute käitumine positiivsetel, negatiivsetel ja taustaheliandmetel;
-    \item integreeritavus, sealhulgas mudeli suurus, mudeli käitamise praktiline teostatavus ja sobivus ESP32-S3-klassi seadmele;
-    \item laiendatavus eesti keelele, sealhulgas sõltuvus ingliskeelsetest eeldustest ja sünteetilise andmestiku roll.
-\end{itemize}
+\texttt{openWakeWord}i käsitletakse diagnostilise alternatiivina, mitte täieliku raamistike võrdlusalusena. Selle roll on kontrollida, kas Raspberry~Pi-klassi seadmetele suunatud paindlikum mudelirada eemaldab \texttt{microWakeWord}i juures nähtud FAPH-i, tuvastamismäära ja fraasiselektiivsuse kompromissi. Võrdluse teljed on arenduskeerukus, äratusfraasi tabamine, valeaktiveeringud, seadmesobivus ning eestikeelne laiendatavus; valeaktiveeringuid vaadeldakse eraldi taustaheli, fraasilähedaste negatiivide ja üldise kõne peal. Põhikatsete fookus jääb siiski \texttt{microWakeWord}i ESP32-S3 TFLite-mudelitele.
 
 \section{Andmeliikide eristamine}
-Äratussõna mudeli arenduses ei piisa ainult tavalisest treeningu- ja testandmete jaotusest \cite{lopezespejo2021deepkws,microwakeword2026}. Käesolevas töös eristatakse kolme andmeliiki:
+Äratussõna mudeli arenduses ei piisa ainult tavalisest treeningu- ja testandmete jaotusest \cite{lopezespejo2021deepkws,microwakeword2026}. Töös eristatakse nelja andmeliiki:
 \begin{itemize}
-    \item positiivsed klipid, kus äratussõna on olemas;
-    \item negatiivsed klipid, kus äratussõna puudub, kuid heli võib sisaldada kõnet või muid segavaid mustreid;
-    \item taustaheli salvestused, mis sisaldavad pikka pidevat taustaheli ilma äratussõnata.
+    \item positiivsed klipid, kus äratusfraas on olemas;
+    \item üldised negatiivsed klipid, kus äratusfraas puudub, kuid heli võib sisaldada kõnet või muid mittesihtseid helisid;
+    \item fraasilähedased negatiivid (HN), kus äratusfraasile lähedane sõna, osafraas või sõnajärg ei tohi mudelit aktiveerida;
+    \item taustaheli salvestused, mis sisaldavad pikka pidevat helivoogu ilma äratusfraasita.
 \end{itemize}
 
-Positiivsed klipid õpetavad mudelile sihtsõna akustilist kuju. Negatiivsed klipid aitavad mudelil õppida, mida mitte pidada äratussõnaks. Taustaheli andmed täidavad teistsugust rolli: nende abil hinnatakse, kui tihti mudel tekitab valeaktiveeringuid olukorras, kus seade kuulab pidevat helivoogu.
+Positiivsed klipid õpetavad mudelile äratusfraasi akustilist kuju. Üldised negatiivsed klipid õpetavad vaba kõnet ja muid helisid tõrjuma, fraasilähedased negatiivid kontrollivad täpse fraasi eristamist ning taustaheli abil mõõdetakse valeaktiveeringuid pidevas kuulamisrežiimis.
 
 \paragraph{Tööhüpoteesid.} Andmeliikide eristus juhib kahte kontrollitavat tööhüpoteesi. \textbf{H1}: sama seadme negatiivide lisamine langetab FAPH-i sama seadme mikrofonil paremini kui ainult Common~Voice'i negatiivide kasutamine. \textbf{H2}: foneetilist sisu õppiv mudel üldistab positiivse tuvastuse uuele mikrofonile, kuid negatiivse poole üldistus sõltub akustilisest domeenist. Need hüpoteesid seovad andmestiku koostise peatükis~\ref{chapter:results} esitatud kõrvalejäetud komplektide ja ristmikrofoni katsetega.
 
