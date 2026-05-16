@@ -73,6 +73,10 @@ kratt/                          # Monorepo root
 
 **Important framing note**: before major planning or thesis-shaping work, also read `docs/research/agentic-thesis-positioning-and-shortcomings-2026-04-14.md`. It captures the current methodological weaknesses, thesis-positioning advice, and the role/limits of agentic engineering in this project.
 
+### Thesis prose framing rule (strict)
+
+For thesis-facing prose, especially the introduction, focus on what the thesis **is** and what it **does**. Do not spend narrative energy listing what the thesis does *not* do. Negative-scope/disclaimer sentences ("this thesis does not ...", "does not prove ...", "does not cover ...") should be removed, moved to limitations/discussion, or rewritten as affirmative scope statements unless legally/ethically unavoidable. The introduction sets the tone for the whole thesis: it must foreground the contribution, method, evidence, and research question rather than defensive caveats.
+
 ## Technical Stack
 
 - **Python 3.9** + **uv** (required for llvmlite/tensorflow compatibility)
