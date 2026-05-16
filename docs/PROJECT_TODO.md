@@ -1,299 +1,219 @@
-# Kratt - Project TODO
+# Kratt — Project TODO
 
-> **Persistent task list** - source of truth for ongoing work across coding-agent sessions.  
-> Last updated: 2026-05-13
+> Persistent task list / current source of truth for coding-agent sessions.
+> Last updated: 2026-05-16
 
 ## Status legend
 
 - ⏳ pending
-- 🔄 in_progress
+- 🔄 in progress
 - ✅ completed
-- ❌ blocked / abandoned
-- 🎯 critical path
-- 🧊 frozen / do not expand unless explicitly decided
+- 🧊 frozen / defer unless explicitly reopened
+- ⚠️ caveat / do not overclaim
 
 ---
 
-## 0. Current thesis-critical state (2026-05-13)
+## 0. Current state — thesis closeout, not new experiments
 
-**Hard deadline:** thesis document submission **2026-05-18** (T-5 days). User testing + thesis writing outrank new training ideas unless they directly unblock the thesis. The user-test tooling and modular Home Assistant packaging are now landed in main (commits `91158ba`, `ee0d414`). The open blocker is no longer core tooling or HA packaging; it is **defensible evidence and cleanup**: a finalized threshold-freeze policy, full real-mic protocol sessions if any are used, consent-safe pilot data, and thesis wording that does not overclaim from limited pilot/demo logs.
+**Hard deadline:** thesis document submission **2026-05-18**.
 
-**Model state, in one sentence:** `v16c` remains the stable single-model demo/baseline candidate, but the v17/v18/checkpoint experiments showed that no current single model is a production-quality exact two-word detector; newer runs are diagnostic evidence, not replacements.
+The project is now in **closeout mode**. The useful model/evaluation evidence is already available; the remaining work is to write it defensibly, validate the demo/deployment path if it will be shown, and avoid adding new experimental scope.
 
-### Current model roles
+### Active priorities
 
-| Role | Model / combo | Status |
+1. ✅ **Integrate the openWakeWord diagnostic comparison into the thesis** without overclaiming a full framework benchmark.
+2. ⏳ **Finish thesis evidence/wording cleanup:** primary contribution = evaluation methodology + prototype, not production-ready Estonian wake-word model.
+3. ⏳ **Validate the corrected Home Assistant packaging story** before using it as demo/thesis evidence: local STT is OK; TTS add-on now targets local TartuNLP `text-to-speech-worker`; wake-word UX should be a ready ESPHome firmware image, not manual YAML for normal users.
+4. ⏳ **Keep user-test/demo evidence conservative:** only use consent-safe, actually available logs/sessions; otherwise present user testing as limited/pilot/future work.
+5. ⏳ **Final build/export hygiene:** no placeholders in thesis sources, bibliography compiles, final PDF/ZIP artifacts ready.
+
+### Current model/evidence truth
+
+| Area | Current status |
+|---|---|
+| Active demo baseline | `v16c` remains the safest default unless a concrete pilot/demo run says otherwise. |
+| microWakeWord result | Good prototype evidence, but no single model satisfies recall + low FAPH + phrase/confusable selectivity together. |
+| openWakeWord result | Completed as diagnostic comparison. OWW can lower FAPH at strict thresholds, but recall becomes uneven/collapses and confusable FPR remains high. Not a replacement/demo default. |
+| Main bottleneck | Not just convergence or architecture: too little clean/diverse real positive data + weak phrase-selective objective/hard negatives. |
+| Deployment claim | Prototype/demo path only unless HA/add-on/device validation logs are produced. Public/default TTS should use local TartuNLP `text-to-speech-worker` (`v3.1.0`) with attribution, not the public Neurokõne API wrapper. |
+
+**Do not claim:** production-ready wake word, full user study, full framework benchmark, or that OWW/`Kratt`-only/checkpoint-FAPH solved exact two-word detection.
+
+---
+
+## 1. Thesis writing closeout
+
+### Completed / available evidence
+
+- ✅ Canonical evaluation methodology: streaming FAPH + recall + hard/prefix/confusable FPR.
+- ✅ Wilson CI for clip metrics and Poisson/rule-of-three CI for FAPH integrated in tooling/thesis tables.
+- ✅ v1–v16c historical benchmark family evaluated.
+- ✅ v17 positive-data quality incident documented.
+- ✅ v18/checkpoint-FAPH diagnostics available: clean labels and low-FAPH checkpointing are necessary but not sufficient.
+- ✅ openWakeWord diagnostic comparison completed and documented:
+  - `docs/research/openwakeword-framework-comparison-2026-05-15.md`
+  - `docs/research/artifacts/openwakeword-comparison-2026-05-15/`
+- ✅ Modular Home Assistant add-on stack exists in main (`ee0d414`); TTS has been reframed toward the local TartuNLP `text-to-speech-worker` path, and wake-word UX is now specified as a ready ESPHome firmware-image path. Validation is still pending.
+
+### Pending thesis edits
+
+- ✅ Add OWW result to the framework-comparison / results discussion:
+  - phrase as **diagnostic alternative framework test**;
+  - state that it supports the data/objective bottleneck conclusion;
+  - avoid “OWW is simply worse” and avoid “full framework benchmark”.
+- ⏳ Add/tighten research-question answer mapping: question → answer → evidence → limitation.
+- ⏳ Ensure final claim says: **prototype + multidimensional evaluation protocol**, not production system.
+- ⏳ Keep FAPH, recall, and hard/confusable FPR together in final result prose/tables.
+- ⏳ Explain data leakage and the April methodology correction clearly.
+- ⏳ Mention positive-data quality incident as a methodological lesson.
+- ⏳ Make user-test wording match available evidence only. If no protocol-complete participant data is used, describe user testing as limited/pilot/future work.
+- ⏳ Remove active TODO/placeholders from thesis `.tex` files before final build.
+- ⏳ Final compile/export check: bibliography, figures, tables, Estonian terminology, PDF output.
+
+### Thesis review TODO — 2026-05-16 critique pass
+
+#### P0 — must fix before submission
+
+- [ ] **Fix v6 FAPH contradiction:** `chapters/second_chapter.tex` reports v6 CV ET FAPH as `154` in the v1--v8 table and `44,5` in the cross-language FAPH table, apparently at the same threshold (`0,97`) and same CV ET stream. Verify whether the difference is model artifact, corpus version, smoothing/cooldown, script, or typo; align the numbers and update derived statements.
+- [ ] **Fix v16c hard-negative sign/wording error:** text says `v16c` achieved “100% Maci sarnaste negatiivnäidete tõrjumise”, while later table shows `HN Mac FPR = 100,0` for `v16c`. Correct either the metric interpretation or the referenced result.
+- [ ] **Clarify real-device / Home Assistant deployment status:** add one explicit status paragraph/table stating whether `v16c` was flashed/run on ESP32-S3-Korvo-2, which threshold/config was used, whether ESPHome/HA/one-bulb demo worked, and what evidence/logs exist. If not fully validated, label as prototype/demo artifact only.
+
+#### P1 — high defense risk / thesis claim alignment
+
+- [ ] **Align confidence-interval promise with tables:** metoodika says every reported metric gets 95% CI, but several FPR/FAPH values are point estimates only. Either add Wilson/Poisson intervals to key tables or narrow the method claim to selected recall/FAPH metrics.
+- [ ] **Unify FAPH target language:** introduction/summary use FAPH `< 1`, while one results paragraph uses `0,5 FA/h`. Define `0,5` as stricter internal comparison point or remove it.
+- [x] **Add compact openWakeWord results evidence or soften OWW claims:** include a small results table with OWW model, threshold, recall, confusable FPR, and CV/Libri/DiPCo/Mac FAPH; otherwise describe OWW only as background/diagnostic note, not an empirical framework comparison.
+- [ ] **Reframe user-test content as next validation layer:** keep protocol, but make clear that no protocol-complete participant dataset is used as thesis evidence. Rename/result wording should avoid sounding like an unfinished promised study.
+- [ ] **Clarify held-out vs regression/dev-test roles:** state that `faph_cv_et` and related sets became regression/model-comparison sets after repeated iteration, not a final untouched test set; keep “true held-out” as future work.
+- [ ] **Name concrete model versions in discussion §4.4:** replace “üks versioon / teine versioon” and bare numbers like “243 korda tunnis” with model IDs, thresholds, and table references, or remove the vague comparison.
+- [ ] **Add public artifact reference:** if claiming open-source/reproducible outputs, add repository URL plus commit/tag/release (or appendix/footnote) for the submitted thesis version.
+
+#### P2 — polish / readability / final build hygiene
+
+- [ ] **Shorten and strengthen the summary:** reduce repeated limitations; end with positive contribution framing: prototype + multidimensional evaluation protocol + open workflow + next validation steps.
+- [ ] **Improve dense tables and overfull hboxes:** address LaTeX overfull warnings, especially long `\texttt{...}` tokens and very wide checkpoint/consensus tables; split or simplify if needed.
+- [ ] **Make abstracts self-contained:** define KWS in Estonian abstract as “märksõna-/äratussõnatuvastus (KWS)” before using the abbreviation; mirror if needed in English abstract.
+- [ ] **Clean thesis-facing terminology:** prefer “treeningu- ja hindamisahel/konveier” over “toru”; replace “skoobist välja” with “töö ulatusest välja”; standardize “MacBook”; keep “valeaktiveering”/FAPH terminology consistent.
+- [ ] **Check figure/table lists and final front matter:** confirm list of figures/tables is present and matches TalTech requirements; verify annotation counts after final compile.
+- [ ] **Final PDF sanity pass:** rebuild PDF from current sources, inspect PDF text around changed sections, ensure no stale output, no visible placeholders, no merge-conflict markers, bibliography compiles, and log has no critical warnings.
+
+---
+
+## 2. Wake-word model/evaluation state
+
+### Current roles
+
+| Role | Model / family | Status |
 |---|---|---|
-| Stable active demo baseline | `v16c` | Best practical single-model baseline for user-test/demo unless pilot proves otherwise. Strong recall; weak prefix/confusable selectivity. |
-| Field/recall reference | `expert-a` | Useful baseline; good field balance, but not exact-phrase selective. |
-| Historical sub-1 FAPH milestone | `expert-a + expert-b2` | Important MoE result; recall/phrase-selectivity still block deployment claims. |
-| v18 low-FAPH MoE diagnostic | `v18b-clean48-sa + expert-a` | Very low ambient FAPH, but prefix/confusable failure remains. Diagnostic only. |
-| Checkpoint-FAPH gate diagnostic | `checkpoint-faph10 + v16c` | Extremely low ambient FAPH, but poor Friend1 recall and high confusable FPR. Diagnostic only. |
-| Active diagnostic side branch | `v19a-kratt-only` / single-word `Kratt` ablation | Separate target policy, not an exact two-word `Kuule Kratt` replacement and not an active user-test/demo model. |
-| Deployment-packaged historical model | `v11` | Android packaging/deployment path evidence; not final model quality. |
+| Stable demo/baseline | `v16c` | Best practical single-model default; strong recall, weak phrase/confusable selectivity. |
+| Historical balanced anchor | `v6-residual` | Useful comparison point; lower FAPH than `v16c`, still not selective enough. |
+| Field/recall reference | `expert-a` | Useful baseline; not exact-phrase selective. |
+| Historical MoE milestone | `expert-a + expert-b2` | Sub-1 FAPH milestone, but recall/selectivity still block deployment claims. |
+| v18/checkpoint diagnostics | `v18*`, `checkpoint-faph*` | Show label purity and FAPH optimization are not sufficient. |
+| Single-word ablation | `v19a-kratt-only` | Separate target policy; not a replacement for `Kuule/Kule Kratt`. |
+| Framework diagnostic | OWW 50k runs | Completed; not an active replacement path. |
 
-**Do not claim:** “v18 solved it”, “checkpoint-FAPH solved it”, “`Kratt`-only solved exact phrase selectivity”, or “production-ready Estonian wake word” without user-test + threshold-frozen evidence.
+### openWakeWord completed branch
 
----
+- ✅ OWW ONNX models copied locally:
+  - `wake-word/models/openwakeword/oww-v4-50k/`
+  - `wake-word/models/openwakeword/oww-v6-50k/`
+  - `wake-word/models/openwakeword/oww-v17-official-50k/`
+  - `wake-word/models/openwakeword/oww-v18d-clean96-cap128-50k/`
+- ✅ Supervisor-style OWW CSVs copied locally:
+  - `wake-word/evaluation/openwakeword-supervisor-full-20260515/`
+- ✅ Combined mWW+OWW report generated:
+  - `docs/research/artifacts/openwakeword-comparison-2026-05-15/supervisor_report_plus_openwakeword.html`
+- ⚠️ Interpretation: lower FAPH at strict OWW thresholds is possible, but recall/confusable rejection does not meet the thesis target.
+- 🧊 No more OWW training before submission unless explicitly reopened.
 
-## 1. USER TESTING (critical path)
+### Frozen/deferred model work
 
-Goal: collect limited real-speaker wake-word evidence and one-bulb voice-assistant UX/usefulness data with an up-to-10-participant pilot.
-
-### Completed
-
-- ✅ Short high-yield protocol drafted: `docs/user-testing/ten-minute-shadow-demo-protocol.md`
-- ✅ Questionnaire v1 drafted: `docs/user-testing/questionnaire-v1.md`
-- ✅ 10-minute mini questionnaire drafted: `docs/user-testing/mini-questionnaire-form-v1.md`
-- ✅ Labelled recorder implemented: `tools/user-testing/run_user_test.py` (with `--mic-smoke-test`, `--list-devices`, `--new-session-subdir` flags as of 2026-05-04 working tree)
-- ✅ CLI wrapper added: `kratt user-test`
-- ✅ Session validator implemented: `tools/user-testing/validate_user_test_session.py` / `kratt validate-user-test <session_dir>` (untracked, 2026-05-04)
-- ✅ Offline replay scorer implemented and smoke-tested: `tools/user-testing/replay_user_test.py` / `kratt replay-user-test` (dry-run + synthetic fixture replay, 2026-05-04)
-- ✅ Replay aggregate summarizer implemented: `tools/user-testing/summarize_user_test_replay.py` / `kratt summarize-user-test` (excludes dry-run/synthetic fixture rows by default)
-- ✅ Protocol supports two Estonian consent levels: `ainult mõõdikud` vs `mõõdikud + helisalvestis`
-- ✅ Participant-facing consent script drafted: `docs/user-testing/consent-script-v1.md` (untracked, 2026-05-04)
-- ✅ Dry-run recorder smoke validated: 17 trial rows + 17 WAVs (2026-05-04)
-- ✅ No-audio consent smoke validated: 17 trial rows + 0 WAVs (2026-05-04)
-- ✅ Microphone smoke-test mode added: `kratt user-test --mic-smoke-test --device <id>`
-- ✅ Synthetic fixture path added and smoke-tested: `kratt user-test-fixtures` + `kratt user-test --audio-fixture-dir ... --auto-advance` (infrastructure smoke only, not user-study evidence)
-- ✅ ESPHome local model copy prepared as `v16c` at cutoff `0.996` via `kratt prepare-esphome-model v16c --cutoff 0.996`; firmware build and ESP32 upload still pending before ESP32 demo
-- ✅ Pilot freeze candidate drafted: `docs/user-testing/frozen-threshold-policy.md`
-- ✅ Modular Home Assistant add-on stack committed in main (`ee0d414`): public repo metadata, STT/TTS add-ons, Docker compose stack, quickstart/validation docs, and v16c ESPHome manifest.
-- ✅ Real-mic recorder path exercised on `output/user-tests/mattias/` self-pilot; **only 4 positive trials**, no hard negatives/session end, so this is smoke evidence only.
-- ✅ 2026-05-13 demo/pilot log analysis produced for questionnaire-matched `m01`, `f02`, `m03`: `output/user-test-analysis/demo-log-analysis-20260513/README.md`. Use as limited UX/demo evidence only, not wake-word recall/FPR evidence.
-
-### Next actions (T-5 days, ordered)
-
-- 🎯 ⏳ **BLOCKER** Resolve the 2026-05-13 consent issue before using pilot logs: `f02` is marked `ainult mõõdikud` but has a matched WAV segment. Quarantine/delete/exclude the audio or correct consent with an auditable note.
-- 🎯 ⏳ **BLOCKER** Finalize `docs/user-testing/frozen-threshold-policy.md` by filling date, commit, active model path, threshold, and pilot-session evidence. If not finalized, thesis must present it as a policy candidate/limitation, not as a completed freeze.
-- 🎯 ⏳ Run one complete real-mic 17-trial self-pilot with non-zero RMS input, including hard negatives and `session_end`; validate, replay, and summarize immediately.
-- 🎯 ⏳ If time permits, run 2-3 complete participant pilot sessions under the frozen policy; otherwise use the 2026-05-13 demo logs only as limited UX/prototype evidence with caveats.
-- 🎯 ⏳ Keep the thesis aligned to an up-to-10-participant pilot framing. Current evidence does **not** support a full user study claim; absent protocol-complete data, write user testing as planned/future/limitation and use demo logs only as limited UX/prototype evidence.
-- 🎯 ⏳ Analyze only consent-safe, protocol-complete data:
-  - wake recall on positive trials;
-  - hard-negative FPR on human voices;
-  - end-to-end task success / latency;
-  - UMUX-Lite/SEQ and diagnostic questionnaire results.
-- 🎯 ⏳ Write user-study method/results into the actual thesis chapter structure (`Metoodika`, `Tulemused`, `Arutelu`), with caveats if only pilot/demo data exists.
+- 🧊 No new architecture searches or training branches before thesis submission.
+- 🧊 If future work resumes after submission: collect more clean/diverse real positives; add explicit phrase-structure hard negatives (`kuule` only, `kratt` only, reversed order, `kuule/kule <confusable>`); keep held-out evaluation disjoint.
+- 🧊 Do not train on user-test audio before final evaluation unless the thesis explicitly separates training and held-out data.
 
 ---
 
-## 2. THESIS WRITING (critical path)
+## 3. User testing / pilot evidence
 
-### Status by chapter
+Current stance: **do not let user testing block thesis closeout unless usable data already exists**.
 
-| Chapter | Status | Current focus |
-|---|---|---|
-| Sissejuhatus | 🔄 mostly tightened | Keep contribution framed as methodology/prototype, not production model. |
-| Metoodika | 🎯 🔄 in_progress | Freeze policy, evaluation protocol, user-test protocol, data quality gates. |
-| Tulemused | 🎯 🔄 in_progress | Conservative model/eval results + only consent-safe pilot/demo evidence. |
-| Arutelu ja järeldused | 🎯 🔄 in_progress | Limitations, feasibility, deployment reflection, no overclaiming. |
-| Kokkuvõte | 🔄 draft tightened | Short final answer to research questions and known limitations. |
+- ⚠️ Use only consent-safe evidence.
+- ⚠️ If protocol-complete participant sessions are absent, do not claim a full user study.
+- ⚠️ Limited demo/pilot logs may support prototype/UX observations only, not general wake-word recall/FPR claims.
+- ⏳ If any pilot/session data is included, report exactly what was measured: participant/session count, positive recall, hard-negative FPR, task success/latency, and questionnaire results if present.
+- ⏳ If no sufficient data is included, write this as a limitation/future-work item rather than leaving empty result sections.
 
-### Specific TODO
+Known reference artifact:
 
-#### Review-derived closeout priorities (from 2026-05-07 agent review batch)
-
-Tracked review action plan: `docs/automation/thesis-review-deficiencies-2026-05-07.md`; runtime automation steering copy: `.hermes/thesis-automation/memory/review-deficiencies-2026-05-07.md`.
-
-- 🎯 ⏳ Reframe the thesis claim everywhere: primary contribution is a **multidimensional evaluation protocol + prototype**, not a production-ready Estonian wake-word model.
-- 🎯 ⏳ Add or tighten a compact research-question answer mapping: question → answer → evidence → status. Explicitly state that FAPH < 1 and recall ≥ 0.95 are not achieved together with all selectivity requirements by any current model.
-- 🎯 ⏳ Keep user-test evidence honest: if frozen participant data is absent, all user-test wording must be planned/future/limitation; if data appears, add only factual results from tracked sessions/replay summaries.
-- 🎯 ⏳ Fix the statistical-reporting contract: either add Wilson/Poisson intervals where data is available, or narrow wording/captions so diagnostic FPR/FAPH rows are clearly point estimates.
-- 🎯 ⏳ Finalize or quarantine threshold-freeze language: fill `docs/user-testing/frozen-threshold-policy.md` before using user-test results, otherwise treat it as a limitation/policy candidate.
-- ⏳ Reflect on the ESP32-S3-Korvo-2 firmware/deployment work and integrate it into the thesis only as a **high-quality concise implementation reflection** (target: ~0.5--1 page, or a tight subsection). It should connect the ESPHome voice-satellite test, custom ESP-IDF recorder firmware, same-device data collection, and v16c deployment packaging to the main evaluation/prototype narrative; it must not become a low-level debug diary. Source notes: `notes/experiments/2026-02-12-esp32-s3-korvo2-voice-satellite.md`, `notes/experiments/2026-03-16-korvo2-recorder-firmware.md`, `hardware/esp32/esphome/`, `hardware/esp32/firmware/recorder/`.
-- ⏳ Add/compact a metric-threshold register and validation-ring table only if they replace scattered prose rather than expanding the thesis.
-- ⏳ Continue language cleanup flagged by review: remove English/Estonian hybrids, avoid colloquial `peal`, and standardize `valevallandumine`, `tuvastamismäär`, and `mittekattuvuse kontroll`.
-
-- 🎯 ⏳ **Single TODO location rule:** do not keep TODO/platsihoidja blocks in active thesis chapter sources (`docs/thesis/thesis-tex-estonian/chapters/*.tex`). Track open thesis work here only, so automation can find it and the PDF never silently carries placeholders.
-- 🎯 ⏳ If user-test data is added before submission, fill `second_chapter.tex` §`sec:user-test-results` with exactly these result blocks: participant/session overview; frozen-threshold per-model wake recall with Wilson 95% CI; human-spoken similar-negative/prefix FPR; one-bulb end-to-end task success + latency; short questionnaire/UMUX-Lite results. If no sufficient data arrives, keep it as an explicit limitation/future-work paragraph, not empty subsections.
-- 🎯 ⏳ Write the corrected evaluation contract: report **FAPH + recall + hard-negative/confusable FPR** together at frozen thresholds.
-- 🎯 ⏳ Explain data leakage and the April methodology fix clearly, without overstating earlier results.
-- 🎯 ⏳ Add the positive-data quality incident (v17) as a methodological lesson.
-- 🎯 ⏳ Add v18 and checkpoint-FAPH as negative/diagnostic results: label purity and FAPH-only checkpointing are necessary but not sufficient.
-- 🎯 ✅ Add user-test protocol + consent model to methodology draft (`first_chapter.tex`, 2026-05-04).
-- ✅ Wilson CI for clip-level metrics + Poisson/rule-of-three CI for FAPH integrated into thesis (`wake-word/evaluation/wilson_ci.py`; cited in `second_chapter.tex` table captions and `first_chapter.tex` §metoodika; commit `249f0dd` 2026-05-02 "Add Wilson CIs, two figures, cross-chapter reconciliation").
-- 🔄 Comparison table vs Apple/Google/Picovoice/openWakeWord/microWakeWord — partially in place; Porcupine explicitly excluded with rationale (commits `758e33c`, `b2da6cf` 2026-05-03). Confirm coverage against the final §2/§5 layout.
-- ✅ Literature review with 50+ citations integrated (commit `d49aad6` 2026-05-04).
-- ⏳ Decide which metrics/figures are final vs exploratory threshold sweeps.
-- ⏳ Final §5 evaluation closeout — depends on user-test data; not unblockable until pilot runs.
+- `output/user-test-analysis/demo-log-analysis-20260513/README.md` — limited demo/pilot log analysis for `m01`, `f02`, `m03`; use cautiously.
 
 ---
 
-## 3. MODEL TRAINING / MODEL SELECTION
-
-### Completed major milestones
-
-- ✅ v1-v16c historical model family trained and re-evaluated with canonical streaming FAPH.
-- ✅ MoE/consensus breakthrough: `expert-a + expert-b2` reached sub-1 benchmark FAPH, but recall remained a blocker.
-- ✅ v17 recall-cv sprint run.
-- ✅ v17 positive-data incident found: SSML/XML readout, full-command XTTS positives, and too-short/prefix clips contaminated the positive class.
-- ✅ Positive data audit completed: `wake-word/docs/POSITIVE_DATA_QUALITY_AUDIT_20260427.md`.
-- ✅ v18 clean-positive matrix trained and benchmarked.
-- ✅ Prefix/confusable regression sets built.
-- ✅ Checkpoint-FAPH v18d family exported and benchmarked.
-- ✅ `Kratt`-only segment extraction pipeline created for a **diagnostic** single-word ablation: `wake-word/data/processed/positive_kratt_only_v19a` has 551 manually reviewed accepted clips + 52 rejects; detailed state in `wake-word/docs/kratt-only-segment-extraction-plan.md`.
-- ✅ Separate `Kratt`-only training wrapper exists: `kratt train-kratt-only` / `wake-word/training/scripts/submit_hpc_kratt_only.sh`, so the old two-word training preset is not reused accidentally.
-
-### Current interpretation
-
-- `v16c` remains the safest single-model **baseline/demo candidate**, not a proven production model.
-- v17 failed because expanded positives were partly corrupt and the model collapsed into permissive prefix/general-speech behavior.
-- v18 proved that clean positive labels are necessary but not sufficient: binary KWS still fires on partial/confusable phrases unless those are first-class negatives or the objective enforces phrase order.
-- FAPH-optimized checkpoint selection can produce very low ambient FAPH, but can destroy unseen-speaker recall and still fail exact phrase selectivity.
-- `Kratt`-only is a separate target-policy ablation. It may test whether the rare word `Kratt` is a better acoustic anchor, but it does **not** solve or replace exact two-word `Kuule/Kule Kratt` detection unless a later explicit decision changes the thesis target.
-
-### Active diagnostic side branch — `v19a-kratt-only`
-
-- ✅ `v19a-kratt-only` diagnostic run (`job_id: 923301`, partition `common`, 2026-05-04) completed and was downloaded/benchmarked locally as a separate target-policy ablation.
-- ✅ Context-aware positive dataset for a possible later `v19b-context` ablation prepared locally: `wake-word/data/processed/positive_kratt_context_v19b` (2836 fixed-1s clips; target offsets 40/160/280/400ms; no new training submitted). Builder: `kratt build-kratt-context`.
-- 🎯 Do **not** switch the user-test/demo active model because of this branch. User-test active default remains `v16c` unless pilot evidence says otherwise.
-- ⏳ Treat v19a/v19b-context as diagnostic only with their own target policy; do not mix metrics into exact two-word model tables without a clear caveat.
-- ⏳ Before any promotion beyond diagnostic: build `Kratt`-like hard negatives (`kurat`, `kraam`, `kraan`, `kraad`, `krats`, `ratas`, `rott`, etc.), run frozen held-out FAPH/recall/hard-negative evaluation, add model `NOTES.md`, update `wake-word/docs/MODEL_LINEAGE.md`, and update `wake-word/evaluation/training_data_manifest.md`.
-- 🧊 Do not submit additional `Kratt`-only training variants before real-mic pilot/user testing and thesis writing are safe.
-
-### Pending / optional
-
-- 🎯 ⏳ Freeze the model/threshold set for user testing; avoid moving targets.
-- ⏳ Replay real user-test audio across frozen shadow models with `kratt replay-user-test`.
-- 🧊 Optional only if time permits after critical path: controlled **two-word** phrase-selectivity experiment:
-  - strict positives
-  - explicit `kuule/kule`-only, `kratt`-only, reversed-order, and `kuule/kule <confusable>` negatives
-  - independent holdout regression set
-  - controlled ratio, not hard-negative overdose
-- 🧊 Defer broad negative-pool expansion and new architecture searches until after thesis-critical writing/testing.
-
----
-
-## 4. EVALUATION METHODOLOGY
-
-### Completed
-
-- ✅ `evaluation/test_sets.py` registry for held-out sets and disjointness assertions.
-- ✅ Canonical streaming FAPH: sliding window + cooldown on continuous streams.
-- ✅ FAPH sets: CV ET, LibriSpeech, DiPCo, MacBook background.
-- ✅ Positive recall anchors: Isa XTTS, Ode real, Friend1 real, Mattias probes.
-- ✅ Hard-negative sets: Mac holdout, Isa XTTS, v10 canary.
-- ✅ Prefix/confusable regression sets after v17 incident.
-- ✅ Unified benchmark artifacts for v16/v17/v18/checkpoint families.
-- ✅ DET/threshold sweep tooling exists.
-
-### Pending
-
-- 🎯 ⏳ Freeze validation/dev thresholds before final user-test analysis (see §1 frozen-threshold policy item).
-- ✅ Wilson 95% CI implemented (`wake-word/evaluation/wilson_ci.py`) and used in thesis tables (Poisson + rule-of-three for FAPH).
-- ⏳ Add ROC AUC only if it helps the thesis; do not let it displace FAPH/recall/FPR.
-- ⏳ Clearly label prefix/confusable regression sets that overlap with training for some model families as **diagnostic**, not final independent holdout.
-- 🔄 `wake-word/evaluation/training_data_manifest.md` — uncommitted edits in working tree (2026-05-04); reconcile and commit.
-
----
-
-## 5. DATA / QUALITY GUARDS
-
-### Completed
-
-- ✅ Positive-data audit identified corrupt SSML/XML readout and full-command XTTS positives.
-- ✅ Known-bad positive sources quarantined by default in training scripts.
-- ✅ Strict positive policy documented: valid positives must be exactly `kuule/kule kratt` variants.
-- ✅ Duration gate raised toward 0.80s minimum for future positives unless manually whitelisted.
-- ✅ Prefix/confusable regression sets materialized.
-
-### Pending / deferred
-
-- 🎯 ⏳ Collect user-test real-speaker data with consent; this is now the highest-value data source.
-- ⏳ If new training happens, record positive exclusions in manifests and keep strict source policy.
-- ⏳ Keep `Kratt`-only generated/probe datasets isolated from the two-word `Kuule/Kule Kratt` target policy unless a manifest explicitly documents a separate target-policy experiment.
-- 🧊 Defer large MUSAN/CV/VOiCES/podcast expansion unless thesis writing is safe.
-- 🧊 Do not ingest user-test audio into training before final evaluation unless the thesis explicitly separates training and held-out analysis.
-
----
-
-## 6. HARDWARE / DEPLOYMENT / DEMO
+## 4. Home Assistant / deployment / demo
 
 ### Completed
 
 - ✅ ESP32-S3-Korvo-2 recorder and wake-word-logger firmware exist.
 - ✅ ESPHome integration path exists.
-- ✅ Android false-trigger logger exists and supports bundled/selectable models.
-- ✅ `kratt user-test` recorder exists for labelled trial capture.
+- ✅ Android false-trigger logger exists.
 - ✅ Demo pipeline tooling exists.
-- ✅ Modular Home Assistant v0.1 install path committed in `ee0d414`: repo-root add-on repository metadata, `kratt-kiirkirjutaja-stt/`, `kratt-neurokone-tts/`, `docker/kratt-stack.yml`, public ESPHome v16c manifest, quickstart, validation docs, and public-repo legal docs.
-- 🔄 Follow-up HA add-on changes are now in the working tree after `ee0d414` (Dockerfile base-image simplification, pip retry settings, version `0.1.2`, deleted `build.yaml`). Validate against Home Assistant add-on build expectations before committing; otherwise restore the committed `build.yaml` path and docs.
+- ✅ Modular HA add-on/public packaging committed in `ee0d414`:
+  - add-on repository metadata;
+  - `kratt-kiirkirjutaja-stt/` local STT;
+  - `kratt-neurokone-tts/` local TartuNLP TTS wrapper using `text-to-speech-worker` v3.1.0;
+  - `docker/kratt-stack.yml`;
+  - public ESPHome `v16c` manifest;
+  - quickstart/validation docs.
 
-### Pending
+### Pending validation / correction
 
-- 🎯 ⏳ Decide the active model for the user-test demo; default: `v16c` unless pilot proves worse than `expert-a`.
-- ⏳ Verify ESP32/Android/demo configs point to the intended active model and threshold before testing.
-- ⏳ Capture enough logs to separate wake-word failures from STT/intent/bulb failures.
-- ⏳ Document deployment path and limitations in thesis §4.
-
----
-
-## 7. SCHEDULE OUTLOOK
-
-```text
-2026-04-29..30  │ docs/source-of-truth refresh │ self-pilot │ freeze protocol/model/thresholds │  (done in part)
-2026-05-01..04  │ Wilson/Poisson CI integration │ literature review folded in │ replay/validator tooling │  (done)
-2026-05-05..07  │ replay/summarizer/validator commits │ ESP32 captive-portal closed │ thesis review-deficiency action plan drafted │  (done)
-2026-05-08..11  │ Android dev voice bridge │ terminology lint workflow │ thesis pruning sweeps │ TalTech best-practices delta │  (done)
-2026-05-12      │ docs refresh │ HA add-on stack drafted │ partial self-pilot smoke │
-2026-05-13      │ HA add-on stack committed │ limited N=3 demo-log analysis │ consent issue found │ hook/time backlog found │
-2026-05-14..16  │ freeze thresholds or demote freeze claim │ protocol-complete pilot if possible │ analysis tables/figures │ thesis closeout │
-2026-05-17..18  │ final edits │ formatting │ submission │
-```
-
-**Rule:** after 2026-05-05, reject new experiments that do not directly improve the submitted thesis. Do not start additional training runs; only monitor/evaluate the already-submitted `v19a-kratt-only` diagnostic if it does not displace user testing or writing.
-
-**Slippage as of 2026-05-13:** original schedule put full user testing in 2026-05-08..12; only tooling, thesis writing, HA packaging, and limited demo/pilot evidence happened in that window. Treat any further side-quest tooling (translation MT, intent regression, questionnaire server, airfryer/MCP experiments) as out of scope unless a submitted-thesis sentence depends on it.
+- ✅ **Replace/reframe TTS around local TartuNLP worker**:
+  1. cites upstream `https://github.com/TartuNLP/text-to-speech-worker`, pinned local checkout `v3.1.0` / `14d47bf9af4e562829ccafcc757d93abb2a6412f`;
+  2. downloads `multispeaker.zip` from the TartuNLP release, not the public API endpoint;
+  3. adds a local Wyoming wrapper around `tts_worker.synthesizer.Synthesizer` (demo precedent: `tools/tts-server/server.py`);
+  4. removes the API wrapper from the active add-on path.
+- ⏳ **Validate Home Assistant path end-to-end** before using it as final demo evidence:
+  1. add repository/install path visible in HA;
+  2. STT add-on build/install/start succeeds;
+  3. local TartuNLP TTS path starts and is reachable via Wyoming/Assist;
+  4. ESPHome voice-satellite firmware with `v16c` connects;
+  5. one-bulb command works through the intended pipeline;
+  6. logs captured for failures/success.
+- ⏳ **Wake-word install UX:** build and publish a ready ESPHome firmware image for the supported target board(s), starting with ESP32-S3-Korvo-2. YAML/package remains the developer/reproducibility path, but normal-user docs should point to firmware flashing, not manual model YAML.
+- ⏳ Verify demo configs point to the intended active model (`v16c`) and threshold.
+- ⏳ Document deployment limitations concisely in thesis: prototype packaging exists; validation status determines how strong the claim can be.
 
 ---
 
-## 8. EVENTS / DECISIONS LOG
+## 5. Documentation / artifact sync
 
-- **2026-03-24**: Vahekaitsmine presented v6 as breakthrough; later corrected after data-leak audit.
-- **2026-04-07**: Evaluation methodology audit revealed test/train leakage; canonical held-out FAPH workflow created.
-- **2026-04-12-13**: Session findings: benchmark FAPH alone does not predict real-world performance; MoE explored.
-- **2026-04-13**: `expert-a + expert-b2` sub-1 FAPH benchmark milestone.
-- **2026-04-21**: Unified v1-v16c benchmark table produced.
-- **2026-04-26**: v17 recall-cv runs benchmarked; high recall but severe hard-negative/prefix collapse.
-- **2026-04-27**: Positive-data quality audit found corrupt SSML/XML and full-command positives; guard rails added.
-- **2026-04-28**: v18 clean-positive matrix showed label cleanup is necessary but not sufficient.
-- **2026-04-29**: Checkpoint-FAPH v18d family showed ambient-FAPH checkpointing alone can overfit / collapse recall.
-- **2026-04-29**: Project docs refreshed toward thesis/user-test critical path.
-- **2026-05-01**: Hermes thesis-automation scheduler + research-distill lane added (commit `80315b9`).
-- **2026-05-02**: Wilson CI + two figures + cross-chapter reconciliation merged into thesis (commit `249f0dd`).
-- **2026-05-03**: Porcupine excluded from baseline comparison with rationale (commits `758e33c`, `b2da6cf`); operating-point convention pinned (commit `39c3325`).
-- **2026-05-04**: 9-doc literature review with 50+ citations integrated (commit `d49aad6`); model lineage archived for diagnostic families (commit `470019c`); kratt-only segment workflow added (commit `4b249ec`); live-model selection improved (commit `0b3ca7e`); user-test recorder smoke validated; consent script v1, validator, replay scorer, and summarizer staged untracked.
-- **2026-05-04**: `Kratt`-only diagnostic side branch advanced: reviewed clean positive set `positive_kratt_only_v19a` finalized (551 accepted / 52 rejected), `kratt train-kratt-only` wrapper added, and HPC diagnostic run `v19a-kratt-only` submitted as job `923301`. This does not change the active two-word target policy or user-test baseline.
-- **2026-05-05..07**: user-test tooling + protocol + consent docs landed (commit `91158ba`); ESP32 captive-portal change closed in `hardware/esp32/firmware/`; thesis review batch produced `docs/automation/thesis-review-deficiencies-2026-05-07.md` action plan and three `.hermes/thesis-quality-reviews/` review artifacts.
-- **2026-05-10**: BLE voice pipeline checkpoint and helper-routing/persona demo work landed (commits `4fae836`, `97d1c9d`); translation MT benchmark scaffold and quick FAPH spot check were produced (`notes/experiments/2026-05-10-translation-mt-benchmark.md`, `tools/demo-pipeline/bench_translation_models.py`, `tools/demo_pipeline/translation.py`, `benchmark_faph_praam_quick_20260510.csv`). Treat these as side-quest evidence unless explicitly cited.
-- **2026-05-11**: Android dev voice bridge landed (commit `a5b0170`); githook/project-tracking automation improved (commits `ea17215`, `dc0f703`).
-- **2026-05-12**: terminology lint workflow landed (commit `40028fb`); agent token usage stats landed (commit `5b53374`); TalTech thesis best-practices research artifacts produced under `docs/research/`.
-- **2026-05-13**: modular Home Assistant add-on stack and public packaging committed (`ee0d414`). Limited demo/pilot log analysis created for `m01`, `f02`, `m03`; it supports UX/prototype caveats, not wake-word recall/FPR. Consent issue found for `f02` `ainult mõõdikud` audio. Time-tracking hook misconfiguration found and local `core.hooksPath` restored to `.githooks` for future commits.
+Keep these synchronized if material facts change:
+
+- `docs/PROJECT_TODO.md`
+- `docs/research/source-of-truth-apr-2026.md`
+- `docs/research/openwakeword-framework-comparison-2026-05-15.md`
+- `wake-word/docs/MODEL_LINEAGE.md`
+- `wake-word/evaluation/training_data_manifest.md` if training data/manifests change
+
+### Recent decisions log
+
+- **2026-05-13:** Modular Home Assistant add-on stack committed (`ee0d414`). Treat as packaging evidence until end-to-end validation exists.
+- **2026-05-15:** TTS add-on path corrected from external Neurokõne API wrapper to local TartuNLP `text-to-speech-worker` wrapper; wake-word install UX reframed as prebuilt ESPHome firmware image.
+- **2026-05-15:** OWW diagnostic comparison completed. Conclusion: framework/capacity change did not remove recall–FAPH–confusable tradeoff; no OWW model replaces `v16c` for demo/user-test.
 
 ---
 
-## 9. SCOPE DECISIONS NEEDED (side quests in working tree, 2026-05-13)
+## 6. After-submission / future work bucket
 
-Tooling/material exists outside critical path; decide commit + thesis scope before submission window closes. Do not let these displace threshold/evidence/thesis closeout.
+These are explicitly **not** submission blockers:
 
-- ⏳ Translation MT benchmark (`tools/demo-pipeline/bench_translation_models.py`, `tools/demo_pipeline/translation.py`, `cli/commands/kratt-translation-bench`, `notes/experiments/2026-05-10-translation-mt-benchmark.md`) — decide: commit + ignore for thesis, commit + reference as future work, or stash. Default: out of scope unless one thesis paragraph cites a result.
-- ⏳ Intent regression harness (`tools/demo-pipeline/intent_regression.py`, `tools/demo-pipeline/intent-regression-cases.json`, `cli/commands/kratt-demo-intent-test`) — same decision; commit only if it backs an implementation/eval paragraph.
-- ⏳ Questionnaire server + Google Forms artifacts (`tools/user-testing/questionnaire_server.py`, `cli/commands/kratt-questionnaire`, `docs/user-testing/questionnaire-v1` Google variants, `pilot-run-sheet-v1.md`, `create-google-form-v1.gs`, `google-forms-build-sheet-v1.md`) — keep only if pilot actually uses Google Forms; otherwise leave on disk and use the existing markdown questionnaire.
-- ⏳ Korvo serial streamer / serial-audio path (`hardware/esp32/firmware/korvo-serial-streamer/`, `cli/commands/kratt-korvo-streamer`, `tools/demo_pipeline/serial_audio.py`) — useful for demo capture, but commit only with a concise validation note.
-- ⏳ Airfryer/MCP side quest (`scripts/mcp/airfryer.py`, `tools/airfryer-server/`) — quarantine unless explicitly needed; it controls a physical appliance and is outside thesis scope.
-- ⏳ `cli/CLAUDE.md` staged edits add `kratt thesis-lint` and `kratt terms` but **not** `kratt-translation-bench`, `kratt-questionnaire`, `kratt-demo-intent-test`; sync the CLI table to whichever commands actually land.
-- ⏳ Loose root files: `research.md` and `false` look accidental/out-of-place — move/delete before next commit so they do not get accidentally added.
-
----
-
-## 10. TIME TRACKING / GIT HOOK HYGIENE
-
-- ✅ Local git hook path restored on 2026-05-13: `git config core.hooksPath .githooks`. Future commits should again append to `~/.kratt-time-log/commits.jsonl` and generate proposals.
-- ⚠️ Time hooks were inactive because `core.hooksPath` pointed at `.git/hooks`; the local commit log/proposal stream effectively stopped around 2026-05-12 11:07. This is why recent thesis/HA/demo work is under-logged.
-- ⏳ Pending proposal backlog: `.githooks/lib/apply_proposals.py --since 2026-05-12 --dry-run` reports 8 applyable records / **0h50m** from existing proposals. Apply only after confirming no manual duplicate entries.
-- ⏳ Manual backfill still needed for commits and uncommitted work after the hook cutoff, especially:
-  - thesis polishing commits after `5b53374` (`#19` / `#23` / `#25`);
-  - Home Assistant public packaging commit `ee0d414` (`#20`);
-  - 2026-05-13 demo/pilot runs, questionnaire handling, and log analysis (`#28` / `#20`);
-  - this repo-audit/TODO/time-hook cleanup (`#29`).
+- More OWW training variants.
+- More `Kratt`-only variants.
+- Broad negative-pool expansion.
+- New ASR verifier experiments.
+- Translation MT benchmark polishing.
+- Intent regression harness polishing.
+- Questionnaire server / Google Forms tooling unless actually used.
+- Airfryer/MCP side quests.
