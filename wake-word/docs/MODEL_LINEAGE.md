@@ -1,6 +1,6 @@
 # Kratt wake word model lineage
 
-**Last updated:** 2026-04-29
+**Last updated:** 2026-05-15
 
 Ühene nimekiri kõigist `kuule-kratt` mudelitest — hypothesis, muutus, tulemus, järgmine samm.
 
@@ -16,19 +16,32 @@ Eesmärk: vältida et mudelite arv (v1..v18, expert-*, checkpoint-*) tekitaks se
 - **Low-FAPH gate diagnostic:** `checkpoint-faph10-v18d-clean96-pw96x4` ja selle consensus `+ v16c`, aga Friend1 recall ja confusable FPR jäävad liiga halvaks.
 - **Historical MoE milestone:** `expert-a + expert-b2` saavutas sub-1 FAPH, kuid recall/phrase-selectivity jäi blockeriks.
 - **Deployment-packaged:** `v11` (Android path + pakendatuse/paketi viide on olemas).
+- **Diagnostic framework comparison:** `openWakeWord` 50k ONNX runs (`oww-v4-50k`, `oww-v6-50k`, `oww-v17-official-50k`, `oww-v18d-clean96-cap128-50k`). Need näitavad, et teine raamistik/suurem head ei lahenda üksi recall--FAPH--confusable tradeoff'i.
 - **Deployment-proven:** ainult see, mille kohta on nähtav real-device või pakendatud kasutusviide; praegu ainult `v11` Androidi suunal. Korvo/custom deploy-tõend tuleb eraldi kontrollida.
 
-**Do not promote:** v17, v18 single models, or checkpoint-FAPH models as final production candidates. Their thesis value is diagnostic: label purity, phrase selectivity, and checkpoint-objective alignment.
+**Do not promote:** v17, v18 single models, checkpoint-FAPH models, `Kratt`-only, or openWakeWord runs as final production candidates. Their thesis value is diagnostic: label purity, phrase selectivity, checkpoint-objective alignment, and framework/capacity limits.
 
-## Current high-level lesson (updated 2026-05-05)
+## Current high-level lesson (updated 2026-05-15)
 
-No current two-word `Kuule Kratt` model satisfies the full deployment objective alone. Final thesis tables must keep together:
+No current two-word `Kuule Kratt` model/framework path satisfies the full deployment objective alone. Final thesis tables must keep together:
 
 1. ambient FAPH,
 2. real/unseen-speaker recall,
 3. hard-negative / prefix / confusable FPR.
 
 New `v19a-kratt-only` is a **target-policy ablation**, not directly comparable to exact-phrase hard-negative tables: any phrase containing actual `Kratt` is positive under the new policy.
+
+The 2026-05-15 openWakeWord comparison is a **diagnostic framework comparison**, not a replacement lineage for the microWakeWord demo model. It supports the same conclusion from a second framework: the bottleneck is clean/diverse positives plus phrase-selective negatives/objective design, not only model capacity or convergence.
+
+## openWakeWord 50k diagnostic comparison (2026-05-15) — ALTERNATIVE FRAMEWORK CHECK
+
+- **Hypothesis:** openWakeWord's pretrained embedding + larger custom classifier head might give a better recall/FAPH/confusable tradeoff than the small microWakeWord models.
+- **Models:** `oww-v4-50k`, `oww-v6-50k`, `oww-v17-official-50k`, `oww-v18d-clean96-cap128-50k` (`50k` = 50,000 training steps, not 50k clips).
+- **Artifacts:** ONNX files in `wake-word/models/openwakeword/`; raw CSVs in `wake-word/evaluation/openwakeword-supervisor-full-20260515/`; combined mWW+OWW report in `docs/research/artifacts/openwakeword-comparison-2026-05-15/`; interpretation note in `docs/research/openwakeword-framework-comparison-2026-05-15.md`.
+- **Internal OWW training signal:** final internal recall stayed modest (`oww-v4` 72.8%, `oww-v6` 73.3%, `oww-v17` 58.7%, `oww-v18d` 63.9%) with internal FP/h still tens to hundreds depending on run.
+- **External supervisor-style result:** permissive thresholds can keep recall usable but produce high FAPH/confusable FPR; strict thresholds can reduce FAPH but make recall uneven or collapse. Example: `oww-v6-50k @0.99` gives CV FAPH 2.09 and MacBG FAPH 2.57, but Isa recall 31.2%, Friend recall 62.8%, and confusable FPR 71.8%. `oww-v18d-clean96-cap128-50k @0.995` lowers MacBG FAPH to 1.71, but Isa recall is 2.1% and confusable FPR 74.7%.
+- **Interpretation:** diagnostic only. OWW did not replace `v16c` or `v6-residual` for thesis/demo use. The likely limit is not just convergence; it is too little clean/diverse exact-phrase positive data and insufficient phrase-selective negative/objective pressure.
+- **Next:** no further OWW training before thesis submission. If revisited later, use more real-speaker positives and explicit `kuule`, `kratt`, reversed-order, and `kuule/kule <confusable>` negatives; keep evaluation disjoint.
 
 ## v19a-kratt-only (2026-05-04/05) — SINGLE-WORD TARGET ABLATION
 

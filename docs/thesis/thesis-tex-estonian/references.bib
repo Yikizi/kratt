@@ -1,16 +1,3 @@
-@misc{example-reference,
-    author    = "L. Masinter",
-    title     = "Hyper Text Coffee Pot Control Protocol (HTCPCP/1.0)",
-    url       = "https://tools.ietf.org/html/rfc2324",
-    note      = "[Accessed: 24-05-2019]"
-}
-@inproceedings{spectre,
- author = {Paul Kocher and Jann Horn and Anders Fogh and Daniel Genkin and Daniel Gruss and Werner Haas and Mike Hamburg and Moritz Lipp and Stefan Mangard and Thomas Prescher and Michael Schwarz and Yuval Yarom},
- title = {Spectre Attacks: Exploiting Speculative Execution},
- booktitle = {40th IEEE Symposium on Security and Privacy (S\&P'19)},
- year = {2019},
-}
-
 @misc{speechcommands2018,
     author        = {Pete Warden},
     title         = {Speech Commands: A Dataset for Limited-Vocabulary Speech Recognition},
@@ -232,13 +219,13 @@
   note={Methods for efficient use of TTS data in KWS training}
 }
 
-@misc{zhang2025graphemeaug,
-  title         = {{GraphemeAug}: A Systematic Approach to Synthesized Hard Negative Keyword Spotting Examples},
-  author        = {Zhang, Carlin and others},
-  year          = {2025},
-  eprint        = {2505.14814},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.CL}
+@article{zhang2025graphemeaug,
+  title={GraphemeAug: A Systematic Approach to Synthesized Hard Negative Keyword Spotting Examples},
+  author={Zhang, Carlin and others},
+  year={2025},
+  eprint={2505.14814},
+  archivePrefix={arXiv},
+  note={Google DeepMind; generating confusable negatives for Hey Google}
 }
 
 @inproceedings{xiao2025imkws,
@@ -381,10 +368,11 @@
 % === Evaluation Benchmarks & Datasets ===
 
 @inproceedings{dipco2020,
-    author    = {Meisner Van Segbroeck and Ahmed"; Morteza Ravanelli and Michal Wronsky and Julia Kuber and Cornelius Severin and Marko"; and Piergiovanni},
+    author    = {Maarten Van Segbroeck and Ahmed Zaid and Ksenia Kutsenko and Cirenia Huerta and Tinh Nguyen and Xuewen Luo and Bj{\"o}rn Hoffmeister and Jan Trmal and Maurizio Omologo and Roland Maas},
     title     = {{DiPCo} --- {D}inner {P}arty {C}orpus},
     booktitle = {Proceedings of Interspeech},
     year      = {2020},
+    doi       = {10.21437/Interspeech.2020-2800},
     url       = {https://arxiv.org/abs/1909.13447},
     note      = {Far-field conversational corpus, 10 sessions, $\sim$5.5\,h. Primary FAPH benchmark for openWakeWord. [Accessed: 10-04-2026]}
 }
@@ -431,7 +419,7 @@
     year      = {2024},
     publisher = {Hugging Face},
     url       = {https://huggingface.co/datasets/disco-eth/EuroSpeech},
-    note      = {Estonian subset: $\sim$1701\,h total, $\sim$383\,h high quality. CC-BY-SA. [Accessed: 10-04-2026]}
+    note      = {[Accessed: 10-04-2026]}
 }
 
 @inproceedings{voxpopuli2021,
@@ -508,7 +496,7 @@
     pages     = {1--30},
     year      = {2020},
     doi       = {10.1145/3432234},
-    note      = {[Accessed: 08-04-2026]}
+    note      = {Measured 0.95 accidental activations/hour on commercial smart speakers using TV audio. [Accessed: 08-04-2026]}
 }
 
 @misc{sensory2024realworld,
@@ -516,7 +504,7 @@
     title        = {Wake Word Accuracy: Benchmarks vs.\ Real-World Performance},
     year         = {2024},
     url          = {https://www.sensory.com/wake-word-accuracy/},
-    note         = {[Accessed: 08-04-2026]}
+    note         = {Industry perspective on benchmark--deployment gap from Samsung's wake word vendor. [Accessed: 08-04-2026]}
 }
 
 @inproceedings{chen2022misp,
@@ -566,13 +554,11 @@
 }
 
 @inproceedings{shrivastava2021optimize,
-  author        = {Ashish Shrivastava and Arnav Kundu and Chandra Dhir and Devang Naik and Oncel Tuzel},
-  title         = {Optimize What Matters: Training {DNN-HMM} Keyword Spotting Model Using End Metric},
-  booktitle     = {IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
-  year          = {2021},
-  eprint        = {2011.01151},
-  archivePrefix = {arXiv},
-  primaryClass  = {eess.AS}
+  author    = {Ashish Shrivastava and Arnav Kundu and Chandra Dhir and Devang Naik and Oncel Tuzel},
+  title     = {Optimize What Matters: Training {DNN-HMM} Keyword Spotting Model Using End Metric},
+  booktitle = {ICASSP},
+  year      = {2021},
+  doi       = {10.48550/arXiv.2011.01151}
 }
 
 @inproceedings{michaely2017googlekws,
@@ -630,7 +616,7 @@
   doi       = {10.21437/Interspeech.2021-204}
 }
 
-@article{schoenherr2022accidental,
+@inproceedings{schoenherr2022accidental,
   author    = {Lea Sch{\"o}nherr and Maximilian Golla and Thorsten Eisenhofer and Jan Wiele and Dorothea Kolossa and Thorsten Holz},
   title     = {Exploring Accidental Triggers of Smart Speakers},
   journal   = {Computer Speech \& Language},

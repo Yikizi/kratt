@@ -2,7 +2,7 @@ This bachelor's thesis investigates how to build and evaluate an Estonian wake-w
 
 The thesis reconstructs a \texttt{microWakeWord}-based training and evaluation pipeline and validates it with a public control experiment on the \texttt{Speech Commands} dataset. The initial clip-level evaluation proved misleading due to data leakage, so independent held-out test sets were constructed, train--test disjointness checks were added, and streaming-mode FAPH (false accepts per hour) was adopted as the central metric.
 
-The results show that no current model or combination of models satisfies all targets simultaneously: low FAPH, high recall on real speakers, and accurate phrase distinction. The main contribution is therefore a reproducible evaluation protocol and an empirical description of the trade-offs that arise in small-resource-language local wake-word development, rather than a final deployable model.
+The results show that no current model or combination of models satisfies all targets simultaneously: low streaming FAPH, high recall on real speakers, low hard-negative FPR, and accurate phrase-structure distinction. The main contribution is therefore a reproducible KWS evaluation protocol and an empirical description of the trade-offs that arise in small-resource-language local wake-word development, rather than a production-grade voice assistant or a user-study result. User testing is treated as future system-level validation for a larger assistant, not as a prerequisite for this machine-learning-focused thesis.
 
 
 % No need to change this
