@@ -7,7 +7,9 @@ VENV_DIR="${ROOT_DIR}/.venv-esphome"
 # ESPHome currently requires Python < 3.14.
 # Prefer a Homebrew / system install that satisfies this, falling back sensibly.
 PYTHON_BIN=""
-for cand in python3.13 python3.12 python3.11 python3.10; do
+# Prefer 3.12: local Homebrew Python 3.13 has shown pyexpat/ensurepip issues
+# on this machine, and ESPHome only needs Python <3.14.
+for cand in python3.12 python3.11 python3.10 python3.13; do
   if command -v "${cand}" >/dev/null 2>&1; then
     PYTHON_BIN="$(command -v "${cand}")"
     break

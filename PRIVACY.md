@@ -29,7 +29,9 @@ Audio sent from Home Assistant to the STT add-on is processed locally by the add
 
 ## Text-to-speech
 
-The Kratt Neurokõne TTS add-on currently calls the external TartuNLP Neurokõne API at synthesis time. Text sent to that add-on is sent to the external API. Use Piper or another local TTS component if a fully offline voice pipeline is required.
+The active Kratt TartuNLP Local TTS add-on path runs synthesis locally using TartuNLP `text-to-speech-worker` after downloading model/assets on first start. Synthesis text is not sent to the public Neurokõne API by this local path.
+
+Historical API-wrapper code was removed from the active add-on path because the public Neurokõne API should not be integrated as a default application backend without explicit permission and clear data-handling terms.
 
 ## Home Assistant and ESPHome
 

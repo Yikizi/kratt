@@ -1,10 +1,9 @@
-name: Kratt Neurokõne TTS
-version: 0.1.2
+name: Kratt TartuNLP Local TTS
+version: 0.2.0
 slug: kratt_neurokone_tts
-description: Estonian Wyoming TTS service using the Tartu Neurokõne API
+description: Estonian text-to-speech for Home Assistant Assist via local TartuNLP
 url: https://github.com/Yikizi/kratt/tree/main/kratt-neurokone-tts
 arch:
-  - aarch64
   - amd64
 startup: services
 boot: auto
@@ -16,11 +15,22 @@ ports:
   10301/tcp: null
 ports_description:
   10301/tcp: Wyoming TTS protocol
+backup_exclude:
+  - models
+  - models/**
+  - cache
+  - cache/**
+  - huggingface
+  - huggingface/**
 options:
-  voice: mari
+  model_zip_url: https://github.com/TartuNLP/text-to-speech-worker/releases/download/v3.1.0/multispeaker.zip
+  voice: meelis
   speed: 1.0
+  max_input_length: 500
   debug_logging: false
 schema:
-  voice: str
+  model_zip_url: str
+  voice: list(albert|indrek|kalev|kylli|liivika|mari|meelis|peeter|tambet|vesta)
   speed: float(0.5,2.0)
+  max_input_length: int(50,500)
   debug_logging: bool

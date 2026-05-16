@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# DESC: Build a prebuilt ESPHome firmware artifact for Kratt wake-word satellite
+# USAGE: kratt build-esphome-firmware [--config PATH] [--model v16c] [--cutoff 0.996] [--out-dir DIR]
+# EXAMPLES: kratt build-esphome-firmware --model v16c --cutoff 0.996
+set -euo pipefail
+
+exec "${KRATT_ROOT}/scripts/deployment/build_esphome_firmware.sh" "$@"

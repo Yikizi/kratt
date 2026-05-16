@@ -2,6 +2,12 @@
 set -euo pipefail
 
 OPTIONS_FILE="/data/options.json"
+MODEL_ROOT="/data/models"
+MODEL_DIR="$MODEL_ROOT/multispeaker"
+DEFAULT_MODEL_ZIP_URL="${TARTUNLP_TTS_MODEL_ZIP_URL:-https://github.com/TartuNLP/text-to-speech-worker/releases/download/v3.1.0/multispeaker.zip}"
+DEFAULT_VOICE="${TARTUNLP_TTS_VOICE:-meelis}"
+DEFAULT_SPEED="${TARTUNLP_TTS_SPEED:-1.0}"
+DEFAULT_MAX_INPUT_LENGTH="${TARTUNLP_TTS_MAX_INPUT_LENGTH:-500}"
 
 read_option() {
   local key="$1"
@@ -28,15 +34,65 @@ else:
 PY
 }
 
-VOICE="$(read_option voice "${NEUROKONE_VOICE:-mari}")"
-SPEED="$(read_option speed "${NEUROKONE_SPEED:-1.0}")"
+MODEL_ZIP_URL="$(read_option model_zip_url "${TARTUNLP_MODEL_ZIP_URL:-$DEFAULT_MODEL_ZIP_URL}")"
+VOICE="$(read_option voice "${TARTUNLP_TTS_VOICE:-$DEFAULT_VOICE}")"
+SPEED="$(read_option speed "${TARTUNLP_TTS_SPEED:-$DEFAULT_SPEED}")"
+MAX_INPUT_LENGTH="$(read_option max_input_length "${TARTUNLP_TTS_MAX_INPUT_LENGTH:-$DEFAULT_MAX_INPUT_LENGTH}")"
 DEBUG_LOGGING="$(read_option debug_logging "${DEBUG_LOGGING:-false}")"
 
+mkdir -p "$MODEL_ROOT" /data/nltk /data/cache /data/huggingface
+export NLTK_DATA="/data/nltk"
+export XDG_CACHE_HOME="/data/cache"
+export HF_HOME="/data/huggingface"
+export TRANSFORMERS_CACHE="/data/huggingface"
+
+if [[ ! -s "$MODEL_DIR/model_weights.hdf5" || ! -s "$MODEL_DIR/config.yaml" ]]; then
+  echo "Downloading local TartuNLP TTS model: $MODEL_ZIP_URL"
+  python3 - "$MODEL_ZIP_URL" "$MODEL_ROOT" <<'PY'
+import sys
+import tempfile
+import urllib.request
+import zipfile
+from pathlib import Path
+
+url = sys.argv[1]
+model_root = Path(sys.argv[2])
+model_root.mkdir(parents=True, exist_ok=True)
+with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp:
+    tmp_path = Path(tmp.name)
+try:
+    with urllib.request.urlopen(url, timeout=120) as response, tmp_path.open("wb") as out:
+        while True:
+            chunk = response.read(1024 * 1024)
+            if not chunk:
+                break
+            out.write(chunk)
+    with zipfile.ZipFile(tmp_path) as zf:
+        zf.extractall(model_root)
+finally:
+    tmp_path.unlink(missing_ok=True)
+PY
+fi
+
+python3 - <<'PY'
+import nltk
+for pkg in ("punkt", "punkt_tab"):
+    try:
+        nltk.download(pkg, download_dir="/data/nltk", quiet=True)
+    except Exception:
+        # Older NLTK versions may not have punkt_tab; punkt is enough there.
+        pass
+PY
+
 args=(
-  python /opt/neurokone/wyoming_neurokone.py
+  python3 /opt/kratt/wyoming_tartunlp_local.py
   --uri tcp://0.0.0.0:10301
+  --model-config /app/config/config.yaml
+  --model-name multispeaker
+  --model-dir "$MODEL_DIR"
   --voice "$VOICE"
   --speed "$SPEED"
+  --max-input-length "$MAX_INPUT_LENGTH"
 )
 
 if [[ "$DEBUG_LOGGING" == "true" ]]; then

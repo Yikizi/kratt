@@ -14,16 +14,27 @@ In Home Assistant:
 https://github.com/Yikizi/kratt
 ```
 
-Install one or both add-ons:
+Install the local STT add-on:
 
 - **Kratt Kiirkirjutaja STT** — local Estonian speech-to-text, Wyoming port `10300`.
-- **Kratt Neurokõne TTS** — Estonian TTS, Wyoming port `10301`, uses the external TartuNLP API.
+
+TTS note:
+
+- Install **Kratt TartuNLP Local TTS** for Estonian text-to-speech using TartuNLP `text-to-speech-worker` (`v3.1.0`, local checkout `tools/text-to-speech-worker/`, upstream <https://github.com/TartuNLP/text-to-speech-worker>). Initial add-on target is `amd64`; ARM/aarch64 needs separate validation.
 
 If Home Assistant does not auto-discover the services, open the add-on **Network** section, map the container port to the same host port (`10300` or `10301`), restart the add-on, and add the **Wyoming Protocol** integration manually with your Home Assistant host/IP and the mapped port.
 
-## 2. Add Kuule Kratt wake word to ESPHome
+## 2. Install Kuule Kratt wake word firmware
 
-For an ESPHome voice satellite, use the public v16c manifest:
+Best user path: flash a ready ESPHome firmware image for the supported voice-satellite board, starting with ESP32-S3-Korvo-2. This avoids asking normal users to hand-edit YAML. Build/rebuild the artifact with:
+
+```bash
+./cli/kratt build-esphome-firmware --model v16c --cutoff 0.996
+```
+
+The build writes firmware binaries and checksums under `output/firmware/esphome/`.
+
+Developer/reproducible path: for an ESPHome voice satellite, use the public v16c manifest:
 
 ```yaml
 micro_wake_word:
@@ -32,7 +43,7 @@ micro_wake_word:
       id: kuule_kratt_model
 ```
 
-Then compile and flash the ESPHome device.
+Then compile and flash the ESPHome device. This step is required: ESPHome `micro_wake_word` models are firmware-time configuration, so a Home Assistant add-on cannot automatically install the wake word into an already flashed ESP32 device.
 
 For a full Korvo-2 example, see:
 
@@ -46,11 +57,11 @@ Create or edit an Assist pipeline:
 - Wake word: ESPHome satellite using `kuule_kratt_model`
 - Speech-to-text: Kiirkirjutaja / Wyoming STT
 - Conversation agent: Home Assistant
-- Text-to-speech: Piper, Neurokõne, or another Wyoming TTS service
+- Text-to-speech: Kratt TartuNLP Local TTS / Wyoming TTS
 - Language: Estonian (`et` / `et-EE`)
 
 ## Notes
 
 - The wake-word model `v16c` is a research-prototype baseline, not a production-proven detector.
 - STT runs locally after the model files are downloaded.
-- Neurokõne TTS currently sends synthesis text to the TartuNLP API. Use Piper or another local TTS if you require a fully offline stack.
+- The active TTS add-on path is local TartuNLP `text-to-speech-worker` + `multispeaker` model release; see `home-assistant/VALIDATION.md` for current validation status.

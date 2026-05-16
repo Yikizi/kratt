@@ -2,7 +2,7 @@
 
 Local Estonian speech-to-text for Home Assistant Assist, exposed through the Wyoming protocol.
 
-This add-on packages a minimal Kiirkirjutaja runtime around the TalTech INT8 streaming Zipformer model. It is a supporting component for the Kratt voice stack; it does **not** train a new STT model.
+This add-on packages the TalTech Kiirkirjutaja INT8 streaming Zipformer as a local Wyoming STT service for the Kratt voice stack.
 
 ## Installation
 

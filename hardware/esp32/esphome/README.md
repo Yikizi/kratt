@@ -2,7 +2,19 @@
 
 ESPHome configurations for an ESP32-S3 voice satellite with on-device Kratt wake-word detection (`micro_wake_word`) and Home Assistant Assist streaming.
 
-## Option A: use Kratt v16c like a built-in wake word
+## Recommended user path: prebuilt firmware image
+
+For normal users, the best install UX is a ready firmware image for a supported board, starting with ESP32-S3-Korvo-2. This avoids asking users to hand-edit YAML just to install the wake word.
+
+Build a firmware artifact from this repo:
+
+```bash
+./cli/kratt build-esphome-firmware --model v16c --cutoff 0.996
+```
+
+The script compiles ESPHome, copies `firmware*.bin` files into `output/firmware/esphome/...`, and writes checksum/provenance files. Publish/use the factory image for first-time flashing when available.
+
+## Developer path: use Kratt v16c like a built-in wake word
 
 In an existing ESPHome voice-satellite YAML, add the public v16c manifest under `micro_wake_word.models`:
 
@@ -78,5 +90,5 @@ Then compile/flash the ESPHome device. This is the closest equivalent to using a
 Use this ESPHome device as the wake-word satellite, then choose whichever backend components you need:
 
 - local Estonian STT: `Kratt Kiirkirjutaja STT` add-on (`10300`);
-- TTS: official Piper add-on or `Kratt Neurokõne TTS` add-on (`10301`);
+- TTS: local TartuNLP TTS add-on / Wyoming wrapper (`10301`);
 - conversation agent: Home Assistant.
