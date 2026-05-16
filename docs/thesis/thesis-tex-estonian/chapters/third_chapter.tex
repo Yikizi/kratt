@@ -1,9 +1,9 @@
 Senise töö kõige olulisem metoodiline järeldus on, et äratussõna mudeli arenduses võib pealtnäha hea tulemus olla eksitav, kui hindamismetoodika on puudulik. Lühikeste klippide head tulemused ei taga, et mudel käitub õigesti pideva helivoo režiimis. See probleem ilmnes selgelt hetkel, kui varasemad \enquote{Kratt} tulemused osutusid klipitasemel vaates mõistlikuks, kuid voogedastushindamine ei sisaldanud sisulist taustaheli komponenti.
 
-\section{Miks avalik kontrollkatse oli vajalik}
+\section{Avaliku kontrollkatse roll}
 Avaliku marvin-kontrollkatse tegemine enne eestikeelse äratussõna juurde liikumist oli teadlik riskide vähendamise samm. Ilma selle vahekontrollita oleks iga hilisem nõrk tulemus võinud näida kui eesti keele, väikese andmestiku või seadme mikrofoni probleem, kuigi tegelik põhjus võinuks peituda hoopis treeninguahela tehnilises piirangus --- täpsemalt samas voogedastushindamise taustaheli komponendi puudujäägis, mille kontrollkatse lõpuks nähtavale tõi.
 
-\section{Miks kahe raamistiku võrdlus tugevdab tööd}
+\section{Kahe raamistiku võrdluse panus}
 Praktilises plaanis ei piisa väitest, et valitud tehnoloogia osutus sobivaks. Äratussõna lahenduste puhul on olemas mitu avatud lähtekoodiga rada, mille eesmärgid ja tugevused erinevad. Selle töö raames käsitletud disainikompromiss on järgmine: microWakeWord sobib paremini mikrokontrolleri piirangutega keskkonnale ja seega ESP32-S3-sihtplatvormile, samas kui openWakeWord rõhub paindlikumale mudeliehitusele suurema arvutusvõimsusega sihtseadmetel \cite{microwakeword2026,openwakeword2026}. Käesolev peatükk käsitleb raamistikuvalikut projektispetsiifilise kompromissina, mitte üldise raamistike võrdlusena; raamistikusisesed tundlikkust puudutavad tähelepanekud on esitatud tulemuste peatüki mudeliversioonide analüüsis (tabel~\ref{tab:model-versions}).
 
 Seetõttu annab kahe raamistiku praktiline läbiproovimine tööle lisaväärtuse. Võrdlus võimaldab näidata, et tehnoloogiavalik ei põhinenud pelgalt autori harjumusel või varasemal kogemusel, vaid kontrollitud katsetel. Selline lähenemine tugevdab töö põhjendatust isegi juhul, kui lõppjäreldus osutub kompromissiks, kus üks raamistik on parem arendatavuse ja teine lõpliku seadme-sobivuse poolest.
@@ -37,25 +37,25 @@ Seevastu teine versioon sai standardsetel võrdlusalustel selgelt nõrgema tulem
 
 Sama suunaerinevus kordus mitme vaheversiooni puhul kitsa reaalkõnelejate baasi peal: parem võrdlusalustulemus ei taganud paremat päriskõneleja tuvastamismäära. Seetõttu on tegu suunanäitajaga, mitte kinnitatud mustriga, ja laiema valimiga kasutajatest jääb vajalikuks täienduseks.
 
-\subsection{Põhjus 1: klipitaseme tuvastamismäär ei kajasta reaalse kõneleja käitumist}
+\subsection{Klipitaseme tuvastamismäär ja reaalne kõneleja}
 
 Positiivse tuvastamismäära mõõtmine toimus XTTS-kloonitud hääle isoleeritud klippide peal. Kõik klipid olid normaliseeritud, konstantse kauguse ja helitugevusega ning samalt kõnelejalt kloonitud. Selline testimine andis väljundväärtuseks täpselt 1,0000, mis tekitas vale kindlustunnet. Tegelikud kõnelejad varieeruvad häälduse, helitugevuse ja kauguse poolest märkimisväärselt. Reaalsete ütluste silutud väljundid jäid katseprotokolli alusel juurutamisläve lähedale; täpne ütluse-tasandi jaotus on edaspidi kasutajatesti tulemuste osa.
 
 Park et al.~\cite{park2024adversarial} on näidanud, et TTS-andmetega treenitud mudelid kipuvad sünteesitud kõne peal näitama ülehinnatud tuvastamismäära, sest TTS-kõne ei sisalda sama varieeruvust kui loomulik kõne. Käesoleva töö tulemused kinnitavad seda leidu, kuid lisavad olulise täpsustuse: probleem ei piirdu ainult treenimisega, vaid laieneb ka hindamisele. Kui testikomplekt koosneb samadest TTS-häältest, millega treeniti, on tuvastamismäära hinnang topelt üle paisutatud.
 
-\subsection{Põhjus 2: tihedal kõnel mõõdetud FAPH ei ennusta FAPH-i reaalses keskkonnas}
+\subsection{Tihe kõnekorpus versus reaalne keskkond}
 
 FAPH mõõtmine Common~Voice eestikeelsel kõnel kujutab olukorda, kus mikrofon kuuleb pidevat, selgesti artikuleeritud kõnet. Tegelikus nutikodu kasutuses on heli koostis aga hoopis teine: valdavalt vaikus, vahetevahel televisioon, muusika, vestlused teises toas, köögihelid. Mudel, mis tihedal kõnel vallandub 243 korda tunnis, ei pruugi elutoas vallanduda üldse, sest suurem osa ajast puudub foneetiliselt sarnane sisend. Vastupidi, mudel, mis tihedal kõnel näitab FAPH\,=\,14,40, võib olla liialt tundlik just nende üksikute mitte-kõne mustrite suhtes, mida standardne testkorpus ei sisalda.
 
 Dubois et al.~\cite{dubois2020triggers} demonstreerisid seda lahknevust empiiriliselt: kommertsiaalsetel nutikõlaritel mõõdeti kuni 0,95 tahtmatut aktiveerimist tunnis, kui seadmed kuulsid televisioonisignaali --- tulemus, mida standardsed võrdlusalused ei olnud ennustanud. Sch{\"o}nherr et al.~\cite{schoenherr2022accidental} kinnitavad seda mustrit eraldi katsega, näidates, et juhuslike aktiveerumiste määr varieerub seadme ja korpuse vahel märkimisväärselt. Sensory, kes arendab Samsungi äratussõna mudeleid, on tunnistanud, et nende sisemine hindamine ei kattunud alati klientide tegeliku kogemusega~\cite{sensory2024realworld}.
 
-\subsection{Põhjus 3: klipitaseme ja koduheli testid ei kajasta kogu voogedastuskonteksti}
+\subsection{Klipi- ja koduheli testide kontekstipiirid}
 
 Foneetiliselt sarnaste fraaside eristamist testiti isoleeritud klippidena. Mudel, mis korrektselt tõrjub üksiku klipi \enquote{kuule rott}, võib reageerida teisiti, kui sama fraas tuleb lause kontekstis: \enquote{kuule, rott on köögis}. Voogedastusrežiimis on mudeli sisemine olek eelmiste kaadrite mõjutatud, koartikulatsioon muudab akustilist signaali ja ajastus varieerub. Klipitaseme hindamine ei kajasta neid efekte.
 
 Teine katvusprobleem puudutab mittekõnelisi koduhelisid. Standardsed KWS-võrdlusalused sisaldavad kõnet ja vahel ka keskkonnahelisid (nt MUSAN-i müra \cite{musan2015}), kuid ei sisalda konkreetseid koduse keskkonna stiimuleid, nagu nõude kolin, kaugelt kostev televisioon või juhuslik muusika. Ükski kasutatud standardne võrdlusalus neid juhtumeid süstemaatiliselt ei kata; just see lõhe motiveeris käesoleva töö stsenaariumpõhist hindamisvoogu, mida kirjeldab järgmine alajaotus.
 
-\subsection{Lahendusena: stsenaariumpõhine testimisvoog}
+\subsection{Stsenaariumpõhine testimisvoog}
 
 Eelnev analüüs viitab sellele, et äratussõnamudelite usaldusväärne hindamine nõuab standardsete mõõdikute kõrvale täiendavat \emph{stsenaariumpõhist testimisvoogu}: mitmetunnist annoteeritud salvestust, mis sisaldab nelja tüüpi reaalseid kasutusolukordi:
 

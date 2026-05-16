@@ -209,9 +209,10 @@ Selle alapeatüki üks olulisi metoodilisi leide on, et \textbf{klipitaseme FPR 
 
 Praktiline järeldus tulevasteks töödeks on, et äratussõna süsteemi hindamisahel peab kohustuslikult sisaldama vähemalt kolme kontrolli. Esiteks on vaja lahknevuskontrolli testikomplektide ja treeningandmete vahel --- käesolevas töös rakendatud kujul on see operatsionaliseeritud \texttt{assert\_disjoint\_from\_training()} kaitsekontrollina, mis võrdleb komplektide failihulki enne hindamise käivitamist (vt §\ref{sec:data-leakage}). Teiseks peab hindamine sisaldama pikkade taustaheli segmentide peal arvutatud voogedastus-FAPH-i, mitte ainult klipitaseme FPR-i. Kolmandaks on vaja vähemalt ühte sõltumatut positiivset komplekti, mida mudel ei ole \emph{üheski} treeningujooksus näinud; selle eraldatust tuleb tõendada sama failihulkade kontrolliga, mitte usaldada protseduurilise lubaduse põhjal.
 
-\subsection{Ristmikrofoni testimine (H2)}
+\subsection{Ristmikrofoni testimine ja üldistumise asümmeetria (H2)}
 \label{sec:cross-mic-h2}
 
+\paragraph{Positiivne tuvastus ristseadmel.}
 Hüpotees H2 väitis, et kui mudel õpib foneetilise sisu tunnuseid, peaks ta üldistuma erinevatele mikrofonidele. Tagantjärele vaadates oli sama MacBook~Pro reaalajas test, mis paljastas andmelekke (§\ref{sec:data-leakage}), ühtlasi esimene H2 hüpoteesi kontroll: testseade on treeningandmetest täiesti erinev nii mikrofoni tüübi, sageduskarakteristiku kui ka ruumiakustika poolest. Selles alapeatükis vaadatakse sama eksperimenti uue analüüsinurga alt --- mitte enam metoodikakontrollina, vaid tuvastamismäära üldistumise tõendina.
 
 Testimise käigus ilmnes, et mudel:
@@ -223,7 +224,7 @@ Testimise käigus ilmnes, et mudel:
 
 See informaalne sessioon andis vihje H2 kasuks: mudel paistis tundvat äratussõna foneetilist struktuuri ka treeningandmetest erineval seadmel. Vihje piiratust näitab kohe järgmine alapeatükk, kus pikem tavakõne ja struktureeritud sarnaste negatiivnäidete komplekt (Tabeli~\ref{tab:fair-comparison-holdout} read \enquote{FPR HN (Mac, real)} ja \textbf{FAPH}) toovad esile, et positiivse tuvastuse üldistumisest hoolimata jääb negatiivse poole üldistus puudulikuks.
 
-\subsection{Ristmikrofoni üldistumise asümmeetria}
+\paragraph{Üldistumise asümmeetria.}
 \label{sec:cross-mic-asymmetry}
 
 Pikema reaalajas testimise käigus ilmnes nüanss. Kui v6 mudelit jooksutati MacBook~Pro sisemikrofoni peal ühe 40-minutilise tavakõne sessiooni ajal (kus äratussõna kordagi ei öeldud), registreeriti $\sim$33 valevallandumist, mis tunnile projitseeritult annab FAPH~$\approx$~50. Samal mudelil oli Mac-mikrofoni positiivse kõrvalejäetud komplekti tuvastamismäär 100,0\% ($N=30$, vt Tabel~\ref{tab:fair-comparison-holdout}), st päris äratussõna ütlused tuvastati. Vaatlus põhineb ühel sessioonil, ühel seadmel, ühes ruumis ja ühe kõnelejaga: tunnile ekstrapoleeritud FAPH kannab seetõttu laia, mitteraporteeritud usaldusvahemikku, mistõttu järgnev väide üldistumise asümmeetria kohta on hüpotees, mitte kvantitatiivselt kinnitatud järeldus. Range kontroll nõuaks teist seadet ja teist kõnelejat ning jääb käesoleva töö ulatusest välja.
@@ -312,9 +313,10 @@ Tabel~\ref{tab:expert-consensus} toob esile kaks eraldi mõõdetavat efekti, mid
 
 Konsensuskatse ei tõenda seetõttu tootmisvalmidust ega ekspertarhitektuuri üldistuvust. Madala FAPH-i hinnaks on antud operatsioonipunktis tuvastamismäära langus (54,5\% $\rightarrow$ 45,5\%, lävi 0,90 $\rightarrow$ 0,997), samal ajal kui Maci sarnaste negatiivnäidete FPR jääb 7\% peale, mitte ei lange nullini. Fraasiselektiivsuse probleem püsib seega samal operatsioonipunktil, kus FAPH on madal. Konsensus jääb käesolevas töös diagnostiliseks kontrolliks, mis kinnitab mitmemõõtmelise hindamise vajadust: madalat FAPH-i tuleb alati lugeda koos tuvastamismääraga ning prefiksi- ja segiajamisjuhtumite eraldi mõõdikutega, mida käsitletakse §\ref{sec:phrase-selectivity-metrics}-s.
 
-\subsection{Residuaalühenduste mõju: v6 vs v6-residual}
+\subsection{Ühe muutujaga ablatsioonid: residuaalühendused ja SpecAugment}
 \label{sec:residual-ablation}
 
+\paragraph{Residuaalühendused (v6 vs v6-residual).}
 Residuaalühenduste mõju eristatakse andmestiku ja regulaarimise muudatustest eraldi ühe muutujaga arhitektuurivõrdlusega. \emph{Hüpotees}: residuaalühendus parandab gradiendivoogu DS-CNN ploki sisendi ja väljundi vahel ning peaks tõstma positiivsete klippide tuvastamismäära ja langetama voogedastuse FAPH-i ilma sarnaste negatiivnäidete eristust halvendamata. Algne v1--v8 põhiseeria kasutas \texttt{microWakeWord}i vaikeväärtust \texttt{residual\_connection\,=\,0,0,0,0}, kuna selles etapis varieeriti samaaegselt positiivseid, negatiivseid ja ambient-andmeid; arhitektuuri hoiti konstantsena selleks, et andmestiku- ja sildistusvigade allikaid oleks võimalik ühe versiooni kaupa taandada (vt §\ref{sec:data-leakage}). Pärast andmelekke parandamist korrati v6 seadistust ühe muudatusega: \texttt{v6-residual} kasutas sama positiivsete, negatiivsete ja ambient-näidete komplekti, kuid lülitas residuaalühendused sisse seadistusega \texttt{residual\_connection\,=\,1,1,1,1} (üks lipp DS-CNN ploki kohta, kõik neli aktiivsed). Tabel~\ref{tab:residual-ablation} esitab tulemused samal 2026-04-21 ühtsel kõrvalejäetud hindamisel, mida kasutatakse ka teiste v1--v16 mudelite võrdluseks.
 
 \begin{table}[H]
@@ -336,7 +338,7 @@ v6-residual & ON & 100,0 & 91,0 & 100,0 & 73,0 & 14,4 \\
 
 Võrdlus näitab kahesuunalist mõju. Esiteks paranesid voogedastuslik stabiilsus ja positiivsete klippide tuvastamismäär: Common~Voice ET FAPH langes 25,4-lt 14,4-le, Kõneleja~B tuvastamismäär tõusis 82\%-lt 91\%-le ning Kõneleja~A XTTS tuvastamismäär jõudis 100\%-ni. Teiseks ei paranenud sarnaste negatiivnäidete eristamine: Maci komplekti vale-vallandumise määr jäi 100\% tasemele ning Kõneleja~A XTTS sarnaste negatiivnäidete määr isegi halvenes 60\%-lt 73\%-le. Praktiline tasakaal kallutab kasuks --- FAPH-i 11,0-ühikuline langus ja tuvastamismäära paranemine kaaluvad üles ühe sarnaste negatiivnäidete komplekti regressiooni ---, mistõttu residuaalühendused võeti üle hilisemates tugevamates kandidaatides (\texttt{v13a/v13b}-paar, \texttt{v16}-pere ja \texttt{v6-residual} ise kasutuse-pilootmudelina). Kuna täpse fraasieristuse probleem residuaaliga ei lahene, vaadeldakse järgnevalt §\ref{sec:specaug-ablation}-s, kas spektrogrammi-tasandi regulariseerimine parandab sarnaste negatiivnäidete eristamist.
 
-\subsection{SpecAugmenti mõju ühe muutujaga võrdlus: v13a ja v13b}
+\paragraph{SpecAugment (v13a vs v13b).}
 \label{sec:specaug-ablation}
 
 SpecAugment lisati esmalt versioonis v7 koos 6090 uue TTS-sihtfraasiga sarnase negatiivklipi ja 826 SSML-laiendusega positiivse näitega; v7 tulemus kirjeldab seetõttu tervikseadistuse, mitte üksnes augmentatsiooni mõju. Selle puuduse kõrvaldamiseks tehti hilisem kontrollitud ablatsioon v13a/v13b paariga, kus andmestik, arhitektuur, treeningusammud ja klassikaalud olid identsed ning muutus ainult aja- ja sagedusmaskide kasutamine.
@@ -480,7 +482,7 @@ Konsensuse järelkatse näitab, et ansambli-agregatsioon üksi fraasiselektiivsu
 
 Diagnostilise kontroll-katsena treeniti ka \texttt{checkpoint-faph-v18d-clean96} pere, kus mudeli valikuks treeningu käigus kasutati taustaheli FAPH-i miinimumi (\texttt{ambient\_false\_positives\_per\_hour}) tavapärase täpsuspõhise valiku asemel. Parameeter \texttt{target\_minimization} määrab FAPH-sihtmäära (valed/tunnis), mille suunas treeningujooks kontrollpunkti optimeerib: madalam väärtus surub mudeli agressiivsemalt vaikima, kõrgem lubab rohkem valevallandumisi vastutasuks paremale tuvastamismäärale (täpne definitsioon §\ref{sec:checkpoint-objective-control}). Madalama värava puhul (\texttt{target\_minimization: 2,0}) langes Common~Voice ET FAPH 1,31-ni, kuid Kõneleja A tuvastamismäär kukkus 4,2\%-le ja Kõneleja D tuvastamismäär 0,7\%-le --- mudel valis \emph{ülikonservatiivse} kontrollpunkti, mis hülgab praktiliselt kõik sisendkandidaadid. Kõrgema värava puhul (\texttt{target\_minimization: 10,0}) jäi FAPH talutavaks (CV 4,19), kuid Kõneleja D tuvastamismäär jäi 22,1\% ja segiajamis-FPR 85,8\%. Need kaks operatsioonipunkti viitavad teisele ülesobituse vormile: FAPH-orienteeritud kontrollpunkti valik ilma tuvastamismäära ja prefiksi-mõõdikuteta näib soosivat lahendusi, mis sobituvad taustaheli pikkvormi-statistikaga, mitte sihtfraasi semantilise struktuuriga. Range põhjusliku järelduse jaoks oleks vaja korduskatseid eri seemnete ja sihtväärtustega; siinkohal käsitleme tulemust kui hoiatust mõõdiku-monokultuuri vastu.
 
-\subsection{Metoodiline järeldus: iteratiivne mõõdikute laiendamine}
+\subsection{Iteratiivne mõõdikute laiendamine}
 \label{sec:metric-iteration-conclusion}
 
 Eelnevad katsed (puhastatud positiivsete v18-pere, sarnaste negatiivnäidetega variandid, konsensus ja FAPH-orienteeritud kontrollpunktid) jagavad sama metoodilist mustrit. Iga hindamisprotokolli täpsustus laiendas valideerimiskriteeriume ja tõi nähtavale riskiklassi, mida eelmine mõõdik ei näinud:
@@ -581,7 +583,7 @@ Et mõista, miks \texttt{checkpoint-faph10} käitub MacBooki taustal halvemini k
 
 See tähelepanek viitab tõenäoliselt sellele, et \texttt{checkpoint-faph10} on (osaliselt) säilitanud autori ja MacBooki akustilise \emph{lühitee}: positiivse klassi treeningnäidetes oli kõneleja-mikrofon-kombinatsioon (autor + MacBooki sisemikrofon) ülekaalukalt esindatud, mistõttu mudel sidus äratusfraasi just selle akustilise profiiliga. Sama profiil esineb ka MacBooki tausta korpusel ilma äratussõnata, mis seletab, miks valevallandumiste määr on seal kõrgem (FAPH 9,42) kui Common~Voice ET-l (FAPH 4,19): viimase võõraste kõnelejate ja erinevate mikrofonide akustilised tunnused vastavad positiivse klassi domeenile vähem. Sama lühitee teine pool on tuvastamismäära kokkuvarisemine treeningudomeenist väljaspool olevatel kõnelejatel (vt §\ref{sec:checkpoint-results}: Kõneleja~A XTTS 4,2\%, Kõneleja~D 0,7\%) --- mudel ei muutu vaiksemaks taustaheli suhtes üldiselt, vaid spetsiifiliselt selle suhtes, mis treeningu positiivse domeeni akustikasse ei sobi. Põhjuslik järeldus jääb käesoleva töö raames hüpoteesiks --- selle kinnitamiseks oleks vaja eraldi ablatsiooni (näiteks treenida ilma autori ja MacBooki positiivideta või mõõta FAPH-i uuel mikrofonil teises akustilises ruumis), mis jääb edasiseks tööks. Hüpoteesi mehhanism on klassikaline akustiline ülesobitumine, mille käesolev valikukriteerium muudab eriti tõenäoliseks: kui valitakse kontrollpunkt, mis minimeerib taustaheli FAPH-i, eelistatakse paratamatult seda epohhi, milles mudel on muutunud kõige vaiksemaks just nendel taustasegmentidel, mida ta on treeningus juba näinud. Madala taustaheli FAPH-i ja domeenipõhise lühitee vahel tekib seetõttu süsteemne, mitte juhuslik seos.
 
-\subsection{Metoodiline järeldus: mõõdiku ja eesmärgi lahknemine}
+\subsection{Mõõdiku ja eesmärgi lahknemine}
 \label{sec:checkpoint-conclusion}
 
 Kontrollpunkti-FAPH eksperiment on puhtakujuline näide \emph{mõõdiku ja lõppeesmärgi lahknemisest}: ühe mõõdiku optimeerimine ilma kogu eesmärgivektorita loob olukorra, kus mudelil on lihtsam treeningumõõdiku numbrit langetada kui tegelikku kasutajakogemust parandada. Selle eksperimendi peamised järeldused on järgmised.
