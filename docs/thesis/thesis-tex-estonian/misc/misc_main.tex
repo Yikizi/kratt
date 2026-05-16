@@ -31,3 +31,16 @@
 \setcounter{tocdepth}{2} % Sets maximum depth of Table Of Contents. A value of 2 includes sections and subsections.
 \renewcommand{\contentsname}{\tableOfContentsTitle} % This renames the table of contents heading to "Sisukord" (Estonian for "Table of Contents").
 \tableofcontents % This generates the table of contents for the document.
+\pagebreak
+
+\phantomsection
+\addcontentsline{toc}{chapter}{Jooniste loetelu}
+\renewcommand{\listfigurename}{Jooniste loetelu}
+\listoffigures
+\pagebreak
+
+\phantomsection
+\addcontentsline{toc}{chapter}{Tabelite loetelu}
+\renewcommand{\listtablename}{Tabelite loetelu}
+\listoftables
+\pagebreak

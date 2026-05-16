@@ -11,7 +11,7 @@ Peamine kommertsalternatiiv Picovoice Porcupine \cite{picovoice-guide2026} jäet
 Võrdlus viiakse läbi neljal teljel:
 \begin{itemize}
     \item treenimise praktiline keerukus, sealhulgas andmete ettevalmistuse maht, hüperparameetrite tundlikkus ja tööriistade kasutusmugavus;
-    \item mudeli kvaliteet, sealhulgas äratussõna tabamine ja valevallandumiste käitumine positiivsetel, negatiivsetel ja taustaheliandmetel;
+    \item mudeli kvaliteet, sealhulgas äratussõna tabamine ja valeaktiveeringute käitumine positiivsetel, negatiivsetel ja taustaheliandmetel;
     \item integreeritavus, sealhulgas mudeli suurus, mudeli käitamise praktiline teostatavus ja sobivus ESP32-S3-klassi seadmele;
     \item laiendatavus eesti keelele, sealhulgas sõltuvus ingliskeelsetest eeldustest ja sünteetilise andmestiku roll.
 \end{itemize}
@@ -24,7 +24,7 @@ Võrdlus viiakse läbi neljal teljel:
     \item taustaheli salvestused, mis sisaldavad pikka pidevat taustaheli ilma äratussõnata.
 \end{itemize}
 
-Positiivsed klipid õpetavad mudelile sihtsõna akustilist kuju. Negatiivsed klipid aitavad mudelil õppida, mida mitte pidada äratussõnaks. Taustaheli andmed täidavad teistsugust rolli: nende abil hinnatakse, kui tihti mudel tekitab valevallandumisi olukorras, kus seade kuulab pidevat helivoogu.
+Positiivsed klipid õpetavad mudelile sihtsõna akustilist kuju. Negatiivsed klipid aitavad mudelil õppida, mida mitte pidada äratussõnaks. Taustaheli andmed täidavad teistsugust rolli: nende abil hinnatakse, kui tihti mudel tekitab valeaktiveeringuid olukorras, kus seade kuulab pidevat helivoogu.
 
 \section{Avalikud andmekorpused}
 Enne eestikeelse \enquote{Kratt} andmestiku juurde liikumist otsustati kohalik treeningu- ja hindamisahel valideerida avaliku andmestiku peal. Selleks valiti \texttt{Speech Commands} korpus ja sihtsõna \texttt{marvin} \cite{speechcommands2018}. See on kontrollitav baasülesanne, mille peal saab hinnata, kas treening, eksport ja hindamine töötavad otsast lõpuni.
@@ -46,10 +46,10 @@ Praktilises tööahelas moodustatakse eraldi järgmised andmekogumid:
 Selline jaotus on vajalik, sest voogedastushindamine ei saa toetuda ainult lühikestele negatiivsetele klippidele. Kui taustaheli kogum puudub või on vigaselt moodustatud, muutub osa hindamistulemustest sisuliselt kasutuks.
 
 \section{Hindamismõõdikud}
-Äratussõna mudeli puhul on oluline mitte ainult äratussõna tabamine, vaid ka valevallandumiste kontroll. Seetõttu kasutatakse lisaks tavalistele täpsusmõõdikutele ka voogedastushindamise mõõdikuid:
+Äratussõna mudeli puhul on oluline mitte ainult äratussõna tabamine, vaid ka valeaktiveeringute kontroll. Seetõttu kasutatakse lisaks tavalistele täpsusmõõdikutele ka voogedastushindamise mõõdikuid:
 \begin{itemize}
     \item \texttt{FRR} ehk \emph{false rejection rate}, mis näitab, kui suur osa tegelikest äratussõna juhtudest jääb tabamata;
-    \item \texttt{FAPH} ehk \emph{false accepts per hour}, mis näitab valevallandumiste arvu tunni kohta;
+    \item \texttt{FAPH} ehk \emph{false accepts per hour}, mis näitab valeaktiveeringute arvu tunni kohta;
     \item ROC-laadne kõver, kus hinnatakse erinevate lävede mõju \texttt{FRR} ja \texttt{FAPH} suhtele.
 \end{itemize}
 
@@ -137,4 +137,4 @@ Nõusolekumudel on kaheastmeline. Minimaalne nõusolek lubab kasutada pseudonü�
     \label{fig:kratt-questionnaire-setup}
 \end{figure}
 
-Küsimustik on lõppversioonis teadlikult lühike, et hoida sessiooni kogukestus umbes 10~minuti piires ja vähendada vastamise katkestamist. Võrreldava kasutatavusnäitajana kasutatakse UMUX-Lite'i kaht väidet ja ühte SEQ (\emph{Single Ease Question}) ülesande-lihtsuse hinnangut \cite{lewis2013umuxlite,sauro2009seq}. Lisaks kogutakse neli 5-punktist Krati-spetsiifilist diagnostilist hinnangut --- süsteemi usaldusväärsus, vastuse tajutud kiirus, käskude loomulikkus ja kodus kasutamise valmisolek --- ning üks avatud kommentaar. Need neli dimensiooni vastavad häälassistendi-uuringutes korduvalt esile tõstetud kasutuskogemuse murekohtadele: usaldusväärsus ja tajutud latentsus on \textcite{luger2016gulf} kirjeldatud \enquote{ootuste ja kogemuse lõhe} keskmes, käskude loomulikkus ja sõnastusprobleemid on dialoogiagentide disainikirjanduses süstemaatiliselt dokumenteeritud \cite{clark2019goodconv}, ning kodus kasutamise valmisolek peegeldab \textcite{sciuto2018alexa} esile toodud erinevust laboritingimustes mõõdetud kasutatavuse ja tegeliku koduse omaksvõtu vahel. Diagnostilisi väiteid ei liideta UMUX-Lite'i koondtulemusse ega käsitleta valideeritud kasutatavusskaalana; need kogutakse kvalitatiivse signaalina UMUX-Lite ja SEQ skooride tõlgendamiseks ning avatud kommentaari ankurdamiseks.
+Küsimustik on lõppversioonis teadlikult lühike, et hoida sessiooni kogukestus umbes 10~minuti piires ja vähendada vastamise katkestamist. Võrreldava kasutatavusnäitajana kasutatakse UMUX-Lite'i kaht väidet ja ühte SEQ (\emph{Single Ease Question}) ülesande-lihtsuse hinnangut \cite{lewis2013umuxlite,sauro2009seq}. Lisaks kogutakse neli 5-punktist Krati-spetsiifilist diagnostilist hinnangut --- süsteemi usaldusväärsus, vastuse tajutud kiirus, käskude loomulikkus ja kodus kasutamise valmisolek --- ning üks avatud kommentaar. Need neli dimensiooni vastavad häälassistendi-uuringutes korduvalt esile tõstetud kasutuskogemuse murekohtadele: usaldusväärsus ja tajutud latentsus on \textcite{luger2016gulf} kirjeldatud \enquote{ootuste ja kogemuse lõhe} keskmes, käskude loomulikkus ja sõnastusprobleemid on dialoogiagentide disainikirjanduses süstemaatiliselt dokumenteeritud \cite{clark2019goodconv}, ning kodus kasutamise valmisolek peegeldab \textcite{sciuto2018alexa} esile toodud erinevust laboritingimustes mõõdetud kasutatavuse ja tegeliku koduse omaksvõtu vahel. Diagnostilisi väiteid ei liideta UMUX-Lite'i koondtulemusse ega käsitleta valideeritud kasutatavusskaalana; need kogutakse kvalitatiivse signaalina UMUX-Lite ja SEQ tulemuste tõlgendamiseks ning avatud kommentaari ankurdamiseks.
