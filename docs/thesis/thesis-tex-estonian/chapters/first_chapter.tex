@@ -29,28 +29,29 @@ Positiivsed klipid õpetavad mudelile sihtsõna akustilist kuju. Negatiivsed kli
 \section{Avalikud andmekorpused}
 Enne eestikeelse \enquote{Kratt} andmestiku juurde liikumist otsustati kohalik treeningu- ja hindamisahel valideerida avaliku andmestiku peal. Selleks valiti \texttt{Speech Commands} korpus ja sihtsõna \texttt{marvin} \cite{speechcommands2018}. See on kontrollitav baasülesanne, mille peal saab hinnata, kas treening, eksport ja hindamine töötavad otsast lõpuni.
 
-Taustaheli ja kõnepõhiste negatiivsete allikatena lisatakse tööahelasse \texttt{MUSAN}, \texttt{VOiCES} ja \texttt{Common Voice} korpused \cite{musan2015,voices2018,commonvoice2020}. Nende rollid on erinevad. \texttt{MUSAN} pakub müra, muusikat ja kõnet. \texttt{VOiCES} toob sisse kaugkõne, ruumiakustika ja realistlikumad kuulamistingimused. \texttt{Common Voice} on vajalik eelkõige kõnepõhiste negatiivsete näidete jaoks ning hiljem ka eestikeelse mudeli taustamaterjalina.
+Taustaheli ja kõnepõhiste negatiivsete allikatena toetab tööahel kolme avalikku korpust: \texttt{MUSAN}, \texttt{VOiCES} ja \texttt{Common Voice} \cite{musan2015,voices2018,commonvoice2020}. Nende rollid on erinevad. \texttt{MUSAN} pakub müra, muusikat ja kõnet. \texttt{VOiCES} toob sisse kaugkõne, ruumiakustika ja realistlikumad kuulamistingimused. \texttt{Common Voice} on vajalik eelkõige kõnepõhiste negatiivsete näidete jaoks ning hiljem ka eestikeelse mudeli taustamaterjalina. Käesoleva töö raporteeritud mudelites (v1--v18, vt ptk~\ref{chapter:results}) kasutati neist \texttt{MUSAN}-i ning \texttt{Common Voice} eestikeelset alamhulka; \texttt{VOiCES} on tööahelas saadaval, kuid ei kuulu ühegi raporteeritud versiooni treeningusse, sest Korvo-2 sama-seadme taustaheli ja reaalsete kõnelejate andmed kattisid kaugkõne- ja ruumiakustika rolli.
 
 \section{Tunnused ja andmevorming}
-Andmed teisendatakse spektraalseteks tunnusteks ja salvestatakse \texttt{mmap} vormingus. See võimaldab töödelda suuri andmehulkasid nii, et kogu korpust ei pea korraga muutmällu laadima. See on oluline nii treeningukiiruse kui ka stabiilsuse jaoks.
+Heliklippidest arvutatakse \texttt{microWakeWord} raamistikus 40-ribalised mel-spektrogrammi tunnused 10\,ms kaadrisammuga \cite{microwakeword2026}; sama tunnusekuju kasutatakse ka voogedastusrežiimis mudeli sisendina (vt §\ref{subsec:streaming}). Tunnusemaatriksid salvestatakse mälukaardistatud (\emph{memory-mapped}, \texttt{mmap}) vormingus, mis on salvestus- ja laadimisformaat, mitte tunnusetüüp. \texttt{mmap} võimaldab töödelda suuri andmehulki nii, et kogu korpust ei pea korraga muutmällu laadima --- see on oluline nii treeningukiiruse kui ka stabiilsuse jaoks.
 
-Praktilises tööahelas moodustatakse eraldi järgmised andmekogumid:
+Käesoleva töö pipeline'is moodustatakse eraldi järgmised andmekogumid:
 \begin{itemize}
-    \item \texttt{training};
-    \item \texttt{validation};
-    \item \texttt{testing};
-    \item \texttt{validation\_ambient};
-    \item \texttt{testing\_ambient}.
+    \item \texttt{training} --- treeningukogum (positiivsed, negatiivsed klipid ja lühikesed taustaheli klipid);
+    \item \texttt{validation} --- valideerimiskogum klipi-tasemel mõõdikutele ja läve valikuks;
+    \item \texttt{testing} --- testkogum klipi-tasemel lõpphinnanguks;
+    \item \texttt{validation\_ambient} --- pikad katkematud taustaheli segmendid voogedastusrežiimi FAPH-i hindamiseks valideerimisel;
+    \item \texttt{testing\_ambient} --- analoogne testkogum voogedastus-FAPH-i lõppraporteerimiseks.
 \end{itemize}
 
-Selline jaotus on vajalik, sest voogedastushindamine ei saa toetuda ainult lühikestele negatiivsetele klippidele. Kui taustaheli kogum puudub või on vigaselt moodustatud, muutub osa hindamistulemustest sisuliselt kasutuks.
+Eraldi taustaheli (\texttt{*\_ambient}) kogumid on vajalikud, sest voogedastushindamine ei saa toetuda ainult lühikestele negatiivsetele klippidele: voogedastusrežiimis töötav mudel teeb otsuseid pikaajalise pideva sisendi peal, kus liu\-akna sisemine olek ja jahtumisaeg mõjutavad valeaktiveeringute sagedust viisil, mida üksikklipi-FPR ei näita (vt §\ref{subsec:streaming} ja §\ref{subsec:faph-variants}). Kui taustaheli kogum puudub või on vigaselt moodustatud, muutub osa hindamistulemustest sisuliselt kasutuks; selle riski empiirilised tagajärjed on dokumenteeritud ptk~\ref{chapter:results}, §\ref{sec:data-leakage}.
 
 \section{Hindamismõõdikud}
-Äratussõna mudeli puhul on oluline mitte ainult äratussõna tabamine, vaid ka valeaktiveeringute kontroll. Seetõttu kasutatakse lisaks tavalistele täpsusmõõdikutele ka voogedastushindamise mõõdikuid:
+Äratussõna mudeli puhul on oluline mitte ainult äratussõna tabamine, vaid ka valeaktiveeringute kontroll. Klipi-tasemel kasutatakse standardseid kahendklassifikaatori mõõdikuid --- tuvastamismäär (\emph{recall}), \texttt{FPR}, täpsus (\emph{precision}) ja $F_1$ --- ning lävest sõltumatuna kõvera-aluseid pindalasid (\texttt{ROC-AUC}, \texttt{PR-AUC}). Voogedastusrežiimi jaoks on need klipi-tasemel mõõdikud üksi puudulikud, mistõttu lisatakse kaks äratussõna kirjanduses standardset mõõdikut \cite{lopezespejo2021deepkws}:
 \begin{itemize}
-    \item \texttt{FRR} ehk \emph{false rejection rate}, mis näitab, kui suur osa tegelikest äratussõna juhtudest jääb tabamata;
-    \item \texttt{FAPH} ehk \emph{false accepts per hour}, mis näitab valeaktiveeringute arvu tunni kohta;
-    \item ROC-laadne kõver, kus hinnatakse erinevate lävede mõju \texttt{FRR} ja \texttt{FAPH} suhtele.
+    \item \texttt{FRR} ehk \emph{false rejection rate} --- nende tegelike äratussõna juhtude osakaal, mille mudel jätab tuvastamata; käesolevas töös kasutatakse ekvivalentselt suurust \emph{tuvastamismäär} $= 1 - \texttt{FRR}$;
+    \item \texttt{FPR} ehk \emph{false positive rate} --- nende klipi-tasemel negatiivsete näidete osakaal, mille mudel klassifitseerib ekslikult positiivseks (kasutusel mh sarnaste negatiivnäidete \enquote{\texttt{HN}}-tabelites ja fraasi-täielikkuse mõõdikutes \texttt{Pre-FPR}, \texttt{1K-FPR} jne);
+    \item \texttt{FAPH} ehk \emph{false accepts per hour} --- valeaktiveeringute arv ühe tunni \emph{negatiivse heli} kohta voogedastusrežiimis (mitte voogtund); arvestus järgib \texttt{microWakeWord} ja \texttt{openWakeWord} negatiivse-heli-tunni konventsiooni \cite{microwakeword2026,openwakeword2026,lopezespejo2021deepkws} ning täpsustub alapunktis~\ref{subsec:faph-variants};
+    \item \texttt{DET}-kõver (\emph{Detection Error Tradeoff}, \cite{martin1997det}) --- kõver, mis kujutab \texttt{FRR} ja \texttt{FAPH} kompromissi üle lävede ning on äratussõna kirjanduses ROC-i asemel eelistatud, kuna mõlemad teljed on veamõõdikud.
 \end{itemize}
 
 Iga raporteeritud mõõdiku juurde lisatakse 95\%~usaldusvahemik. Klipitasemel mõõdikutele (tuvastamismäär, FPR) kasutatakse Wilsoni meetodil arvutatud vahemikku \cite{wilson1927probable,brown2001interval}, kuna see käitub paremini väikese valimi ja piiriläheduses olevate proportsioonide korral. Voogedastuse FAPH-ile kasutatakse täpset Poissoni-Garwoodi vahemikku \cite{garwood1936fiducial,ulm1990poisson}; kui $T$ tunni jooksul ei ole täheldatud ühtegi sündmust ($k=0$), raporteeritakse \enquote{kolmereegli} ühepoolne 95\%~ülemine piir $\sim 3/T$ \cite{hanley1983ruleofthree}. Lävi valitakse ainult valideerimisandmestikul; testikomplekti pealt valitud lävi ei kajasta tegelikku ebakindlust \cite{cawley2010overfitting}.
