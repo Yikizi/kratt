@@ -31,16 +31,25 @@ SKIP_CLOCKIFY = os.environ.get("KRATT_TIME_SKIP_CLOCKIFY", "0") == "1"
 SKIP_GITLAB = os.environ.get("KRATT_TIME_SKIP_GITLAB", "0") == "1"
 
 # Hand-curated; keep in sync with `glab issue list --repo malinh/iaib`.
-ISSUES_CATALOG = """#18 wake-word pipeline hardening + ambient eval
-#19 thesis drafting + framework comparison
-#20 Home Assistant voice pipeline
-#23 Background chapter writing
-#24 Multi-engine TTS ablation
-#25 Streaming FAPH evaluation methodology
-#27 MoE arhitektuur (multi-model consensus)
-#28 User-testing pilot + full run
-#29 Thesis automation + project tracking automation
-#30 v19 'Kratt' single-word ablation"""
+# For final-submission work, prefer #31-#38 over the older broad buckets.
+ISSUES_CATALOG = """#18 wake-word pipeline hardening + ambient eval (legacy/model work)
+#19 thesis drafting + framework comparison (legacy broad thesis bucket)
+#20 Home Assistant voice pipeline (legacy broad deployment bucket)
+#23 Background chapter writing (legacy; prefer #31 for final thesis closeout)
+#24 Multi-engine TTS ablation (future/deferred)
+#25 Streaming FAPH evaluation methodology (legacy; prefer #32 for final metric contract)
+#27 MoE arhitektuur / multi-model consensus (diagnostic/deferred)
+#28 User-testing pilot + full run (legacy; prefer #33 for consent-safe final pilot)
+#29 Thesis automation + project tracking automation (legacy; prefer #38 for final workflow hygiene)
+#30 v19 'Kratt' single-word ablation (diagnostic/deferred)
+#31 Lõputöö final submission closeout: PDF, bibliograafia, vormistus
+#32 Final evaluation contract: FAPH/FPR/FRR, CI-d ja benchmark artifacts
+#33 Consent-safe pilot, freeze-policy ja kasutajatesti evidence
+#34 Public repository release: litsents, privacy, security, release docs
+#35 Home Assistant add-on packaging and validation
+#36 ESP32-S3 Korvo serial streamer ja deployment evidence
+#37 Smart demo pipeline: WiZ/BLE/intent/telemetry/translation tooling
+#38 Thesis automation, page critique, tracking ja agentic workflow hygiene"""
 
 PROMPT_TEMPLATE = """Sa oled time-tracking assistant Mattias' Kratt-projektis.
 Antud git commiti põhjal pakku Clockify+GitLab kirje.
