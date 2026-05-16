@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# DESC: Prepare canonical per-page thesis critique prompts from main.pdf
+# USAGE: kratt thesis-page-critique [--pages all|N|A-B] [--build] [--out DIR]
+# ARGS: --pages Page spec, e.g. all, 47, 1-10,12
+# ARGS: --build Rebuild docs/thesis/thesis-tex-estonian/main.pdf before extracting pages
+# ARGS: --pdf Override canonical PDF path (default: docs/thesis/thesis-tex-estonian/main.pdf)
+# ARGS: --out Output directory for manifest/pages/prompts
+# EXAMPLES: kratt thesis-page-critique --pages 47
+# EXAMPLES: kratt thesis-page-critique --build --pages 1-70
+set -euo pipefail
+python3 "$KRATT_ROOT/scripts/thesis_page_critique_packet.py" "$@"

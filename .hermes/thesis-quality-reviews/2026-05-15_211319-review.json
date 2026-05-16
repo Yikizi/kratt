@@ -1,0 +1,150 @@
+{
+  "timestamp": "2026-05-15_211319",
+  "kind": "follow_up_T_minus_3",
+  "project_root": "/Users/mattias/kratt",
+  "previous_review": "2026-05-11_041742",
+  "hard_deadline": "2026-05-18",
+  "days_to_deadline": 3,
+  "overall_readiness_0_to_10": 7.6,
+  "scores": {
+    "problem_framing": 5,
+    "research_questions_and_scope": 4,
+    "related_work_and_positioning": 5,
+    "methodology_rigor": 4,
+    "implementation_or_artifact_clarity": 4,
+    "evaluation_and_evidence": 4,
+    "discussion_and_limitations": 5,
+    "ethics_privacy_reproducibility": 3,
+    "structure_and_coherence": 4,
+    "language_and_academic_style": 4,
+    "formal_compliance": 4,
+    "defense_readiness": 4
+  },
+  "score_deltas_vs_previous": {
+    "problem_framing": "+1",
+    "research_questions_and_scope": "+1",
+    "related_work_and_positioning": "0",
+    "methodology_rigor": "0",
+    "implementation_or_artifact_clarity": "0",
+    "evaluation_and_evidence": "0",
+    "discussion_and_limitations": "0",
+    "ethics_privacy_reproducibility": "0",
+    "structure_and_coherence": "0",
+    "language_and_academic_style": "0",
+    "formal_compliance": "0",
+    "defense_readiness": "+1"
+  },
+  "strongest_contribution": "Reproducible streaming-FAPH-centred evaluation protocol for a small-resource-language local wake word, validated through three iterative correction layers (data-leakage, positive-class quality, composite checkpoint criterion).",
+  "biggest_current_risk": "Glossary/abbreviation table coverage and term consistency: thesis-feedback.txt enumerates dozens of unresolved acronyms and Estonglish drift (RMS, HPC, SLURM, SSML, UV, HN, RNG, XTTS first-use; 'auditiring' replaced unevenly; 'manuaalne' vs 'käsitsi' drift). On submission day this is the single largest defense-irrelevant but reviewer-visible quality drag.",
+  "most_likely_overclaim": "The audit-ring / three-layer narrative in §4.6 still reads as a primary novel contribution in places where it is, structurally, a recap of the results chapter. Recent commit `984b687` softened §3.7 but the chapter-4 paragraphs flagged at thesis-feedback.txt:171-178 have not yet been cut.",
+  "top_defense_question": "Your introduction frames contribution as the FAPH-based streaming evaluation protocol, but sub-questions 4 and 5 still mention FAPH<1 and recall>=0.95 as targets. Are those success criteria or just deployment thresholds the thesis does not claim to clear?",
+  "highest_roi_next_step": "Three remaining days are best spent on language consistency + glossary completeness sweep (thesis-feedback.txt covers most of the targets), then a final clean PDF rebuild. The thesis is already structurally defensible; what is left is reviewer-visible polish and a 90-second rehearsed answer to the FAPH-target vs methodology-contribution tension.",
+  "top_5_next_actions": [
+    {
+      "priority": "P0",
+      "action": "Run a single regex sweep for all remaining acronyms (RMS, HPC, SLURM, SSML, UV, HN, RNG, XTTS, FRR, FAPH, KWS, VAD, MoE, FPR, ASR, STT, TTS, TFLite, INT8, MCP, GDPR, ROC, DET, DiPCo, etc.) and reconcile against the lyhendite tabel; add missing entries.",
+      "evidence": "thesis-feedback.txt:12, 31, 50, 58, 61, 86, 94"
+    },
+    {
+      "priority": "P0",
+      "action": "Cut or fold §4.6.1 in third_chapter.tex — it duplicates the results chapter's three-layer narrative; keep §4.6.4 as the conceptual handoff. This is one of the few remaining structural risks flagged in supervisor feedback.",
+      "evidence": "thesis-feedback.txt:174-178; third_chapter.tex:81-127"
+    },
+    {
+      "priority": "P0",
+      "action": "Soften introduction.tex:12-13 sub-questions 4 and 5: reframe FAPH<1 and recall>=0.95 as deployment thresholds the thesis evaluates against, not pass/fail targets. The contribution sentence at introduction.tex:16 already supports this framing.",
+      "evidence": "introduction.tex:12-16; previous review 2026-05-11_041742; supervisor feedback at thesis-feedback.txt:171 ('kaitstavus' as a metric is bad practice — the intro's own success-criteria wording is the equivalent symptom)"
+    },
+    {
+      "priority": "P1",
+      "action": "Pick one term per concept and replace globally: 'valevallandumine' (not 'valeaktiveering'/'valehäire'), 'käsitsi' (not 'manuaalne'), 'metoodiline' (not 'metoodikaline'), 'seadistus' or 'konfiguratsioon' (pick one).",
+      "evidence": "thesis-feedback.txt:10, 55, 75, 113, 117, 135, 139; valeaktiveering still appears across several pages despite recent commits"
+    },
+    {
+      "priority": "P1",
+      "action": "Resolve the 2026-05-13 consent issue on participant f02 before any user-test material is referenced as evidence. If quarantined, ensure the chapter does not implicitly cite f02 audio.",
+      "evidence": "docs/PROJECT_TODO.md:56 (BLOCKER); thesis currently scopes user-test correctly at second_chapter.tex:585-590, so risk is small unless the demo logs are upgraded to evidence."
+    }
+  ],
+  "hard_findings": [
+    {
+      "severity": "minor",
+      "location": "introduction.tex:12-13",
+      "finding": "Sub-questions 4 and 5 still encode 'FAPH<1' and 'recall>=0.95' as goals. The contribution paragraph at line 16 was rewritten and now leads with the evaluation protocol; the sub-questions did not follow."
+    },
+    {
+      "severity": "minor",
+      "location": "introduction.tex:5",
+      "finding": "FAPH<1 is still introduced as 'siht' (target) while §3.benchmark-gap and the abstracts now describe it as a deployment criterion the thesis does not claim to clear. The phrasing 'sihiks seati FAPH<1' is the most direct overclaim hook in the document."
+    },
+    {
+      "severity": "major",
+      "location": "third_chapter.tex:81-127 (§4.6 in rendered numbering)",
+      "finding": "Three-validation-layer paragraphs largely recap §3 of the results chapter. Supervisor feedback explicitly flags this as duplication and recommends cutting §4.6.1 and tightening to §4.6.4 only."
+    },
+    {
+      "severity": "major",
+      "location": "thesis-wide glossary",
+      "finding": "Many acronyms are used before/without glossary entries: RMS, HPC, SLURM, SSML, UV, HN, RNG, XTTS (first-letter explanation), Q1, FRR (italics inconsistency). 'valevallandumine' wins inconsistently against 'valeaktiveering'."
+    },
+    {
+      "severity": "minor",
+      "location": "third_chapter.tex:73-79 (agentic dev section)",
+      "finding": "The agentic-development section does not yet incorporate the two mitigation concepts supervisor feedback asks for: blast-radius minimization and iteration through probabilistic quality filtering. Currently reads as a defensive disclaimer rather than a useful insight."
+    },
+    {
+      "severity": "minor",
+      "location": "first_chapter.tex (method chapter)",
+      "finding": "HPC / SLURM / Android false-trigger logger / TTS voice-cloning rationale are introduced or referenced in chapter 4 without a corresponding method-chapter setup. Reader meets these as novelties in the discussion."
+    },
+    {
+      "severity": "minor",
+      "location": "summary.tex",
+      "finding": "Summary does not yet mention the Home Assistant integration with experimental tag nor the author's plan to continue work — both supervisor-requested additions and both small."
+    },
+    {
+      "severity": "minor",
+      "location": "docs/thesis/thesis-tex-estonian/main.bbl-SAVE-ERROR + main.bcf-SAVE-ERROR",
+      "finding": "Stale .bbl-SAVE-ERROR and .bcf-SAVE-ERROR files in repo working tree from a failed save. Cosmetic but worth removing before the final submission tarball is cut."
+    }
+  ],
+  "what_improved_since_previous": [
+    "introduction.tex rewritten: contribution paragraph now leads with the FAPH-based evaluation protocol; the prototype model is explicitly framed as illustration (introduction.tex:16).",
+    "Scope-and-limitations paragraph added in introduction (introduction.tex:18-19) — explicitly scopes the empirical claim to 2 author-near + 1 held-out speaker (N=145) and renames the user-test goal to <=10 participants.",
+    "Summary rewritten to lead with methodological contribution rather than model deliverable (summary.tex:1-2, commit e2d512b).",
+    "§4.5/§4.6 (third_chapter.tex) refactored to front-load theses with itemized criteria (commit 3f3fff8 and follow-ups).",
+    "Numerous local language fixes (commit 8010d61 and 30+ docs(thesis) commits): 'corpus'tel' typo resolved (no longer present), Estonglish drift reduced (no 'auditiring', 'kapatsiteet', 'sekventsi', 'eksplitsiitselt', 'eksplitiivselt', 'freim', 'metoodikaline' remain in chapter files).",
+    "PDF rebuilt today (2026-05-15 20:34) — only 1 overfull-hbox warning remains in main.log (down from 9 at previous review).",
+    "Bibliography cleanup commits on pages 66, 67, 68 (ac5f007, a7c1c59, e917dd5).",
+    "§3.7 user-test caveat and scope paragraph added (commit 984b687)."
+  ],
+  "still_open_from_previous": [
+    "Intro sub-questions still mention FAPH<1 and recall>=0.95 as targets, contradicting the contribution paragraph below them.",
+    "User-test evidence scoped out correctly, but T-3 means it stays scoped out — accept and harden.",
+    "Threshold-freeze file still 'pilot freeze candidate' (docs/user-testing/frozen-threshold-policy.md:3). PROJECT_TODO.md:57 still has it as BLOCKER. Decide: finalize or re-label as scoped-out.",
+    "Glossary completeness still incomplete relative to supervisor feedback."
+  ],
+  "defense_risk_analysis": {
+    "probable_questions": [
+      "If FAPH<1 and recall>=0.95 are not success criteria, why are they in the introduction as sub-questions?",
+      "What exactly does another Estonian wake-word project gain by adopting your three-layer validation protocol versus just reading the microWakeWord README?",
+      "You claim a low-FAPH consensus (0.79 on CV ET); given the wide Poisson interval and the documented recall collapse on Speaker D, why is this not a deployment claim and where is the line?",
+      "The thesis says 'two author-near and one held-out speaker' is the empirical base for real-speaker generalization; how do you defend that population-level conclusions are not being implied?",
+      "Why did the user-test framing change from 20-30 to <=10 participants, and was this driven by methodology or by deadline?",
+      "Page 51 (rendered): why is the OpenWakeWord comparison worth keeping if no OWW models were trained in this work?"
+    ],
+    "weak_answers_if_unfixed": [
+      "Reading FAPH<1 from the intro as a 'target', then defending the methodology pivot mid-defense — looks like post-hoc framing.",
+      "Treating the audit-rings narrative as the primary contribution while §4.6 also re-narrates it — committee may push on whether the contribution is one finding or three.",
+      "Glossary gaps will produce stoppable mid-defense questions ('what does HN mean here?')."
+    ],
+    "suggested_preparation": [
+      "Rehearse one 60-90 second answer that says: 'FAPH<1 is a deployment threshold I evaluate models against. The contribution is the multi-criterion protocol — the fact that no single model in this work clears all four criteria simultaneously is itself the result.'",
+      "Have the §3.7 / §4.6.4 paragraph page-tabbed; this is where the audit-ring narrative is at its strongest.",
+      "Memorize the three transferable artefacts that another small-resource-language wake-word project can copy: (a) held-out construction + train/test disjointness check, (b) positive-class audit, (c) composite checkpoint criterion. Be ready to name them in that order.",
+      "Be honest about user-test scope: 'I do not claim a user study; I claim a documented pilot methodology and a single held-out speaker. The chapter says so explicitly.' Quote second_chapter.tex:585-590 if pressed."
+    ]
+  },
+  "json_path": ".hermes/thesis-quality-reviews/2026-05-15_211319-review.json",
+  "markdown_path": ".hermes/thesis-quality-reviews/2026-05-15_211319-review.md"
+}

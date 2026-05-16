@@ -359,7 +359,8 @@ def dispatcher_prompt(transcript: str, purpose: str = DEFAULT_PURPOSE) -> str:
         - Keep the parent session available for more voice prompts. Immediately delegate the actual investigation/edit to one bounded background subagent, background agent, or worker if your environment supports it.
         - Do not spend a long parent-session turn doing the edit yourself unless background delegation is unavailable.
         - If no subagent mechanism is available, do only the smallest safe edit yourself and report that fallback explicitly.
-        - If the request names a PDF page, map it to the LaTeX source under docs/thesis/thesis-tex-estonian before editing.
+        - If the request names a PDF page, use the canonical PDF `docs/thesis/thesis-tex-estonian/main.pdf`; do not read sibling/stale PDFs such as `loputoo.pdf` unless Mattias explicitly asks for that file.
+        - Before trusting a page number, check that `main.pdf` is fresh enough for the current LaTeX sources, or rebuild/ask. Map the page to source under `docs/thesis/thesis-tex-estonian` before editing.
         - Thesis prose is Estonian. Replace English filler with correct Estonian, not literal calques.
         - Scope is one fix. No broad cleanup, no generated artifacts, no unrelated refactors.
         - Preserve existing user changes: inspect git status before editing and do not revert unrelated work.
@@ -395,7 +396,8 @@ def worker_prompt(transcript: str, purpose: str = DEFAULT_PURPOSE) -> str:
 
         Task:
         - Make exactly one small thesis-document correction requested by the transcript.
-        - If a PDF page is named, map it to the LaTeX source under docs/thesis/thesis-tex-estonian first.
+        - If a PDF page is named, use the canonical PDF `docs/thesis/thesis-tex-estonian/main.pdf`; do not read sibling/stale PDFs such as `loputoo.pdf` unless Mattias explicitly asks for that file.
+        - Before trusting a page number, check that `main.pdf` is fresh enough for the current LaTeX sources, or rebuild/ask. Map the page to source under `docs/thesis/thesis-tex-estonian` first.
         - Thesis prose is Estonian; prefer idiomatic Estonian.
         - Inspect git status before editing, preserve unrelated user changes, and do not run broad cleanup.
         - Do not regenerate thesis PDFs unless it is necessary to verify this exact correction.
@@ -425,6 +427,10 @@ def start_agent(args: argparse.Namespace) -> None:
           long turn doing the edit in this parent session.
         - If no background delegation mechanism exists, say so and do only the
           smallest safe fallback yourself.
+        - If a request names a PDF page, use canonical
+          docs/thesis/thesis-tex-estonian/main.pdf only; ignore stale sibling PDFs
+          such as loputoo.pdf unless Mattias explicitly names them. Check PDF
+          freshness or rebuild/ask before trusting page layout.
         - Keep each request scoped to one correction, preserve existing user
           changes, and report only changed files plus verification.
         """

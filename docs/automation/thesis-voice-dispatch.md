@@ -80,6 +80,22 @@ Say `stop` or `stopp` as a standalone utterance to send `Escape` to the target
 pane instead of submitting text. This is useful for interrupting the agent while
 keeping the transcription loop running.
 
+## PDF page guardrail
+
+When a dictated request mentions a PDF page, agents must use the canonical thesis
+PDF `docs/thesis/thesis-tex-estonian/main.pdf`. Stale sibling PDFs such as
+`loputoo.pdf` are ignored unless the request explicitly names that file. If page
+layout matters, rebuild or check freshness before trusting a page number.
+
+For deliberate per-page critique batches, prefer:
+
+```bash
+kratt thesis-page-critique --build --pages 1-70
+```
+
+This creates prompts with a PDF SHA-256, page count, extracted page text, and a
+forbidden-sibling-PDF list so future review runs do not drift across PDFs.
+
 ## Wrapped dispatcher mode
 
 The older wrapped mode is still available when you want every transcript to be

@@ -36,6 +36,13 @@
       "overall_readiness_0_to_10": 7.2,
       "json_path": ".hermes/thesis-quality-reviews/2026-05-11_041742-review.json",
       "markdown_path": ".hermes/thesis-quality-reviews/2026-05-11_041742-review.md"
+    },
+    {
+      "timestamp": "2026-05-15_211319",
+      "kind": "follow_up_T_minus_3",
+      "overall_readiness_0_to_10": 7.6,
+      "json_path": ".hermes/thesis-quality-reviews/2026-05-15_211319-review.json",
+      "markdown_path": ".hermes/thesis-quality-reviews/2026-05-15_211319-review.md"
     }
   ]
 }

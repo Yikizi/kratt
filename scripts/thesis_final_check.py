@@ -16,6 +16,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FAPH_CV_ET_DIR = REPO_ROOT / "wake-word" / "data" / "processed" / "faph_test_cv_et"
+THESIS_TEX_DIR = REPO_ROOT / "docs" / "thesis" / "thesis-tex-estonian"
+CANONICAL_THESIS_PDF = THESIS_TEX_DIR / "main.pdf"
+FORBIDDEN_THESIS_PDFS = [THESIS_TEX_DIR / "loputoo.pdf"]
 INTER_CLIP_SILENCE_S = 0.300
 
 
@@ -130,6 +133,19 @@ def wav_hours(path: Path) -> tuple[int, float] | None:
     return count, total_seconds / 3600.0
 
 
+def check_pdf_artifacts() -> list[str]:
+    errors: list[str] = []
+    if not CANONICAL_THESIS_PDF.exists():
+        errors.append(f"missing canonical thesis PDF: {CANONICAL_THESIS_PDF.relative_to(REPO_ROOT)}")
+    for path in FORBIDDEN_THESIS_PDFS:
+        if path.exists():
+            errors.append(
+                f"forbidden stale thesis PDF exists: {path.relative_to(REPO_ROOT)}; "
+                "use docs/thesis/thesis-tex-estonian/main.pdf as the only thesis review PDF"
+            )
+    return errors
+
+
 def check_faph_duration() -> list[str]:
     errors: list[str] = []
     measured = wav_hours(FAPH_CV_ET_DIR)
@@ -161,6 +177,7 @@ def main(argv: list[str] | None = None) -> int:
         exit_code = max(exit_code, run_docs_audit(args.strict_docs))
 
     errors = check_text_contract()
+    errors.extend(check_pdf_artifacts())
     errors.extend(check_faph_duration())
 
     if errors:
