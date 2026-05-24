@@ -67,6 +67,8 @@ DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "output" / "new-wake-word"
 WIZARD_VERSION = "0.2.0"
 TRAIN_NEW_SCRIPT = PROJECT_ROOT / "wake-word" / "training" / "scripts" / "train_new_wake_word.py"
 BENCHMARK_NEW_SCRIPT = PROJECT_ROOT / "wake-word" / "evaluation" / "benchmark_new_wake_word.py"
+LIVE_TEST_SCRIPT = PROJECT_ROOT / "wake-word" / "evaluation" / "live_test_tflite.py"
+PREPARE_NEGATIVE_PACK_SCRIPT = PROJECT_ROOT / "wake-word" / "training" / "scripts" / "prepare_public_negative_pack.py"
 SETUP_MICROWAKEWORD_ENV_SCRIPT = PROJECT_ROOT / "wake-word" / "training" / "scripts" / "setup_microwakeword_env.sh"
 MICROWAKEWORD_ENV_PYTHON = PROJECT_ROOT / "wake-word" / ".venv-microwakeword" / "bin" / "python"
 
@@ -226,6 +228,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--faph-dir", default="", help="FAPH/long negative directory for benchmark; default is the project CV ET track.")
     parser.add_argument("--faph-limit", type=int, default=100, help="Max FAPH clips for benchmark in end-to-end mode (default: 100; 0 = all).")
     parser.add_argument("--thresholds", type=float, nargs="+", default=[0.5, 0.7, 0.9, 0.95, 0.97, 0.99, 0.995], help="Benchmark thresholds.")
+    parser.add_argument("--download-negatives", choices=["auto", "off", "starter-public"], default="auto", help="Download/prepare a public broad-negative starter pack when needed (default: auto prompt).")
+    parser.add_argument("--negative-pack-clips", type=int, default=10000, help="Max clips for downloaded public negative pack (default: 10000).")
+    parser.add_argument("--negative-pack-cache", default="~/.cache/kratt/negative-packs", help="Cache dir for public negative downloads.")
+    parser.add_argument("--mine", action="store_true", help="Run live false-accept mining for a trained model.")
+    parser.add_argument("--mine-output", default="", help="Mining output dir; default output/mining/<timestamp>.")
+    parser.add_argument("--mine-threshold", type=float, default=0.99, help="Live mining detection threshold (default: 0.99).")
+    parser.add_argument("--mine-hours", type=float, default=0.0, help="Stop live mining after N hours (default: 0 = until Ctrl+C).")
+    parser.add_argument("--mine-alert-sound", default="ping", help="Live mining alert sound alias/path, or none (default: ping).")
     parser.add_argument(
         "--local-smoke-train",
         action="store_true",
@@ -264,6 +274,10 @@ def parse_args() -> argparse.Namespace:
         raise SystemExit("--ambient-limit must be >= 0")
     if args.faph_limit < 0:
         raise SystemExit("--faph-limit must be >= 0")
+    if args.negative_pack_clips < 1:
+        raise SystemExit("--negative-pack-clips must be >= 1")
+    if args.mine_hours < 0:
+        raise SystemExit("--mine-hours must be >= 0")
     if args.max_tts_positive_ratio < 0:
         raise SystemExit("--max-tts-positive-ratio must be >= 0")
     if args.record_seconds <= 0 or args.record_seconds > MAX_RECORD_SECONDS:
@@ -1741,11 +1755,143 @@ def ensure_tts_for_existing_output(args: argparse.Namespace, output_root: Path) 
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def local_broad_negative_available() -> bool:
+    for rel in [
+        "wake-word/data/processed/negative_samples",
+        "wake-word/data/processed/negative_korvo2",
+        "wake-word/data/processed/negative_macbook_segmented",
+    ]:
+        _, count = first_audio_candidate(rel)
+        if count > 0:
+            return True
+    return False
+
+
+def prepare_public_negative_pack(args: argparse.Namespace, output_root: Path) -> Path | None:
+    pack_dir = output_root / "training" / "negative-packs" / "starter-public-v1"
+    cmd = [
+        sys.executable,
+        str(PREPARE_NEGATIVE_PACK_SCRIPT),
+        "--profile",
+        "starter-public-v1",
+        "--output-dir",
+        str(pack_dir),
+        "--cache-dir",
+        args.negative_pack_cache,
+        "--max-clips",
+        str(args.negative_pack_clips),
+        "--force",
+    ]
+    print("\n=== Public broad-negative pack ===", flush=True)
+    print("This downloads public speech data and writes provenance to MANIFEST.json.")
+    print("Do not use the same source as held-out FAPH after training on it.")
+    rc = run_foreground(cmd, PROJECT_ROOT)
+    if rc != 0:
+        print("Public negative-pack preparation failed; continuing without it.", file=sys.stderr)
+        return None
+    return pack_dir
+
+
+def maybe_prepare_negative_pack_for_training(args: argparse.Namespace, output_root: Path) -> None:
+    if args.negative_dir:
+        return
+    if local_broad_negative_available():
+        return
+    if args.download_negatives == "off":
+        return
+    should_download = args.download_negatives == "starter-public"
+    if args.download_negatives == "auto" and sys.stdin.isatty():
+        print("\nNo local broad speech/background negative corpus was found.")
+        print("A realistic model needs public/local broad negatives; synthetic starter negatives are only for smoke tests.")
+        should_download = prompt_yes_no(
+            f"Download and prepare public starter negatives now (~hundreds of MB download, up to {args.negative_pack_clips} clips)?",
+            default=True,
+        )
+    if not should_download:
+        return
+    pack_dir = prepare_public_negative_pack(args, output_root)
+    if pack_dir is not None:
+        args.negative_dir = str(pack_dir)
+
+
+def find_latest_model(output_root: Path) -> Path | None:
+    models = sorted((output_root / "models").glob("*.tflite"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not models:
+        return None
+    fp32 = [p for p in models if p.name.endswith(".fp32.tflite")]
+    return fp32[0] if fp32 else models[0]
+
+
+def run_live_mining_flow(args: argparse.Namespace, output_root: Path, phrase: str) -> int:
+    model_path = Path(args.model).expanduser() if args.model else find_latest_model(output_root)
+    if model_path is None:
+        raise SystemExit("Mining requested but no model was found. Use --model or train first.")
+    if not model_path.is_absolute():
+        model_path = (Path.cwd() / model_path).resolve()
+    if not model_path.exists():
+        raise SystemExit(f"Mining model does not exist: {model_path}")
+
+    print("Preparing microWakeWord live/mining environment...", flush=True)
+    setup_rc = run_foreground(["bash", str(SETUP_MICROWAKEWORD_ENV_SCRIPT)], PROJECT_ROOT)
+    if setup_rc != 0:
+        return setup_rc
+    if not MICROWAKEWORD_ENV_PYTHON.exists():
+        raise SystemExit(f"microWakeWord Python not found after setup: {MICROWAKEWORD_ENV_PYTHON}")
+
+    mine_dir = Path(args.mine_output).expanduser() if args.mine_output else output_root / "mining" / datetime.now().strftime("%Y%m%d-%H%M%S")
+    if not mine_dir.is_absolute():
+        mine_dir = (Path.cwd() / mine_dir).resolve()
+    cmd = [
+        str(MICROWAKEWORD_ENV_PYTHON),
+        str(LIVE_TEST_SCRIPT),
+        "--model",
+        str(model_path),
+        "--threshold",
+        str(args.mine_threshold),
+        "--name",
+        phrase,
+        "--mining-dir",
+        str(mine_dir),
+        "--alert-sound",
+        args.mine_alert_sound,
+        "--device",
+        str(args.device),
+    ] if args.device is not None else [
+        str(MICROWAKEWORD_ENV_PYTHON),
+        str(LIVE_TEST_SCRIPT),
+        "--model",
+        str(model_path),
+        "--threshold",
+        str(args.mine_threshold),
+        "--name",
+        phrase,
+        "--mining-dir",
+        str(mine_dir),
+        "--alert-sound",
+        args.mine_alert_sound,
+    ]
+    if args.mine_hours > 0:
+        cmd.extend(["--duration-hours", str(args.mine_hours)])
+    print("\n=== Live false-accept mining ===", flush=True)
+    print(f"Model:  {model_path}")
+    print(f"Output: {mine_dir}")
+    print("Detections are false-positive by default. Press SPACE within the label window for real positives.")
+    print("After mining, retrain with:")
+    print(f"  ./cli/kratt new-wake-word --manifest {output_root / 'manifest.json'} --train --hard-negative-dir {mine_dir / 'false-positive'} --tag <next-tag>")
+    return run_foreground(cmd, PROJECT_ROOT)
+
+
 def run_training_and_benchmark_flow(
     args: argparse.Namespace,
     output_root: Path,
     slug: str,
 ) -> int:
+    if args.mine:
+        manifest_path = output_root / "manifest.json"
+        manifest = load_json(manifest_path) if manifest_path.exists() else {}
+        phrase = str(manifest.get("wizard", {}).get("phrase") or manifest.get("prompts", {}).get("target") or slug)
+        return run_live_mining_flow(args, output_root, phrase)
+
     explicit_train = bool(args.end_to_end or args.train)
     explicit_benchmark = bool(args.benchmark or (args.end_to_end and not args.skip_benchmark))
 
@@ -1770,6 +1916,7 @@ def run_training_and_benchmark_flow(
     model_path: Path | None = Path(args.model).expanduser() if args.model else None
 
     if train_now:
+        maybe_prepare_negative_pack_for_training(args, output_root)
         ensure_tts_for_existing_output(args, output_root)
         tag = args.tag or default_model_tag(slug)
         model_path = output_root / "models" / f"{tag}.tflite"
@@ -1965,6 +2112,12 @@ def run_wizard(args: argparse.Namespace) -> int:
         print(f"Manifest: {manifest_path}")
         print(f"Output: {output_root}")
         if args.dry_run:
+            if args.mine:
+                print("Planned live false-accept mining:")
+                print(f"  model: {args.model or '<latest .fp32.tflite in models/>'}")
+                print(f"  threshold: {args.mine_threshold}")
+                print(f"  output: {args.mine_output or str(output_root / 'mining' / '<timestamp>')}")
+                print(f"  hours: {args.mine_hours or 'until Ctrl+C'}")
             if args.train or args.end_to_end:
                 print("Planned local training:")
                 print(f"  tag: {args.tag or f'{slug}-local-<timestamp>'}")

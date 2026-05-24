@@ -13,6 +13,8 @@ Implemented an MVP `kratt new-wake-word` workflow for creating a conservative, a
   - Supports `--manifest`, `--phrase`, `--slug`, `--speaker`, `--count`, `--device`, `--check`, `--list-devices`, `--recorder`, fixed-duration recording, `--output`, `--no-docker`, `--no-stt`, `--no-tts`, TTS voice/count controls, `--dry-run`, `--end-to-end`, `--train`, `--benchmark`, `--model`, `--tag`, local training limits, `--negative-class-weight`, `--hard-negative-mode`, `--no-spec-augment`, `--local-smoke-train`, `--hpc-plan`, `--fixture-audio`, and safe timestamped non-overwrite behavior.
   - Dry-run prints the plan and creates no files/directories/media.
   - Docker is checked via Compose config and local ports, but services are not started automatically.
+- `wake-word/training/scripts/prepare_public_negative_pack.py`
+  - Opt-in public negative-pack preparation helper used by `--download-negatives starter-public`. The current profile downloads LibriSpeech test-clean from OpenSLR, segments it into bounded 2 s WAV clips, and writes a provenance/leakage manifest.
 - `wake-word/training/scripts/train_new_wake_word.py`
   - Internal local training implementation used by `kratt new-wake-word --train/--end-to-end`; stages positives/negatives and copies the exported `.tflite` model back to the wizard output. It now keeps `eval-smoke` out of training when split metadata is present, caps TTS positives to a default 3:1 ratio against real training positives, uses `negative_class_weight=20` by default, enables SpecAugment by default, and stages sufficiently many confusable/mined negatives as a separate hard-negative feature set. Extra mined negatives can be passed with repeatable `--hard-negative-dir`.
 - `wake-word/evaluation/benchmark_new_wake_word.py`
@@ -53,7 +55,8 @@ A clean-ish sandbox audit was added in `docs/automation/new-wake-word-onboarding
 - The wizard generates a smoke workflow and command plan only; it does not start training jobs by default.
 - Fresh public checkouts usually lack the broad speech/background negative corpora needed for a good personalized model. The trainer can generate starter non-speech negatives for smoke testing, but useful models should pass a real segmented `--negative-dir`.
 - The local training stage may duplicate very tiny positive sets to satisfy microWakeWord split requirements and can overfit badly.
-- Live false-accept mining is supported through `wake-word/evaluation/live_test_tflite.py --mining-dir DIR`: detections default to `false-positive`, while SPACE marks a pending detection as `true-positive`; SPACE without a pending detection saves a `missed-positive`. Retrain with the mined false positives via `kratt new-wake-word --hard-negative-dir DIR/false-positive`.
+- Live false-accept mining is supported through `wake-word/evaluation/live_test_tflite.py --mining-dir DIR` and the integrated wrapper `kratt new-wake-word --mine`: detections default to `false-positive`, while SPACE marks a pending detection as `true-positive`; SPACE without a pending detection saves a `missed-positive`. Retrain with the mined false positives via `kratt new-wake-word --hard-negative-dir DIR/false-positive`.
+- Public broad negatives are opt-in through `--download-negatives starter-public`; the current public profile is useful but smaller/less domain-specific than the private/local negative mix used by the best `hei toomas` run.
 - The benchmark stage is useful for quick iteration, but its positive score may be non-held-out if the wizard output does not contain an `eval-smoke` split.
 
 ## Subagent note

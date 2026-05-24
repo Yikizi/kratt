@@ -52,6 +52,7 @@ def main():
     parser.add_argument("--capture-dir", default=None, help="Directory to save detection audio snippets (disabled when unset)")
     parser.add_argument("--mining-dir", default=None, help="Directory for live mining. Detections default to false-positive; press SPACE within --label-window-seconds to mark true-positive. SPACE without a pending detection saves missed-positive audio from the rolling buffer.")
     parser.add_argument("--label-window-seconds", type=float, default=2.0, help="Seconds after a detection to allow SPACE=true-positive labeling in --mining-dir mode")
+    parser.add_argument("--duration-hours", type=float, default=0.0, help="Stop after N hours (default: 0 = until Ctrl+C)")
     parser.add_argument("--pre-roll-seconds", type=float, default=5.0, help="Seconds of audio before detection to keep in RAM")
     parser.add_argument("--post-roll-seconds", type=float, default=1.0, help="Seconds of audio after detection to include in saved snippet")
     parser.add_argument("--alert-sound", default="", help="Sound alias (ping|pop|tink|none) or path to .wav/.aiff/.m4a to play on detection")
@@ -68,6 +69,8 @@ def main():
         parser.error("--post-roll-seconds must be >= 0")
     if args.label_window_seconds < 0:
         parser.error("--label-window-seconds must be >= 0")
+    if args.duration_hours < 0:
+        parser.error("--duration-hours must be >= 0")
 
     if args.name is None:
         args.name = Path(args.model).stem.replace("_", " ")
@@ -377,9 +380,16 @@ def main():
     if args.device is not None:
         stream_kwargs["device"] = args.device
 
+    started_at = time.monotonic()
+    stop_after_s = args.duration_hours * 3600.0 if args.duration_hours > 0 else 0.0
+
     with sd.InputStream(**stream_kwargs), NonBlockingKeyReader() as key_reader:
         try:
             while True:
+                if stop_after_s and (time.monotonic() - started_at) >= stop_after_s:
+                    flush_pending_capture()
+                    print(f"\n\nStopped after {args.duration_hours:.3f}h. Total detections: {detection_count}")
+                    return
                 key = key_reader.read_key()
                 if key is not None:
                     handle_key(key, detection_count)

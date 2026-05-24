@@ -37,6 +37,11 @@
 # ARGS: --ambient-limit N          Max ambient clips for local training. Default: 100.
 # ARGS: --faph-dir DIR             FAPH/long negative dir for benchmark.
 # ARGS: --faph-limit N             Max FAPH clips in end-to-end benchmark. Default: 100; 0 = all.
+# ARGS: --download-negatives MODE  auto, off, starter-public. Prepares public broad negatives when needed.
+# ARGS: --negative-pack-clips N    Max clips in downloaded public negative pack. Default: 10000.
+# ARGS: --mine                     Run live false-accept mining for a trained model.
+# ARGS: --mine-output DIR          Mining output dir. Default: output/mining/<timestamp>.
+# ARGS: --mine-hours N             Stop mining after N hours. Default: 0 = until Ctrl+C.
 # ARGS: --local-smoke-train        Deprecated alias for local training plan; prefer --train.
 # ARGS: --hpc-plan                 Add HPC follow-up command hints.
 # ARGS: --fixture-audio PATH       Use existing audio as positive-real fixture input.
@@ -47,6 +52,7 @@
 # EXAMPLES: kratt new-wake-word --phrase "Tere Maja" --count 10 --train --benchmark --steps 300,50 --faph-limit 100
 # EXAMPLES: kratt new-wake-word --manifest output/new-wake-word/tere-maja/manifest.json --train --benchmark
 # EXAMPLES: kratt new-wake-word --manifest output/new-wake-word/tere-maja/manifest.json --benchmark --model output/new-wake-word/tere-maja/models/tere-maja-local.tflite
+# EXAMPLES: kratt new-wake-word --manifest output/new-wake-word/tere-maja/manifest.json --mine --model output/new-wake-word/tere-maja/models/tere-maja-local.fp32.tflite --mine-hours 50
 # EXAMPLES: kratt new-wake-word --check
 # EXAMPLES: kratt new-wake-word --phrase "Tere Maja" --no-stt --no-tts --dry-run
 set -euo pipefail
