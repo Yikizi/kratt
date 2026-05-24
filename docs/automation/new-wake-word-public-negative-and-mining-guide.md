@@ -76,6 +76,37 @@ output/new-wake-word/<slug>/mining/<timestamp>/
 
 Use `true-positive` and `missed-positive` only after manual review. Do not feed them as negatives.
 
+## Clean-machine validation
+
+Validated over SSH on `mattiass-macbook-air` from a fresh sandbox without local data, Docker, ffmpeg, or a pre-existing microWakeWord environment:
+
+```bash
+PATH=/bin:/usr/bin HOME=$PWD/home ./cli/kratt new-wake-word \
+  --phrase "tere robot" \
+  --count 0 \
+  --no-docker --no-stt \
+  --tts-voices mari,meelis \
+  --tts-per-voice 1 \
+  --tts-confusable-per-voice 2 \
+  --train --skip-benchmark \
+  --download-negatives starter-public \
+  --negative-pack-clips 80 \
+  --steps 5,2 \
+  --ambient-limit 0 \
+  --tag public-smoke-tts
+```
+
+Result:
+
+- `uv` installed into isolated `HOME`;
+- TartuNLP API generated TTS positives/confusables (one request initially timed out and was filled on resume-before-training);
+- LibriSpeech test-clean downloaded from OpenSLR and was segmented into the requested public negative pack;
+- microWakeWord environment was created from a fresh upstream clone;
+- both `public-smoke-tts.tflite` and `public-smoke-tts.fp32.tflite` exported;
+- benchmark command ran and correctly warned that there were no held-out positive/FAPH clips in this synthetic smoke setup.
+
+This validates the software/onboarding path, not model quality. `count=0` and `steps=5,2` deliberately create only a smoke model.
+
 ## What remains outside public bundling
 
 The `hei toomas` experiment also benefited from private/local negatives (Mac/Korvo/live mined clips). These cannot be bundled in the public repository. The public starter pack plus target-environment mining is the replacement path.

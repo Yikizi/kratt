@@ -160,7 +160,7 @@ Results:
   - `clean-smoke5.fp32.tflite`
 - A benchmark smoke run succeeded. It skipped FAPH with a clear note because the fresh sandbox had no FAPH directory.
 
-Heavy temporary runtime artifacts were removed from the Air after the test (`.venv-microwakeword`, feature cache, uv cache), leaving only the sandbox, reports, and small model outputs.
+A later public-negative smoke test on the same Air sandbox also validated the full public path: `uv` bootstrap, TTS phrase generation through the TartuNLP API, LibriSpeech/OpenSLR public negative-pack download/segmentation, fresh microWakeWord setup, TFLite/FP32 export, and benchmark command execution. Heavy temporary runtime artifacts were removed from the Air after the tests (`.venv-microwakeword`, feature cache, uv/download caches), leaving only the sandbox, reports, and small model outputs.
 
 ## Fixes made during audit
 
