@@ -31,7 +31,7 @@ Usage:
     [--clip-duration-ms N]
 
 This script builds RaggedMmap features, writes a temporary training config,
-trains a microWakeWord model, and exports the quantized streaming TFLite model.
+trains a microWakeWord model, and exports both FP32 and quantized streaming TFLite models.
 EOF
 }
 
@@ -294,8 +294,8 @@ AMBIENT_FINGERPRINT=""
 if [[ -n "${AMBIENT_DIR}" ]]; then
   AMBIENT_FINGERPRINT="$(fingerprint_audio_dir "${AMBIENT_DIR}")"
 fi
-BG_DIRS_STAMP="${BACKGROUND_NOISE_DIRS[*]}"
-IR_DIRS_STAMP="${IMPULSE_RESPONSE_DIRS[*]}"
+BG_DIRS_STAMP="${BACKGROUND_NOISE_DIRS[*]-}"
+IR_DIRS_STAMP="${IMPULSE_RESPONSE_DIRS[*]-}"
 
 STAMP="mmap_schema=20260427_clean_positive_v1 pos_wavs=${POS_COUNT} pos_fp=${POS_FINGERPRINT} neg_wavs=${NEG_COUNT} neg_fp=${NEG_FINGERPRINT} hard_neg_wavs=${HARD_NEG_COUNT} hard_neg_fp=${HARD_NEG_FINGERPRINT} ambient_wavs=${AMBIENT_COUNT} ambient_fp=${AMBIENT_FINGERPRINT} clip_ms=${CLIP_DURATION_MS} train_steps=${TRAINING_STEPS} lrs=${LEARNING_RATES} neg_w=${NEGATIVE_CLASS_WEIGHT} vtlp=${VTLP_PROB}:${VTLP_ALPHA_MIN}-${VTLP_ALPHA_MAX} aug=${AUG_PROFILE} positive_truncate_randomly=${POSITIVE_TRUNCATE_RANDOMLY} bg=${BG_DIRS_STAMP} ir=${IR_DIRS_STAMP}"
 
@@ -428,6 +428,7 @@ python -m microwakeword.model_train_eval \
 python -m microwakeword.model_train_eval \
   --training_config="${CFG_PATH}" \
   --train 0 \
+  --test_tflite_streaming 1 \
   --test_tflite_streaming_quantized 1 \
   --use_weights best_weights \
   mixednet \

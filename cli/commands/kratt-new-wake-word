@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+# DESC: Guided end-to-end workflow for recording, training, and benchmarking a new wake-word phrase
+# USAGE: kratt new-wake-word [--phrase "Tere Maja"] [--end-to-end] [options]
+# ARGS: --manifest FILE            Resume existing manifest for training/benchmarking.
+# ARGS: --phrase TEXT              Target phrase, required unless interactive prompt.
+# ARGS: --slug SLUG                Output slug derived from phrase by default.
+# ARGS: --speaker NAME             Real speaker label. Default: $USER or speaker1.
+# ARGS: --count N                  Number of real positive recordings (default: 10).
+# ARGS: --device ID                Microphone device id passed to recorder (sounddevice or ffmpeg AVFoundation).
+# ARGS: --check                    Check local onboarding prerequisites and recommended next steps.
+# ARGS: --list-devices             List microphone devices and exit.
+# ARGS: --recorder BACKEND         Recorder backend: auto, ffmpeg, sounddevice. Default: auto (prefer sounddevice).
+# ARGS: --record-seconds N         Fixed recording duration after START. Default: 2.2.
+# ARGS: --manual-stop              Use START/STOP prompt instead of fixed-duration recording.
+# ARGS: --output DIR               Output root. Default: output/new-wake-word/<slug>.
+# ARGS: --no-docker                Do not check or start docker services.
+# ARGS: --no-stt                   Skip STT verification.
+# ARGS: --no-tts                   Skip TTS generation.
+# ARGS: --tts-voices LIST          Comma-separated TartuNLP voices. Default: all common voices.
+# ARGS: --tts-per-voice N          Positive TTS clips per voice. Default: 2.
+# ARGS: --tts-confusable-per-voice N Confusable TTS clips per voice. Default: 4.
+# ARGS: --tts-timeout N            Seconds before one TTS request is skipped. Default: 45.
+# ARGS: --dry-run                  Print planned actions without recording/generating/training.
+# ARGS: --end-to-end               Collect data, train local TFLite, then benchmark in one flow.
+# ARGS: --train                    Train local TFLite after data collection.
+# ARGS: --benchmark                Benchmark after training, or benchmark --model.
+# ARGS: --skip-benchmark           With --end-to-end, train but skip benchmark.
+# ARGS: --model FILE               Existing TFLite to benchmark.
+# ARGS: --tag TAG                  Model tag; default <slug>-local-<timestamp>.
+# ARGS: --steps CSV                Local training steps. Default: 1000,200.
+# ARGS: --negative-class-weight N  Local false-accept penalty. Default: 20.
+# ARGS: --max-tts-positive-ratio N Max TTS positives per real positive. Default: 3.
+# ARGS: --no-spec-augment          Disable default SpecAugment.
+# ARGS: --hard-negative-mode MODE  auto, mixed, or separate confusable staging. Default: auto.
+# ARGS: --negative-limit N         Max broad negative clips for local training. Default: 1000.
+# ARGS: --ambient-limit N          Max ambient clips for local training. Default: 100.
+# ARGS: --faph-dir DIR             FAPH/long negative dir for benchmark.
+# ARGS: --faph-limit N             Max FAPH clips in end-to-end benchmark. Default: 100; 0 = all.
+# ARGS: --local-smoke-train        Deprecated alias for local training plan; prefer --train.
+# ARGS: --hpc-plan                 Add HPC follow-up command hints.
+# ARGS: --fixture-audio PATH       Use existing audio as positive-real fixture input.
+# ARGS: --force                    Use timestamped safe output when target exists.
+# ARGS: --force-output             Alias for --force (legacy compatibility).
+# EXAMPLES: kratt new-wake-word
+# EXAMPLES: kratt new-wake-word --phrase "Tere Maja" --count 10 --end-to-end
+# EXAMPLES: kratt new-wake-word --phrase "Tere Maja" --count 10 --train --benchmark --steps 300,50 --faph-limit 100
+# EXAMPLES: kratt new-wake-word --manifest output/new-wake-word/tere-maja/manifest.json --train --benchmark
+# EXAMPLES: kratt new-wake-word --manifest output/new-wake-word/tere-maja/manifest.json --benchmark --model output/new-wake-word/tere-maja/models/tere-maja-local.tflite
+# EXAMPLES: kratt new-wake-word --check
+# EXAMPLES: kratt new-wake-word --phrase "Tere Maja" --no-stt --no-tts --dry-run
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+KRATT_ROOT="${KRATT_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+KRATT_WW="${KRATT_WW:-$KRATT_ROOT/wake-word}"
+
+SCRIPT="${KRATT_WW}/data/collection/new_wake_word_wizard.py"
+
+_find_uv() {
+  if [[ -n "${UV:-}" && -x "${UV}" ]]; then
+    printf '%s\n' "${UV}"
+    return 0
+  fi
+  if command -v uv >/dev/null 2>&1; then
+    command -v uv
+    return 0
+  fi
+  for candidate in "$HOME/.local/bin/uv" "$HOME/.cargo/bin/uv"; do
+    if [[ -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+_install_uv() {
+  if [[ "${KRATT_NO_UV_INSTALL:-0}" == "1" ]]; then
+    return 1
+  fi
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "uv is required and curl is not available for the installer." >&2
+    echo "Install uv manually: https://docs.astral.sh/uv/" >&2
+    return 1
+  fi
+  echo "uv not found; installing uv with the official installer..." >&2
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+}
+
+if ! UV_BIN="$(_find_uv)"; then
+  _install_uv || {
+    echo "Could not install/find uv. Set UV=/path/to/uv or install uv manually." >&2
+    exit 1
+  }
+  UV_BIN="$(_find_uv)" || {
+    echo "uv installer finished, but uv is still not on PATH." >&2
+    exit 1
+  }
+fi
+
+# Keep this command self-contained: do not rely on a pre-existing project venv.
+# uv creates/reuses a clean cached environment with just the runtime deps needed
+# by the interactive wizard. If PortAudio/sounddevice is not usable, the Python
+# code falls back to ffmpeg for recording.
+export UV="$UV_BIN"
+exec "$UV_BIN" run \
+  --no-project \
+  --python '>=3.10,<3.13' \
+  --with 'numpy>=1.24,<2' \
+  --with 'sounddevice>=0.4.6' \
+  --with 'soundfile>=0.12.1' \
+  --with 'requests>=2.31' \
+  --with 'wyoming>=1.5.4' \
+  python "$SCRIPT" "$@"
