@@ -31,7 +31,8 @@
 # ARGS: --negative-class-weight N  Local false-accept penalty. Default: 20.
 # ARGS: --max-tts-positive-ratio N Max TTS positives per real positive. Default: 3.
 # ARGS: --no-spec-augment          Disable default SpecAugment.
-# ARGS: --hard-negative-mode MODE  auto, mixed, or separate confusable staging. Default: auto.
+# ARGS: --hard-negative-mode MODE  auto, mixed, or separate confusable/mined staging. Default: auto.
+# ARGS: --hard-negative-dir DIR    Extra mined/real hard-negative WAV dir; can be repeated.
 # ARGS: --negative-limit N         Max broad negative clips for local training. Default: 1000.
 # ARGS: --ambient-limit N          Max ambient clips for local training. Default: 100.
 # ARGS: --faph-dir DIR             FAPH/long negative dir for benchmark.

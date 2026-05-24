@@ -14,7 +14,7 @@ Implemented an MVP `kratt new-wake-word` workflow for creating a conservative, a
   - Dry-run prints the plan and creates no files/directories/media.
   - Docker is checked via Compose config and local ports, but services are not started automatically.
 - `wake-word/training/scripts/train_new_wake_word.py`
-  - Internal local training implementation used by `kratt new-wake-word --train/--end-to-end`; stages positives/negatives and copies the exported `.tflite` model back to the wizard output. It now keeps `eval-smoke` out of training when split metadata is present, caps TTS positives to a default 3:1 ratio against real training positives, uses `negative_class_weight=20` by default, enables SpecAugment by default, and stages sufficiently many confusable negatives as a separate hard-negative feature set.
+  - Internal local training implementation used by `kratt new-wake-word --train/--end-to-end`; stages positives/negatives and copies the exported `.tflite` model back to the wizard output. It now keeps `eval-smoke` out of training when split metadata is present, caps TTS positives to a default 3:1 ratio against real training positives, uses `negative_class_weight=20` by default, enables SpecAugment by default, and stages sufficiently many confusable/mined negatives as a separate hard-negative feature set. Extra mined negatives can be passed with repeatable `--hard-negative-dir`.
 - `wake-word/evaluation/benchmark_new_wake_word.py`
   - Internal benchmark implementation used by `kratt new-wake-word --benchmark`; scores eval-smoke or positive-real clips, confusable negatives, and optional streaming FAPH.
 - `docs/automation/new-wake-word-wizard-spec-2026-05-16.md`
@@ -52,7 +52,8 @@ A clean-ish sandbox audit was added in `docs/automation/new-wake-word-onboarding
 - TTS audio generation prefers local Wyoming TartuNLP on port 10301 and falls back to the API when reachable. One-shot defaults intentionally keep positive TTS modest (`2` per voice) and generate more confusable TTS (`4` per voice) so the model does not learn prefix-only triggers.
 - The wizard generates a smoke workflow and command plan only; it does not start training jobs by default.
 - Fresh public checkouts usually lack the broad speech/background negative corpora needed for a good personalized model. The trainer can generate starter non-speech negatives for smoke testing, but useful models should pass a real segmented `--negative-dir`.
-- The local training stage may duplicate very tiny positive sets to satisfy microWakeWord split requirements and can overfit badly. False-accept mining is the recommended next iteration feature: train once, mine high-scoring negative windows, then retrain with mined hard negatives.
+- The local training stage may duplicate very tiny positive sets to satisfy microWakeWord split requirements and can overfit badly.
+- Live false-accept mining is supported through `wake-word/evaluation/live_test_tflite.py --mining-dir DIR`: detections default to `false-positive`, while SPACE marks a pending detection as `true-positive`; SPACE without a pending detection saves a `missed-positive`. Retrain with the mined false positives via `kratt new-wake-word --hard-negative-dir DIR/false-positive`.
 - The benchmark stage is useful for quick iteration, but its positive score may be non-held-out if the wizard output does not contain an `eval-smoke` split.
 
 ## Subagent note

@@ -46,14 +46,15 @@ Proposed aliases are optional; one command is enough for MVP.
 --benchmark                Run local benchmark after training or for --model.
 --negative-class-weight N  Local false-accept penalty; default 20.
 --max-tts-positive-ratio N Max TTS positives per real training positive; default 3.
---hard-negative-mode MODE  auto|mixed|separate confusable staging.
+--hard-negative-mode MODE  auto|mixed|separate confusable/mined staging.
+--hard-negative-dir DIR    Extra mined/real hard-negative WAV directory; repeatable.
 --no-spec-augment          Disable default SpecAugment.
 --hpc-plan                 Print kratt train/HPC-style follow-up commands.
 ```
 
 Non-goal for MVP: fully general production training on arbitrary phrase with guaranteed quality.
 
-Clean-onboarding audit: `docs/automation/new-wake-word-onboarding-audit-2026-05-17.md` records a sandbox check from a copy without local virtualenvs, output artifacts, external repos, or large data corpora. The main remaining onboarding gap is data availability: a fresh checkout can smoke-test with generated starter negatives, but useful models require a real segmented broad-negative pack.
+Clean-onboarding audit: `docs/automation/new-wake-word-onboarding-audit-2026-05-17.md` records a sandbox check from a copy without local virtualenvs, output artifacts, external repos, or large data corpora. The main remaining onboarding gap is data availability: a fresh checkout can smoke-test with generated starter negatives, but useful models require a real segmented broad-negative pack and usually a target-environment false-accept mining pass.
 
 ## Output layout
 

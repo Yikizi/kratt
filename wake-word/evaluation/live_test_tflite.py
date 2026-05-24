@@ -8,11 +8,16 @@ Press Ctrl+C to stop.
 """
 
 import argparse
+import contextlib
+import json
 import os
+import select
 import subprocess
 import sys
+import termios
 import threading
 import time
+import tty
 import wave
 import warnings
 from datetime import datetime
@@ -45,6 +50,8 @@ def main():
     parser.add_argument("--cooldown", type=float, default=2.0, help="Seconds to suppress after a detection")
     parser.add_argument("--name", default=None, help="Wake word name for display (auto-detected from model path)")
     parser.add_argument("--capture-dir", default=None, help="Directory to save detection audio snippets (disabled when unset)")
+    parser.add_argument("--mining-dir", default=None, help="Directory for live mining. Detections default to false-positive; press SPACE within --label-window-seconds to mark true-positive. SPACE without a pending detection saves missed-positive audio from the rolling buffer.")
+    parser.add_argument("--label-window-seconds", type=float, default=2.0, help="Seconds after a detection to allow SPACE=true-positive labeling in --mining-dir mode")
     parser.add_argument("--pre-roll-seconds", type=float, default=5.0, help="Seconds of audio before detection to keep in RAM")
     parser.add_argument("--post-roll-seconds", type=float, default=1.0, help="Seconds of audio after detection to include in saved snippet")
     parser.add_argument("--alert-sound", default="", help="Sound alias (ping|pop|tink|none) or path to .wav/.aiff/.m4a to play on detection")
@@ -59,6 +66,8 @@ def main():
         parser.error("--pre-roll-seconds must be >= 0")
     if args.post_roll_seconds < 0:
         parser.error("--post-roll-seconds must be >= 0")
+    if args.label_window_seconds < 0:
+        parser.error("--label-window-seconds must be >= 0")
 
     if args.name is None:
         args.name = Path(args.model).stem.replace("_", " ")
@@ -85,7 +94,8 @@ def main():
     rolling_len = 0
     rolling_pos = 0
 
-    capture_dir = Path(args.capture_dir).expanduser().resolve() if args.capture_dir else None
+    mining_dir = Path(args.mining_dir).expanduser().resolve() if args.mining_dir else None
+    capture_dir = Path(args.capture_dir).expanduser().resolve() if args.capture_dir else mining_dir
     pending_capture = None
 
     audio_buffer = bytearray()
@@ -132,11 +142,21 @@ def main():
             wf.setframerate(args.sample_rate)
             wf.writeframes(pcm.astype(np.int16, copy=False).tobytes())
 
+    def append_mining_event(event: dict):
+        if mining_dir is None:
+            return
+        mining_dir.mkdir(parents=True, exist_ok=True)
+        event = {"time": datetime.now().isoformat(timespec="seconds"), **event}
+        with (mining_dir / "events.jsonl").open("a", encoding="utf-8") as f:
+            f.write(json.dumps(event, ensure_ascii=False) + "\n")
+
     def finalize_capture(capture_state):
         if capture_dir is None:
             return
 
-        capture_dir.mkdir(parents=True, exist_ok=True)
+        label = capture_state.get("label", "capture")
+        out_root = capture_dir / label if mining_dir is not None else capture_dir
+        out_root.mkdir(parents=True, exist_ok=True)
 
         pre = capture_state["pre"]
         post_parts = capture_state["post"]
@@ -151,13 +171,28 @@ def main():
 
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         safe_name = args.name.replace(" ", "_")
-        out_path = capture_dir / f"{stamp}_{safe_name}_p{capture_state['prob']:.3f}_c{capture_state['count']}.wav"
+        out_path = out_root / f"{stamp}_{safe_name}_p{capture_state['prob']:.3f}_c{capture_state['count']}.wav"
         write_wav(out_path, pcm)
-        print(f"  [saved] {out_path}")
+        print(f"  [saved:{label}] {out_path}")
+        append_mining_event(
+            {
+                "event": "capture_saved",
+                "label": label,
+                "path": str(out_path),
+                "prob": float(capture_state.get("prob", 0.0)),
+                "count": int(capture_state.get("count", 0)),
+                "samples": int(pcm.size),
+                "duration_s": float(pcm.size / args.sample_rate),
+                "manual": bool(capture_state.get("manual", False)),
+            }
+        )
 
     def pop_completed_capture_locked():
         nonlocal pending_capture
         if pending_capture is not None and pending_capture["remaining"] <= 0:
+            deadline = pending_capture.get("label_deadline")
+            if deadline is not None and time.monotonic() < deadline:
+                return None
             done = pending_capture
             pending_capture = None
             return done
@@ -186,6 +221,66 @@ def main():
             done = pop_pending_capture_locked()
         if done is not None:
             finalize_capture(done)
+
+    class NonBlockingKeyReader:
+        def __init__(self):
+            self.enabled = sys.stdin.isatty()
+            self.fd = sys.stdin.fileno() if self.enabled else None
+            self.old_settings = None
+
+        def __enter__(self):
+            if self.enabled and self.fd is not None:
+                self.old_settings = termios.tcgetattr(self.fd)
+                tty.setcbreak(self.fd)
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            if self.enabled and self.old_settings is not None and self.fd is not None:
+                with contextlib.suppress(Exception):
+                    termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
+
+        def read_key(self) -> str | None:
+            if not self.enabled:
+                return None
+            ready, _, _ = select.select([sys.stdin], [], [], 0)
+            if not ready:
+                return None
+            return sys.stdin.read(1)
+
+    def handle_key(key: str, current_count: int):
+        nonlocal pending_capture
+        if mining_dir is None or key not in {" ", "p", "P", "f", "F"}:
+            return
+        with audio_lock:
+            if pending_capture is not None:
+                if key in {" ", "p", "P"}:
+                    pending_capture["label"] = "true-positive"
+                    pending_capture["label_deadline"] = time.monotonic()
+                    print("  [label] pending capture marked true-positive")
+                    append_mining_event({"event": "capture_labeled", "label": "true-positive", "count": pending_capture.get("count", 0)})
+                elif key in {"f", "F"}:
+                    pending_capture["label"] = "false-positive"
+                    pending_capture["label_deadline"] = time.monotonic()
+                    print("  [label] pending capture kept false-positive")
+                    append_mining_event({"event": "capture_labeled", "label": "false-positive", "count": pending_capture.get("count", 0)})
+                return
+            if key in {" ", "p", "P"}:
+                pre = read_rolling_locked()
+            else:
+                return
+        if pre.size:
+            finalize_capture(
+                {
+                    "prob": 0.0,
+                    "count": current_count,
+                    "pre": pre,
+                    "post": [],
+                    "remaining": 0,
+                    "label": "missed-positive",
+                    "manual": True,
+                }
+            )
+            print("  [label] no pending detection; saved rolling buffer as missed-positive")
 
     def play_alert():
         if not alert_sound:
@@ -222,6 +317,12 @@ def main():
                     pending_capture["remaining"] -= take
 
     # Print model info. Keep normal CLI output concise; use --verbose for tensor/debug details.
+    if mining_dir is not None:
+        print(f"Mining: enabled at {mining_dir}")
+        print(
+            "Mining keys: SPACE/p marks pending detection true-positive; "
+            "SPACE with no pending detection saves missed-positive; f keeps false-positive."
+        )
     if capture_dir is not None:
         print(f"Capture: enabled (pre={args.pre_roll_seconds:.1f}s, post={args.post_roll_seconds:.1f}s)")
     else:
@@ -276,9 +377,12 @@ def main():
     if args.device is not None:
         stream_kwargs["device"] = args.device
 
-    with sd.InputStream(**stream_kwargs):
+    with sd.InputStream(**stream_kwargs), NonBlockingKeyReader() as key_reader:
         try:
             while True:
+                key = key_reader.read_key()
+                if key is not None:
+                    handle_key(key, detection_count)
                 while True:
                     with audio_lock:
                         if len(audio_buffer) < frame_bytes:
@@ -319,6 +423,9 @@ def main():
                         prob_val = float(output.flatten()[0])
 
                     maybe_finalize_capture_now()
+                    key = key_reader.read_key()
+                    if key is not None:
+                        handle_key(key, detection_count)
 
                     now = time.monotonic()
                     in_cooldown = (now - last_detection_time) < args.cooldown
@@ -338,6 +445,8 @@ def main():
                                     "pre": read_rolling_locked(),
                                     "post": [],
                                     "remaining": post_roll_samples,
+                                    "label": "false-positive" if mining_dir is not None else "capture",
+                                    "label_deadline": (time.monotonic() + args.label_window_seconds) if mining_dir is not None else None,
                                 }
                                 immediate = pending_capture if post_roll_samples == 0 else None
                                 if post_roll_samples == 0:
@@ -346,6 +455,8 @@ def main():
                                 finalize_capture(previous)
                             if immediate is not None:
                                 finalize_capture(immediate)
+                            if mining_dir is not None:
+                                print(f"  [mine] press SPACE within {args.label_window_seconds:.1f}s if this was a real wake phrase")
 
                     elif prob_val > 0.1 and not in_cooldown:
                         bar = "█" * int(prob_val * 30)

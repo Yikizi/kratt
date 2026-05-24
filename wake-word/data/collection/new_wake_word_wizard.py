@@ -217,7 +217,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--negative-class-weight", default=DEFAULT_NEGATIVE_CLASS_WEIGHT, help=f"Penalty weight for negative examples (default: {DEFAULT_NEGATIVE_CLASS_WEIGHT}).")
     parser.add_argument("--max-tts-positive-ratio", type=float, default=3.0, help="Max TTS positives per real training positive (default: 3.0; 0 disables cap).")
     parser.add_argument("--no-spec-augment", action="store_true", help="Disable SpecAugment during local one-shot training.")
-    parser.add_argument("--hard-negative-mode", choices=["auto", "mixed", "separate"], default="auto", help="How to stage confusable negatives for training (default: auto).")
+    parser.add_argument("--hard-negative-mode", choices=["auto", "mixed", "separate"], default="auto", help="How to stage confusable/mined negatives for training (default: auto).")
+    parser.add_argument("--hard-negative-dir", action="append", default=[], help="Extra mined/real hard-negative WAV/FLAC dir for training; can be repeated.")
     parser.add_argument("--negative-dir", help="Broad negative WAV/FLAC directory for local training.")
     parser.add_argument("--negative-limit", type=int, default=1000, help="Max broad negatives to stage (default: 1000).")
     parser.add_argument("--ambient-dir", help="Ambient WAV/FLAC directory for local training.")
@@ -1796,6 +1797,8 @@ def run_training_and_benchmark_flow(
         ]
         if not args.no_spec_augment:
             train_cmd.append("--spec-augment")
+        for hard_dir in args.hard_negative_dir:
+            train_cmd.extend(["--hard-negative-dir", hard_dir])
         if args.negative_dir:
             train_cmd.extend(["--negative-dir", args.negative_dir])
         if args.ambient_dir:

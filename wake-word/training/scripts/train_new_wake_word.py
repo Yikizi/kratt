@@ -86,8 +86,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--negative-class-weight", default="20", help="Penalty weight for negative examples (default: 20)")
     p.add_argument("--spec-augment", dest="spec_augment", action="store_true", default=True, help="Use SpecAugment during local training (default)")
     p.add_argument("--no-spec-augment", dest="spec_augment", action="store_false", help="Disable SpecAugment")
-    p.add_argument("--hard-negative-mode", choices=["auto", "mixed", "separate"], default="auto", help="How to stage confusable negatives (default: auto)")
-    p.add_argument("--hard-negative-min-count", type=int, default=20, help="Minimum confusable clips before auto uses separate hard-negative set")
+    p.add_argument("--hard-negative-mode", choices=["auto", "mixed", "separate"], default="auto", help="How to stage confusable/mined negatives (default: auto)")
+    p.add_argument("--hard-negative-dir", action="append", default=[], help="Extra mined/real hard-negative WAV/FLAC dir; can be repeated")
+    p.add_argument("--hard-negative-min-count", type=int, default=20, help="Minimum confusable/mined clips before auto uses separate hard-negative set")
     p.add_argument("--negative-dir", default="", help="Broad negative WAV/FLAC source")
     p.add_argument("--negative-limit", type=int, default=1000, help="Max broad negatives to stage")
     p.add_argument("--ambient-dir", default="", help="Ambient source dir; default ambient_korvo2 if present")
@@ -479,6 +480,17 @@ def main() -> int:
     negative_source = choose_negative_dir(args.negative_dir)
     negatives = audio_files(negative_source, recursive=True) if negative_source else []
     confusable_negatives = discover_confusable_negative_files(output_root)
+    for raw_hard_dir in args.hard_negative_dir:
+        hard_dir = Path(raw_hard_dir).expanduser()
+        if not hard_dir.is_absolute():
+            hard_dir = (PROJECT_ROOT / hard_dir).resolve()
+        extra_hard = audio_files(hard_dir, recursive=True)
+        if extra_hard:
+            confusable_negatives.extend(extra_hard)
+            positive_notes.append(f"Including {len(extra_hard)} extra hard negatives from {hard_dir}.")
+        else:
+            positive_notes.append(f"Extra hard-negative dir had no audio files: {hard_dir}.")
+    confusable_negatives = dedupe_paths(confusable_negatives)
 
     ambient_source = choose_ambient_dir(args.ambient_dir, args.no_ambient)
     ambient = audio_files(ambient_source, recursive=True) if ambient_source and args.ambient_limit > 0 else []
@@ -566,6 +578,7 @@ def main() -> int:
         "negative_class_weight": args.negative_class_weight,
         "spec_augment": bool(args.spec_augment),
         "confusable_negative_count": len(confusable_negatives),
+        "extra_hard_negative_dirs": [str(Path(p).expanduser()) for p in args.hard_negative_dir],
         "hard_negative_mode": effective_hard_negative_mode,
         "hard_negative_min_count": args.hard_negative_min_count,
         "ambient_source": str(ambient_source) if ambient_source else None,
